@@ -28,6 +28,7 @@ pub mod rerank_fragments;
 pub mod suggest_cloud_environment_image;
 pub mod sync_merkle_tree;
 pub mod task_attachments;
+pub mod task_git_credentials;
 pub mod task_secrets;
 pub mod user_github_info;
 pub mod user_repo_auth_status;

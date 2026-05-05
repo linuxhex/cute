@@ -121,6 +121,10 @@ use warp_graphql::{
             UpdateMerkleTreeVariables,
         },
     },
+    queries::task_git_credentials::{
+        TaskGitCredentials, TaskGitCredentialsInput, TaskGitCredentialsResult,
+        TaskGitCredentialsVariables,
+    },
     queries::{
         codebase_context_config::{
             CodebaseContextConfigQuery, CodebaseContextConfigResult, CodebaseContextConfigVariables,
@@ -565,6 +569,19 @@ pub struct CreateFileArtifactUploadResponse {
     pub upload_target: FileArtifactUploadTargetInfo,
 }
 
+/// A single git credential entry returned by `taskGitCredentials`.
+#[derive(Clone)]
+pub struct GitCredential {
+    /// The GitHub token (OAuth user token or App installation token).
+    pub token: String,
+    /// The GitHub username. `None` for service-account (installation token) principals.
+    pub username: Option<String>,
+    /// The GitHub email. `None` for service-account principals.
+    pub email: Option<String>,
+    /// The host (always `"github.com"` in V1).
+    pub host: String,
+}
+
 /// Filter parameters for listing ambient agent tasks.
 #[derive(Clone, Debug, Default)]
 pub struct TaskListFilter {
@@ -957,6 +974,12 @@ pub trait AIClient: 'static + Send + Sync {
         &self,
         task_id: &AmbientAgentTaskId,
     ) -> anyhow::Result<(), anyhow::Error>;
+
+    async fn get_task_git_credentials(
+        &self,
+        task_id: String,
+        workload_token: String,
+    ) -> anyhow::Result<Vec<GitCredential>, anyhow::Error>;
 
     async fn get_task_attachments(
         &self,
@@ -1845,6 +1868,44 @@ impl AIClient for ServerApi {
             .post_public_api(&format!("agent/tasks/{task_id}/cancel"), &())
             .await?;
         Ok(())
+    }
+
+    async fn get_task_git_credentials(
+        &self,
+        task_id: String,
+        workload_token: String,
+    ) -> anyhow::Result<Vec<GitCredential>, anyhow::Error> {
+        let variables = TaskGitCredentialsVariables {
+            input: TaskGitCredentialsInput {
+                task_id: cynic::Id::new(task_id),
+                workload_token,
+            },
+            request_context: get_request_context(),
+        };
+        let operation = TaskGitCredentials::build(variables);
+        let response = self.send_graphql_request(operation, None).await?;
+
+        match response.task_git_credentials {
+            TaskGitCredentialsResult::TaskGitCredentialsOutput(output) => {
+                let credentials = output
+                    .credentials
+                    .into_iter()
+                    .map(|c| GitCredential {
+                        token: c.token,
+                        username: c.username,
+                        email: c.email,
+                        host: c.host,
+                    })
+                    .collect();
+                Ok(credentials)
+            }
+            TaskGitCredentialsResult::UserFacingError(error) => {
+                Err(anyhow!(get_user_facing_error_message(error)))
+            }
+            TaskGitCredentialsResult::Unknown => {
+                Err(anyhow!("Failed to fetch task git credentials"))
+            }
+        }
     }
 
     async fn get_task_attachments(
