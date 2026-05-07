@@ -24885,7 +24885,7 @@ impl TypedActionView for TerminalView {
             | OpenChildAgentInNewTab { .. }
             | StopAgentConversation { .. }
             | KillAgentConversation { .. }
-            | OpenCLIAgentRichInput
+            | ToggleCLIAgentRichInput
             | ToggleSessionRecording => Empty,
         }
     }
@@ -26019,7 +26019,7 @@ impl TypedActionView for TerminalView {
                     recorder.toggle_recording(ctx);
                 });
             }
-            OpenCLIAgentRichInput => {
+            ToggleCLIAgentRichInput => {
                 if self.has_active_cli_agent_input_session(ctx) {
                     self.close_cli_agent_rich_input_and_disable_auto_toggle(ctx);
                 } else {
