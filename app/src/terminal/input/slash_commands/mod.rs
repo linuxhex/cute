@@ -29,6 +29,8 @@ use crate::ai::agent_management::telemetry::AgentManagementTelemetryEvent;
 use crate::ai::blocklist::agent_view::{
     AgentViewEntryOrigin, DismissalStrategy, EphemeralMessage, ENTER_OR_EXIT_CONFIRMATION_WINDOW,
 };
+#[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+use crate::ai::blocklist::handoff::PendingCloudLaunch;
 use crate::ai::blocklist::{BlocklistAIHistoryModel, SlashCommandRequest};
 use crate::cloud_object::model::persistence::CloudModel;
 use crate::code_review::telemetry_event::CodeReviewPaneEntrypoint;
@@ -899,13 +901,28 @@ impl Input {
                 {
                     return false;
                 }
-                // The workspace handler falls through to splitting a fresh cloud-mode
-                // pane when there's nothing to hand off, so we don't need to gate on
-                // `selected_conversation_id` here — the slash command always opens
-                // the new pane.
-                ctx.dispatch_typed_action(&WorkspaceAction::OpenLocalToCloudHandoffPane {
-                    initial_prompt: argument.cloned().filter(|s| !s.is_empty()),
-                });
+                let prompt = argument
+                    .map(|argument| argument.trim())
+                    .filter(|argument| !argument.is_empty())
+                    .map(str::to_owned);
+                if let Some(prompt) = prompt {
+                    // `/handoff query` auto-submits, same as `& query`.
+                    let attachments = self.collect_cloud_launch_attachments(ctx);
+                    let launch = PendingCloudLaunch {
+                        prompt,
+                        attachments,
+                    };
+                    ctx.dispatch_typed_action_deferred(
+                        WorkspaceAction::OpenLocalToCloudHandoffPane {
+                            launch: Some(launch),
+                            explicit_environment_id: None,
+                        },
+                    );
+                } else {
+                    // `/handoff` with no query enters `&` compose mode,
+                    // same as the footer chip.
+                    self.activate_cloud_handoff_compose(ctx);
+                }
             }
             fork if command.name == commands::FORK.name => {
                 let Some(conversation_id) = self
