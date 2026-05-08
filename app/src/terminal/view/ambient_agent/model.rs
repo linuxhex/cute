@@ -877,6 +877,7 @@ impl AmbientAgentViewModel {
             config,
             title: None,
             team: None,
+            agent_identity_uid: None,
             skill: None,
             attachments,
             interactive: None,
@@ -1328,6 +1329,7 @@ impl AmbientAgentViewModel {
             referenced_attachments: vec![],
             conversation_id: Some(forked_conversation_id),
             initial_snapshot_token,
+            agent_identity_uid: None,
         };
         self.spawn_agent_with_request(request, ctx);
     }
