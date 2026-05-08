@@ -1031,7 +1031,7 @@ impl AgentDriverRunner {
                 return Ok(vec![]);
             }
             let workload_token = match warp_isolation_platform::issue_workload_token(Some(
-                std::time::Duration::from_mins(5),
+                std::time::Duration::from_secs(5 * 60),
             ))
             .await
             {

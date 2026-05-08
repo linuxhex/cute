@@ -1331,6 +1331,7 @@ type GcpProviderConfig {
 }
 
 input GenerateApiKeyInput {
+  agentUid: ID
   expiresAt: Time
   name: String!
   teamId: ID
