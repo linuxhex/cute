@@ -128,6 +128,15 @@ type RemoteServerController =
 
 const ACL_UPDATE_FAILURE_RESPONSE: &str = "Something went wrong. Please try again.";
 
+/// Whether the given CRDT operation should be dropped when broadcasting
+/// sharer input to viewers. In ambient agent sessions the sharer is a
+/// headless worker — forwarding its selection ops would produce a phantom
+/// cursor on the viewer side. Content ops (Edit / Undo) are kept so the
+/// buffer stays in sync.
+fn should_skip_sharer_op(is_ambient_session: bool, op: &CrdtOperation) -> bool {
+    is_ambient_session && matches!(op, CrdtOperation::UpdateSelections(_))
+}
+
 /// The TerminalManager is responsible for
 /// - creating the terminal model
 /// - starting the local PTY
@@ -1476,19 +1485,23 @@ impl TerminalManager {
 
                 // Flush the initial input operations that the sharer performed
                 // in the latest buffer before the share was started.
+                let is_ambient = model.lock().is_shared_ambient_agent_session();
                 let init_input_ops: Vec<CrdtOperation> = terminal_view
                     .as_ref(ctx)
                     .input()
                     .as_ref(ctx)
                     .latest_buffer_operations()
+                    .filter(|op| !should_skip_sharer_op(is_ambient, op))
                     .cloned()
                     .collect();
-                network.update(ctx, |network, _ctx| {
-                    network.send_input_update(
-                        model.lock().block_list().active_block_id(),
-                        init_input_ops.iter(),
-                    );
-                });
+                if !init_input_ops.is_empty() {
+                    network.update(ctx, |network, _ctx| {
+                        network.send_input_update(
+                            model.lock().block_list().active_block_id(),
+                            init_input_ops.iter(),
+                        );
+                    });
+                }
 
                 // Stream historical agent conversations so viewers have conversation and task context.
                 if FeatureFlag::AgentSharedSessions.is_enabled() {
@@ -2319,9 +2332,17 @@ impl TerminalManager {
                     return;
                 }
 
+                let is_ambient = model.lock().is_shared_ambient_agent_session();
+                let filtered: Vec<_> = operations
+                    .iter()
+                    .filter(|op| !should_skip_sharer_op(is_ambient, op))
+                    .collect();
+                if filtered.is_empty() {
+                    return;
+                }
                 if let Some(network) = session_sharer.borrow().as_ref() {
                     network.update(ctx, |network, _| {
-                        network.send_input_update(block_id, operations.iter());
+                        network.send_input_update(block_id, filtered.into_iter());
                     });
                 }
             }
