@@ -96,6 +96,35 @@ pub enum RemoteServerInitPhase {
 pub enum RemoteServerOperation {
     NavigateToDirectory,
     LoadRepoMetadataDirectory,
+    IndexCodebase,
+    DropCodebaseIndex,
+}
+
+#[derive(Clone, Copy, Debug)]
+enum RemoteCodebaseIndexMutation {
+    Index,
+    Drop,
+}
+
+impl RemoteCodebaseIndexMutation {
+    fn operation(self) -> RemoteServerOperation {
+        match self {
+            Self::Index => RemoteServerOperation::IndexCodebase,
+            Self::Drop => RemoteServerOperation::DropCodebaseIndex,
+        }
+    }
+
+    async fn send(
+        self,
+        client: Arc<RemoteServerClient>,
+        repo_path: String,
+        auth_token: String,
+    ) -> Result<RemoteCodebaseIndexStatus, crate::client::ClientError> {
+        match self {
+            Self::Index => client.index_codebase(repo_path, auth_token).await,
+            Self::Drop => client.drop_codebase_index(repo_path, auth_token).await,
+        }
+    }
 }
 
 /// Classification of a remote server client error for telemetry.
@@ -1183,6 +1212,143 @@ impl RemoteServerManager {
         self.host_to_sessions.get(host_id)
     }
 
+    fn connected_session_for_host(
+        &self,
+        host_id: &HostId,
+        expected_identity_key: &str,
+    ) -> Option<(SessionId, Arc<RemoteServerClient>, String)> {
+        let sessions = self.host_to_sessions.get(host_id)?;
+        sessions.iter().find_map(|session_id| {
+            let RemoteSessionState::Connected {
+                client,
+                identity_key,
+                ..
+            } = self.sessions.get(session_id)?
+            else {
+                return None;
+            };
+            if identity_key != expected_identity_key {
+                return None;
+            }
+            Some((*session_id, client.clone(), identity_key.clone()))
+        })
+    }
+
+    /// Sends an `IndexCodebase` request to a connected daemon for this host.
+    pub fn index_codebase(
+        &mut self,
+        host_id: HostId,
+        repo_path: String,
+        ctx: &mut ModelContext<Self>,
+    ) {
+        self.mutate_codebase_index(host_id, repo_path, RemoteCodebaseIndexMutation::Index, ctx);
+    }
+
+    /// Sends a `DropCodebaseIndex` request to a connected daemon for this host.
+    pub fn drop_codebase_index(
+        &mut self,
+        host_id: HostId,
+        repo_path: String,
+        ctx: &mut ModelContext<Self>,
+    ) {
+        self.mutate_codebase_index(host_id, repo_path, RemoteCodebaseIndexMutation::Drop, ctx);
+    }
+
+    fn mutate_codebase_index(
+        &mut self,
+        host_id: HostId,
+        repo_path: String,
+        mutation: RemoteCodebaseIndexMutation,
+        ctx: &mut ModelContext<Self>,
+    ) {
+        let operation = mutation.operation();
+
+        let Some(auth_context) = self.auth_context.clone() else {
+            log::warn!(
+                "Remote server codebase index mutation: no auth context \
+                 operation={operation:?} host={host_id} repo_path={repo_path}"
+            );
+            return;
+        };
+        let current_identity_key = auth_context.remote_server_identity_key();
+        let Some((session_id, client, remote_identity_key)) =
+            self.connected_session_for_host(&host_id, &current_identity_key)
+        else {
+            log::warn!(
+                "Remote server codebase index mutation: no connected client for current identity \
+                 operation={operation:?} host={host_id} repo_path={repo_path}"
+            );
+            return;
+        };
+        log::info!(
+            "[Remote codebase indexing] Manager requesting codebase index mutation: \
+             operation={operation:?} host={host_id} session={session_id:?} \
+             remote_identity_key={remote_identity_key} repo_path={repo_path}"
+        );
+
+        let spawner = self.spawner.clone();
+        ctx.background_executor()
+            .spawn(async move {
+                let repo_path_for_log = repo_path.clone();
+                let Some(auth_token) = auth_context.get_auth_token().await else {
+                    log::warn!(
+                        "Remote server codebase index mutation: missing auth token \
+                         operation={operation:?} host={host_id} session={session_id:?} \
+                         repo_path={repo_path_for_log}"
+                    );
+                    let _ = spawner
+                        .spawn(move |_me, ctx| {
+                            ctx.emit(RemoteServerManagerEvent::ClientRequestFailed {
+                                session_id,
+                                operation,
+                                error_kind: RemoteServerErrorKind::Other,
+                            });
+                        })
+                        .await;
+                    return;
+                };
+
+                match mutation.send(client, repo_path, auth_token).await {
+                    Ok(status) => {
+                        log::info!(
+                            "[Remote codebase indexing] Manager received codebase index mutation response: \
+                             operation={operation:?} host={host_id} session={session_id:?} \
+                             remote_identity_key={remote_identity_key} repo_path={} state={:?}",
+                            status.repo_path,
+                            status.state
+                        );
+                        let _ = spawner
+                            .spawn(move |_me, ctx| {
+                                ctx.emit(RemoteServerManagerEvent::CodebaseIndexStatusUpdated {
+                                    remote_identity_key,
+                                    host_id,
+                                    status,
+                                });
+                            })
+                            .await;
+                    }
+                    Err(e) => {
+                        log::warn!(
+                            "Remote server codebase index mutation failed: \
+                             operation={operation:?} host={host_id} session={session_id:?} \
+                             repo_path={repo_path_for_log} error={e}"
+                        );
+                        let error_kind = RemoteServerErrorKind::from_client_error(&e);
+                        let _ = spawner
+                            .spawn(move |_me, ctx| {
+                                ctx.emit(RemoteServerManagerEvent::ClientRequestFailed {
+                                    session_id,
+                                    operation,
+                                    error_kind,
+                                });
+                            })
+                            .await;
+                    }
+                }
+            })
+            .detach();
+    }
+
     /// Sends a `NavigatedToDirectory` request to the remote server for
     /// the given session and emits the response as a manager event.
     ///
@@ -1288,11 +1454,15 @@ impl RemoteServerManager {
         ctx: &mut ModelContext<Self>,
     ) {
         let Some(client) = self.client_for_session(session_id).cloned() else {
-            log::warn!("Remote server load_remote_repo_metadata_directory: no connected client session={session_id:?}");
+            log::warn!(
+                "Remote server load_remote_repo_metadata_directory: no connected client session={session_id:?}"
+            );
             return;
         };
         let Some(host_id) = self.host_id_for_session(session_id).cloned() else {
-            log::warn!("Remote server load_remote_repo_metadata_directory: no host_id session={session_id:?}");
+            log::warn!(
+                "Remote server load_remote_repo_metadata_directory: no host_id session={session_id:?}"
+            );
             return;
         };
 
@@ -1502,7 +1672,9 @@ impl RemoteServerManager {
         // initial connect and every reconnect.
         if let Some(info) = self.session_bootstrap_info.get(&session_id) {
             if let Some(client) = self.client_for_session(session_id) {
-                log::info!("Remote server sending SessionBootstrapped notification: session={session_id:?}");
+                log::info!(
+                    "Remote server sending SessionBootstrapped notification: session={session_id:?}"
+                );
                 client.notify_session_bootstrapped(
                     session_id,
                     &info.shell_type,
@@ -1580,17 +1752,23 @@ impl RemoteServerManager {
             // exit status. For example, SSH returns false when exit code
             // 255 indicates the ControlMaster's TCP connection is dead.
             if !transport.is_reconnectable(exit_status.as_ref()) {
-                log::warn!("Transport reports disconnect is not reconnectable, skipping reconnect: session={session_id:?} exit_status={exit_status:?}");
+                log::warn!(
+                    "Transport reports disconnect is not reconnectable, skipping reconnect: session={session_id:?} exit_status={exit_status:?}"
+                );
                 self.finalize_disconnect(session_id, host_id, exit_status, ctx);
                 return;
             }
 
             let Some(auth_context) = self.auth_context.clone() else {
-                log::warn!("Remote server spontaneous disconnect without auth context: session={session_id:?}");
+                log::warn!(
+                    "Remote server spontaneous disconnect without auth context: session={session_id:?}"
+                );
                 self.finalize_disconnect(session_id, host_id, exit_status, ctx);
                 return;
             };
-            log::info!("Remote server spontaneous disconnect, will attempt reconnect: session={session_id:?} host={host_id:?}");
+            log::info!(
+                "Remote server spontaneous disconnect, will attempt reconnect: session={session_id:?} host={host_id:?}"
+            );
 
             // Clear stale repo metadata and host index so downstream
             // models don't hold onto data from the dead server process.
