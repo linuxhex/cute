@@ -1909,6 +1909,10 @@ impl AgentDriver {
             .await
             .map_err(|_| AgentDriverError::InvalidRuntimeState)?;
 
+        // Clone the raw secrets before the MCP closure consumes the Arc, so the
+        // harness can read structured fields (e.g. OpenAI `base_url`) directly.
+        let secrets_for_harness = Arc::clone(&secrets);
+
         // Resolve MCP specs into harness-native JSON format.
         let mcp_specs = mcp_specs.to_vec();
         let resolved_mcp_servers = foreground
@@ -1944,6 +1948,7 @@ impl AgentDriver {
                 terminal_driver,
                 resume,
                 &resolved_env_vars,
+                &secrets_for_harness,
                 &resolved_mcp_servers,
                 third_party_harness_model_id.as_deref(),
             )?
@@ -2830,6 +2835,9 @@ fn typed_secret_entries(secret: &ManagedSecretValue) -> Vec<(&'static str, &str)
                 entries.push(("AWS_SESSION_TOKEN", token));
             }
             entries
+        }
+        ManagedSecretValue::OpenaiApiKey { api_key, .. } => {
+            vec![("OPENAI_API_KEY", api_key.as_str())]
         }
     }
 }
