@@ -221,6 +221,11 @@ pub struct AIConversation {
     /// Artifacts created during this conversation (plans, PRs, etc.).
     artifacts: Vec<Artifact>,
 
+    /// Whether the AIConversation is being used as a vehicle for a CLI conversation, that
+    /// doesn't have a full internal representation but uses an AIConversationId to render
+    /// in the agent view.
+    is_cli_agent_transcript: bool,
+
     /// Server-side identifier of the parent agent that spawned this child, if any.
     /// In v1 this holds the parent's `server_conversation_token`; in v2 (OrchestrationV2)
     /// it holds the parent's `run_id`. Persisted as `parent_agent_id` for serde compat.
@@ -263,7 +268,7 @@ pub(crate) fn artifact_from_fork_proto(
 }
 
 impl AIConversation {
-    pub fn new(is_viewing_shared_session: bool) -> Self {
+    pub fn new(is_viewing_shared_session: bool, is_cli_agent_transcript: bool) -> Self {
         let root_task = Task::new_optimistic_root();
         Self {
             id: AIConversationId::new(),
@@ -271,6 +276,7 @@ impl AIConversation {
             optimistic_cli_subagent_subtask_id: None,
             code_review: None,
             is_viewing_shared_session,
+            is_cli_agent_transcript,
             todo_lists: vec![],
             status: ConversationStatus::InProgress,
             status_error_message: None,
@@ -458,6 +464,7 @@ impl AIConversation {
         Ok(Self {
             id,
             is_viewing_shared_session: false,
+            is_cli_agent_transcript: false,
             task_store,
             status,
             status_error_message: None,
@@ -513,6 +520,10 @@ impl AIConversation {
 
     pub fn set_is_viewing_shared_session(&mut self, is_viewing_shared_session: bool) {
         self.is_viewing_shared_session = is_viewing_shared_session;
+    }
+
+    pub fn is_cli_agent_transcript(&self) -> bool {
+        self.is_cli_agent_transcript
     }
 
     pub fn was_summarized(&self) -> bool {
@@ -1113,6 +1124,9 @@ impl AIConversation {
             // Shared session viewer conversations are excluded because the shared session itself
             // is visible/represented elsewhere.
             || self.is_viewing_shared_session()
+            // 3p transcript viewers create an internal conversation only so agent-view
+            // filtering can associate the restored block snapshot with an active conversation.
+            || self.is_cli_agent_transcript()
             // Child agent conversations spawned by an orchestrator are managed via the parent's
             // status card and shouldn't clutter the navigation list.
             || self.is_child_agent_conversation()
