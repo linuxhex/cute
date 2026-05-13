@@ -925,9 +925,6 @@ pub const DOGFOOD_FLAGS: &[FeatureFlag] = &[
     FeatureFlag::ConversationApi,
     FeatureFlag::RememberFastForwardState,
     FeatureFlag::HOANotifications,
-    FeatureFlag::OrchestrationV2,
-    FeatureFlag::OrchestrationPillBar,
-    FeatureFlag::RunAgentsTool,
     FeatureFlag::GeminiNotifications,
     FeatureFlag::LocalDockerSandbox,
     FeatureFlag::CloudModeSetupV2,
@@ -947,6 +944,9 @@ pub const DOGFOOD_FLAGS: &[FeatureFlag] = &[
 /// All PREVIEW_FLAGS are also automatically added to dogfood builds (WarpDev).
 pub const PREVIEW_FLAGS: &[FeatureFlag] = &[
     FeatureFlag::Orchestration,
+    FeatureFlag::OrchestrationV2,
+    FeatureFlag::OrchestrationPillBar,
+    FeatureFlag::RunAgentsTool,
     FeatureFlag::BlocklistMarkdownTableRendering,
     FeatureFlag::MarkdownTables,
     FeatureFlag::GitOperationsInCodeReview,
@@ -1045,6 +1045,7 @@ impl FeatureFlag {
             MarkdownTables => Some("Enables rendering and interaction support for markdown tables in notebooks."),
             SettingsFile => Some("Enables configuring Warp via a user-editable `settings.toml` file, with hot reload and error reporting for invalid values."),
             GitOperationsInCodeReview => Some("Enables commit, push, and create-PR actions directly from the code review panel."),
+            OrchestrationV2 => Some("Enables orchestration of teams of agents with dedicated UI, lifecycle events and inter-agent messaging."),
             _ => None,
         }
     }
