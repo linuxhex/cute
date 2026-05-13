@@ -1071,20 +1071,20 @@ impl SettingsView {
             me.handle_environments_page_event(event, ctx);
         });
 
-        let billing_and_usage_page: SettingsPage =
-            if FeatureFlag::BillingAndUsagePageV2.is_enabled() {
-                let handle = ctx.add_view(BillingAndUsagePageV2View::new);
-                ctx.subscribe_to_view(&handle, |me, _, event, ctx| {
-                    me.handle_billing_and_usage_page_event(event, ctx);
-                });
-                SettingsPage::new(handle)
-            } else {
-                let handle = ctx.add_typed_action_view(BillingAndUsagePageView::new);
-                ctx.subscribe_to_view(&handle, |me, _, event, ctx| {
-                    me.handle_billing_and_usage_page_event(event, ctx);
-                });
-                SettingsPage::new(handle)
-            };
+        let should_use_billing_and_usage_v2 = FeatureFlag::BillingAndUsagePageV2.is_enabled();
+        let billing_and_usage_page: SettingsPage = if should_use_billing_and_usage_v2 {
+            let handle = ctx.add_typed_action_view(BillingAndUsagePageV2View::new);
+            ctx.subscribe_to_view(&handle, |me, _, event, ctx| {
+                me.handle_billing_and_usage_page_event(event, ctx);
+            });
+            SettingsPage::new(handle)
+        } else {
+            let handle = ctx.add_typed_action_view(BillingAndUsagePageView::new);
+            ctx.subscribe_to_view(&handle, |me, _, event, ctx| {
+                me.handle_billing_and_usage_page_event(event, ctx);
+            });
+            SettingsPage::new(handle)
+        };
 
         // Keybindings page
         let keybindings_handle = ctx.add_typed_action_view(KeybindingsView::new);
@@ -2188,6 +2188,9 @@ impl SettingsView {
     ) -> Option<Box<dyn Element>> {
         match page_handle {
             SettingsPageViewHandle::BillingAndUsage(view) => {
+                view.read(app, |view, _| view.get_modal_content())
+            }
+            SettingsPageViewHandle::BillingAndUsageV2(view) => {
                 view.read(app, |view, _| view.get_modal_content())
             }
             SettingsPageViewHandle::Privacy(view) => {
