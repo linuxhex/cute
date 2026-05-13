@@ -1618,14 +1618,20 @@ impl PaneGroup {
                     .copied()
                     .collect();
 
-                let conversation_restoration = vec1::Vec1::try_from_vec(filtered_conversation_ids)
-                    .ok()
-                    .map(
-                        |conversation_ids| ConversationRestorationInNewPaneType::Startup {
-                            conversation_ids,
-                            active_conversation_id: terminal_snapshot.active_conversation_id,
-                        },
-                    );
+                let conversation_restoration = {
+                    let conversations = RestoredAgentConversations::handle(ctx)
+                        .update(ctx, |store, _| {
+                            store.take_conversations(&filtered_conversation_ids)
+                        });
+                    vec1::Vec1::try_from_vec(conversations)
+                        .ok()
+                        .map(
+                            |conversations| ConversationRestorationInNewPaneType::Startup {
+                                conversations,
+                                active_conversation_id: terminal_snapshot.active_conversation_id,
+                            },
+                        )
+                };
                 let (terminal_view, terminal_manager) = PaneGroup::create_session(
                     startup_directory,
                     HashMap::new(),
@@ -5448,6 +5454,16 @@ impl PaneGroup {
     ) {
         let mut conversation_id = None;
         terminal_view.update(ctx, |view, ctx| {
+            // The cloud-mode terminal model starts with
+            // `is_executing_oz_environment_startup_commands = true`. Clear it
+            // before restoring so that `maybe_insert_setup_command_blocks`
+            // doesn't wrap restored command blocks in a "Running setup
+            // commands..." group.
+            view.model
+                .lock()
+                .block_list_mut()
+                .set_is_executing_oz_environment_startup_commands(false);
+
             match cloud_conversation {
                 CloudConversationData::Oz(conversation) => {
                     let id = conversation.id();
