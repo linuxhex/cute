@@ -192,7 +192,8 @@ impl ModelSelector {
                 }
                 HarnessAvailabilityEvent::AuthSecretsLoaded
                 | HarnessAvailabilityEvent::AuthSecretCreated { .. }
-                | HarnessAvailabilityEvent::AuthSecretCreationFailed { .. } => {}
+                | HarnessAvailabilityEvent::AuthSecretCreationFailed { .. }
+                | HarnessAvailabilityEvent::AuthSecretsFetchFailed => {}
             },
         );
 
