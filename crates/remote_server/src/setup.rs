@@ -6,6 +6,7 @@ use std::time::Duration;
 
 use anyhow::anyhow;
 use warp_core::channel::{Channel, ChannelState};
+pub const REMOTE_SERVER_ARTIFACT_VERSION_UNPINNED: &str = "unversioned";
 
 /// State machine for the remote server install → launch → initialize flow.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -424,6 +425,20 @@ pub fn binary_check_command() -> String {
 /// fall through to the unversioned (Local/Oss-only) path.
 fn pinned_version() -> &'static str {
     ChannelState::app_version().unwrap_or(env!("CARGO_PKG_VERSION"))
+}
+
+/// Returns the version key used to identify remote-server download artifacts.
+///
+/// This must match the versioning used by [`download_tarball_url`] and
+/// [`install_script`], so versioned download URLs do not reuse stale tarballs
+/// from a previous client version.
+pub fn remote_server_artifact_version() -> &'static str {
+    match ChannelState::channel() {
+        Channel::Local | Channel::Oss => REMOTE_SERVER_ARTIFACT_VERSION_UNPINNED,
+        Channel::Stable | Channel::Preview | Channel::Dev | Channel::Integration => {
+            pinned_version()
+        }
+    }
 }
 
 /// The install script template, loaded from a standalone `.sh` file for
