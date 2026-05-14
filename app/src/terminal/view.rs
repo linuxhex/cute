@@ -4488,8 +4488,7 @@ impl TerminalView {
                         session_id,
                         result,
                         remote_platform,
-                        preinstall_check: _,
-                        has_old_binary: _,
+                        ..
                     } => {
                         let (remote_os, remote_arch) = remote_platform
                             .as_ref()
