@@ -13358,6 +13358,58 @@ impl Workspace {
         });
     }
 
+    /// Resolves the terminal view that should receive the handoff cloud-mode
+    /// pane push and prepares it for the transition:
+    ///
+    /// 1. Finds the pane group that owns `source_view` (rather than the
+    ///    currently-active tab) so focus changes during an async fork RPC
+    ///    cannot mis-target the handoff.
+    /// 2. If the active session slot holds a swapped-in child agent, reverts
+    ///    the swap so the push lands on the orchestrator's PaneStack.
+    /// 3. If the resolved view's agent view is fullscreen, exits it so the
+    ///    cloud pane is visible at the terminal level.
+    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    fn prepare_handoff_target(
+        &mut self,
+        source_view: &ViewHandle<TerminalView>,
+        ctx: &mut ViewContext<Self>,
+    ) -> ViewHandle<TerminalView> {
+        let source_view_id = source_view.id();
+        let pane_group = self
+            .tabs
+            .iter()
+            .find(|tab| {
+                tab.pane_group
+                    .as_ref(ctx)
+                    .contains_terminal_view(source_view_id, ctx)
+            })
+            .map(|tab| tab.pane_group.clone())
+            .unwrap_or_else(|| self.active_tab_pane_group().clone());
+        let target = if let Some((original_pane_id, orchestrator_view)) =
+            pane_group.as_ref(ctx).original_session_if_swapped(ctx)
+        {
+            pane_group.update(ctx, |group, ctx| {
+                group.reveal_and_focus_pane(original_pane_id, ctx);
+            });
+            orchestrator_view
+        } else {
+            source_view.clone()
+        };
+
+        let agent_view_controller = target.as_ref(ctx).agent_view_controller().clone();
+        if agent_view_controller
+            .as_ref(ctx)
+            .agent_view_state()
+            .is_fullscreen()
+        {
+            agent_view_controller.update(ctx, |controller, ctx| {
+                controller.exit_agent_view_without_confirmation(ctx);
+            });
+        }
+
+        target
+    }
+
     /// Opens a cloud pane without forking when there is no local conversation to hand off.
     /// Still snapshots the source pane's pwd so the cloud agent receives the local repo's
     /// branch info and uncommitted diffs.
@@ -13369,10 +13421,10 @@ impl Workspace {
         environment_id: Option<SyncId>,
         ctx: &mut ViewContext<Self>,
     ) {
-        // Push a cloud-mode pane for the fresh launch.
-        let Some((new_pane_view, model_handle)) = source_view.update(ctx, |view, view_ctx| {
-            view.start_local_to_cloud_handoff_pane(view_ctx)
-        }) else {
+        let handoff_target = self.prepare_handoff_target(&source_view, ctx);
+        let Some((new_pane_view, model_handle)) =
+            handoff_target.update(ctx, |view, view_ctx| view.start_cloud_mode(None, view_ctx))
+        else {
             log::warn!("start_local_to_cloud_handoff: failed to push fresh cloud-mode pane");
             Self::restore_source_handoff_draft(&source_view, launch, environment_id, ctx);
             Self::show_handoff_prepare_failed_toast(ctx.window_id(), ctx);
@@ -13552,10 +13604,10 @@ impl Workspace {
         };
         let local_fork_id = local_fork.id();
 
-        // Push the cloud-mode pane before attaching the forked conversation.
-        let Some((new_pane_view, model_handle)) = source_view.update(ctx, |view, view_ctx| {
-            view.start_local_to_cloud_handoff_pane(view_ctx)
-        }) else {
+        let handoff_target = self.prepare_handoff_target(&source_view, ctx);
+        let Some((new_pane_view, model_handle)) =
+            handoff_target.update(ctx, |view, view_ctx| view.start_cloud_mode(None, view_ctx))
+        else {
             log::warn!("start_local_to_cloud_handoff: failed to push cloud-mode pane");
             Self::show_handoff_prepare_failed_toast(ctx.window_id(), ctx);
             return;
@@ -13587,18 +13639,6 @@ impl Workspace {
             );
             history_model.set_viewing_shared_session_for_conversation(local_fork_id, true);
         });
-
-        let source_agent_view_controller = source_view.as_ref(ctx).agent_view_controller().clone();
-        if source_agent_view_controller
-            .as_ref(ctx)
-            .agent_view_state()
-            .is_fullscreen()
-        {
-            // Exit the source pane so focus and input move to the cloud pane.
-            source_agent_view_controller.update(ctx, |controller, ctx| {
-                controller.exit_agent_view_without_confirmation(ctx);
-            });
-        }
 
         if let Some(env_id) = environment_id {
             model_handle.update(ctx, |model, ctx| {
