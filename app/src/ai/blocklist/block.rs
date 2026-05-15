@@ -718,6 +718,12 @@ impl Default for CollapsibleElementState {
 }
 
 impl CollapsibleElementState {
+    fn collapsed() -> Self {
+        Self {
+            expansion_state: CollapsibleExpansionState::Collapsed,
+            ..Default::default()
+        }
+    }
     fn expand(&mut self) {
         self.expansion_state = CollapsibleExpansionState::Expanded {
             is_finished: self.last_known_is_finished,
@@ -804,6 +810,16 @@ pub(crate) fn received_message_collapsible_id(message_id: &str) -> MessageId {
     MessageId::new(format!(
         "{RECEIVED_MESSAGE_COLLAPSIBLE_ID_PREFIX}{message_id}"
     ))
+}
+
+fn default_collapsible_state_for_orchestration_action(
+    action: &AIAgentActionType,
+) -> Option<CollapsibleElementState> {
+    match action {
+        AIAgentActionType::StartAgent { .. } => Some(CollapsibleElementState::default()),
+        AIAgentActionType::SendMessageToAgent { .. } => Some(CollapsibleElementState::collapsed()),
+        _ => None,
+    }
 }
 
 pub struct AIBlock {
@@ -2081,24 +2097,20 @@ impl AIBlock {
             ) {
                 self.collapsible_block_states
                     .entry(message.id.clone())
-                    .or_insert_with(|| CollapsibleElementState {
-                        expansion_state: CollapsibleExpansionState::Collapsed,
-                        ..Default::default()
-                    });
+                    .or_insert_with(CollapsibleElementState::collapsed);
             }
 
             // Register collapsible state for orchestration action messages.
             if FeatureFlag::Orchestration.is_enabled() {
                 match &message.message {
-                    AIAgentOutputMessageType::Action(AIAgentAction {
-                        action:
-                            AIAgentActionType::StartAgent { .. }
-                            | AIAgentActionType::SendMessageToAgent { .. },
-                        ..
-                    }) => {
-                        self.collapsible_block_states
-                            .entry(message.id.clone())
-                            .or_default();
+                    AIAgentOutputMessageType::Action(AIAgentAction { action, .. }) => {
+                        if let Some(state) =
+                            default_collapsible_state_for_orchestration_action(action)
+                        {
+                            self.collapsible_block_states
+                                .entry(message.id.clone())
+                                .or_insert(state);
+                        }
                     }
                     AIAgentOutputMessageType::MessagesReceivedFromAgents { messages } => {
                         for received_message in messages {
@@ -2106,7 +2118,7 @@ impl AIBlock {
                                 received_message_collapsible_id(&received_message.message_id);
                             self.collapsible_block_states
                                 .entry(collapsible_id.clone())
-                                .or_default();
+                                .or_insert_with(CollapsibleElementState::collapsed);
                             self.state_handles
                                 .transcript_avatar_handles
                                 .entry(collapsible_id)
