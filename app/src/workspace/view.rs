@@ -47,6 +47,8 @@ use crate::ai::agent_management::view::{AgentManagementView, AgentManagementView
 use crate::ai::agent_management::AgentManagementEvent;
 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
 use crate::ai::agent_sdk::driver::upload_snapshot_for_handoff;
+#[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+use crate::ai::ambient_agents::telemetry::HandoffEntryPoint;
 use crate::ai::ambient_agents::telemetry::{CloudAgentTelemetryEvent, CloudModeEntryPoint};
 use crate::ai::ambient_agents::AmbientAgentTaskId;
 use crate::ai::blocklist::agent_view::agent_input_footer::editor::AgentToolbarEditorMode;
@@ -13186,7 +13188,7 @@ impl Workspace {
                 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
                 {
                     if let Some(source_view) = source_view.as_ref() {
-                        let launch = source_view.update(ctx, |view, ctx| {
+                        let (launch, entry_point) = source_view.update(ctx, |view, ctx| {
                             let input = view.input().clone();
                             input.update(ctx, |input, ctx| {
                                 let prompt = input
@@ -13196,21 +13198,24 @@ impl Workspace {
                                     .trim()
                                     .to_owned();
                                 let attachments = input.collect_cloud_launch_attachments(ctx);
+                                let entry_point = input.handoff_entry_point(ctx);
                                 input.exit_cloud_handoff_compose_and_clear(ctx);
-                                if prompt.is_empty() {
+                                let launch = if prompt.is_empty() {
                                     None
                                 } else {
                                     Some(PendingCloudLaunch {
                                         prompt,
                                         attachments,
                                     })
-                                }
+                                };
+                                (launch, entry_point)
                             })
                         });
                         ctx.dispatch_typed_action_deferred(
                             WorkspaceAction::OpenLocalToCloudHandoffPane {
                                 launch,
                                 environment_id: Some(env_id),
+                                entry_point,
                             },
                         );
                     }
@@ -13465,6 +13470,7 @@ impl Workspace {
         &mut self,
         launch: Option<PendingCloudLaunch>,
         environment_id: Option<SyncId>,
+        entry_point: HandoffEntryPoint,
         ctx: &mut ViewContext<Self>,
     ) {
         if !AISettings::as_ref(ctx).is_cloud_handoff_enabled(ctx) {
@@ -13485,6 +13491,16 @@ impl Workspace {
             .as_ref(ctx)
             .active_conversation(terminal_view_id)
             .cloned();
+
+        let has_existing_conversation = source_conversation.as_ref().is_some_and(|c| !c.is_empty());
+
+        send_telemetry_from_ctx!(
+            CloudAgentTelemetryEvent::HandoffInitiated {
+                entry_point,
+                forked_existing_conversation: has_existing_conversation,
+            },
+            ctx
+        );
 
         let Some(source_conversation) =
             source_conversation.filter(|conversation| !conversation.is_empty())
@@ -20892,12 +20908,18 @@ impl TypedActionView for Workspace {
             OpenLocalToCloudHandoffPane {
                 launch,
                 environment_id,
+                entry_point,
             } => {
                 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-                self.start_local_to_cloud_handoff(launch.clone(), *environment_id, ctx);
+                self.start_local_to_cloud_handoff(
+                    launch.clone(),
+                    *environment_id,
+                    *entry_point,
+                    ctx,
+                );
                 #[cfg(not(all(feature = "local_fs", not(target_family = "wasm"))))]
                 {
-                    let _ = (launch, environment_id);
+                    let _ = (launch, environment_id, entry_point);
                 }
             }
             ShowHandoffEnvironmentCreationModal => {
