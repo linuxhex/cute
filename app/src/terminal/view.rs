@@ -366,7 +366,10 @@ use session_sharing_protocol::common::{
     ServerConversationToken as SessionSharingServerConversationToken,
     WindowSize as SessionSharingWindowSize,
 };
-use shared_session::{SharedSessionAdapter, Viewer};
+use shared_session::{
+    cloud_conversation_continuation::CloudConversationContinuationUiState, SharedSessionAdapter,
+    Viewer,
+};
 use std::any::Any;
 use std::borrow::Cow;
 use std::cell::RefCell;
@@ -5348,14 +5351,19 @@ impl TerminalView {
         if self.pending_user_query_kind != Some(PendingUserQueryKind::CloudMode) {
             return;
         }
+        let Some(pending_prompt) = self.pending_user_query_prompt(ctx) else {
+            return;
+        };
 
         let initial_conversation_query = ai_block_model
             .conversation(ctx)
             .and_then(|conversation| conversation.initial_user_query());
         let has_renderable_user_query = ai_block_model.inputs_to_render(ctx).iter().any(|input| {
-            input
-                .display_user_query(initial_conversation_query.as_ref())
-                .is_some()
+            input.user_query().as_deref() == Some(pending_prompt)
+                || input
+                    .display_user_query(initial_conversation_query.as_ref())
+                    .as_deref()
+                    == Some(pending_prompt)
         });
         if has_renderable_user_query {
             self.remove_pending_user_query_block(ctx);
@@ -5440,6 +5448,13 @@ impl TerminalView {
             )
         {
             self.fetch_and_update_conversation_details_panel(ctx);
+        }
+        if matches!(
+            event,
+            BlocklistAIHistoryEvent::UpdatedConversationMetadata { .. }
+                | BlocklistAIHistoryEvent::ConversationServerTokenAssigned { .. }
+        ) {
+            self.maybe_insert_tombstone_for_non_running_shared_ambient_task(ctx);
         }
         match event {
             BlocklistAIHistoryEvent::AppendedExchange {
@@ -5798,7 +5813,7 @@ impl TerminalView {
                         if !conversation.status().is_in_progress()
                             && conversation_output_status_from_conversation(conversation).is_some()
                         {
-                            self.insert_conversation_ended_tombstone(ctx);
+                            self.insert_conversation_ended_tombstone_with_cta(None, ctx);
                         }
                     }
                 }
@@ -7182,17 +7197,27 @@ impl TerminalView {
             return;
         }
 
-        let can_continue_owned_task_in_cloud = self.owned_ambient_agent_task_id(ctx).is_some()
-            && FeatureFlag::HandoffCloudCloud.is_enabled();
-        if !can_continue_owned_task_in_cloud {
-            self.insert_conversation_ended_tombstone(ctx);
-        } else if !self
-            .model
-            .lock()
-            .shared_session_status()
-            .is_sharer_or_viewer()
-        {
-            self.enable_owned_cloud_followup_input(task_id, ctx)
+        if FeatureFlag::HandoffCloudCloud.is_enabled() {
+            let has_live_shared_session = {
+                let status = self.model.lock().shared_session_status().clone();
+                status.is_active_viewer() || status.is_active_sharer()
+            };
+            if has_live_shared_session {
+                return;
+            }
+            let Some(state) = self.cloud_conversation_continuation_ui_state(ctx) else {
+                return;
+            };
+            match state {
+                CloudConversationContinuationUiState::Tombstone { cta } => {
+                    self.insert_conversation_ended_tombstone_with_cta(cta, ctx);
+                }
+                CloudConversationContinuationUiState::FollowupInput => {
+                    self.enable_cloud_followup_input(task_id, ctx);
+                }
+            }
+        } else {
+            self.insert_conversation_ended_tombstone_with_cta(None, ctx);
         }
     }
 
@@ -7346,6 +7371,7 @@ impl TerminalView {
         // agent exchange arrives, we hide the interactive input view. A non-interactive footer is
         // rendered instead (see `TerminalView::render`).
         if !FeatureFlag::CloudModeSetupV2.is_enabled()
+            && !FeatureFlag::HandoffCloudCloud.is_enabled()
             && ambient_agent::is_cloud_agent_pre_first_exchange(
                 self.ambient_agent_view_model.as_ref(),
                 &self.agent_view_controller,
@@ -7424,6 +7450,22 @@ impl TerminalView {
         }
 
         true
+    }
+
+    fn should_render_legacy_ambient_agent_loading_footer(
+        &self,
+        model: &TerminalModel,
+        app: &AppContext,
+    ) -> bool {
+        !model.is_read_only()
+            && !FeatureFlag::CloudModeSetupV2.is_enabled()
+            && !FeatureFlag::HandoffCloudCloud.is_enabled()
+            && ambient_agent::is_cloud_agent_pre_first_exchange(
+                self.ambient_agent_view_model.as_ref(),
+                &self.agent_view_controller,
+                model,
+                app,
+            )
     }
 
     /// Give the agent control of the active long running command
@@ -26276,14 +26318,7 @@ impl View for TerminalView {
 
                     if self.is_input_box_visible(&model, app) {
                         column.add_child(self.render_input());
-                    } else if !model.is_read_only()
-                        && ambient_agent::is_cloud_agent_pre_first_exchange(
-                            self.ambient_agent_view_model.as_ref(),
-                            &self.agent_view_controller,
-                            &model,
-                            app,
-                        )
-                    {
+                    } else if self.should_render_legacy_ambient_agent_loading_footer(&model, app) {
                         column.add_child(ambient_agent::render_loading_footer(appearance));
                     } else if self.show_remote_server_loading_footer(&model, app) {
                         column.add_child(
