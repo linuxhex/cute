@@ -2008,6 +2008,16 @@ pub enum Event {
     SwapPaneToConversation {
         conversation_id: AIConversationId,
     },
+    /// Emitted by `OrchestrationViewerModel` when a child of a shared-session
+    /// orchestration first reports a `session_id`. The pane group materializes
+    /// a dedicated hidden shared-session viewer pane for the child, with its
+    /// own `TerminalView`, `BlocklistAIController`, and viewer-side `Network`
+    /// joining the child's session. Subsequent pill clicks navigate to the
+    /// hidden pane via the existing `SwapPaneToConversation` mechanism.
+    EnsureSharedSessionViewerChildPane {
+        conversation_id: AIConversationId,
+        session_id: session_sharing_protocol::common::SessionId,
+    },
     /// Emitted when "Open in new tab" is picked from a child pill's 3-dot menu.
     /// Bubbles up to the workspace to create the new tab.
     OpenChildAgentInNewTab {
@@ -25995,8 +26005,7 @@ impl TypedActionView for TerminalView {
                 });
             }
             SwitchAgentViewToConversation { conversation_id } => {
-                // Pill-bar nav: swap visibility instead of cloning the
-                // conversation into this pane.
+                // Pill-bar nav: every child has a hidden pane, so swap to it.
                 ctx.emit(Event::SwapPaneToConversation {
                     conversation_id: *conversation_id,
                 });

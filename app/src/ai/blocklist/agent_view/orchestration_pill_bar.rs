@@ -151,7 +151,7 @@ fn collect_descendant_conversation_ids_in_spawn_order(
 }
 
 /// What kind of pill we are rendering, which determines click behavior.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 enum PillKind {
     Orchestrator,
     Child,
@@ -1476,7 +1476,16 @@ fn render_pill(
     let is_selected = spec.is_selected;
     let pin_state = spec.pin_state;
     let is_pinned = matches!(pin_state, PillPinState::Pinned);
+    // The 3-dot overflow menu offers pane-management actions (open in new
+    // pane / tab, focus pane) that don't apply to the single-pane web
+    // viewer. Suppress the dots on WASM so the menu can never open.
+    #[cfg(not(target_family = "wasm"))]
     let show_overflow_button = matches!(kind, PillKind::Child);
+    #[cfg(target_family = "wasm")]
+    let show_overflow_button = {
+        let _ = &kind;
+        false
+    };
     // Orchestrator is always anchored at the leading edge with no pin.
     let supports_pinning = matches!(kind, PillKind::Child);
     // `spec` is owned by value, so we can move `label` directly into the
@@ -1733,23 +1742,20 @@ fn render_pill(
         // `ViewContext<Self>`, which reliably reaches the workspace.
         let is_open_elsewhere =
             is_conversation_open_in_other_visible_view(conversation_id, self_terminal_view_id, app);
+
         if is_open_elsewhere {
             ctx.dispatch_typed_action(OrchestrationPillBarAction::FocusOpenedConversation(
                 conversation_id,
             ));
             return;
         }
-        // Child pills should reveal the existing child pane/session, not
-        // switch the current pane in place. The hidden child pane owns the
-        // live harness/ambient session and associated view-scoped models; if
-        // we merely re-enter the child conversation in the current pane, the
-        // actual running session stays attached to the hidden pane and the
-        // user sees an empty child view. The orchestrator pill still switches
-        // the current pane back to the parent conversation.
-        //
-        // We keep the visible-owner fast path above so a child that's already
-        // open in another visible pane/tab still focuses that existing
-        // destination rather than trying to reveal the hidden bootstrap pane.
+        // Child pills reveal the existing child pane/session and orchestrator
+        // pills swap back to the orchestrator's pane. The hidden child pane
+        // owns the live harness/ambient session (locally) or the shared-
+        // session viewer that joins the child's session (for shared session
+        // viewers, materialized lazily by `OrchestrationViewerModel` when a
+        // `session_id` is known). In both cases the swap-based navigation is
+        // the correct destination.
         let action = navigation_action_for_pill(kind, conversation_id);
         ctx.dispatch_typed_action(
             PaneHeaderAction::<TerminalAction, TerminalAction>::CustomAction(action),
