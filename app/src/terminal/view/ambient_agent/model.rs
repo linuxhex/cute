@@ -11,6 +11,8 @@ use warpui::{AppContext, Entity, EntityId, ModelContext, SingletonEntity};
 
 use crate::ai::active_agent_views_model::ActiveAgentViewsModel;
 use crate::ai::agent::{conversation::AIConversationId, extract_user_query_mode};
+use crate::ai::ambient_agents::github_auth_notifier::{GitHubAuthEvent, GitHubAuthNotifier};
+use crate::ai::ambient_agents::github_auth_url;
 use crate::ai::ambient_agents::spawn::{spawn_task, submit_run_followup, AmbientAgentEvent};
 use crate::ai::ambient_agents::task::{HarnessAuthSecretsConfig, HarnessConfig};
 use crate::ai::ambient_agents::telemetry::CloudAgentTelemetryEvent;
@@ -245,6 +247,12 @@ impl AmbientAgentViewModel {
 
         ctx.subscribe_to_model(&HarnessAvailabilityModel::handle(ctx), |me, _event, ctx| {
             me.validate_selected_harness(ctx);
+        });
+
+        ctx.subscribe_to_model(&GitHubAuthNotifier::handle(ctx), |me, event, ctx| {
+            if matches!(event, GitHubAuthEvent::AuthCompleted) {
+                me.handle_github_auth_completed(ctx);
+            }
         });
 
         // Validate the default environment once Warp Drive sync completes.
@@ -948,6 +956,7 @@ impl AmbientAgentViewModel {
         self.active_execution_session_id = None;
         self.last_ended_execution_session_id = None;
         self.pending_followup_prompt = None;
+        self.request = None;
         self.setup_commands_state = Default::default();
         self.stop_progress_timer();
         ctx.notify();
@@ -1122,7 +1131,6 @@ impl AmbientAgentViewModel {
         match event {
             AmbientAgentEvent::TaskSpawned { task_id, run_id } => {
                 self.task_id = Some(task_id);
-
                 if matches!(self.status, Status::Cancelled { .. }) {
                     log::info!(
                         "Received task_id after cancellation, sending server cancellation for task {}",
@@ -1380,29 +1388,48 @@ impl AmbientAgentViewModel {
         let now = Instant::now();
 
         // Extract or create progress tracking.
-        let progress = if let Status::WaitingForSession { mut progress, .. } =
+        let (progress, startup_kind) = if let Status::WaitingForSession { mut progress, kind } =
             std::mem::replace(&mut self.status, Status::Composing)
         {
             progress.stopped_at = Some(now);
-            progress
+            (progress, Some(kind))
         } else {
             // If not in WaitingForSession, create a new progress with current time.
-            AgentProgress {
-                spawned_at: now,
-                claimed_at: None,
-                harness_started_at: None,
-                stopped_at: Some(now),
-            }
+            (
+                AgentProgress {
+                    spawned_at: now,
+                    claimed_at: None,
+                    harness_started_at: None,
+                    stopped_at: Some(now),
+                },
+                None,
+            )
+        };
+
+        if !matches!(startup_kind, Some(SessionStartupKind::InitialRun)) {
+            self.request = None;
         };
 
         self.status = Status::NeedsGithubAuth {
             progress,
             error_message,
-            auth_url,
+            auth_url: github_auth_url::cloud_setup_auth_url_with_next(&auth_url),
         };
         self.pending_followup_prompt = None;
 
         ctx.emit(AmbientAgentViewModelEvent::NeedsGithubAuth);
+    }
+
+    fn handle_github_auth_completed(&mut self, ctx: &mut ModelContext<Self>) {
+        if !matches!(self.status, Status::NeedsGithubAuth { .. }) {
+            return;
+        }
+
+        let Some(request) = self.request.clone() else {
+            return;
+        };
+
+        self.spawn_internal(request, ctx);
     }
 
     /// Handles cancellation by transitioning to the Cancelled state.
