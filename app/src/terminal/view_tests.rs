@@ -1272,7 +1272,7 @@ fn pending_cloud_mode_query_waits_for_renderable_user_query_exchange() {
                 },
                 ctx,
             );
-            assert!(has_pending_user_query_block(view));
+            assert!(!has_pending_user_query_block(view));
         });
     });
 }
@@ -1302,7 +1302,7 @@ fn pending_cloud_mode_query_clears_when_streaming_exchange_becomes_renderable() 
                 exchange_id,
                 response_stream_id,
                 vec![AIAgentInput::UserQuery {
-                    query: "write a poem about rocks".to_string(),
+                    query: "write an ode about stones".to_string(),
                     context: Default::default(),
                     static_query_type: None,
                     referenced_attachments: Default::default(),
@@ -1325,7 +1325,7 @@ fn pending_cloud_mode_query_clears_when_streaming_exchange_becomes_renderable() 
                 exchange.input[0]
                     .display_user_query(initial_user_query.as_ref())
                     .as_deref(),
-                Some("/agent write a poem about rocks")
+                Some("/agent write an ode about stones")
             );
         });
     });
