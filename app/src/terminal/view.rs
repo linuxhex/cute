@@ -54,7 +54,7 @@ use crate::ai::blocklist::agent_view::{
     agent_view_bg_fill, get_agent_view_entry_block_position_id, AgentViewController,
     AgentViewControllerEvent, AgentViewDisplayMode, AgentViewEntryBlockParams,
     AgentViewEntryOrigin, AgentViewHeaderDisabledTheme, AgentViewHeaderTheme,
-    AgentViewZeroStateBlock, AgentViewZeroStateEvent, EphemeralMessageModel, ExitAgentViewError,
+    AgentViewZeroStateBlock, AgentViewZeroStateEvent, EphemeralMessageModel,
     ExitConfirmationTrigger, InlineAgentViewHeader, OrchestrationPillBar,
     ENTER_OR_EXIT_CONFIRMATION_WINDOW,
 };
@@ -4717,20 +4717,6 @@ impl TerminalView {
         callback(self, ctx);
     }
 
-    fn can_exit_agent_view_for_terminal_view(
-        &self,
-        ctx: &AppContext,
-    ) -> Result<(), ExitAgentViewError> {
-        match self.agent_view_controller.as_ref(ctx).can_exit_agent_view() {
-            Err(ExitAgentViewError::LongRunningCommand)
-                if self.can_pop_nested_cloud_agent_view(ctx) =>
-            {
-                Ok(())
-            }
-            result => result,
-        }
-    }
-
     /// If the active conversation is a child agent, navigate to the parent
     /// and return `true`; otherwise return `false` so the caller can run
     /// the normal exit-agent-view flow. Cross-tab and swap-target cases
@@ -4771,19 +4757,21 @@ impl TerminalView {
         true
     }
 
-    fn can_pop_nested_cloud_agent_view(&self, ctx: &AppContext) -> bool {
-        self.is_ambient_agent_session(ctx) && self.is_nested_cloud_mode(ctx)
-    }
-
     /// Exits the active agent, either:
     /// * Exiting agent view for the selected conversation
-    /// * Popping the current view off the navigation stack (for cloud mode agents)
+    /// * Popping the current view off the navigation stack (for nested cloud mode agents)
+    /// Root cloud-mode panes (stack depth ≤ 1) are a no-op — there is nowhere to return to.
     fn exit_agent_view(&mut self, ctx: &mut ViewContext<Self>) {
-        // For ambient agent sessions (cloud mode), always pop from pane stack.
-        // These sessions are pushed onto a nav stack and have no underlying terminal
-        // to return to via the normal agent view exit path.
+        // For nested ambient agent sessions (cloud mode), pop from pane stack.
+        // Root cloud-mode panes have no parent terminal to return to, so escape
+        // is a no-op to avoid leaving the app in a borked state.
         if self.is_ambient_agent_session(ctx) {
-            if let Some(pane_stack) = self.pane_stack.as_ref().and_then(|h| h.upgrade(ctx)) {
+            if let Some(pane_stack) = self
+                .pane_stack
+                .as_ref()
+                .and_then(|h| h.upgrade(ctx))
+                .filter(|stack| stack.as_ref(ctx).depth() > 1)
+            {
                 pane_stack.update(ctx, |stack, ctx| {
                     stack.pop(ctx);
                 });
@@ -10755,7 +10743,9 @@ impl TerminalView {
         let disabled_reason = if is_child_agent {
             None
         } else {
-            self.can_exit_agent_view_for_terminal_view(ctx)
+            self.agent_view_controller
+                .as_ref(ctx)
+                .can_exit_agent_view()
                 .err()
                 .map(|e| e.to_string())
         };
@@ -20561,7 +20551,12 @@ impl TerminalView {
                     }
 
                     // Disable escape completely for ambient agents without a parent terminal.
-                    if self.can_exit_agent_view_for_terminal_view(ctx).is_err() {
+                    if self
+                        .agent_view_controller
+                        .as_ref(ctx)
+                        .can_exit_agent_view()
+                        .is_err()
+                    {
                         return;
                     }
 
@@ -20571,7 +20566,7 @@ impl TerminalView {
                         .block_list()
                         .active_block()
                         .is_active_and_long_running();
-                    if is_long_running && self.can_pop_nested_cloud_agent_view(ctx) {
+                    if is_long_running && self.is_ambient_agent_session(ctx) {
                         self.exit_agent_view(ctx);
                     } else if !is_long_running {
                         // During first-time setup, always exit directly without confirmation
@@ -26171,7 +26166,12 @@ impl TypedActionView for TerminalView {
                 // to the in-place exit flow.
                 if self.try_navigate_to_parent_conversation(ctx) {
                     ctx.notify();
-                } else if self.can_exit_agent_view_for_terminal_view(ctx).is_ok() {
+                } else if self
+                    .agent_view_controller
+                    .as_ref(ctx)
+                    .can_exit_agent_view()
+                    .is_ok()
+                {
                     self.exit_agent_view(ctx);
                     ctx.notify();
                 }
