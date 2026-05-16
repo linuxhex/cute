@@ -124,6 +124,7 @@ pub fn create_cloud_mode_view(
                 | AmbientAgentViewModelEvent::NeedsGithubAuth
                 | AmbientAgentViewModelEvent::Cancelled
                 | AmbientAgentViewModelEvent::HarnessSelected
+                | AmbientAgentViewModelEvent::ViewerHarnessResolved
                 | AmbientAgentViewModelEvent::HostSelected
                 | AmbientAgentViewModelEvent::HarnessModelSelected
                 | AmbientAgentViewModelEvent::HarnessCommandStarted { .. }
