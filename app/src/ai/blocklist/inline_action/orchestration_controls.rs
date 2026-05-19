@@ -422,6 +422,7 @@ pub fn new_standard_picker_dropdown<A: OrchestrationControlAction, V: View>(
     ctx.add_typed_action_view(move |ctx_dropdown| {
         let mut dropdown = Dropdown::<A>::new(ctx_dropdown);
         dropdown.set_use_overlay_layer(false, ctx_dropdown);
+        dropdown.set_match_menu_width_to_top_bar(true, ctx_dropdown);
         dropdown.set_main_axis_size(MainAxisSize::Max, ctx_dropdown);
         dropdown.set_style(DropdownStyle::ActionButtonSecondary, ctx_dropdown);
         dropdown.set_top_bar_height(ORCHESTRATION_PICKER_HEIGHT, ctx_dropdown);
@@ -690,6 +691,7 @@ pub fn create_environment_picker<A: OrchestrationControlAction, V: View>(
     let dropdown_handle = ctx.add_typed_action_view(move |ctx_dropdown| {
         let mut dropdown = FilterableDropdown::<A>::new(ctx_dropdown);
         dropdown.set_use_overlay_layer(false, ctx_dropdown);
+        dropdown.set_match_menu_width_to_top_bar(true, ctx_dropdown);
         dropdown.set_main_axis_size(MainAxisSize::Max, ctx_dropdown);
         dropdown.set_button_variant(ButtonVariant::Secondary);
         dropdown.set_style(styles);
@@ -698,7 +700,6 @@ pub fn create_environment_picker<A: OrchestrationControlAction, V: View>(
         dropdown
     });
     dropdown_handle.update(ctx, |dropdown, ctx_dropdown| {
-        dropdown.set_menu_width(280.0, ctx_dropdown);
         let footer_mouse_state = footer_mouse_state.clone();
         dropdown.set_footer(
             move |app| render_new_environment_footer::<A>(footer_mouse_state.clone(), app),
@@ -801,32 +802,28 @@ fn render_new_environment_footer<A: OrchestrationControlAction>(
     let mouse_state = mouse_state.clone();
 
     Hoverable::new(mouse_state, move |_| {
-        ConstrainedBox::new(
-            Container::new(
-                Flex::row()
-                    .with_main_axis_size(MainAxisSize::Max)
-                    .with_cross_axis_alignment(CrossAxisAlignment::Center)
-                    .with_spacing(8.)
-                    .with_child(
-                        ConstrainedBox::new(Icon::Plus.to_warpui_icon(text_color).finish())
-                            .with_width(icon_size)
-                            .with_height(icon_size)
-                            .finish(),
-                    )
-                    .with_child(
-                        Text::new_inline("New environment", font_family, font_size)
-                            .with_color(text_color.into())
-                            .finish(),
-                    )
-                    .finish(),
-            )
-            .with_horizontal_padding(12.)
-            .with_vertical_padding(8.)
-            .with_background(bg)
-            .with_border(Border::top(1.).with_border_fill(theme.outline()))
-            .finish(),
+        Container::new(
+            Flex::row()
+                .with_main_axis_size(MainAxisSize::Max)
+                .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                .with_spacing(8.)
+                .with_child(
+                    ConstrainedBox::new(Icon::Plus.to_warpui_icon(text_color).finish())
+                        .with_width(icon_size)
+                        .with_height(icon_size)
+                        .finish(),
+                )
+                .with_child(
+                    Text::new_inline("New environment", font_family, font_size)
+                        .with_color(text_color.into())
+                        .finish(),
+                )
+                .finish(),
         )
-        .with_width(280.)
+        .with_horizontal_padding(12.)
+        .with_vertical_padding(8.)
+        .with_background(bg)
+        .with_border(Border::top(1.).with_border_fill(theme.outline()))
         .finish()
     })
     .on_click(|ctx, _, _| {
