@@ -222,6 +222,7 @@ version-compare.workspace = true
 vte.workspace = true
 walkdir.workspace = true
 warp-workflows.workspace = true
+warp_assets.workspace = true
 warp_completer.workspace = true
 warp_core.workspace = true
 warp_editor.workspace = true
@@ -784,7 +785,7 @@ session_sharing = []
 session_sharing_acls = []
 skip_login = []
 # This feature should only be enabled when building a self-contained binary with the bundle script.
-standalone = []
+standalone = ["warp_assets/standalone"]
 prompt_suggestions_via_maa = []
 voice_input = ["dep:voice_input"]
 system_theme = []
