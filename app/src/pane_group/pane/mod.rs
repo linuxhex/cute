@@ -32,6 +32,8 @@ pub mod workflow_pane;
 
 use std::{any::Any, fmt::Display};
 
+#[cfg(feature = "local_fs")]
+use crate::code::buffer_location::LocalOrRemotePath;
 use crate::pane_group::focus_state::PaneFocusHandle;
 use crate::pane_group::pane::get_started_view::GetStartedView;
 use crate::view_components::action_button::ActionButton;
@@ -1124,12 +1126,12 @@ pub enum PaneEvent {
     ClearHoveredTabIndex,
     #[cfg(feature = "local_fs")]
     ReplaceWithCodePane {
-        path: std::path::PathBuf,
+        path: LocalOrRemotePath,
         source: Option<crate::code::editor_management::CodeSource>,
     },
     #[cfg(feature = "local_fs")]
     ReplaceWithFilePane {
-        path: std::path::PathBuf,
+        path: LocalOrRemotePath,
         source: Option<crate::code::editor_management::CodeSource>,
     },
 }

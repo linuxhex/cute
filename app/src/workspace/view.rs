@@ -221,8 +221,6 @@ use crate::ai::conversation_details_panel::ConversationDetailsPanel;
 use crate::uri::browser_url_handler::{parse_current_url, update_browser_url};
 use crate::workflows::manager::WorkflowManager;
 use crate::workflows::workflow::Workflow;
-#[cfg(feature = "local_fs")]
-use repo_metadata::RemoteRepositoryIdentifier;
 #[cfg(target_family = "wasm")]
 use url::Url;
 
@@ -5807,7 +5805,7 @@ impl Workspace {
                         None,
                     );
                     self.open_file_with_target(
-                        path.clone(),
+                        LocalOrRemotePath::Local(path.clone()),
                         target,
                         None,
                         CodeSource::Link {
@@ -5888,7 +5886,7 @@ impl Workspace {
     #[cfg(not(feature = "local_fs"))]
     pub fn open_file_with_target(
         &mut self,
-        _path: PathBuf,
+        _path: LocalOrRemotePath,
         _target: FileTarget,
         _line_col: Option<LineAndColumnArg>,
         _code_source: CodeSource,
@@ -5899,102 +5897,121 @@ impl Workspace {
     #[cfg(feature = "local_fs")]
     pub fn open_file_with_target(
         &mut self,
-        path: PathBuf,
+        path: LocalOrRemotePath,
         target: FileTarget,
         line_col: Option<LineAndColumnArg>,
         code_source: CodeSource,
         ctx: &mut ViewContext<Self>,
     ) {
         // Handle directories for CodeEditor(NewTab) target by opening a new terminal tab
-        if path.is_dir() && matches!(target, FileTarget::CodeEditor(EditorLayout::NewTab)) {
-            self.add_tab_with_pane_layout(
-                PanesLayout::SingleTerminal(Box::new(NewTerminalOptions {
-                    initial_directory: Some(path.clone()),
-                    hide_homepage: true,
-                    ..Default::default()
-                })),
-                Arc::new(HashMap::new()),
-                None,
-                ctx,
-            );
-            return;
+        if let LocalOrRemotePath::Local(ref local_path) = path {
+            if local_path.is_dir() && matches!(target, FileTarget::CodeEditor(EditorLayout::NewTab))
+            {
+                self.add_tab_with_pane_layout(
+                    PanesLayout::SingleTerminal(Box::new(NewTerminalOptions {
+                        initial_directory: Some(local_path.clone()),
+                        hide_homepage: true,
+                        ..Default::default()
+                    })),
+                    Arc::new(HashMap::new()),
+                    None,
+                    ctx,
+                );
+                return;
+            }
         }
 
         match target {
             FileTarget::MarkdownViewer(layout) => {
                 let session = self.get_active_session(ctx);
-
-                self.open_file_notebook(path.clone(), session, layout, ctx);
-            }
-            FileTarget::EnvEditor => {
-                let editor_value: Option<String> = self
-                    .get_active_session(ctx)
-                    .and_then(|session| session.editor().map(|s| s.to_string()));
-
-                if let Some(ref editor_env) = editor_value {
-                    if let Ok(editor) = Editor::try_from(editor_env.as_str()) {
-                        crate::util::file::open_file_path_with_editor(
-                            line_col,
-                            path.clone(),
-                            Some(editor),
-                            ctx,
-                        );
-                        return;
-                    }
-
-                    // If we have an editor string but it's not a known Editor, we try to run it in a new pane
-                    let new_pane_id =
-                        self.active_tab_pane_group().update(ctx, |pane_group, ctx| {
-                            pane_group.add_terminal_pane(
-                                Direction::Right,
-                                None, /*chosen_shell*/
-                                ctx,
-                            )
-                        });
-
-                    if let Some(terminal_view_handle) = self
-                        .active_tab_pane_group()
-                        .as_ref(ctx)
-                        .terminal_view_from_pane_id(new_pane_id, ctx)
-                    {
-                        let editor_ref = Some(editor_env.as_str());
-                        let path_clone = path.clone();
-                        terminal_view_handle.update(ctx, |terminal, ctx| {
-                            let editor_command =
-                                crate::util::file::external_editor::generate_editor_command(
-                                    &path_clone,
-                                    line_col,
-                                    editor_ref,
-                                );
-                            terminal.set_pending_command(&editor_command, ctx);
-                        });
-                        return;
-                    } else {
-                        log::error!(
-                            "Could not get terminal view handle for new pane when attempting to open file with $EDITOR."
-                        );
-                    }
-                }
-
-                crate::util::file::open_file_path_in_external_editor(line_col, path.clone(), ctx);
+                self.open_file_notebook(path, session, layout, ctx);
             }
             FileTarget::CodeEditor(layout) => {
                 let open_as_preview = false;
                 self.open_code(code_source, layout, line_col, open_as_preview, &[], ctx);
             }
-            FileTarget::ExternalEditor(editor) => {
-                crate::util::file::open_file_path_with_editor(
-                    line_col,
-                    path.clone(),
-                    Some(editor),
-                    ctx,
-                );
-            }
-            FileTarget::SystemDefault => {
-                crate::util::file::open_file_path_with_editor(line_col, path.clone(), None, ctx);
-            }
-            FileTarget::SystemGeneric => {
-                ctx.open_file_path(&path);
+            // The remaining targets only apply to local files.
+            _ => {
+                let Some(local_path) = path.to_local_path().map(Path::to_path_buf) else {
+                    log::warn!("FileTarget::{target:?} is not supported for remote files");
+                    return;
+                };
+                match target {
+                    FileTarget::EnvEditor => {
+                        let editor_value: Option<String> = self
+                            .get_active_session(ctx)
+                            .and_then(|session| session.editor().map(|s| s.to_string()));
+
+                        if let Some(ref editor_env) = editor_value {
+                            if let Ok(editor) = Editor::try_from(editor_env.as_str()) {
+                                crate::util::file::open_file_path_with_editor(
+                                    line_col,
+                                    local_path.clone(),
+                                    Some(editor),
+                                    ctx,
+                                );
+                                return;
+                            }
+
+                            // If we have an editor string but it's not a known Editor, we try to run it in a new pane
+                            let new_pane_id =
+                                self.active_tab_pane_group().update(ctx, |pane_group, ctx| {
+                                    pane_group.add_terminal_pane(
+                                        Direction::Right,
+                                        None, /*chosen_shell*/
+                                        ctx,
+                                    )
+                                });
+
+                            if let Some(terminal_view_handle) = self
+                                .active_tab_pane_group()
+                                .as_ref(ctx)
+                                .terminal_view_from_pane_id(new_pane_id, ctx)
+                            {
+                                let editor_ref = Some(editor_env.as_str());
+                                let path_clone = local_path.clone();
+                                terminal_view_handle.update(ctx, |terminal, ctx| {
+                                    let editor_command =
+                                        crate::util::file::external_editor::generate_editor_command(
+                                            &path_clone,
+                                            line_col,
+                                            editor_ref,
+                                        );
+                                    terminal.set_pending_command(&editor_command, ctx);
+                                });
+                                return;
+                            } else {
+                                log::error!(
+                                    "Could not get terminal view handle for new pane when attempting to open file with $EDITOR."
+                                );
+                            }
+                        }
+
+                        crate::util::file::open_file_path_in_external_editor(
+                            line_col, local_path, ctx,
+                        );
+                    }
+                    FileTarget::ExternalEditor(editor) => {
+                        crate::util::file::open_file_path_with_editor(
+                            line_col,
+                            local_path,
+                            Some(editor),
+                            ctx,
+                        );
+                    }
+                    FileTarget::SystemDefault => {
+                        crate::util::file::open_file_path_with_editor(
+                            line_col, local_path, None, ctx,
+                        );
+                    }
+                    FileTarget::SystemGeneric => {
+                        ctx.open_file_path(&local_path);
+                    }
+                    // Already handled in the outer match above.
+                    FileTarget::MarkdownViewer(_) | FileTarget::CodeEditor(_) => {
+                        log::error!("FileTarget::{target:?} should have been handled before entering local-only branch");
+                    }
+                }
             }
         }
     }
@@ -6016,28 +6033,13 @@ impl Workspace {
                 let code_source = CodeSource::FileTree {
                     location: location.clone(),
                 };
-                match location {
-                    LocalOrRemotePath::Local(path) => {
-                        self.open_file_with_target(
-                            path.clone(),
-                            target.clone(),
-                            *line_col,
-                            code_source,
-                            ctx,
-                        );
-                    }
-                    LocalOrRemotePath::Remote(_) => {
-                        #[cfg(feature = "local_fs")]
-                        self.open_code(
-                            code_source,
-                            crate::util::openable_file_type::EditorLayout::SplitPane,
-                            None,
-                            false,
-                            &[],
-                            ctx,
-                        );
-                    }
-                }
+                self.open_file_with_target(
+                    location.clone(),
+                    target.clone(),
+                    *line_col,
+                    code_source,
+                    ctx,
+                );
             }
             LeftPanelEvent::NewConversationInNewTab => {
                 self.add_terminal_tab_with_new_agent_view(ctx);
@@ -6080,7 +6082,7 @@ impl Workspace {
                 }
 
                 self.open_file_with_target(
-                    path.clone(),
+                    LocalOrRemotePath::Local(path.clone()),
                     target,
                     line_col,
                     CodeSource::Link {
@@ -6626,7 +6628,7 @@ impl Workspace {
         );
         send_telemetry_from_ctx!(TabConfigsTelemetryEvent::MenuCreateNewTabConfigClicked, ctx);
         self.open_file_with_target(
-            path.clone(),
+            LocalOrRemotePath::Local(path.clone()),
             target,
             None,
             CodeSource::Link {
@@ -6662,7 +6664,7 @@ impl Workspace {
                     None,
                 );
                 self.open_file_with_target(
-                    path.clone(),
+                    LocalOrRemotePath::Local(path.clone()),
                     target,
                     None,
                     CodeSource::Link {
@@ -7405,7 +7407,7 @@ impl Workspace {
     #[cfg(feature = "local_fs")]
     fn open_file_notebook(
         &mut self,
-        path: PathBuf,
+        path: LocalOrRemotePath,
         session: Option<Arc<Session>>,
         layout: EditorLayout,
         ctx: &mut ViewContext<Self>,
@@ -9178,7 +9180,7 @@ impl Workspace {
                 line_col,
             } => {
                 self.open_file_with_target(
-                    path.clone(),
+                    LocalOrRemotePath::Local(path.clone()),
                     target.clone(),
                     *line_col,
                     CodeSource::Link {
@@ -13246,25 +13248,25 @@ impl Workspace {
             .terminal_view_working_directories(ctx)
             .filter_map(|(id, cwd)| cwd.map(|c| (id, c)))
             .collect();
-        let code_local_paths: Vec<(EntityId, String)> = pane_group
+        let code_paths: Vec<(EntityId, LocalOrRemotePath)> = pane_group
             .as_ref(ctx)
-            .code_view_local_paths(ctx)
-            .filter_map(|(id, cwd)| cwd.map(|c| (id, c)))
+            .code_view_paths(ctx)
+            .filter_map(|(id, path)| path.map(|p| (id, p)))
             .collect();
-        let code_diff_local_paths: Vec<(EntityId, String)> = pane_group
+        let code_diff_paths: Vec<(EntityId, LocalOrRemotePath)> = pane_group
             .as_ref(ctx)
-            .code_diff_view_local_paths(ctx)
-            .filter_map(|(id, cwd)| cwd.map(|c| (id, c)))
+            .code_diff_view_paths(ctx)
+            .filter_map(|(id, path)| path.map(|p| (id, p)))
             .collect();
-        let notebook_local_paths: Vec<(EntityId, String)> = pane_group
+        let notebook_paths: Vec<(EntityId, LocalOrRemotePath)> = pane_group
             .as_ref(ctx)
-            .file_notebook_local_paths(ctx)
-            .filter_map(|(id, cwd)| cwd.map(|c| (id, c)))
+            .file_notebook_paths(ctx)
+            .filter_map(|(id, path)| path.map(|p| (id, p)))
             .collect();
-        let local_paths: Vec<(EntityId, String)> = code_local_paths
+        let editor_paths: Vec<(EntityId, LocalOrRemotePath)> = code_paths
             .into_iter()
-            .chain(notebook_local_paths)
-            .chain(code_diff_local_paths)
+            .chain(notebook_paths)
+            .chain(code_diff_paths)
             .collect();
 
         // Get the focused terminal ID to prioritize it in the repo_to_terminal map
@@ -13277,7 +13279,7 @@ impl Workspace {
             model.refresh_working_directories_for_pane_group(
                 pane_group_id,
                 terminal_cwds,
-                local_paths,
+                editor_paths,
                 focused_terminal_id,
                 ctx,
             );
@@ -14704,30 +14706,12 @@ impl Workspace {
                     }
                 }
             }
-            #[cfg(feature = "local_fs")]
-            pane_group::Event::RemoteRepoNavigated { remote_path } => {
-                let remote_id = RemoteRepositoryIdentifier::new(
-                    remote_path.host_id.clone(),
-                    remote_path.path.clone(),
-                );
-                let pane_group_id = pane_group.id();
-                if let Some(file_tree_view) = self
-                    .working_directories_model
-                    .as_ref(ctx)
-                    .get_file_tree_view(pane_group_id)
-                {
-                    file_tree_view.update(ctx, |view, ctx| {
-                        view.set_remote_root_directories(std::slice::from_ref(&remote_id), ctx);
-                    });
-                }
-
-                // Remote repos now enter repository_roots through
-                // refresh_working_directories_for_pane_group (via
-                // pwd_as_local_or_remote). No need to register here —
-                // doing so would race with refresh and prevent stale
-                // DiffStateModels from being dropped.
-            }
-            #[cfg(not(feature = "local_fs"))]
+            // Remote repo navigation is handled entirely through
+            // refresh_working_directories_for_pane_group, which inserts
+            // remote paths into the unified `pane_groups` set. The
+            // resulting `DirectoriesChanged` event carries both local
+            // and remote dirs, so the left panel subscriber forwards
+            // them to `set_remote_root_directories` on the file tree.
             pane_group::Event::RemoteRepoNavigated { .. } => {}
             pane_group::Event::OpenChildAgentInNewTab { conversation_id } => {
                 // Move the existing child pane into a new tab so the live
@@ -15243,7 +15227,7 @@ impl Workspace {
                 line_col,
             } => {
                 self.open_file_with_target(
-                    path.clone(),
+                    LocalOrRemotePath::Local(path.clone()),
                     target.clone(),
                     *line_col,
                     CodeSource::Link {
@@ -21312,7 +21296,7 @@ impl TypedActionView for Workspace {
                         None,
                     );
                     self.open_file_with_target(
-                        path.clone(),
+                        LocalOrRemotePath::Local(path.clone()),
                         target,
                         None,
                         CodeSource::Link {
@@ -21363,7 +21347,7 @@ impl TypedActionView for Workspace {
                         None,
                     );
                     self.open_file_with_target(
-                        path.clone(),
+                        LocalOrRemotePath::Local(path.clone()),
                         target,
                         None,
                         CodeSource::Link {

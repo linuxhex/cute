@@ -542,7 +542,7 @@ pub enum Event {
     /// tell the workspace to open a file within Warp.
     OpenFileInWarp {
         /// The file path to open.
-        path: PathBuf,
+        path: LocalOrRemotePath,
         /// The session that the path was opened from.
         session: Arc<Session>,
     },
@@ -1717,7 +1717,7 @@ impl PaneGroup {
                         settings,
                     } => Box::new(NotebookPane::restore(notebook_id, &settings, ctx)?),
                     NotebookPaneSnapshot::LocalFileNotebook { path } => Box::new(FilePane::new(
-                        path,
+                        path.map(LocalOrRemotePath::Local),
                         None,
                         #[cfg(feature = "local_fs")]
                         None,
@@ -5327,19 +5327,15 @@ impl PaneGroup {
     fn replace_file_pane_with_code_pane(
         &mut self,
         file_pane_id: PaneId,
-        path: std::path::PathBuf,
+        path: LocalOrRemotePath,
         source: Option<crate::code::editor_management::CodeSource>,
         ctx: &mut ViewContext<Self>,
     ) {
         use crate::code::editor_management::CodeSource;
         use crate::pane_group::CodePane;
 
-        // Use the provided source if available.
-        let source = source.unwrap_or(CodeSource::Link {
-            path,
-            range_start: None,
-            range_end: None,
-        });
+        // Use the provided source if available, or construct from the path.
+        let source = source.unwrap_or(CodeSource::FileTree { location: path });
 
         let code_pane = CodePane::new(source, None, ctx);
         let success = self.replace_pane(file_pane_id, code_pane, false, ctx);
@@ -5353,7 +5349,7 @@ impl PaneGroup {
     fn replace_code_pane_with_file_pane(
         &mut self,
         code_pane_id: PaneId,
-        path: std::path::PathBuf,
+        path: LocalOrRemotePath,
         source: Option<crate::code::editor_management::CodeSource>,
         ctx: &mut ViewContext<Self>,
     ) {
@@ -7918,46 +7914,43 @@ impl PaneGroup {
         })
     }
 
-    /// Get all code CWDs for this pane group.
+    /// Get all code editor paths (local and remote) for this pane group.
     /// This is used by the Workspace to refresh the active directories model.
-    pub fn code_view_local_paths<'a>(
+    pub fn code_view_paths<'a>(
         &'a self,
         ctx: &'a AppContext,
-    ) -> impl Iterator<Item = (EntityId, Option<String>)> + 'a {
+    ) -> impl Iterator<Item = (EntityId, Option<LocalOrRemotePath>)> + 'a {
         self.code_views(ctx).into_iter().map(move |code_view| {
             let id = code_view.id();
-            let local_path = code_view
+            let location = code_view
                 .as_ref(ctx)
-                .local_path(ctx)
-                .map(|p| p.display().to_string());
-            (id, local_path)
+                .tab_at(code_view.as_ref(ctx).active_tab_index())
+                .and_then(|tab| tab.location().cloned());
+            (id, location)
         })
     }
 
-    pub fn code_diff_view_local_paths<'a>(
+    pub fn code_diff_view_paths<'a>(
         &'a self,
         ctx: &'a AppContext,
-    ) -> impl Iterator<Item = (EntityId, Option<String>)> + 'a {
+    ) -> impl Iterator<Item = (EntityId, Option<LocalOrRemotePath>)> + 'a {
         self.code_diff_views(ctx).into_iter().map(move |diff_view| {
             let id = diff_view.id();
-            let local_path = diff_view.as_ref(ctx).primary_file_path(ctx);
-            (id, local_path)
+            let location = diff_view.as_ref(ctx).primary_file_location(ctx);
+            (id, location)
         })
     }
 
-    pub fn file_notebook_local_paths<'a>(
+    pub fn file_notebook_paths<'a>(
         &'a self,
         ctx: &'a AppContext,
-    ) -> impl Iterator<Item = (EntityId, Option<String>)> + 'a {
+    ) -> impl Iterator<Item = (EntityId, Option<LocalOrRemotePath>)> + 'a {
         self.file_notebook_views(ctx)
             .into_iter()
             .map(move |file_view| {
                 let id = file_view.id();
-                let local_path = file_view
-                    .as_ref(ctx)
-                    .local_path()
-                    .map(|p| p.display().to_string());
-                (id, local_path)
+                let path = file_view.as_ref(ctx).path().cloned();
+                (id, path)
             })
     }
 

@@ -51,6 +51,7 @@ use warpui::{
 };
 
 use super::malformed_line_heuristics::has_malformed_terminal_correction_signal;
+use crate::code::buffer_location::LocalOrRemotePath;
 use crate::view_components::action_button::{ActionButton, NakedTheme};
 use crate::{
     ai::{
@@ -2607,6 +2608,23 @@ impl CodeDiffView {
             .as_ref(app)
             .file_path()
             .map(|p| p.to_string())
+    }
+
+    /// Returns the primary file location as a `LocalOrRemotePath`,
+    /// using `diff_session_type` to correctly identify remote files.
+    pub fn primary_file_location(&self, app: &AppContext) -> Option<LocalOrRemotePath> {
+        let path_str = self.primary_file_path(app)?;
+        match &self.diff_session_type {
+            DiffSessionType::Local => Some(LocalOrRemotePath::Local(PathBuf::from(path_str))),
+            DiffSessionType::Remote(host_id) => {
+                StandardizedPath::try_new(&path_str).ok().map(|path| {
+                    LocalOrRemotePath::Remote(warp_util::remote_path::RemotePath {
+                        host_id: host_id.clone(),
+                        path,
+                    })
+                })
+            }
+        }
     }
 }
 

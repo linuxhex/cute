@@ -228,6 +228,11 @@ pub enum PendingSaveIntent {
 }
 
 impl TabData {
+    /// Returns the file location (local or remote), if any.
+    pub fn location(&self) -> Option<&LocalOrRemotePath> {
+        self.location.as_ref()
+    }
+
     /// Returns the local filesystem path, if this tab is backed by a local file.
     /// Returns `None` for remote files and untitled tabs.
     pub fn local_path(&self) -> Option<PathBuf> {
@@ -282,15 +287,11 @@ impl CodeView {
 
     #[cfg(feature = "local_fs")]
     fn update_markdown_mode_segmented_control(&mut self, ctx: &mut ViewContext<Self>) {
-        let path = self
-            .local_path(ctx)
-            .or_else(|| {
-                self.tab_at(self.active_tab_index)
-                    .and_then(|t| t.local_path())
-            })
-            .or_else(|| self.source.path());
-
-        let is_markdown = path.as_ref().map(is_markdown_file).unwrap_or(false);
+        let is_markdown = self
+            .tab_at(self.active_tab_index)
+            .and_then(|t| t.location.as_ref())
+            .map(|loc| is_markdown_file(std::path::Path::new(&loc.display_path())))
+            .unwrap_or(false);
 
         if !is_markdown {
             self.markdown_mode_segmented_control = None;
@@ -1947,10 +1948,10 @@ impl CodeView {
                 let mut stack = Stack::new();
                 stack.add_child(title_row.finish());
                 if hover_state.is_hovered() {
-                    let tooltip_relative_path = tab
-                        .and_then(|tab| tab.local_path())
-                        .map(|p| Self::relative_path(p, self.window_id, app));
-                    if let Some(ref path) = tooltip_relative_path {
+                    let tooltip_path = tab
+                        .and_then(|tab| tab.location())
+                        .map(|loc| loc.display_path());
+                    if let Some(ref path) = tooltip_path {
                         let tooltip = appearance
                             .ui_builder()
                             .tool_tip(path.clone())
@@ -2027,25 +2028,45 @@ impl CodeView {
         ];
 
         #[cfg(feature = "local_fs")]
-        if let Some(path) = self.local_path(ctx) {
-            let reveal_label = if cfg!(target_os = "macos") {
-                "Reveal in Finder"
-            } else if cfg!(target_os = "windows") {
-                "Reveal in Explorer"
-            } else {
-                "Reveal in file manager"
-            };
-            items.extend([
-                MenuItem::Separator,
-                MenuItemFields::new("Copy file path")
-                    .with_on_select_action(CodeViewAction::CopyFilePath)
-                    .into_item(),
-                MenuItemFields::new(reveal_label)
-                    .with_on_select_action(CodeViewAction::RevealInFinder)
-                    .into_item(),
-            ]);
+        {
+            let active_location = self
+                .tab_at(self.active_tab_index)
+                .and_then(|t| t.location.as_ref());
+            let local_path = self.local_path(ctx);
 
-            if is_markdown_file(&path) {
+            if active_location.is_some() {
+                items.push(MenuItem::Separator);
+                items.push(
+                    MenuItemFields::new("Copy file path")
+                        .with_on_select_action(CodeViewAction::CopyFilePath)
+                        .into_item(),
+                );
+            }
+
+            if local_path.is_some() {
+                let reveal_label = if cfg!(target_os = "macos") {
+                    "Reveal in Finder"
+                } else if cfg!(target_os = "windows") {
+                    "Reveal in Explorer"
+                } else {
+                    "Reveal in file manager"
+                };
+                items.push(
+                    MenuItemFields::new(reveal_label)
+                        .with_on_select_action(CodeViewAction::RevealInFinder)
+                        .into_item(),
+                );
+            }
+
+            let is_md = local_path
+                .as_ref()
+                .map(is_markdown_file)
+                .unwrap_or_else(|| {
+                    active_location
+                        .map(|loc| is_markdown_file(std::path::Path::new(&loc.display_path())))
+                        .unwrap_or(false)
+                });
+            if is_md {
                 items.push(
                     MenuItemFields::new("View Markdown preview")
                         .with_on_select_action(CodeViewAction::RenderMarkdown)
@@ -2198,9 +2219,12 @@ impl TypedActionView for CodeView {
 
             #[cfg(feature = "local_fs")]
             CodeViewAction::CopyFilePath => {
-                if let Some(path) = self.local_path(ctx) {
+                if let Some(location) = self
+                    .tab_at(self.active_tab_index)
+                    .and_then(|t| t.location.as_ref())
+                {
                     ctx.clipboard()
-                        .write(ClipboardContent::plain_text(path.display().to_string()));
+                        .write(ClipboardContent::plain_text(location.display_path()));
                 }
             }
             #[cfg(feature = "local_fs")]
@@ -2215,12 +2239,11 @@ impl TypedActionView for CodeView {
             }
             #[cfg(feature = "local_fs")]
             CodeViewAction::RenderMarkdown => {
-                let path = self.local_path(ctx).or_else(|| {
-                    self.tab_at(self.active_tab_index)
-                        .and_then(|t| t.local_path())
-                });
+                let lor_path = self
+                    .tab_at(self.active_tab_index)
+                    .and_then(|t| t.location.clone());
 
-                if let Some(path) = path {
+                if let Some(lor_path) = lor_path {
                     let source = self.source.clone();
                     if self.active_tab_has_unsaved_changes(ctx) {
                         self.save_local(
@@ -2228,7 +2251,7 @@ impl TypedActionView for CodeView {
                             Some(Box::new(move |outcome, _me, ctx| {
                                 if outcome != SaveOutcome::Canceled {
                                     ctx.emit(CodeViewEvent::Pane(PaneEvent::ReplaceWithFilePane {
-                                        path: path.clone(),
+                                        path: lor_path.clone(),
                                         source: Some(source.clone()),
                                     }));
                                 }
@@ -2237,7 +2260,7 @@ impl TypedActionView for CodeView {
                         );
                     } else {
                         ctx.emit(CodeViewEvent::Pane(PaneEvent::ReplaceWithFilePane {
-                            path,
+                            path: lor_path,
                             source: Some(source),
                         }));
                     }
