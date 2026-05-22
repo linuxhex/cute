@@ -5361,9 +5361,6 @@ impl TerminalView {
             | BlocklistAIHistoryEvent::UpdatedConversationStatus {
                 conversation_id, ..
             }
-            | BlocklistAIHistoryEvent::UpdatedConversationMetadata {
-                conversation_id, ..
-            }
             | BlocklistAIHistoryEvent::UpdatedConversationArtifacts {
                 conversation_id, ..
             } => history_model.terminal_view_id_for_conversation(conversation_id),
@@ -5371,6 +5368,9 @@ impl TerminalView {
                 new_conversation_id,
                 ..
             } => history_model.terminal_view_id_for_conversation(new_conversation_id),
+            BlocklistAIHistoryEvent::UpdatedConversationMetadata {
+                conversation_id, ..
+            } => history_model.terminal_view_id_for_conversation(conversation_id),
             BlocklistAIHistoryEvent::StartedNewConversation { .. }
             | BlocklistAIHistoryEvent::CreatedSubtask { .. }
             | BlocklistAIHistoryEvent::UpgradedTask { .. }
@@ -5823,10 +5823,9 @@ impl TerminalView {
                 // The conversation has moved to another terminal view. We are
                 // the previous owner (the per-view filter at the top of this
                 // function uses `previous_terminal_view_id`), so drop any
-                // rendered AI blocks and agent-view entry blocks tagged to
-                // this conversation. Otherwise the user sees a transcript
-                // split across two panes (old exchanges here, new exchanges
-                // in the new owner).
+                // rendered blocks tagged to this conversation. Leave the
+                // agent-view entry in place so the user can click it to
+                // navigate to the current owner pane later.
                 if *previous_terminal_view_id != self.view_id {
                     return;
                 }
@@ -5834,16 +5833,12 @@ impl TerminalView {
                     .rich_content_views
                     .iter()
                     .filter_map(|view| {
-                        let belongs_to_conversation = match view.metadata() {
-                            Some(RichContentMetadata::AIBlock(metadata)) => {
-                                metadata.conversation_id == *conversation_id
-                            }
-                            Some(RichContentMetadata::AgentViewEntry(metadata)) => {
-                                metadata.conversation_id == *conversation_id
-                            }
-                            _ => false,
-                        };
-                        belongs_to_conversation.then_some(view.view_id())
+                        let is_ai_block_for_conversation = matches!(
+                            view.metadata(),
+                            Some(RichContentMetadata::AIBlock(metadata))
+                                if metadata.conversation_id == *conversation_id
+                        );
+                        is_ai_block_for_conversation.then_some(view.view_id())
                     })
                     .collect_vec();
                 for view_id_to_remove in view_ids_to_remove.into_iter() {
@@ -5854,6 +5849,10 @@ impl TerminalView {
                     self.rich_content_views
                         .retain(|view| view.view_id() != view_id_to_remove);
                 }
+                self.model
+                    .lock()
+                    .block_list_mut()
+                    .remove_command_blocks_for_conversation(*conversation_id);
             }
             BlocklistAIHistoryEvent::CreatedSubtask { .. }
             | BlocklistAIHistoryEvent::UpdatedAutoexecuteOverride { .. }

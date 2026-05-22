@@ -393,7 +393,9 @@ use crate::terminal::view::ambient_agent::{
 #[cfg(feature = "local_tty")]
 use crate::terminal::view::docker_sandbox::DEFAULT_DOCKER_SANDBOX_BASE_IMAGE;
 use crate::terminal::view::inline_banner::ZeroStatePromptSuggestionType;
-use crate::terminal::view::load_ai_conversation::{RestorationDirState, RestoredAIConversation};
+use crate::terminal::view::load_ai_conversation::{
+    RestorationDirState, RestoreConversationEntryBehavior, RestoredAIConversation,
+};
 use crate::terminal::view::ssh_file_upload::FileUploadId;
 use crate::terminal::view::{
     AgentOnboardingVersion, ConversationRestorationInNewPaneType, LeftPanelTargetView,
@@ -11519,6 +11521,26 @@ impl Workspace {
             self.restore_conversation_in_new_tab(conversation_id, ctx);
             return;
         };
+
+        let already_exists_in_active_pane = {
+            let terminal_view_id = terminal_view.as_ref(ctx).view_id();
+            let history_model = BlocklistAIHistoryModel::as_ref(ctx);
+            history_model.conversation(&conversation_id).is_some()
+                && history_model
+                    .all_live_conversations_for_terminal_view(terminal_view_id)
+                    .any(|conversation| conversation.id() == conversation_id)
+        };
+        if already_exists_in_active_pane {
+            terminal_view.update(ctx, |terminal_view, ctx| {
+                terminal_view.enter_agent_view_for_conversation(
+                    None,
+                    AgentViewEntryOrigin::RestoreExistingConversation,
+                    conversation_id,
+                    ctx,
+                );
+            });
+            return;
+        }
         // Check if there's an active long-running command in the active terminal.
         // If not, set the active terminal view to loading since we're going to restore in the active pane.
         // We do these operations together to hold the model lock across them.
@@ -11579,7 +11601,14 @@ impl Workspace {
                 terminal_view.restore_conversation_and_directory_context(
                     conversation,
                     FeatureFlag::AgentView.is_enabled(),
-                    |terminal_view, ctx| {
+                    RestoreConversationEntryBehavior::PreserveAgentViewState,
+                    move |terminal_view, ctx| {
+                        terminal_view.enter_agent_view_for_conversation(
+                            None,
+                            AgentViewEntryOrigin::RestoreExistingConversation,
+                            conversation_id,
+                            ctx,
+                        );
                         terminal_view.redetermine_global_focus(ctx);
                     },
                     ctx,
@@ -11945,6 +11974,7 @@ impl Workspace {
                     terminal_view.restore_conversation_after_view_creation(
                         RestoredAIConversation::new(forked_conversation.clone()),
                         true,
+                        RestoreConversationEntryBehavior::EnterRestoredConversation,
                         ctx,
                     );
                     terminal_view
@@ -13969,6 +13999,7 @@ impl Workspace {
             terminal_view.restore_conversation_after_view_creation(
                 RestoredAIConversation::new(local_fork.clone()),
                 true,
+                RestoreConversationEntryBehavior::PreserveAgentViewState,
                 view_ctx,
             );
         });

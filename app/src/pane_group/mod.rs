@@ -138,7 +138,9 @@ use crate::terminal::shared_session::{
 use crate::terminal::view::inline_banner::{
     ZeroStatePromptSuggestionTriggeredFrom, ZeroStatePromptSuggestionType,
 };
-use crate::terminal::view::load_ai_conversation::RestoredAIConversation;
+use crate::terminal::view::load_ai_conversation::{
+    RestoreConversationEntryBehavior, RestoredAIConversation,
+};
 use crate::terminal::view::ssh_file_upload::FileUploadId;
 use crate::terminal::view::{
     BlockNotification, ConversationRestorationInNewPaneType, ExecuteCommandEvent,
@@ -3348,6 +3350,7 @@ impl PaneGroup {
                 terminal_view.restore_conversation_after_view_creation(
                     RestoredAIConversation::new(child_conversation),
                     true,
+                    RestoreConversationEntryBehavior::PreserveAgentViewState,
                     ctx,
                 );
                 terminal_view.enter_agent_view(
@@ -3379,6 +3382,7 @@ impl PaneGroup {
                     terminal_view.restore_conversation_after_view_creation(
                         RestoredAIConversation::new(child_conversation),
                         true,
+                        RestoreConversationEntryBehavior::PreserveAgentViewState,
                         ctx,
                     );
                     terminal_view.enter_agent_view(
@@ -3442,6 +3446,7 @@ impl PaneGroup {
                 terminal_view.restore_conversation_after_view_creation(
                     RestoredAIConversation::new(child_conversation),
                     true,
+                    RestoreConversationEntryBehavior::PreserveAgentViewState,
                     ctx,
                 );
                 terminal_view.enter_agent_view(
@@ -3540,6 +3545,7 @@ impl PaneGroup {
             terminal_view.restore_conversation_after_view_creation(
                 RestoredAIConversation::new(child_conversation),
                 true,
+                RestoreConversationEntryBehavior::PreserveAgentViewState,
                 ctx,
             );
             terminal_view.enter_agent_view(
@@ -4260,6 +4266,7 @@ impl PaneGroup {
                     view.restore_conversation_after_view_creation(
                         RestoredAIConversation::new(*conversation),
                         true,
+                        RestoreConversationEntryBehavior::EnterRestoredConversation,
                         ctx,
                     );
                 });
@@ -4281,6 +4288,7 @@ impl PaneGroup {
                     view.restore_conversation_and_directory_context(
                         CloudConversationData::CLIAgent(cli_conversation),
                         true,
+                        RestoreConversationEntryBehavior::PreserveAgentViewState,
                         |_, _| {},
                         ctx,
                     );
@@ -5861,6 +5869,7 @@ impl PaneGroup {
                     view.restore_conversation_after_view_creation(
                         RestoredAIConversation::new(*conversation),
                         true,
+                        RestoreConversationEntryBehavior::PreserveAgentViewState,
                         ctx,
                     );
                     view.enter_agent_view(None, Some(id), AgentViewEntryOrigin::CloudAgent, ctx);
@@ -5884,6 +5893,7 @@ impl PaneGroup {
                     view.restore_conversation_and_directory_context(
                         CloudConversationData::CLIAgent(cli_conversation),
                         true,
+                        RestoreConversationEntryBehavior::PreserveAgentViewState,
                         |_, _| {},
                         ctx,
                     );
