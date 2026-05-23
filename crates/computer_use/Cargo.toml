@@ -1,0 +1,43 @@
+[package]
+name = "computer_use"
+edition = "2024"
+authors.workspace = true
+default-run = "use_computer"
+publish.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "use_computer"
+path = "src/bin/use_computer.rs"
+
+[features]
+test-util = []
+
+[dependencies]
+async-trait.workspace = true
+cfg-if.workspace = true
+clap.workspace = true
+log.workspace = true
+pathfinder_geometry.workspace = true
+serde.workspace = true
+serde_with.workspace = true
+tokio = { workspace = true, features = ["rt", "macros"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+command.workspace = true
+core-foundation.workspace = true
+dispatch2 = "0.3.0"
+image.workspace = true
+instant.workspace = true
+objc2.workspace = true
+objc2-app-kit.workspace = true
+objc2-core-foundation.workspace = true
+objc2-core-graphics.workspace = true
+tempfile.workspace = true
+warpui.workspace = true
+
+[dev-dependencies]
+computer_use = { path = ".", features = ["test-util"] }
+
+[build-dependencies]
+cfg_aliases = "0.2.1"
