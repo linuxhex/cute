@@ -67,7 +67,7 @@ use crate::ui_components::icon_with_status::{render_icon_with_status, IconWithSt
 use crate::ui_components::icons::Icon as UiIcon;
 use crate::util::bindings::keybinding_name_to_display_string;
 use crate::util::color::Opacity;
-use crate::workspace::action::WorkspaceAction;
+use crate::workspace::action::{NewSessionMenuAnchor, WorkspaceAction};
 use crate::workspace::cross_window_tab_drag::CrossWindowTabDrag;
 use crate::workspace::hoa_onboarding::HoaOnboardingStep;
 use crate::workspace::tab_settings::{
@@ -582,6 +582,7 @@ pub(super) struct VerticalTabsPanelState {
     show_pr_link_info_tooltip_mouse_state: MouseStateHandle,
     show_diff_stats_mouse_state: MouseStateHandle,
     show_details_on_hover_mouse_state: MouseStateHandle,
+    panel_right_click_mouse_state: MouseStateHandle,
     pub(super) show_settings_popup: bool,
 }
 
@@ -617,6 +618,7 @@ impl Default for VerticalTabsPanelState {
             show_pr_link_info_tooltip_mouse_state: Default::default(),
             show_diff_stats_mouse_state: Default::default(),
             show_details_on_hover_mouse_state: Default::default(),
+            panel_right_click_mouse_state: Default::default(),
             show_settings_popup: false,
         }
     }
@@ -1409,11 +1411,16 @@ fn render_new_tab_button(
     let ui_builder = appearance.ui_builder().clone();
     let tab_configs_keybinding =
         keybinding_name_to_display_string(super::TOGGLE_TAB_CONFIGS_MENU_BINDING_NAME, app);
-    let is_active = workspace.show_new_session_dropdown_menu.is_some()
-        || workspace
-            .hoa_onboarding_flow
-            .as_ref()
-            .is_some_and(|flow| flow.as_ref(app).step() == HoaOnboardingStep::TabConfig);
+    // Only highlight the `+` button when the menu was opened from it, not when
+    // it was opened via right-click on the panel chrome (which floats at the
+    // pointer and isn't anchored to the button).
+    let is_active = matches!(
+        workspace.show_new_session_dropdown_menu,
+        Some(NewSessionMenuAnchor::AddTabButton(_))
+    ) || workspace
+        .hoa_onboarding_flow
+        .as_ref()
+        .is_some_and(|flow| flow.as_ref(app).step() == HoaOnboardingStep::TabConfig);
 
     Hoverable::new(state.new_tab_hover_state.clone(), move |hover_state| {
         let plus_button = combo_inner_button(
@@ -1433,7 +1440,9 @@ fn render_new_tab_button(
         )
         .build()
         .on_click(|ctx, _, position| {
-            ctx.dispatch_typed_action(WorkspaceAction::ToggleNewSessionMenu { position });
+            ctx.dispatch_typed_action(WorkspaceAction::ToggleNewSessionMenu {
+                anchor: NewSessionMenuAnchor::AddTabButton(position),
+            });
         })
         .finish();
 
@@ -1525,9 +1534,22 @@ fn render_vertical_tabs_panel(
         super::PanelPosition::Left => DragBarSide::Right,
         super::PanelPosition::Right => DragBarSide::Left,
     };
-    let inner = Container::new(panel_with_popup)
-        .with_background(internal_colors::fg_overlay_1(theme))
-        .finish();
+    // Wrap the panel in a `Hoverable` so right-clicking the empty area of the
+    // vertical tabs panel opens the tab configs dropdown.
+    let inner = Hoverable::new(state.panel_right_click_mouse_state.clone(), |_| {
+        Container::new(panel_with_popup)
+            .with_background(internal_colors::fg_overlay_1(theme))
+            .finish()
+    })
+    .on_right_click(|ctx, _, position| {
+        if FeatureFlag::GroupedTabs.is_enabled() {
+            ctx.dispatch_typed_action(WorkspaceAction::OpenNewSessionMenu {
+                anchor: NewSessionMenuAnchor::Pointer(position),
+            });
+        }
+    })
+    .with_defer_events_to_children()
+    .finish();
 
     Resizable::new(state.resizable_state.clone(), inner)
         .with_dragbar_side(drag_side)
