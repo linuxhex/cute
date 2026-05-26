@@ -1,7 +1,7 @@
 {
   "requirement_id": "OMJF-12300",
   "requirement_key": "minimal-terminal",
-  "phase": "commit",
+  "phase": "done",
   "stage": "completed",
   "main_project": "/Users/caomunian/Study/cute",
   "branch": "main",
@@ -16,7 +16,8 @@
       "简化 lib.rs",
       "简化 bin 文件",
       "编译通过",
-      "推演收敛完成"
+      "推演收敛完成",
+      "代码已提交"
     ],
     "remaining_errors": 0,
     "next_steps": []

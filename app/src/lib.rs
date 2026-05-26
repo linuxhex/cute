@@ -2,6 +2,8 @@
 #![allow(clippy::doc_lazy_continuation)]
 
 mod alloc;
+#[cfg(target_os = "macos")]
+mod app;
 mod app_services;
 mod app_state;
 mod command_palette;

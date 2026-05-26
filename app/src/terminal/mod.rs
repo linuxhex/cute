@@ -2,6 +2,9 @@ use cuteui::{AppContext};
 use cuteui::units::{Lines, Pixels};
 use serde::{Deserialize, Serialize};
 
+#[cfg(target_os = "macos")]
+mod view;
+
 pub fn init(_app: &mut AppContext) {
     // Initialize terminal module
 }
