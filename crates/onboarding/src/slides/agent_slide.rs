@@ -3,26 +3,26 @@ use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::vec2f;
 use ui_components::button::State as ButtonState;
 use ui_components::{button, Component as _, Options as _};
-use warp_core::features::FeatureFlag;
-use warp_core::send_telemetry_from_ctx;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::icons::Icon;
-use warp_core::ui::theme::color::internal_colors;
-use warp_core::ui::theme::Fill;
-use warpui::elements::{
+use cute_core::features::FeatureFlag;
+use cute_core::send_telemetry_from_ctx;
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::icons::Icon;
+use cute_core::ui::theme::color::internal_colors;
+use cute_core::ui::theme::Fill;
+use cuteui::elements::{
     AnchorPair, Border, ClippedScrollStateHandle, ClippedScrollable, ConstrainedBox, Container,
     CornerRadius, CrossAxisAlignment, Dismiss, Empty, Flex, FormattedTextElement, Hoverable,
-    Icon as WarpUiIcon, MainAxisAlignment, MainAxisSize, MouseStateHandle, OffsetPositioning,
+    Icon as CuteUiIcon, MainAxisAlignment, MainAxisSize, MouseStateHandle, OffsetPositioning,
     OffsetType, ParentElement, ParentOffsetBounds, PositioningAxis, Radius, SavePosition,
     ScrollTarget, ScrollToPositionMode, ScrollbarWidth, Stack, Text, XAxisAnchor, YAxisAnchor,
 };
-use warpui::fonts::{Properties, Weight};
-use warpui::keymap::Keystroke;
-use warpui::platform::Cursor;
-use warpui::scene::DropShadow;
-use warpui::text_layout::TextAlignment;
-use warpui::ui_components::components::{UiComponent as _, UiComponentStyles};
-use warpui::{
+use cuteui::fonts::{Properties, Weight};
+use cuteui::keymap::Keystroke;
+use cuteui::platform::Cursor;
+use cuteui::scene::DropShadow;
+use cuteui::text_layout::TextAlignment;
+use cuteui::ui_components::components::{UiComponent as _, UiComponentStyles};
+use cuteui::{
     AppContext, Element, Entity, Gradient, SingletonEntity as _, TypedActionView, View, ViewContext,
 };
 
@@ -41,8 +41,8 @@ impl button::Theme for UpgradeButtonTheme {
         &self,
         button_state: ButtonState,
         appearance: &Appearance,
-    ) -> Option<warp_core::ui::theme::Fill> {
-        use warp_core::ui::color::blend::Blend;
+    ) -> Option<cute_core::ui::theme::Fill> {
+        use cute_core::ui::color::blend::Blend;
         let theme = appearance.theme();
         let base = theme.foreground();
         match button_state {
@@ -56,7 +56,7 @@ impl button::Theme for UpgradeButtonTheme {
 
     fn text_color(
         &self,
-        background: Option<warp_core::ui::theme::Fill>,
+        background: Option<cute_core::ui::theme::Fill>,
         appearance: &Appearance,
     ) -> ColorU {
         let bg = background
@@ -148,7 +148,7 @@ pub enum AgentSlideEvent {
 }
 
 pub struct AgentSlide {
-    onboarding_state: warpui::ModelHandle<OnboardingStateModel>,
+    onboarding_state: cuteui::ModelHandle<OnboardingStateModel>,
 
     /// Mouse state handles for each model row.
     model_mouse_states: Vec<MouseStateHandle>,
@@ -197,7 +197,7 @@ fn sorted_models(models: &[OnboardingModelInfo]) -> Vec<OnboardingModelInfo> {
 
 impl AgentSlide {
     pub(crate) fn new(
-        onboarding_state: warpui::ModelHandle<OnboardingStateModel>,
+        onboarding_state: cuteui::ModelHandle<OnboardingStateModel>,
         ctx: &mut ViewContext<Self>,
     ) -> Self {
         let model_count = onboarding_state.as_ref(ctx).models().len();
@@ -230,7 +230,7 @@ impl AgentSlide {
                         me.show_plan_activated_toast = true;
                         // Auto-dismiss after the configured duration.
                         let _ = ctx.spawn(
-                            warpui::r#async::Timer::after(PLAN_ACTIVATED_TOAST_DURATION),
+                            cuteui::r#async::Timer::after(PLAN_ACTIVATED_TOAST_DURATION),
                             |me: &mut Self, _, ctx| {
                                 if me.show_plan_activated_toast {
                                     me.show_plan_activated_toast = false;
@@ -319,7 +319,7 @@ impl AgentSlide {
     fn render_header(&self, appearance: &Appearance) -> Box<dyn Element> {
         let title = appearance
             .ui_builder()
-            .paragraph("Customize your Warp Agent")
+            .paragraph("Customize your Cute Agent")
             .with_style(UiComponentStyles {
                 font_size: Some(36.),
                 font_weight: Some(Weight::Medium),
@@ -389,7 +389,7 @@ impl AgentSlide {
             .with_cross_axis_alignment(CrossAxisAlignment::Start)
             .with_child(upper_sections);
 
-        if FeatureFlag::OpenWarpNewSettingsModes.is_enabled() {
+        if FeatureFlag::OpenCuteNewSettingsModes.is_enabled() {
             let disable_oz_section = self.render_disable_oz_section(appearance, settings);
             col = col.with_child(
                 Container::new(disable_oz_section)
@@ -537,7 +537,7 @@ impl AgentSlide {
             let title_row: Box<dyn Element> = if let Some(icon) = icon {
                 const ICON_SIZE: f32 = 14.;
                 let icon_el =
-                    ConstrainedBox::new(Box::new(icon.to_warpui_icon(title_color.into())))
+                    ConstrainedBox::new(Box::new(icon.to_cuteui_icon(title_color.into())))
                         .with_width(ICON_SIZE)
                         .with_height(ICON_SIZE)
                         .finish();
@@ -551,7 +551,7 @@ impl AgentSlide {
             };
 
             // Trailing chevron icon.
-            let chevron = ConstrainedBox::new(Box::new(WarpUiIcon::new(
+            let chevron = ConstrainedBox::new(Box::new(CuteUiIcon::new(
                 "bundled/svg/chevron-down.svg",
                 title_color,
             )))
@@ -716,7 +716,7 @@ impl AgentSlide {
                 .finish();
 
             const ICON_SIZE: f32 = 14.;
-            let icon_el = ConstrainedBox::new(Box::new(icon.to_warpui_icon(title_color.into())))
+            let icon_el = ConstrainedBox::new(Box::new(icon.to_cuteui_icon(title_color.into())))
                 .with_width(ICON_SIZE)
                 .with_height(ICON_SIZE)
                 .finish();
@@ -951,7 +951,7 @@ impl AgentSlide {
             .on_click(|ctx, _, _| ctx.dispatch_typed_action(AgentSlideAction::ToggleDisableOz))
             .finish();
 
-        let label = Text::new("Disable Warp Agent", appearance.ui_font_family(), 14.0)
+        let label = Text::new("Disable Cute Agent", appearance.ui_font_family(), 14.0)
             .with_color(internal_colors::text_sub(theme, background_for_text))
             .with_style(Properties {
                 weight: Weight::Normal,
@@ -999,7 +999,7 @@ impl AgentSlide {
         );
 
         let step_index = 2;
-        let step_count = if warp_core::features::FeatureFlag::OpenWarpNewSettingsModes.is_enabled()
+        let step_count = if cute_core::features::FeatureFlag::OpenCuteNewSettingsModes.is_enabled()
         {
             5
         } else {
@@ -1109,7 +1109,7 @@ impl AgentSlide {
     fn render_visual(&self, appearance: &Appearance, app: &AppContext) -> Box<dyn Element> {
         let theme = appearance.theme();
 
-        if FeatureFlag::OpenWarpNewSettingsModes.is_enabled() {
+        if FeatureFlag::OpenCuteNewSettingsModes.is_enabled() {
             let use_vertical = self
                 .onboarding_state
                 .as_ref(app)
@@ -1161,7 +1161,7 @@ impl AgentSlide {
         };
 
         let icon = ConstrainedBox::new(Box::new(
-            Icon::AlertCircle.to_warpui_icon(Fill::Solid(text_color)),
+            Icon::AlertCircle.to_cuteui_icon(Fill::Solid(text_color)),
         ))
         .with_width(ICON_SIZE)
         .with_height(ICON_SIZE)
@@ -1259,7 +1259,7 @@ impl AgentSlide {
         let ui_builder = appearance.ui_builder();
 
         let check_icon = ConstrainedBox::new(Box::new(
-            Icon::CheckSkinny.to_warpui_icon(Fill::Solid(text_color)),
+            Icon::CheckSkinny.to_cuteui_icon(Fill::Solid(text_color)),
         ))
         .with_width(ICON_SIZE)
         .with_height(ICON_SIZE)
@@ -1358,7 +1358,7 @@ impl View for AgentSlide {
         let mut stack = Stack::new();
         stack.add_child(slide);
         stack.add_child(
-            warpui::elements::Align::new(bottom_overlay)
+            cuteui::elements::Align::new(bottom_overlay)
                 .bottom_center()
                 .finish(),
         );

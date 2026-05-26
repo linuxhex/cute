@@ -7,7 +7,7 @@ use itertools::Itertools;
 use rangemap::RangeSet;
 use string_offset::CharOffset;
 use sum_tree::SumTree;
-use warpui::App;
+use cuteui::App;
 
 use super::{Engine, Match, SearchConfig};
 use crate::content::buffer::Buffer;
@@ -44,7 +44,7 @@ fn test_search_inline_styles() {
 fn test_search_across_link() {
     App::test((), |mut app| async move {
         let (buffer, _selection) = Buffer::mock_from_markdown(
-            "visit [our website](https://warp.dev) for more",
+            "visit [our website](https://cute.dev) for more",
             None,
             Box::new(|_, _| IndentBehavior::Ignore),
             &mut app,

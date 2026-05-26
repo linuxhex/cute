@@ -2,13 +2,13 @@
 name = "watcher"
 version = "0.1.0"
 edition = "2021"
-authors = ["Warp Team <dev@warp.dev>"]
+authors = ["Cute Team <dev@cute.dev>"]
 publish.workspace = true
 license.workspace = true
 
 [dependencies]
 async-channel.workspace = true
-warpui.workspace = true
+cuteui.workspace = true
 log.workspace = true
 anyhow.workspace = true
 notify-debouncer-full.workspace = true

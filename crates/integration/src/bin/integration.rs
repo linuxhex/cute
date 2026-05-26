@@ -5,13 +5,13 @@ use anyhow::Result;
 use clap::Parser;
 use integration::test::*;
 use integration::Builder;
-use warp_cli::WorkerCommand;
-use warp_core::channel::{Channel, ChannelConfig, ChannelState, OzConfig, WarpServerConfig};
-use warp_core::AppId;
+use cute_cli::WorkerCommand;
+use cute_core::channel::{Channel, ChannelConfig, ChannelState, OzConfig, CuteServerConfig};
+use cute_core::AppId;
 
-/// The Warp integration test runner.
+/// The Cute integration test runner.
 #[derive(Debug, Default, Parser, Clone)]
-#[command(name = "warp-integration-test")]
+#[command(name = "cute-integration-test")]
 #[clap(args_conflicts_with_subcommands = true)]
 pub struct Args {
     #[command(subcommand)]
@@ -29,15 +29,15 @@ pub fn main() -> Result<()> {
         ChannelConfig {
             app_id: AppId::new(
                 "dev",
-                "warp",
+                "cute",
                 if cfg!(target_os = "macos") {
-                    "Warp-Integration"
+                    "Cute-Integration"
                 } else {
-                    "WarpIntegration"
+                    "CuteIntegration"
                 },
             ),
-            logfile_name: "warp_integration.log".into(),
-            server_config: WarpServerConfig {
+            logfile_name: "cute_integration.log".into(),
+            server_config: CuteServerConfig {
                 firebase_auth_api_key: "".into(),
                 // Use an IP in the IANA testing range, with the TCP discard port, to
                 // black-hole server traffic.
@@ -68,7 +68,7 @@ pub fn main() -> Result<()> {
                 // GUI application), do so.  This must occur before init_logging, as the
                 // terminal server sets up its own logger, and attempting to set a second
                 // logger leads to a panic.
-                warp::terminal::local_tty::server::run_terminal_server(args);
+                cute::terminal::local_tty::server::run_terminal_server(args);
                 return Ok(());
             }
             // This is a catch-all to handle the plugin host, which the integration test crate doesn't have a feature flag for.
@@ -106,7 +106,7 @@ pub fn main() -> Result<()> {
     }
 
     #[cfg_attr(not(unix), allow(unreachable_code))]
-    warp::run_integration_test(driver)
+    cute::run_integration_test(driver)
 }
 
 /// Type of a function that produces an integration test builder.
@@ -204,9 +204,9 @@ fn register_tests() -> HashMap<&'static str, BoxedBuilderFn> {
     register_test!(test_custom_ps1_expansion_bash);
     register_test!(test_completions_with_autocd);
     register_test!(test_auto_title);
-    register_test!(test_warp_auto_title_disabled);
-    register_test!(test_warp_honors_user_title_bash);
-    register_test!(test_warp_honors_user_title_zsh);
+    register_test!(test_cute_auto_title_disabled);
+    register_test!(test_cute_honors_user_title_bash);
+    register_test!(test_cute_honors_user_title_zsh);
     register_test!(test_osc7_updates_current_working_directory);
     register_test!(test_input_focused_after_executing_command);
     register_test!(test_new_session_focuses_input);
@@ -229,13 +229,13 @@ fn register_tests() -> HashMap<&'static str, BoxedBuilderFn> {
     register_test!(test_accepting_completion_inserts_space);
     register_test!(test_create_session_with_split_pane_while_bootstrapping);
     register_test!(test_create_session_with_new_tab_while_bootstrapping);
-    register_test!(test_add_theme_to_warp_config);
+    register_test!(test_add_theme_to_cute_config);
     register_test!(test_palette_opens_when_theme_chooser_is_open);
     #[cfg(target_os = "macos")]
     register_test!(test_preview_config_dir_migration);
-    register_test!(test_launch_warp_with_theme_in_warp_config);
-    register_test!(test_add_launch_config_to_warp_config);
-    register_test!(test_add_workflows_to_warp_config);
+    register_test!(test_launch_cute_with_theme_in_cute_config);
+    register_test!(test_add_launch_config_to_cute_config);
+    register_test!(test_add_workflows_to_cute_config);
     register_test!(test_loading_project_workflows);
     register_test!(test_cmd_enter);
     register_test!(test_alias_expansion_has_limit);
@@ -317,7 +317,7 @@ fn register_tests() -> HashMap<&'static str, BoxedBuilderFn> {
 
     register_test!(test_can_auto_bootstrap);
 
-    register_test!(test_ask_warp_ai_keybinding_for_selected_block);
+    register_test!(test_ask_cute_ai_keybinding_for_selected_block);
     register_test!(test_create_folder_from_command_palette);
 
     register_test!(test_tab_behavior_setting);
@@ -366,7 +366,7 @@ fn register_tests() -> HashMap<&'static str, BoxedBuilderFn> {
 
     register_test!(test_notebook_pane_tracking);
     register_test!(test_close_notebook_tab);
-    register_test!(test_open_in_warp_banner);
+    register_test!(test_open_in_cute_banner);
     register_test!(test_close_notebook_window);
     register_test!(test_backspace_inside_raw_mermaid_block_edits_text_without_removing_block);
 
@@ -436,7 +436,7 @@ fn register_tests() -> HashMap<&'static str, BoxedBuilderFn> {
     register_test!(test_undo_close_stack_timeout_cleanup);
 
     // File tree tests
-    register_test!(test_file_tree_opens_files_in_warp);
+    register_test!(test_file_tree_opens_files_in_cute);
     register_test!(test_file_tree_open_in_new_pane);
     register_test!(test_file_tree_open_in_new_tab);
     register_test!(test_file_tree_keyboard_navigation);

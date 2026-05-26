@@ -1,21 +1,21 @@
-use warp::cmd_or_ctrl_shift;
-use warp::features::FeatureFlag;
-use warp::integration_testing::command_palette::open_command_palette_and_run_action;
-use warp::integration_testing::notebook::{
+use cute::cmd_or_ctrl_shift;
+use cute::features::FeatureFlag;
+use cute::integration_testing::command_palette::open_command_palette_and_run_action;
+use cute::integration_testing::notebook::{
     assert_notebook_contents, assert_notebook_id, assert_notebook_not_open, assert_notebook_open,
-    assert_open_in_warp_banner_open, create_a_personal_notebook,
+    assert_open_in_cute_banner_open, create_a_personal_notebook,
     enter_notebook_edit_mode_and_set_markdown, move_notebook_cursor_to_offset, open_notebook,
 };
-use warp::integration_testing::step::new_step_with_default_assertions;
-use warp::integration_testing::tab::{assert_pane_title, assert_tab_title};
-use warp::integration_testing::terminal::util::ExpectedExitStatus;
-use warp::integration_testing::terminal::{
+use cute::integration_testing::step::new_step_with_default_assertions;
+use cute::integration_testing::tab::{assert_pane_title, assert_tab_title};
+use cute::integration_testing::terminal::util::ExpectedExitStatus;
+use cute::integration_testing::terminal::{
     assert_single_terminal_in_tab_bootstrapped, execute_command_for_single_terminal_in_tab,
     wait_until_bootstrapped_single_pane_for_tab,
 };
-use warp::integration_testing::view_getters::terminal_view;
-use warp::integration_testing::window::{add_and_save_window, close_window, save_active_window_id};
-use warpui::integration::TestStep;
+use cute::integration_testing::view_getters::terminal_view;
+use cute::integration_testing::window::{add_and_save_window, close_window, save_active_window_id};
+use cuteui::integration::TestStep;
 
 use super::{new_builder, Builder};
 
@@ -143,7 +143,7 @@ pub fn test_close_notebook_window() -> Builder {
         )
 }
 
-pub fn test_open_in_warp_banner() -> Builder {
+pub fn test_open_in_cute_banner() -> Builder {
     new_builder()
         .with_setup(|utils| {
             std::fs::write(utils.test_dir().join("README.md"), "# Hello, world!")
@@ -157,13 +157,13 @@ pub fn test_open_in_warp_banner() -> Builder {
                 ExpectedExitStatus::Success,
                 (),
             )
-            .add_assertion(assert_open_in_warp_banner_open(0, 0)),
+            .add_assertion(assert_open_in_cute_banner_open(0, 0)),
         )
         .with_step(
-            new_step_with_default_assertions("Click Open in Warp banner")
+            new_step_with_default_assertions("Click Open in Cute banner")
                 .with_click_on_saved_position_fn(|app, window_id| {
                     let view = terminal_view(app, window_id, 0, 0);
-                    format!("open_in_warp_banner_button_{}", view.id())
+                    format!("open_in_cute_banner_button_{}", view.id())
                 }),
         )
         .with_step(

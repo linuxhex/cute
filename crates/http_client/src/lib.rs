@@ -16,30 +16,30 @@ use reqwest::IntoUrl;
 use reqwest_eventsource::RequestBuilderExt;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
-use warp_core::channel::{Channel, ChannelState};
-use warp_core::operating_system_info::OperatingSystemInfo;
-use warp_core::{execution_mode, report_error};
+use cute_core::channel::{Channel, ChannelState};
+use cute_core::operating_system_info::OperatingSystemInfo;
+use cute_core::{execution_mode, report_error};
 
 pub mod headers {
-    /// Custom Warp header indicating the version of the Warp app.
-    pub const CLIENT_RELEASE_VERSION_HEADER_KEY: &str = "X-Warp-Client-Version";
+    /// Custom Cute header indicating the version of the Cute app.
+    pub const CLIENT_RELEASE_VERSION_HEADER_KEY: &str = "X-Cute-Client-Version";
 
-    /// Custom Warp header indicating the OS category the request was sent from.
-    pub(crate) const WARP_OS_CATEGORY: &str = "X-Warp-OS-Category";
-    /// Custom Warp header indicating the OS name the request was sent from. On Linux this is the
+    /// Custom Cute header indicating the OS category the request was sent from.
+    pub(crate) const WARP_OS_CATEGORY: &str = "X-Cute-OS-Category";
+    /// Custom Cute header indicating the OS name the request was sent from. On Linux this is the
     /// name of the distribution. On all other platforms it should be equivalent to
     /// `WARP_OS_CATEGORY`.
-    pub(crate) const WARP_OS_NAME: &str = "X-Warp-OS-Name";
-    /// Custom Warp header indicating the version of the operating system. On Linux this is the
+    pub(crate) const WARP_OS_NAME: &str = "X-Cute-OS-Name";
+    /// Custom Cute header indicating the version of the operating system. On Linux this is the
     /// version of the distribution, not the Linux kernel version.
-    pub(crate) const WARP_OS_VERSION: &str = "X-Warp-OS-Version";
+    pub(crate) const WARP_OS_VERSION: &str = "X-Cute-OS-Version";
 
-    /// Custom Warp header indicating the linux kernel version. This is only sent from Linux.
-    pub(crate) const WARP_OS_LINUX_KERNEL_VERSION: &str = "X-Warp-OS-Linux-Kernel-Version";
+    /// Custom Cute header indicating the linux kernel version. This is only sent from Linux.
+    pub(crate) const WARP_OS_LINUX_KERNEL_VERSION: &str = "X-Cute-OS-Linux-Kernel-Version";
 
-    /// Custom Warp header indicating the client role. We don't use the User-Agent header
+    /// Custom Cute header indicating the client role. We don't use the User-Agent header
     /// because it can't be set from WASM.
-    pub(crate) const WARP_CLIENT_ID: &str = "X-Warp-Client-ID";
+    pub(crate) const WARP_CLIENT_ID: &str = "X-Cute-Client-ID";
 }
 
 /// The environment variable containing extra HTTP headers to attach to requests.
@@ -169,7 +169,7 @@ impl Client {
     fn builder(
         &self,
         wrapped: reqwest::RequestBuilder,
-        include_warp_headers: bool,
+        include_cute_headers: bool,
     ) -> RequestBuilder<'_> {
         let mut builder = RequestBuilder {
             wrapped,
@@ -178,8 +178,8 @@ impl Client {
             prevent_sleep_reason: None,
         };
 
-        if include_warp_headers {
-            builder = Self::add_warp_http_headers(builder);
+        if include_cute_headers {
+            builder = Self::add_cute_http_headers(builder);
         }
 
         builder
@@ -188,43 +188,43 @@ impl Client {
     pub fn get<U: IntoUrl + Clone>(&self, url: U) -> RequestBuilder<'_> {
         self.builder(
             self.wrapped.get(url.clone()),
-            Self::include_warp_http_headers(url),
+            Self::include_cute_http_headers(url),
         )
     }
 
     pub fn post<U: IntoUrl + Clone>(&self, url: U) -> RequestBuilder<'_> {
         self.builder(
             self.wrapped.post(url.clone()),
-            Self::include_warp_http_headers(url),
+            Self::include_cute_http_headers(url),
         )
     }
 
     pub fn put<U: IntoUrl + Clone>(&self, url: U) -> RequestBuilder<'_> {
         self.builder(
             self.wrapped.put(url.clone()),
-            Self::include_warp_http_headers(url),
+            Self::include_cute_http_headers(url),
         )
     }
 
     pub fn patch<U: IntoUrl + Clone>(&self, url: U) -> RequestBuilder<'_> {
         self.builder(
             self.wrapped.patch(url.clone()),
-            Self::include_warp_http_headers(url),
+            Self::include_cute_http_headers(url),
         )
     }
 
     pub fn delete<U: IntoUrl + Clone>(&self, url: U) -> RequestBuilder<'_> {
         self.builder(
             self.wrapped.delete(url.clone()),
-            Self::include_warp_http_headers(url),
+            Self::include_cute_http_headers(url),
         )
     }
 
-    /// Helper method to determine if the request should include warp-specific headers. The only case
+    /// Helper method to determine if the request should include cute-specific headers. The only case
     /// where we should include custom headers is if the request is same-origin and is targetted to our server.
-    /// For example, app.warp.dev --> app.warp.dev.
+    /// For example, app.cute.dev --> app.cute.dev.
     #[cfg(target_family = "wasm")]
-    fn include_warp_http_headers<U: IntoUrl + Clone>(url: U) -> bool {
+    fn include_cute_http_headers<U: IntoUrl + Clone>(url: U) -> bool {
         url.into_url().is_ok_and(|url| {
             url.host_str().is_some_and(|dest_host| {
                 let window_hostname = gloo::utils::window()
@@ -232,8 +232,8 @@ impl Client {
                     .hostname()
                     .expect("Can't get window hostname");
 
-                // If the request is going to our server, the destination host should be "app.warp.dev" or
-                // "staging.warp.dev". The window hostname should also return the same.
+                // If the request is going to our server, the destination host should be "app.cute.dev" or
+                // "staging.cute.dev". The window hostname should also return the same.
                 // Note that reqwest's host_str() method is described here: https://docs.rs/reqwest/latest/reqwest/struct.Url.html#method.domain and
                 // gloo's hostname() method refers to this mozilla definition: https://developer.mozilla.org/en-US/docs/Web/API/Location/hostname.
                 window_hostname == dest_host
@@ -242,11 +242,11 @@ impl Client {
     }
 
     #[cfg(not(target_family = "wasm"))]
-    fn include_warp_http_headers<U: IntoUrl + Clone>(_url: U) -> bool {
+    fn include_cute_http_headers<U: IntoUrl + Clone>(_url: U) -> bool {
         true
     }
 
-    fn add_warp_http_headers(mut builder: RequestBuilder) -> RequestBuilder {
+    fn add_cute_http_headers(mut builder: RequestBuilder) -> RequestBuilder {
         // Include the client ID header.
         if let Some(client_id) = execution_mode::current_client_id() {
             builder = builder.header(headers::WARP_CLIENT_ID, client_id);
@@ -574,7 +574,7 @@ impl<'a> RequestBuilder<'a> {
 }
 
 /// An error returned from `Response::error_for_status` that includes response metadata.
-/// This allows callers to inspect headers (like X-Warp-Error-Code) and the response body when
+/// This allows callers to inspect headers (like X-Cute-Error-Code) and the response body when
 /// handling errors.
 #[derive(Debug)]
 pub struct ResponseError {
@@ -696,14 +696,14 @@ impl<'c> oauth2::AsyncHttpClient<'c> for Client {
 
     fn call(&'c self, request: oauth2::HttpRequest) -> Self::Future {
         Box::pin(async move {
-            let include_warp_headers = Self::include_warp_http_headers(request.uri().to_string());
+            let include_cute_headers = Self::include_cute_http_headers(request.uri().to_string());
             let builder = reqwest::RequestBuilder::from_parts(
                 self.wrapped.clone(),
                 request.try_into().map_err(Box::new)?,
             );
 
             let response = self
-                .builder(builder, include_warp_headers)
+                .builder(builder, include_cute_headers)
                 .send()
                 .await
                 .map_err(Box::new)?;

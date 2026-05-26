@@ -2,10 +2,12 @@ use std::{fs, process};
 
 use clap::{Parser, Subcommand};
 use futures::executor::block_on;
-use input_classifier::test_utils::CompletionContext;
 use input_classifier::{
     ClassificationResult, Context, HeuristicClassifier, InputClassifier, InputType,
 };
+
+// Stub for CompletionContext (previously from test_utils)
+struct CompletionContext;
 
 /// Convert HSL to RGB values (0-255 range)
 fn hsl_to_rgb(h: f32, s: f32, l: f32) -> (u8, u8, u8) {
@@ -68,8 +70,16 @@ fn get_binary_confidence_color(is_correct: bool, is_low_confidence: bool) -> Str
 }
 #[cfg(feature = "onnx")]
 use input_classifier::{OnnxClassifier, OnnxModel};
-use warp_completer::ParsedTokensSnapshot;
-use warp_completer::util::parse_current_commands_and_tokens;
+use input_classifier::ParsedTokensSnapshot;
+
+// Stub function for parse_current_commands_and_tokens (previously from cute_completer)
+fn parse_current_commands_and_tokens(input: &str) -> ParsedTokensSnapshot {
+    ParsedTokensSnapshot {
+        text: input.to_string(),
+        buffer_text: input.to_string(),
+        parsed_tokens: vec![],
+    }
+}
 #[cfg(feature = "onnx")]
 fn default_onnx_model() -> Option<OnnxModel> {
     cfg_if::cfg_if! {
@@ -194,8 +204,7 @@ fn resolve_input_source(input: Option<String>, file: Option<String>) -> anyhow::
 
 /// Parse input string into ParsedTokensSnapshot
 async fn parse_input(input: &str) -> anyhow::Result<ParsedTokensSnapshot> {
-    let completion_context = CompletionContext::new();
-    let snapshot = parse_current_commands_and_tokens(input.to_string(), &completion_context).await;
+    let snapshot = parse_current_commands_and_tokens(input);
     Ok(snapshot)
 }
 

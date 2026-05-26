@@ -1,7 +1,7 @@
-use warpui::assets::asset_cache::{AssetCache, AssetSource, AssetState};
-use warpui::image_cache::ImageType;
-use warpui::text_layout::LayoutCache;
-use warpui::{App, SingletonEntity};
+use cuteui::assets::asset_cache::{AssetCache, AssetSource, AssetState};
+use cuteui::image_cache::ImageType;
+use cuteui::text_layout::LayoutCache;
+use cuteui::{App, SingletonEntity};
 
 use super::*;
 use crate::render::layout::TextLayout;

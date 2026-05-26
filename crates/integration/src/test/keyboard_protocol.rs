@@ -1,17 +1,17 @@
 use std::time::Duration;
 
-use warp::features::FeatureFlag;
-use warp::integration_testing::step::new_step_with_default_assertions;
-use warp::integration_testing::terminal::{
+use cute::features::FeatureFlag;
+use cute::integration_testing::step::new_step_with_default_assertions;
+use cute::integration_testing::terminal::{
     assert_long_running_block_executing_for_single_terminal_in_tab,
     wait_until_bootstrapped_single_pane_for_tab,
 };
-use warp::integration_testing::view_getters::single_terminal_view_for_tab;
-use warpui::event::{KeyEventDetails, KeyState};
-use warpui::integration::TestStep;
-use warpui::keymap::Keystroke;
-use warpui::platform::keyboard::KeyCode;
-use warpui::{async_assert, Event};
+use cute::integration_testing::view_getters::single_terminal_view_for_tab;
+use cuteui::event::{KeyEventDetails, KeyState};
+use cuteui::integration::TestStep;
+use cuteui::keymap::Keystroke;
+use cuteui::platform::keyboard::KeyCode;
+use cuteui::{async_assert, Event};
 
 use super::new_builder;
 use crate::Builder;
@@ -48,7 +48,7 @@ fn wait_for_protocol_enabled() -> TestStep {
 fn assert_output_contains(
     expected: &'static str,
     description: &'static str,
-) -> impl FnMut(&mut warpui::App, warpui::WindowId) -> warpui::integration::AssertionOutcome {
+) -> impl FnMut(&mut cuteui::App, cuteui::WindowId) -> cuteui::integration::AssertionOutcome {
     move |app, window_id| {
         let terminal_view = single_terminal_view_for_tab(app, window_id, 0);
         terminal_view.read(app, |view, _ctx| {

@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 use std::time::Duration;
 
-use notify_debouncer_full::notify::{RecursiveMode, WatchFilter};
-use warpui::{Entity, ModelContext, ModelHandle, SingletonEntity};
+use notify_debouncer_full::notify::RecursiveMode;
+use cuteui::{Entity, ModelContext, ModelHandle, SingletonEntity};
 
 use crate::{BulkFilesystemWatcher, BulkFilesystemWatcherEvent};
 
@@ -30,7 +30,6 @@ impl HomeDirectoryWatcher {
         watcher.update(ctx, |watcher, _ctx| {
             std::mem::drop(watcher.register_path(
                 &home_dir,
-                WatchFilter::accept_all(),
                 RecursiveMode::NonRecursive,
             ));
         });

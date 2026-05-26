@@ -11,19 +11,18 @@ use futures::channel::oneshot;
 pub use home_watcher::{HomeDirectoryWatcher, HomeDirectoryWatcherEvent};
 use notify_debouncer_full::notify::event::{ModifyKind, RenameMode};
 use notify_debouncer_full::notify::{
-    self, EventKind, RecommendedWatcher, RecursiveMode, WatchFilter,
+    self, EventKind, RecommendedWatcher, RecursiveMode,
 };
 use notify_debouncer_full::{
     new_debouncer_opt, DebounceEventHandler, DebounceEventResult, DebouncedEvent, Debouncer,
     NoCache,
 };
-use warpui::{Entity, ModelContext};
+use cuteui::{Entity, ModelContext};
 
 #[derive(Debug)]
 enum BackgroundFileWatcherCommand {
     AddPath {
         path: PathBuf,
-        filter: WatchFilter,
         response: oneshot::Sender<Result<()>>,
         recursive_mode: RecursiveMode,
     },
@@ -64,13 +63,12 @@ impl BackgroundFileWatcher {
             match res {
                 BackgroundFileWatcherCommand::AddPath {
                     path,
-                    filter,
                     response,
                     recursive_mode,
                 } => {
                     let _ = response.send(
                         self.notifier
-                            .watch_filtered(path, recursive_mode, filter)
+                            .watch(path, recursive_mode)
                             .inspect_err(|err| {
                                 log::warn!("Failed to watch path: {err:?}");
                             })
@@ -202,13 +200,11 @@ impl BulkFilesystemWatcher {
     pub fn register_path(
         &mut self,
         path: &Path,
-        watch_filter: WatchFilter,
         recursive_mode: RecursiveMode,
     ) -> impl Future<Output = Result<()>> {
         let (tx, rx) = oneshot::channel();
         let send_result = self.tx.send(BackgroundFileWatcherCommand::AddPath {
             path: path.to_path_buf(),
-            filter: watch_filter,
             response: tx,
             recursive_mode,
         });

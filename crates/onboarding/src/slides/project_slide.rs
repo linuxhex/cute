@@ -1,20 +1,20 @@
 use ui_components::{button, keyboard_shortcut, Component as _, Options as _};
-use warp_core::send_telemetry_from_ctx;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::color::coloru_with_opacity;
-use warp_core::ui::theme::color::internal_colors;
-use warp_core::ui::Icon;
-use warpui::elements::{
+use cute_core::send_telemetry_from_ctx;
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::color::coloru_with_opacity;
+use cute_core::ui::theme::color::internal_colors;
+use cute_core::ui::Icon;
+use cuteui::elements::{
     Align, ClippedScrollStateHandle, ConstrainedBox, Container, CrossAxisAlignment, Flex,
     MouseStateHandle, ParentElement, Shrinkable,
 };
-use warpui::fonts::Weight;
-use warpui::keymap::Keystroke;
-use warpui::platform::file_picker::{FilePickerConfiguration, FilePickerError};
-use warpui::prelude::{MainAxisAlignment, MainAxisSize, Vector2F};
-use warpui::ui_components::button::{ButtonVariant, TextAndIcon, TextAndIconAlignment};
-use warpui::ui_components::components::{UiComponent as _, UiComponentStyles};
-use warpui::{
+use cuteui::fonts::Weight;
+use cuteui::keymap::Keystroke;
+use cuteui::platform::file_picker::{FilePickerConfiguration, FilePickerError};
+use cuteui::prelude::{MainAxisAlignment, MainAxisSize, Vector2F};
+use cuteui::ui_components::button::{ButtonVariant, TextAndIcon, TextAndIconAlignment};
+use cuteui::ui_components::components::{UiComponent as _, UiComponentStyles};
+use cuteui::{
     AppContext, Element, Entity, ModelHandle, SingletonEntity as _, TypedActionView, View,
     ViewContext,
 };
@@ -135,7 +135,7 @@ impl ProjectSlide {
 
         let subtitle = appearance
             .ui_builder()
-            .paragraph("Set up a project to optimize it for coding in Warp.")
+            .paragraph("Set up a project to optimize it for coding in Cute.")
             .with_style(UiComponentStyles {
                 font_size: Some(20.),
                 font_weight: Some(Weight::Normal),
@@ -175,7 +175,7 @@ impl ProjectSlide {
                 TextAndIcon::new(
                     TextAndIconAlignment::IconFirst,
                     selected_local_folder.to_owned(),
-                    Icon::Folder.to_warpui_icon(theme.foreground()),
+                    Icon::Folder.to_cuteui_icon(theme.foreground()),
                     MainAxisSize::Max,
                     MainAxisAlignment::Center,
                     Vector2F::new(16., 16.),
@@ -205,7 +205,7 @@ impl ProjectSlide {
                 );
 
                 let folder_icon =
-                    ConstrainedBox::new(Icon::Folder.to_warpui_icon(theme.foreground()).finish())
+                    ConstrainedBox::new(Icon::Folder.to_cuteui_icon(theme.foreground()).finish())
                         .with_width(16.)
                         .with_height(16.)
                         .finish();
@@ -292,14 +292,14 @@ impl ProjectSlide {
         );
 
         let theme_picker_last =
-            warp_core::features::FeatureFlag::OpenWarpNewSettingsModes.is_enabled();
+            cute_core::features::FeatureFlag::OpenCuteNewSettingsModes.is_enabled();
 
         let (label, keystroke, action) = match settings {
             ProjectOnboardingSettings::Project { .. } => (
                 if theme_picker_last {
                     "Next"
                 } else {
-                    "Get Warping"
+                    "Get Cuteing"
                 },
                 Keystroke::parse("enter").unwrap_or_default(),
                 ProjectSlideAction::NextClicked,
@@ -484,7 +484,7 @@ impl ProjectSlide {
         }
 
         self.onboarding_state.update(ctx, |model, ctx| {
-            if warp_core::features::FeatureFlag::OpenWarpNewSettingsModes.is_enabled() {
+            if cute_core::features::FeatureFlag::OpenCuteNewSettingsModes.is_enabled() {
                 model.next(ctx);
             } else {
                 model.complete(ctx);
@@ -495,7 +495,7 @@ impl ProjectSlide {
     fn skip(&mut self, ctx: &mut ViewContext<Self>) {
         self.onboarding_state.update(ctx, |model, ctx| {
             model.set_project_selected_local_folder(None, ctx);
-            if warp_core::features::FeatureFlag::OpenWarpNewSettingsModes.is_enabled() {
+            if cute_core::features::FeatureFlag::OpenCuteNewSettingsModes.is_enabled() {
                 model.next(ctx);
             } else {
                 model.complete(ctx);

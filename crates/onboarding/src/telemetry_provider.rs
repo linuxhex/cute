@@ -1,5 +1,5 @@
-use warp_core::telemetry::{TelemetryContextModel, TelemetryContextProvider};
-use warpui::{AppContext, ModelContext};
+use cute_core::telemetry::{TelemetryContextModel, TelemetryContextProvider};
+use cuteui::{AppContext, ModelContext};
 
 /// A mock telemetry context provider for the onboarding binary that logs events
 /// instead of sending them to a server.

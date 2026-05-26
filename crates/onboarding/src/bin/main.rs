@@ -10,19 +10,19 @@ use onboarding::{
 };
 use pathfinder_color::ColorU;
 use rust_embed::RustEmbed;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::icons::Icon;
-use warp_core::ui::theme::{
-    AnsiColor, AnsiColors, Details, Fill, Image, TerminalColors, WarpTheme,
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::icons::Icon;
+use cute_core::ui::theme::{
+    AnsiColor, AnsiColors, Details, Fill, Image, TerminalColors, CuteTheme,
 };
-use warpui::assets::asset_cache::AssetSource;
-use warpui::elements::{
+use cuteui::assets::asset_cache::AssetSource;
+use cuteui::elements::{
     Container, CrossAxisAlignment, Flex, MainAxisAlignment, MainAxisSize, ParentElement,
 };
-use warpui::fonts::{Cache, FamilyId, Weight};
-use warpui::presenter::ChildView;
-use warpui::ui_components::components::{UiComponent as _, UiComponentStyles};
-use warpui::{
+use cuteui::fonts::{Cache, FamilyId, Weight};
+use cuteui::presenter::ChildView;
+use cuteui::ui_components::components::{UiComponent as _, UiComponentStyles};
+use cuteui::{
     platform, AddWindowOptions, AppContext, AssetProvider, Element, Entity, SingletonEntity as _,
     TypedActionView, View, ViewContext, ViewHandle,
 };
@@ -43,7 +43,7 @@ impl AssetProvider for Assets {
 
 fn main() -> Result<()> {
     // Initialize logging for the onboarding binary.
-    warp_logging::init(warp_logging::LogConfig {
+    cute_logging::init(cute_logging::LogConfig {
         is_cli: false,
         log_destination: None,
     })?;
@@ -268,7 +268,7 @@ impl View for OnboardingMainView {
         }
     }
 
-    fn on_focus(&mut self, focus_ctx: &warpui::FocusContext, ctx: &mut ViewContext<Self>) {
+    fn on_focus(&mut self, focus_ctx: &cuteui::FocusContext, ctx: &mut ViewContext<Self>) {
         if let OnboardingMainState::Onboarding(view) = &self.state {
             if focus_ctx.is_self_focused() {
                 ctx.focus(view);
@@ -387,8 +387,8 @@ fn adeberry_colors() -> TerminalColors {
     TerminalColors::new(ADEBERRY_NORMAL_COLORS, ADEBERRY_BRIGHT_COLORS)
 }
 
-fn dark_theme() -> WarpTheme {
-    WarpTheme::new(
+fn dark_theme() -> CuteTheme {
+    CuteTheme::new(
         Fill::Solid(ColorU::from_u32(0x000000FF)),
         ColorU::from_u32(0xffffffff),
         Fill::Solid(ColorU::from_u32(0x19AAD8FF)),
@@ -400,8 +400,8 @@ fn dark_theme() -> WarpTheme {
     )
 }
 
-fn light_theme() -> WarpTheme {
-    WarpTheme::new(
+fn light_theme() -> CuteTheme {
+    CuteTheme::new(
         Fill::Solid(ColorU::white()),
         ColorU::new(17, 17, 17, 0xFF),
         Fill::Solid(ColorU::from_u32(0x00c2ffff)),
@@ -413,8 +413,8 @@ fn light_theme() -> WarpTheme {
     )
 }
 
-fn phenomenon() -> WarpTheme {
-    WarpTheme::new(
+fn phenomenon() -> CuteTheme {
+    CuteTheme::new(
         Fill::Solid(ColorU::from_u32(0x121212FF)),
         ColorU::from_u32(0xFAF9F6FF),
         Fill::Solid(ColorU::from_u32(0x2E5D9EFF)),
@@ -432,8 +432,8 @@ fn phenomenon() -> WarpTheme {
     )
 }
 
-fn adeberry() -> WarpTheme {
-    WarpTheme::new(
+fn adeberry() -> CuteTheme {
+    CuteTheme::new(
         Fill::Solid(ColorU::from_u32(0x1D2022FF)),
         ColorU::from_u32(0xE4EEF5FF),
         Fill::Solid(ColorU::from_u32(0x6C96B4FF)),
@@ -445,7 +445,7 @@ fn adeberry() -> WarpTheme {
     )
 }
 
-fn build_appearance(theme: WarpTheme, ctx: &mut AppContext) -> Appearance {
+fn build_appearance(theme: CuteTheme, ctx: &mut AppContext) -> Appearance {
     let ui_font_family =
         load_default_ui_font_family(ctx).expect("unable to load default ui font family");
 

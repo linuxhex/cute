@@ -1,5 +1,5 @@
 [package]
-authors = ["Warp Team <dev@warp.dev>"]
+authors = ["Cute Team <dev@cute.dev>"]
 edition = "2021"
 name = "ipc"
 version = "0.1.0"
@@ -18,7 +18,7 @@ rand.workspace = true
 serde.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
-warpui.workspace = true
+cuteui.workspace = true
 
 [dev-dependencies]
 parking_lot.workspace = true

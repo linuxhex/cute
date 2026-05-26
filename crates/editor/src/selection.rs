@@ -3,11 +3,11 @@ use std::ops::Range;
 use num_traits::SaturatingSub;
 use string_offset::CharOffset;
 use vec1::Vec1;
-use warpui::text::TextBuffer;
-use warpui::text::point::Point;
-use warpui::text::word_boundaries::WordBoundariesPolicy;
-use warpui::units::Pixels;
-use warpui::{AppContext, Entity, ModelAsRef, ModelContext, ModelHandle};
+use cuteui::text::TextBuffer;
+use cuteui::text::point::Point;
+use cuteui::text::word_boundaries::WordBoundariesPolicy;
+use cuteui::units::Pixels;
+use cuteui::{AppContext, Entity, ModelAsRef, ModelContext, ModelHandle};
 
 use crate::content::buffer::{
     AutoScrollBehavior, Buffer, BufferEvent, BufferSelectAction, SelectionOffsets,

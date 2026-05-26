@@ -20,14 +20,14 @@ use serde_yaml::Mapping;
 use string_offset::{ByteOffset, CharOffset};
 use sum_tree::{SeekBias, SumTree};
 use vec1::{Vec1, vec1};
-use warp_core::platform::SessionPlatform;
-use warp_core::safe_error;
-use warp_util::content_version::ContentVersion;
-use warpui::elements::ListIndentLevel;
-use warpui::fonts::Weight;
-use warpui::text::point::Point;
-use warpui::text::{TextBuffer, char_slice};
-use warpui::{AppContext, Entity, EntityId, ModelContext, ModelHandle};
+use cute_core::platform::SessionPlatform;
+use cute_core::safe_error;
+use cute_util::content_version::ContentVersion;
+use cuteui::elements::ListIndentLevel;
+use cuteui::fonts::Weight;
+use cuteui::text::point::Point;
+use cuteui::text::{TextBuffer, char_slice};
+use cuteui::{AppContext, Entity, EntityId, ModelContext, ModelHandle};
 
 use super::anchor::{Anchor, AnchorSide, Anchors};
 use super::cursor::BufferCursor;
@@ -833,7 +833,7 @@ impl Buffer {
         selection_model: ModelHandle<BufferSelectionModel>,
         ctx: &mut ModelContext<Self>,
     ) -> Self {
-        let parse_fn = if warp_core::features::FeatureFlag::MarkdownTables.is_enabled() {
+        let parse_fn = if cute_core::features::FeatureFlag::MarkdownTables.is_enabled() {
             parse_markdown_with_gfm_tables
         } else {
             parse_markdown

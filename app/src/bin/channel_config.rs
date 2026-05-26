@@ -2,10 +2,10 @@
 //!
 //! For non-bundled builds, the generator is invoked at runtime. For bundled builds, the config
 //! is embedded at compile time via the build script.
-use warp_core::channel::ChannelConfig;
+use cute_core::channel::ChannelConfig;
 
 /// The name of the config generator binary, expected to be on PATH.
-const CONFIG_BIN_NAME: &str = "warp-channel-config";
+const CONFIG_BIN_NAME: &str = "cute-channel-config";
 
 #[macro_export]
 #[cfg(windows)]

@@ -1,1 +1,1 @@
-pub use warp_core::interval_timer::IntervalTimer;
+pub use cute_core::interval_timer::IntervalTimer;

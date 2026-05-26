@@ -1,4 +1,4 @@
-use warpui::text::TextBuffer;
+use cuteui::text::TextBuffer;
 
 use crate::vim::{Direction, FindCharDestination, FindCharMotion};
 

@@ -1,9 +1,9 @@
 [package]
 name = "repo_metadata"
-authors = ["Warp Team <dev@warp.dev>"]
+authors = ["Cute Team <dev@cute.dev>"]
 version = "0.1.0"
 edition = "2021"
-description = "Repository metadata utilities for Warp"
+description = "Repository metadata utilities for Cute"
 publish.workspace = true
 license.workspace = true
 
@@ -21,9 +21,9 @@ serde_json.workspace = true
 thiserror.workspace = true
 walkdir.workspace = true
 itertools.workspace = true
-warpui.workspace = true
-warp_core.workspace = true
-warp_util.workspace = true
+cuteui.workspace = true
+cute_core.workspace = true
+cute_util.workspace = true
 ignore = "0.4.23"
 once_cell.workspace = true
 log.workspace = true
@@ -47,4 +47,4 @@ anyhow.workspace = true
 env_logger.workspace = true
 futures = "0.3"
 virtual-fs.workspace = true
-warpui = { workspace = true, features = ["test-util"] }
+cuteui = { workspace = true, features = ["test-util"] }

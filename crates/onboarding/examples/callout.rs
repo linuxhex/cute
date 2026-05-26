@@ -7,13 +7,13 @@ use onboarding::components::onboarding_callout::{
 };
 use rust_embed::RustEmbed;
 use ui_components::Component as _;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::theme::{AnsiColor, AnsiColors, Details, Fill, TerminalColors, WarpTheme};
-use warpui::color::ColorU;
-use warpui::elements::{Rect, Stack};
-use warpui::fonts::{Cache, FamilyId, Weight};
-use warpui::prelude::*;
-use warpui::{platform, AddWindowOptions, AssetProvider, ModelContext};
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::theme::{AnsiColor, AnsiColors, Details, Fill, TerminalColors, CuteTheme};
+use cuteui::color::ColorU;
+use cuteui::elements::{Rect, Stack};
+use cuteui::fonts::{Cache, FamilyId, Weight};
+use cuteui::prelude::*;
+use cuteui::{platform, AddWindowOptions, AssetProvider, ModelContext};
 
 #[derive(Clone, Copy, RustEmbed)]
 #[folder = "../../app/assets"]
@@ -82,7 +82,7 @@ impl View for RootView {
         let callout = self.callout.render(
             appearance,
             CalloutParams {
-                title: "Meet your Warp input".into(),
+                title: "Meet your Cute input".into(),
                 text: "Your terminal input can detect natural language as well as commands.".into(),
                 step: StepStatus::new(1, 2),
                 right_button: CalloutButton {
@@ -116,7 +116,7 @@ impl TypedActionView for RootView {
     fn handle_action(&mut self, _action: &Self::Action, _ctx: &mut ViewContext<Self>) {}
 }
 
-fn mock_theme() -> WarpTheme {
+fn mock_theme() -> CuteTheme {
     let normal = AnsiColors::new(
         AnsiColor::from_u32(0x121212FF),
         AnsiColor::from_u32(0xC76156FF),
@@ -139,7 +139,7 @@ fn mock_theme() -> WarpTheme {
         AnsiColor::from_u32(0xFFFFFFFF),
     );
 
-    WarpTheme::new(
+    CuteTheme::new(
         Fill::Solid(ColorU::from_u32(0x1D2022FF)),
         ColorU::from_u32(0xE4EEF5FF),
         Fill::Solid(ColorU::from_u32(0x6C96B4FF)),
@@ -152,7 +152,7 @@ fn mock_theme() -> WarpTheme {
 }
 
 fn build_appearance(
-    theme: WarpTheme,
+    theme: CuteTheme,
     ui_font_family: FamilyId,
     ctx: &mut ModelContext<Appearance>,
 ) -> Appearance {

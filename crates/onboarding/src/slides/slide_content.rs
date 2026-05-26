@@ -1,9 +1,9 @@
-use warp_core::ui::appearance::Appearance;
-use warpui::elements::{
+use cute_core::ui::appearance::Appearance;
+use cuteui::elements::{
     Align, ClippedScrollStateHandle, ClippedScrollable, Container, CrossAxisAlignment, Flex,
     MainAxisSize, ParentElement, ScrollbarWidth, Shrinkable,
 };
-use warpui::Element;
+use cuteui::Element;
 
 pub fn onboarding_slide_content(
     children: Vec<Box<dyn Element>>,

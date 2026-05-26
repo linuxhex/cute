@@ -1,0 +1,24 @@
+{
+  "requirement_id": "OMJF-12300",
+  "requirement_key": "minimal-terminal",
+  "phase": "commit",
+  "stage": "completed",
+  "main_project": "/Users/caomunian/Study/cute",
+  "branch": "main",
+  "created_at": "2026-05-25",
+  "updated_at": "2026-05-26",
+  "progress": {
+    "completed": [
+      "删除所有云相关目录和文件",
+      "创建最小化 terminal 模块",
+      "创建最小化 server 模块",
+      "简化 app_state.rs",
+      "简化 lib.rs",
+      "简化 bin 文件",
+      "编译通过",
+      "推演收敛完成"
+    ],
+    "remaining_errors": 0,
+    "next_steps": []
+  }
+}

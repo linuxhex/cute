@@ -8,20 +8,20 @@ use std::time::Duration;
 use lazy_static::lazy_static;
 use pathfinder_geometry::vector::{vec2f, Vector2F};
 use settings::ToggleableSetting;
-use warp::cmd_or_ctrl_shift;
-use warp::features::FeatureFlag;
-use warp::integration_testing::clipboard::assert_clipboard_contains_string;
-use warp::integration_testing::step::new_step_with_default_assertions;
-use warp::integration_testing::terminal::{
+use cute::cmd_or_ctrl_shift;
+use cute::features::FeatureFlag;
+use cute::integration_testing::clipboard::assert_clipboard_contains_string;
+use cute::integration_testing::step::new_step_with_default_assertions;
+use cute::integration_testing::terminal::{
     assert_view_has_text_selection, clear_blocklist_to_remove_bootstrapped_blocks,
     execute_echo_str, wait_until_bootstrapped_single_pane_for_tab,
 };
-use warp::integration_testing::view_getters::single_terminal_view_for_tab;
-use warp::settings::SelectionSettings;
-use warp_multi_agent_api as api;
-use warpui::integration::TestStep;
-use warpui::text::SelectionType;
-use warpui::{async_assert, Event, SingletonEntity};
+use cute::integration_testing::view_getters::single_terminal_view_for_tab;
+use cute::settings::SelectionSettings;
+use cute_multi_agent_api as api;
+use cuteui::integration::TestStep;
+use cuteui::text::SelectionType;
+use cuteui::{async_assert, Event, SingletonEntity};
 
 use super::new_builder;
 use crate::util::skip_if_powershell_core_2303;
@@ -106,7 +106,7 @@ fn builder_with_setup() -> Builder {
 }
 
 fn markdown_visuals_fixture_directory() -> String {
-    let fixture_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../warpui_core/test_data");
+    let fixture_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../cuteui_core/test_data");
     fixture_dir
         .canonicalize()
         .unwrap_or(fixture_dir)

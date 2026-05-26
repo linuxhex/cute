@@ -34,7 +34,7 @@ objc2-app-kit.workspace = true
 objc2-core-foundation.workspace = true
 objc2-core-graphics.workspace = true
 tempfile.workspace = true
-warpui.workspace = true
+cuteui.workspace = true
 
 [dev-dependencies]
 computer_use = { path = ".", features = ["test-util"] }

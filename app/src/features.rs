@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
-use warp_core::channel::ChannelState;
-pub use warp_core::features::*;
+use cute_core::channel::ChannelState;
+pub use cute_core::features::*;
 
 /// Mark all features which should be enabled on the current channel as enabled.
 /// This sets global feature flag state and should never be called in a unit test.
@@ -83,8 +83,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::IntegrationCommand,
         #[cfg(feature = "artifact_command")]
         FeatureFlag::ArtifactCommand,
-        #[cfg(feature = "cloud_environments")]
-        FeatureFlag::CloudEnvironments,
         #[cfg(all(feature = "simulate_github_unauthed", debug_assertions))]
         FeatureFlag::SimulateGithubUnauthed,
         #[cfg(feature = "session_sharing_acls")]
@@ -121,8 +119,8 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::AutoupdateUIRevamp,
         #[cfg(all(not(windows), feature = "kitty_images"))]
         FeatureFlag::KittyImages,
-        #[cfg(feature = "warp_packs")]
-        FeatureFlag::WarpPacks,
+        #[cfg(feature = "cute_packs")]
+        FeatureFlag::CutePacks,
         #[cfg(feature = "global_ai_analytics_banner")]
         FeatureFlag::GlobalAIAnalyticsBanner,
         #[cfg(feature = "global_ai_analytics_collection")]
@@ -147,8 +145,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::PredictAMQueries,
         #[cfg(feature = "full_source_code_embedding")]
         FeatureFlag::FullSourceCodeEmbedding,
-        #[cfg(feature = "remote_codebase_indexing")]
-        FeatureFlag::RemoteCodebaseIndexing,
         #[cfg(feature = "use_tantivy_search")]
         FeatureFlag::UseTantivySearch,
         #[cfg(feature = "grep_tool")]
@@ -243,8 +239,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::WelcomeTab,
         #[cfg(feature = "projects")]
         FeatureFlag::Projects,
-        #[cfg(feature = "drive_objects_as_context")]
-        FeatureFlag::DriveObjectsAsContext,
         #[cfg(feature = "pr_comments_slash_command")]
         FeatureFlag::PRCommentsSlashCommand,
         #[cfg(feature = "pr_comments_v2")]
@@ -281,12 +275,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::ConversationApi,
         #[cfg(feature = "code_launch_modal")]
         FeatureFlag::CodeLaunchModal,
-        #[cfg(feature = "api_key_authentication")]
-        FeatureFlag::APIKeyAuthentication,
-        #[cfg(feature = "api_key_management")]
-        FeatureFlag::APIKeyManagement,
-        #[cfg(feature = "mcp_oauth")]
-        FeatureFlag::McpOauth,
         #[cfg(feature = "file_based_mcp")]
         FeatureFlag::FileBasedMcp,
         #[cfg(feature = "diff_set_as_context")]
@@ -303,8 +291,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::AutoOpenCodeReviewPane,
         #[cfg(feature = "inline_code_review")]
         FeatureFlag::InlineCodeReview,
-        #[cfg(feature = "create_environment_slash_command")]
-        FeatureFlag::CreateEnvironmentSlashCommand,
         #[cfg(feature = "summarize_conversation_command")]
         FeatureFlag::SummarizationConversationCommand,
         #[cfg(feature = "mcp_grouped_server_context")]
@@ -335,8 +321,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::AgentView,
         #[cfg(feature = "agent_view_block_context")]
         FeatureFlag::AgentViewBlockContext,
-        #[cfg(feature = "warp_managed_secrets")]
-        FeatureFlag::WarpManagedSecrets,
         #[cfg(feature = "v4a_file_diffs")]
         FeatureFlag::V4AFileDiffs,
         #[cfg(feature = "interactive_conversation_management_view")]
@@ -353,8 +337,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::TeamApiKeys,
         #[cfg(feature = "named_agents")]
         FeatureFlag::NamedAgents,
-        #[cfg(feature = "cloud_conversations")]
-        FeatureFlag::CloudConversations,
         #[cfg(feature = "agent_toolbar_editor")]
         FeatureFlag::AgentToolbarEditor,
         #[cfg(feature = "configurable_toolbar")]
@@ -373,12 +355,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::InlineHistoryMenu,
         #[cfg(feature = "inline_repo_menu")]
         FeatureFlag::InlineRepoMenu,
-        #[cfg(feature = "cloud_mode")]
-        FeatureFlag::CloudMode,
-        #[cfg(feature = "cloud_mode_from_local_session")]
-        FeatureFlag::CloudModeFromLocalSession,
-        #[cfg(feature = "cloud_mode_image_context")]
-        FeatureFlag::CloudModeImageContext,
         #[cfg(feature = "summarization_via_message_replacement")]
         FeatureFlag::SummarizationViaMessageReplacement,
         #[cfg(feature = "pluggable_notifications")]
@@ -403,8 +379,8 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::BundledSkills,
         #[cfg(feature = "oz_launch_modal")]
         FeatureFlag::OzLaunchModal,
-        #[cfg(feature = "open_warp_launch_modal")]
-        FeatureFlag::OpenWarpLaunchModal,
+        #[cfg(feature = "open_cute_launch_modal")]
+        FeatureFlag::OpenCuteLaunchModal,
         #[cfg(feature = "orchestration_launch_modal")]
         FeatureFlag::OrchestrationLaunchModal,
         #[cfg(feature = "new_tab_styling")]
@@ -435,8 +411,8 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::InlineMenuHeaders,
         #[cfg(feature = "directory_tab_colors")]
         FeatureFlag::DirectoryTabColors,
-        #[cfg(feature = "open_warp_new_settings_modes")]
-        FeatureFlag::OpenWarpNewSettingsModes,
+        #[cfg(feature = "open_cute_new_settings_modes")]
+        FeatureFlag::OpenCuteNewSettingsModes,
         #[cfg(feature = "hoa_code_review")]
         FeatureFlag::HoaCodeReview,
         #[cfg(feature = "vertical_tabs")]
@@ -449,8 +425,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::AgentHarness,
         #[cfg(feature = "oz_handoff")]
         FeatureFlag::OzHandoff,
-        #[cfg(feature = "handoff_local_cloud")]
-        FeatureFlag::HandoffLocalCloud,
         #[cfg(feature = "hoa_notifications")]
         FeatureFlag::HOANotifications,
         #[cfg(feature = "open_code_notifications")]
@@ -459,32 +433,24 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::CLIAgentRichInput,
         #[cfg(feature = "transfer_control_tool")]
         FeatureFlag::TransferControlTool,
-        #[cfg(feature = "warpify_footer")]
-        FeatureFlag::WarpifyFooter,
+        #[cfg(feature = "cuteify_footer")]
+        FeatureFlag::CuteifyFooter,
         #[cfg(feature = "solo_user_byok")]
         FeatureFlag::SoloUserByok,
-        #[cfg(feature = "billing_and_usage_page_v2")]
-        FeatureFlag::BillingAndUsagePageV2,
         #[cfg(feature = "skip_firebase_anonymous_user")]
         FeatureFlag::SkipFirebaseAnonymousUser,
         #[cfg(feature = "hoa_onboarding_flow")]
         FeatureFlag::HOAOnboardingFlow,
         #[cfg(feature = "git_operations_in_code_review")]
         FeatureFlag::GitOperationsInCodeReview,
-        #[cfg(feature = "hoa_remote_control")]
-        FeatureFlag::HOARemoteControl,
         #[cfg(feature = "codex_notifications")]
         FeatureFlag::CodexNotifications,
         #[cfg(feature = "trim_trailing_blank_lines")]
+        FeatureFlag::CodexNotifications,
+        #[cfg(feature = "trim_trailing_blank_lines")]
         FeatureFlag::TrimTrailingBlankLines,
-        #[cfg(feature = "cloud_mode_setup_v2")]
-        FeatureFlag::CloudModeSetupV2,
-        #[cfg(feature = "cloud_mode_input_v2")]
-        FeatureFlag::CloudModeInputV2,
         #[cfg(feature = "configurable_context_window")]
         FeatureFlag::ConfigurableContextWindow,
-        #[cfg(feature = "handoff_cloud_cloud")]
-        FeatureFlag::HandoffCloudCloud,
         #[cfg(feature = "git_credential_refresh")]
         FeatureFlag::GitCredentialRefresh,
         #[cfg(feature = "remote_code_review")]

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use warp::settings::INPUT_MODE;
-use warp::terminal::block_list_viewport::InputMode;
+use cute::settings::INPUT_MODE;
+use cute::terminal::block_list_viewport::InputMode;
 
 /// Returns a user defaults map with the `InputMode` set to `input_mode`.
 #[allow(dead_code)]

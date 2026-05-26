@@ -1,21 +1,21 @@
-use warp::integration_testing::clipboard::assert_clipboard_contains_string;
-use warp::integration_testing::secret_redaction::{
+use cute::integration_testing::clipboard::assert_clipboard_contains_string;
+use cute::integration_testing::secret_redaction::{
     assert_secret_tooltip_open, assert_secrets_redacted_for_ai,
 };
-use warp::integration_testing::settings::toggle_setting;
-use warp::integration_testing::step::new_step_with_default_assertions;
-use warp::integration_testing::terminal::util::ExpectedExitStatus;
-use warp::integration_testing::terminal::{
+use cute::integration_testing::settings::toggle_setting;
+use cute::integration_testing::step::new_step_with_default_assertions;
+use cute::integration_testing::terminal::util::ExpectedExitStatus;
+use cute::integration_testing::terminal::{
     assert_selected_block_index_is_last_renderable, execute_command_for_single_terminal_in_tab,
     initialize_secret_regexes, open_context_menu_for_selected_block, run_alt_grid_program,
     wait_until_bootstrapped_single_pane_for_tab,
 };
-use warp::integration_testing::view_getters::single_terminal_view;
-use warp::settings_view::{PrivacyPageAction, SettingsAction};
-use warp::terminal::model::index::Point;
-use warp::terminal::model::terminal_model::WithinModel;
-use warpui::async_assert;
-use warpui::integration::TestStep;
+use cute::integration_testing::view_getters::single_terminal_view;
+use cute::settings_view::{PrivacyPageAction, SettingsAction};
+use cute::terminal::model::index::Point;
+use cute::terminal::model::terminal_model::WithinModel;
+use cuteui::async_assert;
+use cuteui::integration::TestStep;
 
 use super::{new_builder, Builder};
 use crate::util::skip_if_powershell_core_2303;

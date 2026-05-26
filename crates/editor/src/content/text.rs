@@ -25,12 +25,12 @@ use rand::Rng;
 use serde::{Deserialize, Serialize};
 use string_offset::{ByteOffset, CharOffset, impl_offset};
 use sum_tree::{Cursor, SeekBias, SumTree};
-use warp_core::features::FeatureFlag;
-use warpui::AppContext;
-use warpui::elements::ListIndentLevel;
-use warpui::fonts::{Properties, Style, Weight};
-use warpui::text::BlockHeaderSize as HeaderSize;
-use warpui::text::point::Point;
+use cute_core::features::FeatureFlag;
+use cuteui::AppContext;
+use cuteui::elements::ListIndentLevel;
+use cuteui::fonts::{Properties, Style, Weight};
+use cuteui::text::BlockHeaderSize as HeaderSize;
+use cuteui::text::point::Point;
 
 use super::buffer::Buffer;
 use super::core::CursorType;

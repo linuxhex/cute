@@ -43,11 +43,11 @@ integration_tests! {
     // Tests zsh-specific behavior.
     test_auto_title,
     // Tests zsh-specific behavior.
-    test_warp_auto_title_disabled,
+    test_cute_auto_title_disabled,
     // Tests bash-specific behavior.
-    test_warp_honors_user_title_bash,
+    test_cute_honors_user_title_bash,
     // Tests zsh-specific behavior.
-    test_warp_honors_user_title_zsh,
+    test_cute_honors_user_title_zsh,
     // Tests OSC 7 updates the block's working directory on bash and zsh.
     test_osc7_updates_current_working_directory,
     // Tests shell-specific "autocd" behavior.

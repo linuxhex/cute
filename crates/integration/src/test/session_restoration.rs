@@ -1,26 +1,26 @@
 use settings::{RespectUserSyncSetting, SyncToCloud};
-use warp::features::FeatureFlag;
-use warp::integration_testing::notebook::{
+use cute::features::FeatureFlag;
+use cute::integration_testing::notebook::{
     assert_cloud_preference_exists, assert_notebook_contents, assert_notebook_metadata_revision,
 };
-use warp::integration_testing::step::{
+use cute::integration_testing::step::{
     new_step_with_default_assertions, new_step_with_default_assertions_for_pane,
 };
-use warp::integration_testing::tab::assert_pane_title;
-use warp::integration_testing::terminal::wait_until_bootstrapped_single_pane_for_tab;
-use warp::integration_testing::view_getters::single_terminal_view_for_tab;
-use warp::integration_testing::workflow::assert_workflow_metadata_revision;
-use warp::integration_testing::{self};
-use warp::settings::Preference;
-use warp::settings_view::{SettingsSection, SettingsView};
-use warp::sqlite_testing::set_user_and_hostname_for_blocks;
-use warp::terminal::model::session::get_local_hostname;
-use warp::terminal::model::terminal_model::BlockIndex;
-use warp::terminal::shell::ShellType;
-use warp::terminal::{History, ShellHost, TerminalView};
-use warp::workspace::Workspace;
-use warpui::integration::{AssertionOutcome, TestStep};
-use warpui::{async_assert_eq, SingletonEntity, ViewHandle};
+use cute::integration_testing::tab::assert_pane_title;
+use cute::integration_testing::terminal::wait_until_bootstrapped_single_pane_for_tab;
+use cute::integration_testing::view_getters::single_terminal_view_for_tab;
+use cute::integration_testing::workflow::assert_workflow_metadata_revision;
+use cute::integration_testing::{self};
+use cute::settings::Preference;
+use cute::settings_view::{SettingsSection, SettingsView};
+use cute::sqlite_testing::set_user_and_hostname_for_blocks;
+use cute::terminal::model::session::get_local_hostname;
+use cute::terminal::model::terminal_model::BlockIndex;
+use cute::terminal::shell::ShellType;
+use cute::terminal::{History, ShellHost, TerminalView};
+use cute::workspace::Workspace;
+use cuteui::integration::{AssertionOutcome, TestStep};
+use cuteui::{async_assert_eq, SingletonEntity, ViewHandle};
 
 use super::{new_builder, Builder, TEST_ONLY_ASSETS};
 use crate::util::{get_local_user, tab_title_in_home_dir};
@@ -77,7 +77,7 @@ pub fn test_session_restoration() -> Builder {
 /// always get added. The mock data for this case looks like this:
 /// | command            | output       | shell | user       | host          |
 /// | ------------------ | ------------ | ----- | ---------- | ------------- |
-/// | echo $TERM_PROGRAM | WarpTerminal | zsh   | local:user | local:host    |
+/// | echo $TERM_PROGRAM | CuteTerminal | zsh   | local:user | local:host    |
 /// | pwd                | /            | bash  | local:user | local:host    |
 /// | uname              | Linux        | zsh   | andy       | ubuntu-test   |
 /// | mkdir secrets      | secrets      | NULL  | NULL       | NULL          |
@@ -417,8 +417,8 @@ pub fn test_restore_snapshot_with_test_json_object() -> Builder {
 
 /// Tests restoring a snapshot that has multiple objects with the same shareable_object_id
 /// in the metadata table.  This test verifies a regression introduced in
-/// https://github.com/warpdotdev/warp-internal/pull/7406 and fixed in
-/// https://github.com/warpdotdev/warp-internal/pull/7480
+/// https://github.com/cutedotdev/cute-internal/pull/7406 and fixed in
+/// https://github.com/cutedotdev/cute-internal/pull/7480
 ///
 /// The two objects have server ids Workflow-ftv7on4HwTeixO2xF5hmKf and Notebook-Flbu686H9XDCHZlYRriVpB
 /// and shareable_object_id 2.

@@ -1,5 +1,5 @@
 //! This module defines a set of macros to standardize and simplify the process
-//! of defining new settings within Warp.
+//! of defining new settings within Cute.
 //!
 //! Settings are defined as enums or structs that implement [`Setting`], and are
 //! organized into groups in singleton models which contain one or more settings
@@ -109,11 +109,11 @@
 //! Once you've defined a setting, usage is straightforward:
 //!
 //! ```
-//! # use warpui::*;
+//! # use cuteui::*;
 //! # use settings::macros::*;
 //! # use settings::manager::SettingsManager;
 //! # use settings::*;
-//! # use warpui_extras::user_preferences;
+//! # use cuteui_extras::user_preferences;
 //! define_settings_group!(ExampleGroup, settings: [
 //!     bool_setting: BoolSetting {
 //!         type: bool,
@@ -312,7 +312,7 @@ macro_rules! define_setting {
 
             fn clear_value(
                 &mut self,
-                ctx: &mut warpui::ModelContext<Self::Group>,
+                ctx: &mut cuteui::ModelContext<Self::Group>,
             ) -> anyhow::Result<()> {
                 use $crate::ChangeEventReason;
                 Self::clear_from_preferences(Self::preferences_for_setting(ctx))?;
@@ -327,7 +327,7 @@ macro_rules! define_setting {
             fn set_value_from_cloud_sync(
                 &mut self,
                 new_value: Self::Value,
-                ctx: &mut warpui::ModelContext<Self::Group>,
+                ctx: &mut cuteui::ModelContext<Self::Group>,
             ) -> anyhow::Result<()> {
                 use $crate::ChangeEventReason;
                 let changed_in_storage =
@@ -345,7 +345,7 @@ macro_rules! define_setting {
             fn set_value(
                 &mut self,
                 new_value: Self::Value,
-                ctx: &mut warpui::ModelContext<Self::Group>,
+                ctx: &mut cuteui::ModelContext<Self::Group>,
             ) -> anyhow::Result<()> {
                 use $crate::ChangeEventReason;
                 let changed_in_storage =
@@ -364,7 +364,7 @@ macro_rules! define_setting {
                 &mut self,
                 new_value: Self::Value,
                 explicitly_set: bool,
-                ctx: &mut warpui::ModelContext<Self::Group>,
+                ctx: &mut cuteui::ModelContext<Self::Group>,
             ) -> anyhow::Result<()> {
                 use $crate::ChangeEventReason;
                 let validated = self.validate(new_value);
@@ -582,7 +582,7 @@ macro_rules! implement_setting_for_enum {
 
             fn clear_value(
                 &mut self,
-                ctx: &mut warpui::ModelContext<Self::Group>,
+                ctx: &mut cuteui::ModelContext<Self::Group>,
             ) -> anyhow::Result<()> {
                 use $crate::ChangeEventReason;
                 Self::clear_from_preferences(Self::preferences_for_setting(ctx))?;
@@ -596,7 +596,7 @@ macro_rules! implement_setting_for_enum {
             fn set_value_from_cloud_sync(
                 &mut self,
                 new_value: Self::Value,
-                ctx: &mut warpui::ModelContext<Self::Group>,
+                ctx: &mut cuteui::ModelContext<Self::Group>,
             ) -> anyhow::Result<()> {
                 use $crate::ChangeEventReason;
                 let changed_in_storage =
@@ -613,7 +613,7 @@ macro_rules! implement_setting_for_enum {
             fn set_value(
                 &mut self,
                 new_value: Self::Value,
-                ctx: &mut warpui::ModelContext<Self::Group>,
+                ctx: &mut cuteui::ModelContext<Self::Group>,
             ) -> anyhow::Result<()> {
                 use $crate::ChangeEventReason;
                 let changed_in_storage =
@@ -631,7 +631,7 @@ macro_rules! implement_setting_for_enum {
                 &mut self,
                 new_value: Self::Value,
                 _explicitly_set: bool,
-                ctx: &mut warpui::ModelContext<Self::Group>,
+                ctx: &mut cuteui::ModelContext<Self::Group>,
             ) -> anyhow::Result<()> {
                 use $crate::ChangeEventReason;
                 let validated = self.validate(new_value);
@@ -714,7 +714,7 @@ macro_rules! define_settings_group {
 
         impl $group {
             #[allow(dead_code)]
-            fn new_from_storage(ctx: &mut warpui::ModelContext<Self>) -> Self {
+            fn new_from_storage(ctx: &mut cuteui::ModelContext<Self>) -> Self {
                 use $crate::Setting;
                 Self {
                     $(
@@ -725,7 +725,7 @@ macro_rules! define_settings_group {
 
             #[cfg(any(test, feature = "integration_tests"))]
             #[allow(dead_code)]
-            pub fn new_with_defaults(_ctx: &mut warpui::ModelContext<Self>) -> Self {
+            pub fn new_with_defaults(_ctx: &mut cuteui::ModelContext<Self>) -> Self {
                 use $crate::Setting;
                 Self {
                     $(
@@ -735,7 +735,7 @@ macro_rules! define_settings_group {
             }
 
             #[allow(dead_code)]
-            pub fn register(ctx: &mut (impl warpui::GetSingletonModelHandle + warpui::AddSingletonModel + warpui::UpdateModel)) -> warpui::ModelHandle<Self> {
+            pub fn register(ctx: &mut (impl cuteui::GetSingletonModelHandle + cuteui::AddSingletonModel + cuteui::UpdateModel)) -> cuteui::ModelHandle<Self> {
                 let settings_group = ctx.add_singleton_model(|ctx| {
                     Self::new_from_storage(ctx)
                 });
@@ -781,12 +781,12 @@ macro_rules! define_settings_group {
                 )*
             }
 
-            impl warpui::Entity for $group {
+            impl cuteui::Entity for $group {
                 type Event = EventName;
             }
         });
 
-        impl warpui::SingletonEntity for $group {}
+        impl cuteui::SingletonEntity for $group {}
     };
 }
 pub use define_settings_group;
@@ -816,16 +816,16 @@ macro_rules! generate_settings_event_fn {
             #[allow(dead_code)]
             #[allow(non_snake_case)]
             fn fn_name(
-                settings_group: warpui::ModelHandle<$group>,
+                settings_group: cuteui::ModelHandle<$group>,
                 ctx: &mut (
-                         impl warpui::GetSingletonModelHandle
-                         + warpui::AddSingletonModel
-                         + warpui::UpdateModel
+                         impl cuteui::GetSingletonModelHandle
+                         + cuteui::AddSingletonModel
+                         + cuteui::UpdateModel
                      ),
             ) {
                 use anyhow::anyhow;
                 use serde_json;
-                use warpui::SingletonEntity;
+                use cuteui::SingletonEntity;
                 use $crate::Setting as _;
                 use $crate::manager::{SettingsEvent, SettingsManager};
                 SettingsManager::handle(ctx).update(ctx, |manager, ctx| {

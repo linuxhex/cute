@@ -1,16 +1,16 @@
-use warp::cmd_or_ctrl_shift;
-use warp::integration_testing::terminal::util::current_shell_starter_and_version;
-use warp::integration_testing::terminal::{
+use cute::cmd_or_ctrl_shift;
+use cute::integration_testing::terminal::util::current_shell_starter_and_version;
+use cute::integration_testing::terminal::{
     assert_context_menu_is_open, initialize_secret_regexes,
     wait_until_bootstrapped_single_pane_for_tab,
 };
-use warp::integration_testing::view_getters::single_terminal_view_for_tab;
-use warp::settings_view::{PrivacyPageAction, SettingsAction};
-use warp::terminal::model::index::Point;
-use warp::terminal::model::terminal_model::{BlockIndex, WithinBlock, WithinModel};
-use warp::terminal::shell::ShellType;
-use warp::terminal::GridType;
-use warpui::{async_assert, async_assert_eq};
+use cute::integration_testing::view_getters::single_terminal_view_for_tab;
+use cute::settings_view::{PrivacyPageAction, SettingsAction};
+use cute::terminal::model::index::Point;
+use cute::terminal::model::terminal_model::{BlockIndex, WithinBlock, WithinModel};
+use cute::terminal::shell::ShellType;
+use cute::terminal::GridType;
+use cuteui::{async_assert, async_assert_eq};
 
 use super::new_builder;
 use crate::test::integration_testing::block_filtering::{

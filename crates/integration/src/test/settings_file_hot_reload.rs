@@ -2,23 +2,23 @@
 //!
 //! Verifies that changes to `settings.toml` on disk are picked up by the
 //! filesystem watcher and pushed into the in-memory setting models, on every
-//! platform where Warp watches `config_local_dir()`.
+//! platform where Cute watches `config_local_dir()`.
 
 use std::time::Duration;
 
 use settings::Setting as _;
-use warp::features::FeatureFlag;
-use warp::integration_testing::step::new_step_with_default_assertions;
-use warp::integration_testing::terminal::wait_until_bootstrapped_single_pane_for_tab;
-use warp::settings::FontSettings;
-use warpui::integration::TestStep;
-use warpui::{async_assert_eq, SingletonEntity};
+use cute::features::FeatureFlag;
+use cute::integration_testing::step::new_step_with_default_assertions;
+use cute::integration_testing::terminal::wait_until_bootstrapped_single_pane_for_tab;
+use cute::settings::FontSettings;
+use cuteui::integration::TestStep;
+use cuteui::{async_assert_eq, SingletonEntity};
 
 use super::{new_builder, Builder};
 
 /// Helper: returns the path to the TOML settings file.
 fn toml_file_path() -> std::path::PathBuf {
-    warp::settings::user_preferences_toml_file_path()
+    cute::settings::user_preferences_toml_file_path()
 }
 
 /// Verifies the full settings hot-reload pipeline end-to-end: the filesystem

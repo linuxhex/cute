@@ -2,12 +2,12 @@ use std::time::Duration;
 
 use ai::LLMId;
 use instant::Instant;
-use warp_core::features::FeatureFlag;
-use warp_core::send_telemetry_from_ctx;
-use warpui::assets::asset_cache::AssetSource;
-use warpui::image_cache::ImageType;
-use warpui::windowing::state::{ApplicationStage, StateEvent};
-use warpui::windowing::WindowManager;
+use cute_core::features::FeatureFlag;
+use cute_core::send_telemetry_from_ctx;
+use cuteui::assets::asset_cache::AssetSource;
+use cuteui::image_cache::ImageType;
+use cuteui::windowing::state::{ApplicationStage, StateEvent};
+use cuteui::windowing::WindowManager;
 
 use crate::model::{
     OnboardingAuthState, OnboardingStateEvent, OnboardingStateModel, OnboardingStep,
@@ -24,16 +24,16 @@ const APP_BECAME_ACTIVE_DEBOUNCE: Duration = Duration::from_secs(15);
 
 use pathfinder_geometry::vector::vec2f;
 use ui_components::{button, Component as _, Options as _};
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::theme::WarpTheme;
-use warpui::elements::{
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::theme::CuteTheme;
+use cuteui::elements::{
     CacheOption, ChildAnchor, Container, Empty, Image, OffsetPositioning, ParentAnchor,
     ParentElement, ParentOffsetBounds, Rect, Shrinkable, Stack,
 };
-use warpui::keymap::macros::*;
-use warpui::keymap::{FixedBinding, Keystroke};
-use warpui::presenter::ChildView;
-use warpui::{
+use cuteui::keymap::macros::*;
+use cuteui::keymap::{FixedBinding, Keystroke};
+use cuteui::presenter::ChildView;
+use cuteui::{
     AppContext, Element, Entity, ModelHandle, SingletonEntity as _, TypedActionView, View,
     ViewContext, ViewHandle,
 };
@@ -111,7 +111,7 @@ impl AgentOnboardingView {
     /// Creates a new AgentOnboardingView.
     #[allow(clippy::too_many_arguments)]
     pub fn new(
-        theme_picker_themes: [WarpTheme; 4],
+        theme_picker_themes: [CuteTheme; 4],
         skippable: bool,
         models: Vec<OnboardingModelInfo>,
         default_model_id: LLMId,
@@ -323,7 +323,7 @@ impl AgentOnboardingView {
         ctx.focus_self();
 
         // Preload customize-slide images so they're ready when the user reaches that slide.
-        if FeatureFlag::OpenWarpNewSettingsModes.is_enabled() {
+        if FeatureFlag::OpenCuteNewSettingsModes.is_enabled() {
             Self::preload_onboarding_images(ctx);
         }
 
@@ -339,7 +339,7 @@ impl AgentOnboardingView {
     /// Eagerly loads all onboarding slide images into the asset cache
     /// so they display instantly when the user navigates between slides.
     fn preload_onboarding_images(ctx: &mut ViewContext<Self>) {
-        let asset_cache = warpui::assets::asset_cache::AssetCache::as_ref(ctx);
+        let asset_cache = cuteui::assets::asset_cache::AssetCache::as_ref(ctx);
         // Preload the shared background image used on all right panels.
         asset_cache.load_asset::<ImageType>(AssetSource::Bundled {
             path: crate::slides::layout::ONBOARDING_BG_PATH,

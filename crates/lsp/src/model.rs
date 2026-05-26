@@ -15,11 +15,11 @@ use lsp_types::{
 #[cfg(not(target_arch = "wasm32"))]
 use simple_logger::manager::LogManager;
 #[cfg(not(target_arch = "wasm32"))]
-use warp_core::features::FeatureFlag;
-use warpui::r#async::executor::Background;
+use cute_core::features::FeatureFlag;
+use cuteui::r#async::executor::Background;
 #[cfg(not(target_arch = "wasm32"))]
-use warpui::SingletonEntity;
-use warpui::{Entity, ModelContext};
+use cuteui::SingletonEntity;
+use cuteui::{Entity, ModelContext};
 
 use crate::config::{lsp_uri_to_path, LanguageId};
 use crate::server_repo_watcher::LspRepoWatcher;

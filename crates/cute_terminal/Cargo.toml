@@ -1,0 +1,40 @@
+[package]
+authors = ["Cute Team <dev@cute.dev>"]
+edition = "2021"
+name = "cute_terminal"
+publish.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+bitflags.workspace = true
+bitflags-serde-legacy.workspace = true
+cfg-if.workspace = true
+channel_versions.workspace = true
+enum-iterator.workspace = true
+get-size.workspace = true
+itertools.workspace = true
+lazy_static.workspace = true
+log.workspace = true
+pathfinder_color.workspace = true
+regex.workspace = true
+serde.workspace = true
+smol_str.workspace = true
+string-offset.workspace = true
+static_assertions.workspace = true
+thiserror.workspace = true
+typed-path.workspace = true
+unicode-width.workspace = true
+uuid.workspace = true
+version-compare.workspace = true
+vte.workspace = true
+# cute_completer.workspace = true
+cute_core.workspace = true
+cute_util.workspace = true
+cuteui.workspace = true
+
+[dev-dependencies]
+unicode-segmentation = "1.11.0"
+
+[features]
+test-util = []

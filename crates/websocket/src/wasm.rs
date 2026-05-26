@@ -32,11 +32,6 @@ impl WebSocket {
         (sink, stream.map(Ok::<_, ws_stream_wasm::WsErr>))
     }
 
-    pub async fn into_graphql_client_builder(self) -> graphql_ws_client::ClientBuilder {
-        graphql_ws_client::Client::build(
-            graphql_ws_client::ws_stream_wasm::Connection::new((self.meta, self.stream)).await,
-        )
-    }
 }
 
 impl WebsocketMessage for WsMessage {

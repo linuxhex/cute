@@ -12,10 +12,9 @@ path = "src/bin/main.rs"
 required-features = ["bin"]
 
 [features]
-bin = ["warpui/log_named_telemetry_events"]
+bin = ["cuteui/log_named_telemetry_events"]
 
 [dependencies]
-ai.workspace = true
 anyhow.workspace = true
 cfg-if.workspace = true
 instant.workspace = true
@@ -29,6 +28,7 @@ serde_json.workspace = true
 strum.workspace = true
 strum_macros.workspace = true
 uuid.workspace = true
-warp_core = { workspace = true }
-warpui.workspace = true
-warp_logging.workspace = true
+cute_core = { workspace = true }
+ai.workspace = true
+cuteui.workspace = true
+cute_logging.workspace = true

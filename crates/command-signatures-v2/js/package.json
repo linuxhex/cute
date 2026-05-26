@@ -8,7 +8,7 @@
     "watch": "npm run build -- --watch",
     "clean": "rm -r build"
   },
-  "author": "eng@warp.dev",
+  "author": "eng@cute.dev",
   "license": "",
   "devDependencies": {
     "typescript": "^5.2.2"

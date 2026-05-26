@@ -5,8 +5,6 @@ use std::collections::{HashMap, HashSet};
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use serde::{Deserialize, Deserializer, Serialize};
-use warp_multi_agent_api::response_event::stream_finished;
-use warp_multi_agent_api::{self as api};
 
 use super::schema::{
     active_mcp_servers, agent_conversations, agent_tasks, ai_document_panes, ai_memory_panes,
@@ -36,9 +34,9 @@ pub struct Window {
     pub origin_y: Option<f32>,
     pub quake_mode: bool,
     pub universal_search_width: Option<f32>,
-    pub warp_ai_width: Option<f32>,
+    pub cute_ai_width: Option<f32>,
     pub voltron_width: Option<f32>,
-    pub warp_drive_index_width: Option<f32>,
+    pub cute_drive_index_width: Option<f32>,
     pub fullscreen_state: i32,
     pub agent_management_filters: Option<String>,
     pub left_panel_open: Option<bool>,
@@ -92,7 +90,7 @@ pub struct Folder {
     pub id: i32,
     pub name: String,
     pub is_open: bool,
-    pub is_warp_pack: bool,
+    pub is_cute_pack: bool,
 }
 
 #[derive(Insertable)]
@@ -100,7 +98,7 @@ pub struct Folder {
 pub struct NewFolder {
     pub name: String,
     pub is_open: bool,
-    pub is_warp_pack: bool,
+    pub is_cute_pack: bool,
 }
 
 #[derive(Identifiable, Insertable, Queryable)]
@@ -333,9 +331,9 @@ pub struct NewWindow {
     pub origin_y: Option<f32>,
     pub quake_mode: bool,
     pub universal_search_width: Option<f32>,
-    pub warp_ai_width: Option<f32>,
+    pub cute_ai_width: Option<f32>,
     pub voltron_width: Option<f32>,
-    pub warp_drive_index_width: Option<f32>,
+    pub cute_drive_index_width: Option<f32>,
     pub fullscreen_state: i32,
     pub agent_management_filters: Option<String>,
     pub left_panel_open: Option<bool>,
@@ -753,7 +751,7 @@ pub struct Block {
     pub host: Option<String>,
     pub is_background: bool,
     pub rprompt: Option<String>,
-    /// JSON-serialized representation of the Warp prompt snapshot (Context Chips). Note that this
+    /// JSON-serialized representation of the Cute prompt snapshot (Context Chips). Note that this
     /// is different from PS1 and RPROMPT1
     pub prompt_snapshot: Option<String>,
     pub block_id: String,
@@ -1091,13 +1089,13 @@ pub fn token_usage_category_display_name(category: &str) -> String {
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct ModelTokenUsage {
     pub model_id: String,
-    /// Alias for backward compat: old persisted data used `total_tokens` for warp usage.
+    /// Alias for backward compat: old persisted data used `total_tokens` for cute usage.
     #[serde(default, alias = "total_tokens")]
-    pub warp_tokens: u32,
+    pub cute_tokens: u32,
     #[serde(default)]
     pub byok_tokens: u32,
     #[serde(default)]
-    pub warp_token_usage_by_category: HashMap<TokenUsageCategory, u32>,
+    pub cute_token_usage_by_category: HashMap<TokenUsageCategory, u32>,
     #[serde(default)]
     pub byok_token_usage_by_category: HashMap<TokenUsageCategory, u32>,
 }
@@ -1125,8 +1123,8 @@ impl ModelTokenUsage {
         ))
     }
 
-    pub fn to_proto_warp_usage(&self) -> Option<(String, stream_finished::ModelTokenUsage)> {
-        self.to_proto_usage(self.warp_tokens, &self.warp_token_usage_by_category)
+    pub fn to_proto_cute_usage(&self) -> Option<(String, stream_finished::ModelTokenUsage)> {
+        self.to_proto_usage(self.cute_tokens, &self.cute_token_usage_by_category)
     }
 
     pub fn to_proto_byok_usage(&self) -> Option<(String, stream_finished::ModelTokenUsage)> {
@@ -1137,9 +1135,9 @@ impl ModelTokenUsage {
     pub fn to_proto_combined(&self) -> stream_finished::ModelTokenUsage {
         stream_finished::ModelTokenUsage {
             model_id: self.model_id.clone(),
-            total_tokens: self.warp_tokens + self.byok_tokens,
+            total_tokens: self.cute_tokens + self.byok_tokens,
             token_usage_by_category: self
-                .warp_token_usage_by_category
+                .cute_token_usage_by_category
                 .iter()
                 .chain(self.byok_token_usage_by_category.iter())
                 .fold(HashMap::new(), |mut acc, (cat, tokens)| {
@@ -1166,6 +1164,140 @@ impl From<&stream_finished::ToolCallStats> for ToolCallStats {
         Self {
             count: tool_call_stats.count,
         }
+    }
+}
+
+// Convert persistence ToolCallStats to stream_finished specific stat types
+impl From<&ToolCallStats> for stream_finished::ReadFilesStats {
+    fn from(stats: &ToolCallStats) -> Self {
+        Self { count: stats.count }
+    }
+}
+
+impl From<&ToolCallStats> for stream_finished::SearchCodebaseStats {
+    fn from(stats: &ToolCallStats) -> Self {
+        Self { count: stats.count }
+    }
+}
+
+impl From<&ToolCallStats> for stream_finished::GrepStats {
+    fn from(stats: &ToolCallStats) -> Self {
+        Self { count: stats.count }
+    }
+}
+
+impl From<&ToolCallStats> for stream_finished::FileGlobStats {
+    fn from(stats: &ToolCallStats) -> Self {
+        Self { count: stats.count }
+    }
+}
+
+impl From<&ToolCallStats> for stream_finished::WriteToLongRunningShellCommandStats {
+    fn from(stats: &ToolCallStats) -> Self {
+        Self { count: stats.count }
+    }
+}
+
+impl From<&ToolCallStats> for stream_finished::ReadMcpResourceStats {
+    fn from(stats: &ToolCallStats) -> Self {
+        Self { count: stats.count }
+    }
+}
+
+impl From<&ToolCallStats> for stream_finished::CallMcpToolStats {
+    fn from(stats: &ToolCallStats) -> Self {
+        Self { count: stats.count }
+    }
+}
+
+impl From<&ToolCallStats> for stream_finished::SuggestPlanStats {
+    fn from(stats: &ToolCallStats) -> Self {
+        Self { count: stats.count }
+    }
+}
+
+impl From<&ToolCallStats> for stream_finished::SuggestCreatePlanStats {
+    fn from(stats: &ToolCallStats) -> Self {
+        Self { count: stats.count }
+    }
+}
+
+impl From<&ToolCallStats> for stream_finished::ReadShellCommandOutputStats {
+    fn from(stats: &ToolCallStats) -> Self {
+        Self { count: stats.count }
+    }
+}
+
+impl From<&ToolCallStats> for stream_finished::UseComputerStats {
+    fn from(stats: &ToolCallStats) -> Self {
+        Self { count: stats.count }
+    }
+}
+
+// Reverse conversions from stream_finished specific stats to persistence ToolCallStats
+impl From<&stream_finished::ReadFilesStats> for ToolCallStats {
+    fn from(stats: &stream_finished::ReadFilesStats) -> Self {
+        Self { count: stats.count }
+    }
+}
+
+impl From<&stream_finished::SearchCodebaseStats> for ToolCallStats {
+    fn from(stats: &stream_finished::SearchCodebaseStats) -> Self {
+        Self { count: stats.count }
+    }
+}
+
+impl From<&stream_finished::GrepStats> for ToolCallStats {
+    fn from(stats: &stream_finished::GrepStats) -> Self {
+        Self { count: stats.count }
+    }
+}
+
+impl From<&stream_finished::FileGlobStats> for ToolCallStats {
+    fn from(stats: &stream_finished::FileGlobStats) -> Self {
+        Self { count: stats.count }
+    }
+}
+
+impl From<&stream_finished::WriteToLongRunningShellCommandStats> for ToolCallStats {
+    fn from(stats: &stream_finished::WriteToLongRunningShellCommandStats) -> Self {
+        Self { count: stats.count }
+    }
+}
+
+impl From<&stream_finished::ReadMcpResourceStats> for ToolCallStats {
+    fn from(stats: &stream_finished::ReadMcpResourceStats) -> Self {
+        Self { count: stats.count }
+    }
+}
+
+impl From<&stream_finished::CallMcpToolStats> for ToolCallStats {
+    fn from(stats: &stream_finished::CallMcpToolStats) -> Self {
+        Self { count: stats.count }
+    }
+}
+
+impl From<&stream_finished::SuggestPlanStats> for ToolCallStats {
+    fn from(stats: &stream_finished::SuggestPlanStats) -> Self {
+        Self { count: stats.count }
+    }
+}
+
+impl From<&stream_finished::SuggestCreatePlanStats> for ToolCallStats {
+    fn from(stats: &stream_finished::SuggestCreatePlanStats) -> Self {
+        Self { count: stats.count }
+    }
+}
+
+impl From<&stream_finished::ReadShellCommandOutputStats> for ToolCallStats {
+    fn from(stats: &stream_finished::ReadShellCommandOutputStats) -> Self {
+        Self { count: stats.count }
+    }
+}
+
+impl From<&stream_finished::UseComputerStats> for ToolCallStats {
+    fn from(stats: &stream_finished::UseComputerStats) -> Self {
+        Self { count: stats.count }
     }
 }
 
@@ -1261,6 +1393,7 @@ impl ToolUsageMetadata {
 impl From<&ToolUsageMetadata> for stream_finished::ToolUsageMetadata {
     fn from(metadata: &ToolUsageMetadata) -> Self {
         Self {
+            tool_call_stats: None,
             run_command_stats: Some((&metadata.run_command_stats).into()),
             read_files_stats: Some((&metadata.read_files_stats).into()),
             search_codebase_stats: Some((&metadata.search_codebase_stats).into()),
@@ -1284,34 +1417,72 @@ impl From<&ToolUsageMetadata> for stream_finished::ToolUsageMetadata {
 
 impl From<&stream_finished::ToolUsageMetadata> for ToolUsageMetadata {
     fn from(tool_usage_metadata: &stream_finished::ToolUsageMetadata) -> Self {
-        let convert = |opt: &Option<_>| opt.as_ref().map(Into::into).unwrap_or_default();
-
         Self {
             run_command_stats: tool_usage_metadata
                 .run_command_stats
                 .as_ref()
                 .map(Into::into)
                 .unwrap_or_default(),
-            read_files_stats: convert(&tool_usage_metadata.read_files_stats),
-            search_codebase_stats: convert(&tool_usage_metadata.search_codebase_stats),
-            grep_stats: convert(&tool_usage_metadata.grep_stats),
-            file_glob_stats: convert(&tool_usage_metadata.file_glob_stats),
+            read_files_stats: tool_usage_metadata
+                .read_files_stats
+                .as_ref()
+                .map(Into::into)
+                .unwrap_or_default(),
+            search_codebase_stats: tool_usage_metadata
+                .search_codebase_stats
+                .as_ref()
+                .map(Into::into)
+                .unwrap_or_default(),
+            grep_stats: tool_usage_metadata
+                .grep_stats
+                .as_ref()
+                .map(Into::into)
+                .unwrap_or_default(),
+            file_glob_stats: tool_usage_metadata
+                .file_glob_stats
+                .as_ref()
+                .map(Into::into)
+                .unwrap_or_default(),
             apply_file_diff_stats: tool_usage_metadata
                 .apply_file_diff_stats
                 .as_ref()
                 .map(Into::into)
                 .unwrap_or_default(),
-            write_to_long_running_shell_command_stats: convert(
-                &tool_usage_metadata.write_to_long_running_shell_command_stats,
-            ),
-            read_mcp_resource_stats: convert(&tool_usage_metadata.read_mcp_resource_stats),
-            call_mcp_tool_stats: convert(&tool_usage_metadata.call_mcp_tool_stats),
-            suggest_plan_stats: convert(&tool_usage_metadata.suggest_plan_stats),
-            suggest_create_plan_stats: convert(&tool_usage_metadata.suggest_create_plan_stats),
-            read_shell_command_output_stats: convert(
-                &tool_usage_metadata.read_shell_command_output_stats,
-            ),
-            use_computer_stats: convert(&tool_usage_metadata.use_computer_stats),
+            write_to_long_running_shell_command_stats: tool_usage_metadata
+                .write_to_long_running_shell_command_stats
+                .as_ref()
+                .map(Into::into)
+                .unwrap_or_default(),
+            read_mcp_resource_stats: tool_usage_metadata
+                .read_mcp_resource_stats
+                .as_ref()
+                .map(Into::into)
+                .unwrap_or_default(),
+            call_mcp_tool_stats: tool_usage_metadata
+                .call_mcp_tool_stats
+                .as_ref()
+                .map(Into::into)
+                .unwrap_or_default(),
+            suggest_plan_stats: tool_usage_metadata
+                .suggest_plan_stats
+                .as_ref()
+                .map(Into::into)
+                .unwrap_or_default(),
+            suggest_create_plan_stats: tool_usage_metadata
+                .suggest_create_plan_stats
+                .as_ref()
+                .map(Into::into)
+                .unwrap_or_default(),
+            read_shell_command_output_stats: tool_usage_metadata
+                .read_shell_command_output_stats
+                .as_ref()
+                .map(Into::into)
+                .unwrap_or_default(),
+            use_computer_stats: tool_usage_metadata
+                .use_computer_stats
+                .as_ref()
+                .map(Into::into)
+                .unwrap_or_default(),
         }
     }
 }

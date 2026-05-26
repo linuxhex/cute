@@ -66,7 +66,7 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
   # compatibility with `setopt nounset`.
   _WARP_GENERATOR_COMMAND=""
   # Make sure we delete generator PID files when the shell exits, if they exist.
-  __warp_generator_pid_file_cleanup() {
+  __cute_generator_pid_file_cleanup() {
     if [[ -f $_WARP_GENERATOR_PIDS_STARTED_TMP_FILE ]]; then
       command -p rm $_WARP_GENERATOR_PIDS_STARTED_TMP_FILE
     fi
@@ -74,15 +74,15 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
       command -p rm $_WARP_GENERATOR_PIDS_COMPLETED_TMP_FILE
     fi
   }
-  trap __warp_generator_pid_file_cleanup EXIT
+  trap __cute_generator_pid_file_cleanup EXIT
 
   # Writes a hex-encoded JSON message to the pty.
-  warp_send_json_message () {
+  cute_send_json_message () {
       # Sends a message to the controlling terminal as a DCS control sequence.
       # Note that because the JSON string may contain characters that we don't control (including
       # unicode), we encode it as hexadecimal string to avoid prematurely calling unhook if
       # one of the bytes in JSON is 9c (ST) or other (CAN, SUB, ESC).
-      local msg=$(warp_hex_encode_string "$1")
+      local msg=$(cute_hex_encode_string "$1")
       # We send the InitShell hook via OSCs when on WSL and via DCSs otherwise.
       if [ "$WARP_USING_WINDOWS_CON_PTY" = true ]; then
         printf $OSC_START$DCS_JSON_MARKER$OSC_PARAM_SEPARATOR$msg$OSC_END
@@ -91,7 +91,7 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
       fi
   }
 
-  # Emit the ExitShell hook right before the remote shell exits so the Warp
+  # Emit the ExitShell hook right before the remote shell exits so the Cute
   # client can drop per-session resources (specifically the
   # `ssh … remote-server-proxy` child that holds a multiplexed channel on
   # the foreground ssh ControlMaster). This avoids a hang where the master
@@ -99,24 +99,24 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
   # session.
   #
   # Only relevant for remote SSH shells. WARP_IS_SSH is exported to "1"
-  # by `warp_ssh_helper` on the remote side of a Warp-managed SSH session
+  # by `cute_ssh_helper` on the remote side of a Cute-managed SSH session
   # and is unset everywhere else (local shells, subshells, docker
   # sandboxes, etc.), so the hook only fires where a remote-server-proxy
   # actually needs tearing down.
   #
-  # Installed after warp_send_json_message is defined so the handler is
+  # Installed after cute_send_json_message is defined so the handler is
   # callable the moment the hook is registered.
   if [[ "$WARP_IS_SSH" == "1" ]]; then
-      __warp_emit_exit_shell() {
+      __cute_emit_exit_shell() {
           if [[ -n "$WARP_SESSION_ID" ]]; then
-              warp_send_json_message \
+              cute_send_json_message \
                   "{\"hook\": \"ExitShell\", \"value\": {\"session_id\": $WARP_SESSION_ID}}"
           fi
       }
       # zshexit_functions is zsh's idiomatic exit-hook mechanism. We prefer
       # it over `trap ... EXIT` for a few reasons:
       #   1. It is additive: appending to the array composes with the
-      #      existing `trap __warp_generator_pid_file_cleanup EXIT` above.
+      #      existing `trap __cute_generator_pid_file_cleanup EXIT` above.
       #      Using `trap ... EXIT` here would replace that handler (zsh, like
       #      bash, only allows one trap per signal) and we would have to
       #      manually re-invoke the generator cleanup.
@@ -127,10 +127,10 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
       #   3. It also fires on SIGHUP-triggered exits, so a single
       #      registration covers both normal exit (exit, logout, Ctrl-D) and
       #      connection-drop cases.
-      zshexit_functions+=(__warp_emit_exit_shell)
+      zshexit_functions+=(__cute_emit_exit_shell)
   fi
 
-  warp_maybe_send_reset_grid_osc() {
+  cute_maybe_send_reset_grid_osc() {
       if [ "$WARP_USING_WINDOWS_CON_PTY" = true ]; then
           printf $OSC_RESET_GRID
       fi
@@ -140,17 +140,17 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
   # sequences for generator output.
   #
   # Usage:
-  #   warp_send_generator_output_osc $my_output
+  #   cute_send_generator_output_osc $my_output
   #
   # The payload of the OSC is "<content_length>;<hex-encoded content>".
   #
   # Note: If we're on windows, we send a reset grid to erase any cursor mutations caused by
   # the in-band command.
-  warp_send_generator_output_osc() {
-      local hex_encoded_message=$(warp_hex_encode_string "$1")
+  cute_send_generator_output_osc() {
+      local hex_encoded_message=$(cute_hex_encode_string "$1")
       local byte_count=$(LC_ALL="C"; printf "${#hex_encoded_message}")
       printf "%b%i;%s%b" $OSC_START_GENERATOR_OUTPUT $byte_count $hex_encoded_message $OSC_END_GENERATOR_OUTPUT
-      warp_maybe_send_reset_grid_osc
+      cute_maybe_send_reset_grid_osc
   }
 
   # Executes the given command and writes its output to the pty wrapped in a
@@ -159,7 +159,7 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
   # where command_id is the ID given as the first argument to this function,
   # exit_code is the exit code of the executed command, and command_output is
   # the output itself.
-  _warp_execute_command() {
+  _cute_execute_command() {
     local command_id=$1
     # This is shorthand to slice the 2nd-nth arguments of this function (i.e.
     # the command array) into its own array. The first argument is the
@@ -179,32 +179,32 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
     # handling.
     raw_output=$(eval "$command" 2>&1)
     local exit_code=$?
-    warp_send_generator_output_osc "$command_id;$raw_output;$exit_code"
+    cute_send_generator_output_osc "$command_id;$raw_output;$exit_code"
   }
 
   # Runs the given command in the background, records its PID in
   # _WARP_GENERATOR_PIDS_STARTED_TMP_FILE, and adds its PID from the file when
   # the job is completed.
-  _warp_run_generator_command_internal() {
-    _warp_execute_command "$@" &
+  _cute_run_generator_command_internal() {
+    _cute_execute_command "$@" &
     # $! contains the PID of the most recently backgrounded command.
     local pid=$!
     echo $pid >> $_WARP_GENERATOR_PIDS_STARTED_TMP_FILE
     wait $pid 2> /dev/null
 
-    # If the exit code of the backgrounded _warp_execute_command process is non-zero,
+    # If the exit code of the backgrounded _cute_execute_command process is non-zero,
     # the call to send the generator output failed (most likely because this is being
     # executed in an old zsh version that doesn't support some syntax in
-    # _warp_execute_command function itself). In this case, send empty output with
+    # _cute_execute_command function itself). In this case, send empty output with
     # exit code 1 to indicate generator execution failed.
     if [[ $? -ne 0 ]]; then
-        warp_send_generator_output_osc "$1;;1"
+        cute_send_generator_output_osc "$1;;1"
     fi
 
     # Add the PID to the completed generators PID file.
     #
     # The completed generator PIDs file may not exist if this generator was (by
-    # error) left running/not cancelled properly in warp_preexec.
+    # error) left running/not cancelled properly in cute_preexec.
     if [[ -f $_WARP_GENERATOR_PIDS_COMPLETED_TMP_FILE ]]; then
       echo $pid >> $_WARP_GENERATOR_PIDS_COMPLETED_TMP_FILE
     fi
@@ -218,9 +218,9 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
   # not substituted until the command string is actually evaluated.
   #
   # Usage:
-  #   warp_run_generator_command <command_id> '<command> <arg1> ... <argn>'
-  warp_run_generator_command() {
-    # Setting this environment variable prevents warp_precmd from emitting the
+  #   cute_run_generator_command <command_id> '<command> <arg1> ... <argn>'
+  cute_run_generator_command() {
+    # Setting this environment variable prevents cute_precmd from emitting the
     # 'Block started' hook to the Rust app.
     _WARP_GENERATOR_COMMAND=1
 
@@ -233,7 +233,7 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
     fi
 
     # To minimize latency and prevent the user from being blocked from entering a command,
-    # cache the user's precmd_functions and only register warp_precmd. In the warp_precmd
+    # cache the user's precmd_functions and only register cute_precmd. In the cute_precmd
     # execution following this generator command, the user's precmd_functions are restored.
     _USER_PRECMD_FUNCTIONS=($precmd_functions)
     # Remove all precmd functions other than ones defined by us or p10k.  If we remove the
@@ -241,24 +241,24 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
     # not know when it finishes, which causes a variety of undesirable side-effects.
     precmd_functions=(${(M)precmd_functions:#*(warp|p9k)*})
 
-    (_warp_run_generator_command_internal "$@" &)
+    (_cute_run_generator_command_internal "$@" &)
   }
 
-  # Returns exit code 1 if the given argument starts with 'warp_run_generator_command'.
-  _is_warp_generator_command() {
-    [[ "$1" != *"warp_run_generator_command"* ]]
+  # Returns exit code 1 if the given argument starts with 'cute_run_generator_command'.
+  _is_cute_generator_command() {
+    [[ "$1" != *"cute_run_generator_command"* ]]
   }
 
   # Note that this is very performance sensitive code, so try not to
   # invoke any external commands in here.
-  warp_preexec () {
-      local warp_escaped_command="$(warp_escape_json $1)"
-      warp_send_json_message "{\"hook\": \"Preexec\", \"value\": {\"command\": \"$warp_escaped_command\"}}"
-      warp_maybe_send_reset_grid_osc
+  cute_preexec () {
+      local cute_escaped_command="$(cute_escape_json $1)"
+      cute_send_json_message "{\"hook\": \"Preexec\", \"value\": {\"command\": \"$cute_escaped_command\"}}"
+      cute_maybe_send_reset_grid_osc
 
       # If this preexec is called for user command, kill ongoing generator command jobs and clean
       # up the bookkeeping temp files used to bookkeep.
-      if _is_warp_generator_command "$1" && [[ -f $_WARP_GENERATOR_PIDS_STARTED_TMP_FILE ]] && [[ -f $_WARP_GENERATOR_PIDS_COMPLETED_TMP_FILE ]]
+      if _is_cute_generator_command "$1" && [[ -f $_WARP_GENERATOR_PIDS_STARTED_TMP_FILE ]] && [[ -f $_WARP_GENERATOR_PIDS_COMPLETED_TMP_FILE ]]
         then
         # Read PIDs from the started generators tmp file that are not present in
         # the completed generators tmp file into a zsh array.
@@ -292,13 +292,13 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
   #
   # We wrap in a local function instead of exporting the variable directly in
   # order to avoid interfering with manually-run git commands by the user.
-  warp_git () {
+  cute_git () {
     GIT_OPTIONAL_LOCKS=0 command git "$@"
   }
 
   # Note that this is very performance sensitive code, so try not to
   # invoke any external commands in here.
-  warp_precmd () {
+  cute_precmd () {
       # $? is the exit code of the last command executed in this process, which
       # includes commands run within function definitions. So we capture the
       # exit code from $? in precmd first, prior to executing any other
@@ -307,8 +307,8 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
       # in this function below).
       local exit_code=$?
 
-      warp_send_json_message "{\"hook\": \"CommandFinished\", \"value\": {\"exit_code\": $exit_code, \"next_block_id\": \"precmd-$WARP_SESSION_ID-$((block_id++))\"}}"
-      warp_maybe_send_reset_grid_osc
+      cute_send_json_message "{\"hook\": \"CommandFinished\", \"value\": {\"exit_code\": $exit_code, \"next_block_id\": \"precmd-$WARP_SESSION_ID-$((block_id++))\"}}"
+      cute_maybe_send_reset_grid_osc
 
       # If this is being called for a generator command, short circuit and send an unpopulated
       # precmd payload (except for pwd), since we don't re-render the prompt after generator commands
@@ -319,7 +319,7 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
         precmd_functions=($_USER_PRECMD_FUNCTIONS)
 
         _WARP_GENERATOR_COMMAND=""
-        warp_send_json_message "{\"hook\": \"Precmd\", \"value\": {
+        cute_send_json_message "{\"hook\": \"Precmd\", \"value\": {
         \"pwd\": \"\",
         \"ps1\": \"\",
         \"git_head\": \"\",
@@ -341,9 +341,9 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
           echo "" > $_WARP_GENERATOR_PIDS_COMPLETED_TMP_FILE
         fi
 
-      # Reset the custom kill-buffer binding as the user's zshrc (which is sourced after zshrc_warp)
+      # Reset the custom kill-buffer binding as the user's zshrc (which is sourced after zshrc_cute)
       # could have added a bindkey. This won't have any user-impact because these shortcuts are only run
-      # in the context of the zsh line editor, which isn't displayed in Warp.
+      # in the context of the zsh line editor, which isn't displayed in Cute.
       bindkey -r '^P'
       bindkey '^P' kill-buffer
 
@@ -352,26 +352,26 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
       # This is arbitrarily bound to ESC-i in all supported shells ("i" for input).
       # Binding to ESC-1 caused bootstrap failures with vi keybindings.
       bindkey -r '\ei'
-      bindkey '\ei' warp_report_input
+      bindkey '\ei' cute_report_input
 
-      # Introduce keybinding to switch prompt modes (PS1 vs built-in Warp prompt).
+      # Introduce keybinding to switch prompt modes (PS1 vs built-in Cute prompt).
       # This is arbitrarily bound to ESC-p in all supported shells ("p" for PS1),
       # and we can change it to any other keybinding if needed.
       bindkey -r '\ep'
-      bindkey '\ep' warp_change_prompt_modes_to_ps1
+      bindkey '\ep' cute_change_prompt_modes_to_ps1
 
-      # Introduce keybinding to switch prompt modes (PS1 vs built-in Warp prompt).
-      # This is arbitrarily bound to ESC-w in all supported shells ("w" for Warp prompt),
+      # Introduce keybinding to switch prompt modes (PS1 vs built-in Cute prompt).
+      # This is arbitrarily bound to ESC-w in all supported shells ("w" for Cute prompt),
       # and we can change it to any other keybinding if needed.
       bindkey -r '\ew'
-      bindkey '\ew' warp_change_prompt_modes_to_warp_prompt
+      bindkey '\ew' cute_change_prompt_modes_to_cute_prompt
 
       local escaped_pwd
       if [ -n "${WSL_DISTRO_NAME:-}" ]; then
         # In WSL, avoid symlinks b/c on Windows `std::fs` is unable to resolve symlink inside WSL containers.
-        escaped_pwd=$(warp_escape_json "$(pwd -P)")
+        escaped_pwd=$(cute_escape_json "$(pwd -P)")
       else
-        escaped_pwd=$(warp_escape_json "$PWD")
+        escaped_pwd=$(cute_escape_json "$PWD")
       fi
 
       local escaped_virtual_env=""
@@ -387,11 +387,11 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
       # user's rcfiles and have a fully-populated PATH.
       if [[ -n $WARP_BOOTSTRAPPED ]]; then
         if [[ -n ${VIRTUAL_ENV:-} ]]; then
-          escaped_virtual_env=$(warp_escape_json $VIRTUAL_ENV)
+          escaped_virtual_env=$(cute_escape_json $VIRTUAL_ENV)
         fi
 
         if [[ -n ${CONDA_DEFAULT_ENV:-} ]]; then
-          escaped_conda_env=$(warp_escape_json $CONDA_DEFAULT_ENV)
+          escaped_conda_env=$(cute_escape_json $CONDA_DEFAULT_ENV)
         fi
 
           # Get Node.js version if node is available and we're in a Node.js project
@@ -424,14 +424,14 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
                   if [[ "$in_git_repo" = true ]]; then
                       local node_version=$(node --version 2>/dev/null)
                       if [[ -n "$node_version" ]]; then
-                          escaped_node_version=$(warp_escape_json "$node_version")
+                          escaped_node_version=$(cute_escape_json "$node_version")
                       fi
                   fi
               fi
           fi
 
         if [[ -n ${KUBECONFIG:-} ]]; then
-          escaped_kube_config=$(warp_escape_json $KUBECONFIG)
+          escaped_kube_config=$(cute_escape_json $KUBECONFIG)
         fi
 
         # Note: We explicitly do _not_ use command -p here, as `git` is a command that can be
@@ -442,16 +442,16 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
         local git_branch=""
         local git_head=""
         if command -v git >/dev/null 2>&1; then
-          git_branch=$(warp_git symbolic-ref --short HEAD 2> /dev/null)
+          git_branch=$(cute_git symbolic-ref --short HEAD 2> /dev/null)
           # The git branch the user is on, or the git commit hash if they're not on a branch.
-          git_head="${git_branch:-$(warp_git rev-parse --short HEAD 2> /dev/null)}"
+          git_head="${git_branch:-$(cute_git rev-parse --short HEAD 2> /dev/null)}"
         fi
-        escaped_git_head=$(warp_escape_json "$git_head")
-        escaped_git_branch=$(warp_escape_json "$git_branch")
+        escaped_git_head=$(cute_escape_json "$git_head")
+        escaped_git_branch=$(cute_escape_json "$git_branch")
       fi
 
 
-      # We also pass the shell's notion of `honor_ps1` to ensure it's synced correctly on the Warp-side for prompt handling.
+      # We also pass the shell's notion of `honor_ps1` to ensure it's synced correctly on the Cute-side for prompt handling.
       # This is passed as a "real boolean" via the JSON payload (string interpolated into JSON string below).
       local honor_ps1
       if [[ "$WARP_HONOR_PS1" == "1" ]]; then
@@ -473,16 +473,16 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
       \"kube_config\": \"$escaped_kube_config\",
       \"session_id\": $WARP_SESSION_ID
       }}"
-      warp_send_json_message "$escaped_json"
+      cute_send_json_message "$escaped_json"
   }
 
-  warp_clear_on_next_block () {
-      warp_send_json_message '{"hook": "ClearOnNextBlock"}'
+  cute_clear_on_next_block () {
+      cute_send_json_message '{"hook": "ClearOnNextBlock"}'
   }
 
 
   # Format a string value according to JSON syntax.
-  warp_escape_json () {
+  cute_escape_json () {
       # Explanation of the sed replacements (each command is separated by a `;`):
       # s/(["\\])/\\\1/g - Replace all double-quote (") and backslash (\) characters with the escaped versions (\" and \\)
       # s/\b/\\b/g - Replace all backspace characters with \b
@@ -504,13 +504,13 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
       command -p sed -E 's/(["\\])/\\\1/g; s/'$'\b''/\\b/g; s/'$'\t''/\\t/g; s/'$'\f''/\\f/g; s/'$'\r''/\\r/g; $!s/$/\\n/' <<<"$*" | command -p tr -d '\n'
   }
 
-  warp_escape_ps1 () {
+  cute_escape_ps1 () {
       # Turns out that the processed prompt is a complicated data structure that includes lots of
       # information that's passed to the shell (including the actual shell, version, working directory
       # and, well, the prompt itself). What is more, prompt can also include emojis - unicode characters
       # that sometimes contain special bytes (ie. ST, CAN or SUB) that are otherwise used as unhook
       # triggers for the precmd. Instead of escaping those and extracting the value of the prompt itself,
-      # we simply convert the entire data structure into a single line hex string, which Warp
+      # we simply convert the entire data structure into a single line hex string, which Cute
       # later decodes and sends to the grid to show the prompt.
       # Note: before converting the prompt to a hex string, we remove the multi-line newlines and replace
       # them with a single space (to avoid prompts that span multiple empty lines).
@@ -518,11 +518,11 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
 
   }
 
-  # warp_hex_encode_string encodes the entire DCS string (JSON) with od making it essentially
+  # cute_hex_encode_string encodes the entire DCS string (JSON) with od making it essentially
   # a very long hexadecimal string.
   # Afterwards it's decoded in rust and parsed as usual.
   # Accepts one argument: DCS JSON string
-  warp_hex_encode_string () {
+  cute_hex_encode_string () {
     printf '%s' "$1" | command -p od -An -v -tx1 | command -p tr -d ' \n'
   }
 
@@ -537,7 +537,7 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
   # This way, setting the terminal title in a echo command and escape
   # sequences will work (a single command to set the title normally will get
   # clobbered by a precmd hook)."
-  function warp_title {
+  function cute_title {
     # Disable oh-my-zsh default title otherwise.
     DISABLE_AUTO_TITLE="true"
 
@@ -547,28 +547,28 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
     [[ -n "${INSIDE_EMACS:-}" && "${INSIDE_EMACS:-}" != vterm ]] && return
 
     title="%25<..<$1" # shorten the tab_title to 25 characters
-    print -Pn "\e]0;${title:q}\a" # set tab & window name (they're the same in Warp)
+    print -Pn "\e]0;${title:q}\a" # set tab & window name (they're the same in Cute)
   }
 
   ZSH_THEME_TERM_TITLE_IDLE="%~"
   ZSH_THEME_TERM_TAB_TITLE_IDLE_REMOTE="%m:%~"
 
   # Runs before showing the prompt
-  function warp_set_title_idle_on_precmd {
+  function cute_set_title_idle_on_precmd {
     # If the user wants to set the title using oh-my-zsh, they can
     # set the WARP_DISABLE_AUTO_TITLE flag.
     [[ "${WARP_DISABLE_AUTO_TITLE:-}" != true ]] || return
 
     if [[ $WARP_IS_LOCAL_SHELL_SESSION == "1" ]]; then
-      warp_title "$ZSH_THEME_TERM_TITLE_IDLE"
+      cute_title "$ZSH_THEME_TERM_TITLE_IDLE"
     else
-      warp_title "$ZSH_THEME_TERM_TAB_TITLE_IDLE_REMOTE"
+      cute_title "$ZSH_THEME_TERM_TAB_TITLE_IDLE_REMOTE"
     fi
 
   }
 
   # Runs before executing the command
-  function warp_set_title_active_on_preexec {
+  function cute_set_title_active_on_preexec {
     # If the user wants to set the title using oh-my-zsh, they can
     # set the WARP_DISABLE_AUTO_TITLE flag.
     [[ "${WARP_DISABLE_AUTO_TITLE:-}" != true ]] || return
@@ -617,34 +617,34 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
     local CMD="${1[(wr)^(*=*|sudo|ssh|mosh|rake|-*)]:gs/%/%%}"
     local LINE="${2:gs/%/%%}"
 
-    warp_title "$CMD"
+    cute_title "$CMD"
   }
 
-  function warp_report_input {
-    local escaped_input="$(warp_escape_json "$BUFFER")"
-    warp_send_json_message "{ \"hook\": \"InputBuffer\", \"value\": { \"buffer\": \"$escaped_input\" } }"
+  function cute_report_input {
+    local escaped_input="$(cute_escape_json "$BUFFER")"
+    cute_send_json_message "{ \"hook\": \"InputBuffer\", \"value\": { \"buffer\": \"$escaped_input\" } }"
     # This prevents zsh from printing typeahead as background output after we've fetched it.
     BUFFER=""
   }
-  zle -N warp_report_input
+  zle -N cute_report_input
 
   function clear() {
-      warp_send_json_message "{\"hook\": \"Clear\", \"value\": {}}"
+      cute_send_json_message "{\"hook\": \"Clear\", \"value\": {}}"
   }
 
-  function warp_finish_update {
+  function cute_finish_update {
     local update_id="$1"
-    warp_send_json_message "{ \"hook\": \"FinishUpdate\", \"value\": { \"update_id\": \"$update_id\"} }"
+    cute_send_json_message "{ \"hook\": \"FinishUpdate\", \"value\": { \"update_id\": \"$update_id\"} }"
   }
 
-  # Check if the warp apt source file has been renamed to `warpdotdev.list.distUpgrade` due to an ubuntu version update.
-  # If this occurred, we want to rename the source file back to `warpdotdev.list` to ensure updates can proceed.
-  # We purposefully skip this if either the `warpdotdev.list` file already exists (indicating that the user has already
-  # done this themselves) _or_ if a `warpdotdev.sources` file exists (which is the new Deb822 format for source files).
+  # Check if the cute apt source file has been renamed to `cutedotdev.list.distUpgrade` due to an ubuntu version update.
+  # If this occurred, we want to rename the source file back to `cutedotdev.list` to ensure updates can proceed.
+  # We purposefully skip this if either the `cutedotdev.list` file already exists (indicating that the user has already
+  # done this themselves) _or_ if a `cutedotdev.sources` file exists (which is the new Deb822 format for source files).
   # The `.sources` file could only exist if a user manually created it; Ubuntu doesn't create one automatically for the
-  # warp source file due to a bug in its update flow where it considers our source file to be "invalid" because it
+  # cute source file due to a bug in its update flow where it considers our source file to be "invalid" because it
   # contains a `signed-by` key.
-  function warp_handle_dist_upgrade {
+  function cute_handle_dist_upgrade {
       local source_file_name="$1"
 
       eval "$(command apt-config shell APT_SOURCESDIR 'Dir::Etc::sourceparts/d')"
@@ -664,7 +664,7 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
   # Check whether the prompt-related variables have OSC prompt marker sequences,
   # and if not, wrap them with the appropriate markers so that we can direct the
   # prompt bytes to the appropriate grids.
-  function warp_update_prompt_vars() {
+  function cute_update_prompt_vars() {
     # 133;A and 133;B are standard prompt marker OSCs. We also follow the standard for the rprompt OSC below.
     # See https://learn.microsoft.com/en-us/windows/terminal/tutorials/shell-integration and
     # https://gitlab.freedesktop.org/terminal-wg/specifications/-/merge_requests/6/diffs for details.
@@ -682,15 +682,15 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
     local prompt_prefix_with_cursor_marker_surrounded="%{$prompt_prefix%}"
     local suffix_with_cursor_marker_surrounded="%{$suffix%}"
 
-    # Clear the user-defined prompt again, if using Warp's built-in prompt, before the command 
+    # Clear the user-defined prompt again, if using Cute's built-in prompt, before the command 
     # is rendered as it could have been reset by the user's zshrc or by setting 
     # the variable on the command line. This is used for same-line prompt and leads to the temporary
-    # product behavior of Warp prompt switches only taking effect in new sessions.
+    # product behavior of Cute prompt switches only taking effect in new sessions.
     # Certain prompt plugins like p10k can reset the prompt to a non-empty value, after we've initially unset it.
-    # Confirm that it is unset, if using built-in Warp prompt (update prompt vars is forced to run as the last precmd fn).
+    # Confirm that it is unset, if using built-in Cute prompt (update prompt vars is forced to run as the last precmd fn).
     if [[ "$WARP_HONOR_PS1" != "1" ]]; then
       # If the PROMPT has its original value (i.e. we haven't modified it yet), we save it to SAVED_PROMPT
-      # so we can recover it, via bindkey, if we switch back from Warp prompt to PS1 (intra-session).
+      # so we can recover it, via bindkey, if we switch back from Cute prompt to PS1 (intra-session).
       if [[ "$PROMPT" != "%{$prompt_prefix"*"%}" ]]; then
         SAVED_PROMPT=$PROMPT
       fi
@@ -711,7 +711,7 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
       # We may have previously modified the prompt to add prompt and cursor
       # markers. If they exist, we remove the first occurrence of the prefix
       # and the last occurrence of the suffix, which should be the ones that
-      # Warp has added, to avoid duplicating the prefix and suffix. Shell
+      # Cute has added, to avoid duplicating the prefix and suffix. Shell
       # parameter expansion is used to remove the first and last occurrences.
       # Specifically note that virtualenvs can add content to the prompt, so we need to 
       # remove the markers before re-adding them.
@@ -759,15 +759,15 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
     # columns leads to undesired artifacts in the command grid.
     # Note that we only need cursor markers for the prefix/suffix when using a combined prompt &
     # command grid.
-    # If we are using the Warp prompt, we pass a "hidden left prompt" to the prompt
+    # If we are using the Cute prompt, we pass a "hidden left prompt" to the prompt
     # preview grid (the hidden prompt grid) with cursor markers surrounding the entire prompt.
     if [[ "$WARP_HONOR_PS1" != "1" ]]; then
       if [[ "$PROMPT" != "%{$prompt_prefix$ORIGINAL_PROMPT$suffix%}" ]]; then
         # We purposefully surround this entire prompt with cursor markers to prevent
         # the shell from moving its internal state of the cursor position, for purposes
-        # of printing the command with the Warp prompt.
-        # Note that the Warp prompt is always ABOVE the combined grid in finished blocks
-        # (same line prompt only affects the input editor with Warp prompt, not
+        # of printing the command with the Cute prompt.
+        # Note that the Cute prompt is always ABOVE the combined grid in finished blocks
+        # (same line prompt only affects the input editor with Cute prompt, not
         # finished blocks).
         PROMPT="%{$prompt_prefix$ORIGINAL_PROMPT$suffix%}"
       fi
@@ -787,41 +787,41 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
     # Ensure that this is always the last precmd hook. This prevents any other precmd hook, which might
     # modify $PROMPT, from interfering with our prompt-escaping logic.
     #
-    # Remove warp_update_prompt_vars from the precmd_functions list and then re-append it to ensure it's
+    # Remove cute_update_prompt_vars from the precmd_functions list and then re-append it to ensure it's
     # ordered last.
-    precmd_functions=("${(@)precmd_functions[@]:#warp_update_prompt_vars}")
-    precmd_functions+=(warp_update_prompt_vars)
+    precmd_functions=("${(@)precmd_functions[@]:#cute_update_prompt_vars}")
+    precmd_functions+=(cute_update_prompt_vars)
   }
 
   # Switches to PS1 prompt by restoring the prompt/rprompt to their original values and flipping
-  # WARP_HONOR_PS1 to "1" (they had originally been unset for the Warp prompt). Resets the prompt,
+  # WARP_HONOR_PS1 to "1" (they had originally been unset for the Cute prompt). Resets the prompt,
   # forcing a re-print.
-  function warp_change_prompt_modes_to_ps1() {
+  function cute_change_prompt_modes_to_ps1() {
     PROMPT="$SAVED_PROMPT"
     RPROMPT="$SAVED_RPROMPT"
     WARP_HONOR_PS1=1
 
-    warp_update_prompt_vars
+    cute_update_prompt_vars
     zle .reset-prompt
   }
 
   # The following line creates a new widget with ZLE (the Zsh line editor) with the custom function above,
   # so we can reference this when we register it with a bindkey.
-  zle -N warp_change_prompt_modes_to_ps1
+  zle -N cute_change_prompt_modes_to_ps1
 
-  # Switches to Warp prompt by flipping WARP_HONOR_PS1 to "0", which will result
+  # Switches to Cute prompt by flipping WARP_HONOR_PS1 to "0", which will result
   # in unsetting the PROMPT variables to avoid a double prompt. Resets the prompt, forcing
   # a re-print.
-  function warp_change_prompt_modes_to_warp_prompt() {
+  function cute_change_prompt_modes_to_cute_prompt() {
     WARP_HONOR_PS1=0
 
-    warp_update_prompt_vars
+    cute_update_prompt_vars
     zle .reset-prompt
   }
 
   # The following line creates a new widget with ZLE (the Zsh line editor) with the custom function above,
   # so we can reference this when we register it with a bindkey.
-  zle -N warp_change_prompt_modes_to_warp_prompt
+  zle -N cute_change_prompt_modes_to_cute_prompt
 
   # The SSH logic only applies to local sessions, because we don't yet have support for bootstrapping
   # recursive SSH sessions.
@@ -863,7 +863,7 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
           fi
       }
 
-      function warp_ssh_helper() {
+      function cute_ssh_helper() {
           # Hex-encode the ZSH environment script we use to bootstrap remote zsh b/c it contains control characters
           # We decode on the SSH server using xxd if its available, otherwise fall back to a for-loop over each byte
           # and use printf to convert back to plaintext
@@ -879,8 +879,8 @@ if [[ -z $WARP_BOOTSTRAPPED ]]; then
           command ssh -o ControlMaster=yes -o ControlPath=$SSH_SOCKET_DIR/$WARP_SESSION_ID \
           -t "${@:1}" \
 "
-export TERM_PROGRAM='WarpTerminal'
-# Mark the remote side of a Warp-managed SSH session so the bootstrap
+export TERM_PROGRAM='CuteTerminal'
+# Mark the remote side of a Cute-managed SSH session so the bootstrap
 # body can distinguish it from local shells. Used to gate the ExitShell
 # hook which tears down the remote-server-proxy subprocess.
 export WARP_IS_SSH='1'
@@ -891,7 +891,7 @@ hook="'$(printf "{\"hook\": \"SSH\", \"value\": {\"socket_path\": \"'$SSH_SOCKET
 printf '$OSC_START$DCS_JSON_MARKER$OSC_PARAM_SEPARATOR%s$OSC_END' "'$hook'"
 
 if test "'"${SHELL##*/}" != "bash" -a "${SHELL##*/}" != "zsh"'"; then
-  # Emulate the SSHD logic to print the MotD. Because the Warp SSH wrapper passes
+  # Emulate the SSHD logic to print the MotD. Because the Cute SSH wrapper passes
   # a command to run, SSHD does a quiet login, updating utmp and other login
   # state, but not printing the MotD. For bash and zsh, this is instead handled
   # by our bootstrap script.
@@ -933,21 +933,21 @@ case "'${SHELL##*/}'" in
       unset _hostname _user _msg
     )
       ;;
-  zsh) WARP_TMP_DIR="'$(command -p mktemp -d warptmp.XXXXXX)'"
+  zsh) CUTE_TMP_DIR="'$(command -p mktemp -d cutetmp.XXXXXX)'"
     local ZSH_ENV_SCRIPT='$zsh_env_script'
     local WARP_HONOR_PS1='$WARP_HONOR_PS1'
     if [[ "'$?'" == 0 ]]; then
       if command -pv xxd >/dev/null 2>&1; then
-        echo "'$ZSH_ENV_SCRIPT'" | command -p xxd -p -r > "'$WARP_TMP_DIR'"/.zshenv
+        echo "'$ZSH_ENV_SCRIPT'" | command -p xxd -p -r > "'$CUTE_TMP_DIR'"/.zshenv
       else
         for i in {0..\$((\${#ZSH_ENV_SCRIPT} - 1))..2}; do
           builtin printf "'"\x${ZSH_ENV_SCRIPT:$i:2}"'"
-        done > "'$WARP_TMP_DIR'"/.zshenv
+        done > "'$CUTE_TMP_DIR'"/.zshenv
       fi
     else
-      echo \"Failed to bootstrap warp. Continuing with a non-bootstrapped shell.\"
+      echo \"Failed to bootstrap cute. Continuing with a non-bootstrapped shell.\"
     fi
-    TMPPREFIX="'$HOME/.zshtmp-'" WARP_SSH_RCFILES="'${ZDOTDIR:-$HOME}'" WARP_HONOR_PS1="'$WARP_HONOR_PS1'" ZDOTDIR="'$WARP_TMP_DIR'" exec -l zsh -g $TRACE_FLAG_IF_WARP_SHELL_DEBUG_MODE
+    TMPPREFIX="'$HOME/.zshtmp-'" WARP_SSH_RCFILES="'${ZDOTDIR:-$HOME}'" WARP_HONOR_PS1="'$WARP_HONOR_PS1'" ZDOTDIR="'$CUTE_TMP_DIR'" exec -l zsh -g $TRACE_FLAG_IF_WARP_SHELL_DEBUG_MODE
       ;;
 esac
 "
@@ -955,7 +955,7 @@ esac
 
       function ssh() {
           if is_interactive_ssh_session "$@"; then
-              warp_send_json_message "{\"hook\": \"PreInteractiveSSHSession\", \"value\": {}}"
+              cute_send_json_message "{\"hook\": \"PreInteractiveSSHSession\", \"value\": {}}"
 
               # If the SSH wrapper is not enabled for this session, don't use it.
               if [ "$WARP_USE_SSH_WRAPPER" = "1" ]; then
@@ -963,7 +963,7 @@ esac
                 if [[ "$WARP_SHELL_DEBUG_MODE" == "1" ]]; then
                     TRACE_FLAG_IF_WARP_SHELL_DEBUG_MODE="-x"
                 fi
-                warp_ssh_helper "$@"
+                cute_ssh_helper "$@"
               else
                 command ssh "$@"
               fi
@@ -973,12 +973,12 @@ esac
       }
   fi
 
-  # Send a precmd message to the terminal to differentiate between the warp
+  # Send a precmd message to the terminal to differentiate between the cute
   # bootstrap logic pasted into the PTY and the output of shell startup files.
-  warp_precmd
+  cute_precmd
 
   # Before calling rcfiles, print the MotD if this is a login shell. Normally,
-  # login(1) or pam_motd(8) would do this. However, Warp does not use login(1)
+  # login(1) or pam_motd(8) would do this. However, Cute does not use login(1)
   # for local sessions and for remote sessions, SSHD thinks it is starting a
   # non-interactive session, so it does not print PAM messages.
   if [[ -o login && ! -e "$HOME/.hushlogin" ]]; then
@@ -995,20 +995,20 @@ esac
   setopt ZLE
 
   # If powerlevel instant prompt is on, we need to disable it because it
-  # interferes with warp bootstrapping. The functionality is part of warp anyways.
+  # interferes with cute bootstrapping. The functionality is part of cute anyways.
   typeset -g POWERLEVEL9K_INSTANT_PROMPT=off
 
-  # Add the Warp title precmd functions before the bootstrap sequence is sourced so that a user's custom tab title
-  # behavior is respected over Warp's.
-  precmd_functions+=(warp_set_title_idle_on_precmd)
-  preexec_functions+=(warp_set_title_active_on_preexec)
+  # Add the Cute title precmd functions before the bootstrap sequence is sourced so that a user's custom tab title
+  # behavior is respected over Cute's.
+  precmd_functions+=(cute_set_title_idle_on_precmd)
+  preexec_functions+=(cute_set_title_active_on_preexec)
 
   # Clean up after ourselves, restore ZDOTDIR, and remove the temporary directory in the ssh case.
   # We need to do this before the rcfiles are sourced, since rcfiles can reference ZDOTDIR.
   # In this case, we created a temp dir that starts with our template prefix and set the ZDOTDIR
   # to that dir.
   # Note that when called with a template, mktemp will work in the local directory, not the tmp filesystem.
-  TEMPLATE_PREFIX="warptmp."
+  TEMPLATE_PREFIX="cutetmp."
   if [[ -n $ZDOTDIR ]]; then
       if [[ ${ZDOTDIR:0:${#TEMPLATE_PREFIX}} == $TEMPLATE_PREFIX ]]; then
             command -p rm -r "$ZDOTDIR"
@@ -1027,7 +1027,7 @@ esac
   local rcfiles_start_time="$(LC_ALL="C"; echo $EPOCHREALTIME)"
 
   # This reflects the bootstrap sequence in a login shell. We want to
-  # Do other shell startup first so we can ensure Warp goes last.
+  # Do other shell startup first so we can ensure Cute goes last.
 
   # If this is a subshell, the user and system RC files have already been sourced.
   if [[ -z $WARP_IS_SUBSHELL ]]; then
@@ -1058,16 +1058,16 @@ esac
 
   # If the user is running powerlevel10k and they selected "sparse" for the "Prompt Spacing"
   # option, this var will be true. It tells p10k to output an extra newline in its precmd function
-  # which visually separates commands. These are generally undesired in Warp, since blocks provide
+  # which visually separates commands. These are generally undesired in Cute, since blocks provide
   # enough visual separation. Although generally benign, this causes an issue on Windows when
-  # ConPTY is involved. The extra newline is output by p10k's precmd which runs after Warp's
-  # precmd, i.e. after the "reset grid" sequence. It ends up causing Warp's grid content to be out
+  # ConPTY is involved. The extra newline is output by p10k's precmd which runs after Cute's
+  # precmd, i.e. after the "reset grid" sequence. It ends up causing Cute's grid content to be out
   # of sync with ConPTY, causing cursor positioning problems.
   if [[ ${POWERLEVEL9K_PROMPT_ADD_NEWLINE:-} == true ]]; then
     POWERLEVEL9K_PROMPT_ADD_NEWLINE=false
   fi
 
-  # Returns exit code 1 if the command starts with 'warp_run_generator_command'.
+  # Returns exit code 1 if the command starts with 'cute_run_generator_command'.
   #
   # This is intended to be used as a zshaddhistory function to prevent in-band
   # generators from being added to the zsh history file.
@@ -1075,14 +1075,14 @@ esac
   #
   # See https://zsh.sourceforge.io/Doc/Release/Functions.html for more context
   # on the zshaddhistory hook.
-  _warp_zshaddhistory() {
-    _is_warp_generator_command "$1"
+  _cute_zshaddhistory() {
+    _is_cute_generator_command "$1"
   }
 
   # Register this zshaddhistory hook after the user's RC files have been sourced,
   # to ensure that it gets added (the user's RC files could entirely reset the
   # hook function array).
-  zshaddhistory_functions+=(_warp_zshaddhistory)
+  zshaddhistory_functions+=(_cute_zshaddhistory)
 
   # Append additional PATH entries if provided via WARP_PATH_APPEND. This is after the user's RC
   # files are sourced in case they reset PATH (/etc/profile on Debian does this, for example).
@@ -1095,7 +1095,7 @@ esac
 
   if [[ ${precmd_functions[(I)_p9k_precmd]} != 0 ]]; then
     # The variable P9K_VERSION was added in the first version of p10k that
-    # supports Warp, so if it is non-empty, the user is on a supported version.
+    # supports Cute, so if it is non-empty, the user is on a supported version.
     if [[ -z "${P9K_VERSION:-}" ]]; then
       # If the user is running an unsupported version of p10k, remove the precmd
       # hook entirely to prevent the p10k prompt from appearing in typeahead and
@@ -1169,17 +1169,17 @@ esac
     fi
   fi
 
-  precmd_functions+=(warp_precmd warp_update_prompt_vars)
-  preexec_functions+=(warp_preexec)
+  precmd_functions+=(cute_precmd cute_update_prompt_vars)
+  preexec_functions+=(cute_preexec)
 
   WARP_BOOTSTRAPPED=1
 
-  # Unset the prompt environment variable: Warp doesn't render the user's default prompt.
+  # Unset the prompt environment variable: Cute doesn't render the user's default prompt.
   # We explicitly unset this for performance optimizations and so that the we can read the
   # command directly from the command grid without having to parse the prompt.
   export CONDA_CHANGEPS1=false
 
-  warp_update_prompt_vars
+  cute_update_prompt_vars
 
   # Set history to flush after every command
   setopt share_history
@@ -1258,25 +1258,25 @@ esac
 
   # Marks the start of completions generation using a custom OSC.
   # Expects the `format` as the first positional argument.
-  function warp_mark_start_of_completions () {
+  function cute_mark_start_of_completions () {
     printf '\e]9280;A;%s\a' $1
   }
 
-  function warp_mark_start_of_completions_for_list_choices () {
-    warp_mark_start_of_completions 'raw'
+  function cute_mark_start_of_completions_for_list_choices () {
+    cute_mark_start_of_completions 'raw'
   }
 
-  function warp_mark_start_of_completions_for_compadd_override () {
-    warp_mark_start_of_completions 'incrementally_typed'
+  function cute_mark_start_of_completions_for_compadd_override () {
+    cute_mark_start_of_completions 'incrementally_typed'
   }
 
   # Marks the end of completions generation using a custom OSC.
-  function warp_mark_end_of_completions () {
+  function cute_mark_end_of_completions () {
     printf '\e]9280;B\a'
   }
 
   # The main logic for generating completions.
-  function warp_main_completer () {
+  function cute_main_completer () {
     # We want all the results listed.
     compstate[list_max]=-1
 
@@ -1288,9 +1288,9 @@ esac
   }
 
   # Lists completion matches via the builtin list-choices widget.
-  function warp_complete_via_list_choices () {
+  function cute_complete_via_list_choices () {
     # Start by reading in the completion buffer.
-    zle warp_read_completion_buffer
+    zle cute_read_completion_buffer
 
     # Adding a post-hook here is not helpful because
     # it doesn't tell us when the completions have all been _listed_.
@@ -1298,26 +1298,26 @@ esac
     # is always returned and then use prompt markers to determine
     # when completions output is finished.
     unsetopt ALWAYS_LAST_PROMPT
-    compprefuncs=( warp_mark_start_of_completions_for_list_choices )
-    zle warp_complete_via_list_choices_internal
+    compprefuncs=( cute_mark_start_of_completions_for_list_choices )
+    zle cute_complete_via_list_choices_internal
     BUFFER=""
   }
 
   # Gathers completion matches by overriding compadd
   # and emitting the completions directly there.
-  function warp_complete_via_compadd_override () {
+  function cute_complete_via_compadd_override () {
     # Start by reading in the completion buffer.
-    zle warp_read_completion_buffer
+    zle cute_read_completion_buffer
 
-    compprefuncs=( warp_mark_start_of_completions_for_compadd_override )
-    comppostfuncs=( warp_mark_end_of_completions )
+    compprefuncs=( cute_mark_start_of_completions_for_compadd_override )
+    comppostfuncs=( cute_mark_end_of_completions )
     COMPADD_OVERRIDE=true
-    zle warp_complete_via_compadd_override_internal
+    zle cute_complete_via_compadd_override_internal
     BUFFER=""
     unset COMPADD_OVERRIDE
   }
 
-  function warp_read_completion_buffer() {
+  function cute_read_completion_buffer() {
     # Read data from the terminal into a temporary variable and set it as the
     # current zle buffer.  We want to prevent anything visible from being sent
     # to the terminal (it would be treated as background output), so we use -s
@@ -1340,12 +1340,12 @@ esac
     zle get-line
     echo -n "$DCS_END"
   }
-  zle -N warp_read_completion_buffer
+  zle -N cute_read_completion_buffer
 
   # Registers the custom completion widgets and hooks them up to
   # the main logic for completing.
-  zle -C warp_complete_via_list_choices_internal list-choices warp_main_completer
-  zle -C warp_complete_via_compadd_override_internal list-choices warp_main_completer
+  zle -C cute_complete_via_list_choices_internal list-choices cute_main_completer
+  zle -C cute_complete_via_compadd_override_internal list-choices cute_main_completer
 
   # Registers widgets for generating native-shell completions 
   # and sets up bindkeys to trigger them.
@@ -1353,51 +1353,51 @@ esac
   # We use intermediate widgets rather than binding
   # directly to the completion widgets so that we can
   # access normal widget features (e.g. BUFFER).
-  zle -N warp_complete_via_list_choices
-  zle -N warp_complete_via_compadd_override
-  bindkey '^X' warp_complete_via_list_choices
-  bindkey '^Y' warp_complete_via_compadd_override
+  zle -N cute_complete_via_list_choices
+  zle -N cute_complete_via_compadd_override
+  bindkey '^X' cute_complete_via_list_choices
+  bindkey '^Y' cute_complete_via_compadd_override
 
   # Set style for the list-choices approach
-  zstyle ':completion:warp_complete_via_list_choices:*' verbose no
-  zstyle ':completion:warp_complete_via_list_choices:*' list-packed yes
-  zstyle ':completion:warp_complete_via_list_choices:*' list-rows-first yes
-  zstyle ':completion:warp_complete_via_list_choices:*' list-prompt ''
+  zstyle ':completion:cute_complete_via_list_choices:*' verbose no
+  zstyle ':completion:cute_complete_via_list_choices:*' list-packed yes
+  zstyle ':completion:cute_complete_via_list_choices:*' list-rows-first yes
+  zstyle ':completion:cute_complete_via_list_choices:*' list-prompt ''
 
   # Avoid grouping. Under certain conditions, grouping can cause options to be printed
   # after the compostfunc hook is called.
-  zstyle ':completion:warp_complete_via_compadd_override:*' list-grouped false
-  zstyle ':completion:warp_complete_via_compadd_override:*' insert-tab false
-  zstyle ':completion:warp_complete_via_compadd_override:*' verbose yes
+  zstyle ':completion:cute_complete_via_compadd_override:*' list-grouped false
+  zstyle ':completion:cute_complete_via_compadd_override:*' insert-tab false
+  zstyle ':completion:cute_complete_via_compadd_override:*' verbose yes
   # Setting list-separator to an empty string avoids an extra `--` from being added
   # between the hit and the description.
-  zstyle ':completion:warp_complete_via_compadd_override:*' list-separator ''
+  zstyle ':completion:cute_complete_via_compadd_override:*' list-separator ''
 
 
-  function warp_bootstrapped () {
+  function cute_bootstrapped () {
     # Note that for now we don't support dynamically changing HISTFILE within a session.
-    local escaped_histfile="$(warp_escape_json $HISTFILE)"
+    local escaped_histfile="$(cute_escape_json $HISTFILE)"
 
     # The output of `alias` can include control characters that need to be escaped.
-    local escaped_aliases="$(warp_escape_json "`alias`")"
+    local escaped_aliases="$(cute_escape_json "`alias`")"
     local escaped_abbrs=""
-    local env_var_names="$(warp_escape_json "`echo ${(k)parameters[(R)*export*]}`")"
-    local function_names="$(warp_escape_json "`builtin print -l -- ${(ok)functions}`")"
-    local escaped_builtins="$(warp_escape_json "`builtin print -l -- ${(ok)builtins}`")"
-    local escaped_keywords="$(warp_escape_json "`builtin print -l -- ${(ok)reswords}`")"
+    local env_var_names="$(cute_escape_json "`echo ${(k)parameters[(R)*export*]}`")"
+    local function_names="$(cute_escape_json "`builtin print -l -- ${(ok)functions}`")"
+    local escaped_builtins="$(cute_escape_json "`builtin print -l -- ${(ok)builtins}`")"
+    local escaped_keywords="$(cute_escape_json "`builtin print -l -- ${(ok)reswords}`")"
 
-    local escaped_path="$(warp_escape_json "$PATH")"
+    local escaped_path="$(cute_escape_json "$PATH")"
 
-    local escaped_shell_plugins="$(warp_escape_json "`builtin print -l -- ${shell_plugins}`")"
+    local escaped_shell_plugins="$(cute_escape_json "`builtin print -l -- ${shell_plugins}`")"
 
     # The list of options enabled for the current shell.
-    local shell_options="$(warp_escape_json "`setopt`")"
+    local shell_options="$(cute_escape_json "`setopt`")"
 
-    local escaped_editor="$(warp_escape_json "$EDITOR")"
-    local escaped_shell_path="$(warp_escape_json "${commands[zsh]}")"
-    local escaped_cdpath="$(warp_escape_json "$CDPATH")"
+    local escaped_editor="$(cute_escape_json "$EDITOR")"
+    local escaped_shell_path="$(cute_escape_json "${commands[zsh]}")"
+    local escaped_cdpath="$(cute_escape_json "$CDPATH")"
     local escaped_json="{\"hook\": \"Bootstrapped\", \"value\": {\"histfile\": \"$escaped_histfile\", \"shell\": \"zsh\", \"home_dir\": \"$HOME\", \"path\": \"$escaped_path\", \"cdpath\": \"$escaped_cdpath\", \"editor\": \"$escaped_editor\", \"env_var_names\":  \"$env_var_names\", \"abbreviations\": \"$escaped_abbrs\", \"aliases\": \"$escaped_aliases\", \"function_names\": \"$function_names\",  \"builtins\": \"$escaped_builtins\",  \"keywords\": \"$escaped_keywords\", \"shell_version\": \"$ZSH_VERSION\", \"shell_options\": \"$shell_options\", \"rcfiles_start_time\": \"$rcfiles_start_time\", \"rcfiles_end_time\": \"$rcfiles_end_time\", \"shell_plugins\": \"$escaped_shell_plugins\", \"os_category\": \"$os_category\", \"linux_distribution\": \"$linux_distribution\", \"wsl_name\": \"${WSL_DISTRO_NAME:-}\", \"shell_path\": \"$escaped_shell_path\"}}"
-    warp_send_json_message "$escaped_json"
+    cute_send_json_message "$escaped_json"
   }
-  warp_bootstrapped
+  cute_bootstrapped
 fi

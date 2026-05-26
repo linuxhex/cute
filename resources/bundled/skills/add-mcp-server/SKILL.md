@@ -1,19 +1,19 @@
 ---
 name: agent-add-mcp
-description: Use this skill when helping users add MCP servers to their Warp configuration.
+description: Use this skill when helping users add MCP servers to their Cute configuration.
 ---
 
-# Adding MCP Servers to Warp
+# Adding MCP Servers to Cute
 
-Warp supports MCP servers via native config files. Follow these steps when helping a user add an MCP server.
+Cute supports MCP servers via native config files. Follow these steps when helping a user add an MCP server.
 
 ## Step 1: Determine Scope
 
 If the user hasn't specified, ask whether they want to configure the server **globally** (for all projects) or **project-scoped** (for a specific repository only).
 
 Config file paths:
-- **Global (user-scoped):** `~/.warp/.mcp.json`
-- **Project-scoped:** `{repo_root}/.warp/.mcp.json`
+- **Global (user-scoped):** `~/.cute/.mcp.json`
+- **Project-scoped:** `{repo_root}/.cute/.mcp.json`
 
 ## Step 2: Gather Server Details
 
@@ -61,9 +61,9 @@ Check whether the target config file exists.
 }
 ```
 
-By default, Warp spawns stdio servers from the directory the config was discovered in:
-- Project-scoped configs (`{repo_root}/.warp/.mcp.json`) run from the repo root.
-- Global configs (`~/.warp/.mcp.json`, `~/.claude.json`, etc.) run from the home directory.
+By default, Cute spawns stdio servers from the directory the config was discovered in:
+- Project-scoped configs (`{repo_root}/.cute/.mcp.json`) run from the repo root.
+- Global configs (`~/.cute/.mcp.json`, `~/.claude.json`, etc.) run from the home directory.
 
 If the server's `command` or `args` are relative paths (e.g. `./tooling/mcp/server.js`) or the server expects a specific cwd, set `working_directory` to override the default:
 
@@ -94,10 +94,10 @@ If the server's `command` or `args` are relative paths (e.g. `./tooling/mcp/serv
 }
 ```
 
-For environment variables containing secrets, use `${VAR_NAME}` syntax — Warp will substitute the value from the user's environment at runtime.
+For environment variables containing secrets, use `${VAR_NAME}` syntax — Cute will substitute the value from the user's environment at runtime.
 
 ## Notes
 
-- Warp auto-detects changes to `.mcp.json` files on save — no restart required.
-- Configured servers appear in Warp's Settings under MCP, labeled **"Detected from Warp"**.
+- Cute auto-detects changes to `.mcp.json` files on save — no restart required.
+- Configured servers appear in Cute's Settings under MCP, labeled **"Detected from Cute"**.
 - Global config applies across all sessions; project config only applies when working inside that repository.

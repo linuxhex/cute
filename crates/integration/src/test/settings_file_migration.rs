@@ -4,11 +4,11 @@
 use std::collections::HashMap;
 
 use settings::Setting as _;
-use warp::features::FeatureFlag;
-use warp::integration_testing::terminal::wait_until_bootstrapped_single_pane_for_tab;
-use warp::settings::{BlockVisibilitySettings, ScrollSettings};
-use warpui::integration::AssertionOutcome;
-use warpui::{async_assert, async_assert_eq, SingletonEntity};
+use cute::features::FeatureFlag;
+use cute::integration_testing::terminal::wait_until_bootstrapped_single_pane_for_tab;
+use cute::settings::{BlockVisibilitySettings, ScrollSettings};
+use cuteui::integration::AssertionOutcome;
+use cuteui::{async_assert, async_assert_eq, SingletonEntity};
 
 use super::{new_builder, Builder};
 
@@ -65,7 +65,7 @@ pub fn test_settings_file_migration_from_native_store() -> Builder {
                 .add_named_assertion(
                     "TOML settings file should contain the migrated settings",
                     move |_app, _window_id| {
-                        let toml_path = warp::settings::user_preferences_toml_file_path();
+                        let toml_path = cute::settings::user_preferences_toml_file_path();
                         let contents = match std::fs::read_to_string(&toml_path) {
                             Ok(c) => c,
                             Err(err) => {

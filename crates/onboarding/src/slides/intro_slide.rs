@@ -1,22 +1,22 @@
 use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::vec2f;
 use ui_components::{button, Component as _, Options as _};
-use warp_core::send_telemetry_from_ctx;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::theme::color::internal_colors;
-use warp_core::ui::Icon;
-use warpui::elements::shimmering_text::{
+use cute_core::send_telemetry_from_ctx;
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::theme::color::internal_colors;
+use cute_core::ui::Icon;
+use cuteui::elements::shimmering_text::{
     ShimmerConfig, ShimmeringTextElement, ShimmeringTextStateHandle,
 };
-use warpui::elements::{
+use cuteui::elements::{
     Align, ChildAnchor, ConstrainedBox, Container, CrossAxisAlignment, Flex, FormattedTextElement,
     MainAxisAlignment, MainAxisSize, MouseStateHandle, OffsetPositioning, ParentAnchor,
     ParentElement, ParentOffsetBounds, Stack,
 };
-use warpui::keymap::Keystroke;
-use warpui::text_layout::TextAlignment;
-use warpui::ui_components::components::{UiComponent as _, UiComponentStyles};
-use warpui::{
+use cuteui::keymap::Keystroke;
+use cuteui::text_layout::TextAlignment;
+use cuteui::ui_components::components::{UiComponent as _, UiComponentStyles};
+use cuteui::{
     AppContext, Element, Entity, ModelHandle, SingletonEntity as _, TypedActionView, View,
     ViewContext,
 };
@@ -143,7 +143,7 @@ impl IntroSlide {
         let theme = appearance.theme();
 
         let logo_fill = internal_colors::fg_overlay_4(theme);
-        let logo = ConstrainedBox::new(Icon::WarpLogoLight.to_warpui_icon(logo_fill).finish())
+        let logo = ConstrainedBox::new(Icon::CuteLogoLight.to_cuteui_icon(logo_fill).finish())
             .with_width(64.)
             .with_height(64.)
             .finish();
@@ -151,7 +151,7 @@ impl IntroSlide {
         let base_color: ColorU = internal_colors::fg_overlay_4(theme).into();
         let shimmer_color: ColorU = theme.foreground().into();
         let title = ShimmeringTextElement::new(
-            "Welcome to Warp",
+            "Welcome to Cute",
             appearance.ui_font_family(),
             32.,
             base_color,

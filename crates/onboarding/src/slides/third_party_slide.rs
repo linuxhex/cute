@@ -1,16 +1,16 @@
 use ui_components::{button, Component as _, Options as _};
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::theme::color::internal_colors;
-use warpui::elements::{
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::theme::color::internal_colors;
+use cuteui::elements::{
     ClippedScrollStateHandle, Container, CrossAxisAlignment, Flex, FormattedTextElement,
     MainAxisSize, MouseStateHandle, ParentElement,
 };
-use warpui::fonts::Weight;
-use warpui::keymap::Keystroke;
-use warpui::prelude::Align;
-use warpui::text_layout::TextAlignment;
-use warpui::ui_components::components::{UiComponent as _, UiComponentStyles};
-use warpui::{
+use cuteui::fonts::Weight;
+use cuteui::keymap::Keystroke;
+use cuteui::prelude::Align;
+use cuteui::text_layout::TextAlignment;
+use cuteui::ui_components::components::{UiComponent as _, UiComponentStyles};
+use cuteui::{
     AppContext, Element, Entity, ModelHandle, SingletonEntity as _, TypedActionView, View,
     ViewContext,
 };

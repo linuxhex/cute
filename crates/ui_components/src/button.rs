@@ -3,11 +3,11 @@ pub mod themes;
 
 pub use params::*;
 pub use themes::Theme;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::color::ContrastingColor as _;
-use warp_core::ui::color::contrast::MinimumAllowedContrast;
-use warpui::elements::{MouseState, MouseStateHandle};
-use warpui::prelude::*;
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::color::ContrastingColor as _;
+use cute_core::ui::color::contrast::MinimumAllowedContrast;
+use cuteui::elements::{MouseState, MouseStateHandle};
+use cuteui::prelude::*;
 
 use crate::{keyboard_shortcut, tooltip};
 
@@ -51,7 +51,7 @@ impl crate::Component for Button {
                 Content::Icon(icon) | Content::IconAndLabel(icon, _) => {
                     let icon_size = size.icon_size();
                     row.add_child(
-                        ConstrainedBox::new(icon.to_warpui_icon(text_color.into()).finish())
+                        ConstrainedBox::new(icon.to_cuteui_icon(text_color.into()).finish())
                             .with_width(icon_size)
                             .with_height(icon_size)
                             .finish(),

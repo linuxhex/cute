@@ -7,8 +7,8 @@ use std::pin::Pin;
 
 #[cfg(feature = "local_fs")]
 use futures::{future::OptionFuture, FutureExt as _};
-use warp_util::standardized_path::StandardizedPath;
-use warpui::{Entity, ModelContext, ModelHandle, SingletonEntity, WeakModelHandle};
+use cute_util::standardized_path::StandardizedPath;
+use cuteui::{Entity, ModelContext, ModelHandle, SingletonEntity, WeakModelHandle};
 
 use crate::repository::SubscriberId;
 use crate::{RepoMetadataError, Repository};
@@ -324,11 +324,8 @@ impl DirectoryWatcher {
                 watcher.update(ctx, |watcher, _ctx| {
                     use notify_debouncer_full::notify::RecursiveMode;
 
-                    use crate::entry::repo_watch_filter;
-
                     Some(watcher.register_path(
                         &local_path,
-                        repo_watch_filter(),
                         RecursiveMode::Recursive,
                     ))
                 })

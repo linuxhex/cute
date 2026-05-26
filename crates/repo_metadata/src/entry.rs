@@ -8,9 +8,9 @@ use std::sync::Arc;
 
 use ignore::gitignore::Gitignore;
 #[cfg(feature = "local_fs")]
-use notify_debouncer_full::notify::WatchFilter;
+use notify_debouncer_full::notify::RecursiveMode;
 use thiserror::Error;
-use warp_util::standardized_path::StandardizedPath;
+use cute_util::standardized_path::StandardizedPath;
 
 /// Maximum file size allowed for treesitter parsing (3MB).
 const MAX_FILE_SIZE: usize = 3 * 1000 * 1000;
@@ -570,25 +570,6 @@ fn descend_allowlist_matches(suffix: &[Component<'_>]) -> bool {
         // `.git/` itself — descend so allowlisted children stay reachable.
         None => true,
     }
-}
-
-/// Returns the [`WatchFilter`] used by repository file watchers.
-///
-/// Emit predicate: forwards events for everything outside `.git/` plus the
-/// allowlisted files inside `.git/` (HEAD, refs/heads/*, index.lock,
-/// config, config.worktree, refs/remotes/<r>/*, and worktree equivalents).
-///
-/// Descend predicate: prunes `.git/objects/`, `.git/hooks/`, `.git/logs/`,
-/// `.git/info/`, `.git/lfs/`, etc. so the recursive walk does not register
-/// watches on those subtrees, but still descends into `.git/`,
-/// `.git/refs/heads/`, `.git/refs/remotes/<r>/`, and `.git/worktrees/<n>/`
-/// so the allowlisted children remain reachable on Linux.
-#[cfg(feature = "local_fs")]
-pub fn repo_watch_filter() -> WatchFilter {
-    WatchFilter::with_filter(
-        Arc::new(should_watch_directory_in_git_path),
-        Arc::new(|path: &Path| !should_ignore_git_path(path)),
-    )
 }
 
 /// Determines whether a file should be parsed by a treesitter query. For now the main criteria is it shouldn't

@@ -1,9 +1,9 @@
-use warpui::elements::{
+use cuteui::elements::{
     Align, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Empty, Flex, Icon,
     ParentElement, Radius, Shrinkable, Text,
 };
-use warpui::geometry::vector::vec2f;
-use warpui::{AppContext, Element, SizeConstraint};
+use cuteui::geometry::vector::vec2f;
+use cuteui::{AppContext, Element, SizeConstraint};
 
 use super::RenderableBlock;
 use crate::editor::EmbeddedItemModel;
@@ -73,8 +73,8 @@ impl RenderableBlock for RenderableBrokenEmbedding {
     fn layout(
         &mut self,
         model: &crate::render::model::RenderState,
-        ctx: &mut warpui::LayoutContext,
-        app: &warpui::AppContext,
+        ctx: &mut cuteui::LayoutContext,
+        app: &cuteui::AppContext,
     ) {
         self.row.layout(
             SizeConstraint::strict(vec2f(
@@ -98,7 +98,7 @@ impl RenderableBlock for RenderableBrokenEmbedding {
         &mut self,
         model: &crate::render::model::RenderState,
         ctx: &mut super::RenderContext,
-        app: &warpui::AppContext,
+        app: &cuteui::AppContext,
     ) {
         let content = model.content();
         let broken_link = extract_block!(self.viewport_item, content, (block, BlockItem::Embedded(item)) => block.embedded(item));
@@ -148,21 +148,21 @@ impl RenderableBlock for RenderableBrokenEmbedding {
             );
         }
 
-        ctx.paint.scene.start_layer(warpui::ClipBounds::ActiveLayer);
+        ctx.paint.scene.start_layer(cuteui::ClipBounds::ActiveLayer);
         self.row
             .paint(ctx.content_to_screen(content_origin), ctx.paint, app);
         ctx.paint.scene.stop_layer();
     }
 
-    fn after_layout(&mut self, ctx: &mut warpui::AfterLayoutContext, app: &warpui::AppContext) {
+    fn after_layout(&mut self, ctx: &mut cuteui::AfterLayoutContext, app: &cuteui::AppContext) {
         self.row.after_layout(ctx, app);
     }
 
     fn dispatch_event(
         &mut self,
         _model: &crate::render::model::RenderState,
-        event: &warpui::event::DispatchedEvent,
-        ctx: &mut warpui::EventContext,
+        event: &cuteui::event::DispatchedEvent,
+        ctx: &mut cuteui::EventContext,
         app: &AppContext,
     ) -> bool {
         self.row.dispatch_event(event, ctx, app)

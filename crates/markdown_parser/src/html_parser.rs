@@ -27,7 +27,7 @@ const PHRASING_ELEMENT_TAGS: &[&str] = &[
     "span", "i", "code", "strong", "em", "br", "a", "s", "u", "ins",
 ];
 
-pub const WARP_EMBED_ATTRIBUTE_NAME: &str = "data-warp-embedded-item";
+pub const WARP_EMBED_ATTRIBUTE_NAME: &str = "data-cute-embedded-item";
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct ListArg {
@@ -445,7 +445,7 @@ fn parse_phrasing_content(nodes: &[Rc<Node>], text_styling: Styling) -> Formatte
                     "u" | "ins" => decorated_styling.underline = true,
                     "code" => decorated_styling.inline_code = true,
                     // TODO: We need to add more phrasing styling we support (e.g. links) here.
-                    // https://linear.app/warpdotdev/issue/CLD-335/add-html-parsing-for-headers-and-lists
+                    // https://linear.app/cutedotdev/issue/CLD-335/add-html-parsing-for-headers-and-lists
                     _ => (),
                 };
 

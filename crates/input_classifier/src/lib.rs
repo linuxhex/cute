@@ -3,7 +3,6 @@ mod input_type;
 #[cfg(feature = "onnx")]
 mod onnx;
 mod parser;
-pub mod test_utils;
 pub mod util;
 
 use async_trait::async_trait;
@@ -12,6 +11,32 @@ pub use input_type::InputType;
 #[cfg(feature = "onnx")]
 pub use onnx::{Model as OnnxModel, OnnxClassifier};
 
+// Stub type for ParsedTokensSnapshot (previously from cute_completer)
+#[derive(Debug, Clone)]
+pub struct ParsedTokensSnapshot {
+    pub text: String,
+    pub buffer_text: String,
+    pub parsed_tokens: Vec<ParsedToken>,
+}
+
+impl Default for ParsedTokensSnapshot {
+    fn default() -> Self {
+        Self {
+            text: String::new(),
+            buffer_text: String::new(),
+            parsed_tokens: vec![],
+        }
+    }
+}
+
+/// Stub ParsedToken for use with ParsedTokensSnapshot
+#[derive(Debug, Clone)]
+pub struct ParsedToken {
+    pub token: smol_str::SmolStr,
+    pub token_index: usize,
+    pub token_description: Option<String>,
+}
+
 /// An input classifier, which can take some parsed user input and determine
 /// what type of input it is.
 #[cfg_attr(not(target_family = "wasm"), async_trait)]
@@ -19,13 +44,13 @@ pub use onnx::{Model as OnnxModel, OnnxClassifier};
 pub trait InputClassifier: 'static + Send + Sync {
     async fn detect_input_type(
         &self,
-        input: warp_completer::ParsedTokensSnapshot,
+        input: ParsedTokensSnapshot,
         context: &Context,
     ) -> InputType;
 
     async fn classify_input(
         &self,
-        input: warp_completer::ParsedTokensSnapshot,
+        input: ParsedTokensSnapshot,
         context: &Context,
     ) -> anyhow::Result<ClassificationResult>;
 }

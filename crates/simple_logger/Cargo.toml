@@ -2,7 +2,7 @@
 name = "simple_logger"
 version = "0.1.0"
 edition = "2021"
-authors = ["Warp Team <dev@warp.dev>"]
+authors = ["Cute Team <dev@cute.dev>"]
 publish.workspace = true
 license.workspace = true
 description = "Simple file-based async logger for server stderr output"
@@ -14,5 +14,5 @@ chrono = { workspace = true }
 futures = { workspace = true }
 log = { workspace = true }
 thiserror.workspace = true
-warp_core = { workspace = true }
-warpui.workspace = true
+cute_core = { workspace = true }
+cuteui.workspace = true
