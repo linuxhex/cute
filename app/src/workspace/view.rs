@@ -298,6 +298,7 @@ use crate::search::command_palette::view::{
 use crate::search::command_search::searcher::{
     AcceptedHistoryItem, AcceptedWorkflow, CommandSearchItemAction,
 };
+use crate::search::command_search::settings::CommandSearchSettings;
 use crate::search::command_search::view::{CommandSearchEvent, CommandSearchView};
 use crate::search::slash_command_menu::static_commands::commands;
 use crate::search::{self, QueryFilter};
@@ -495,6 +496,7 @@ use crate::workspace::view::orchestration_launch_modal::{
 use crate::workspace::view::right_panel::{RightPanelEvent, RightPanelView};
 use crate::workspace::{ForkFromExchange, ForkedConversationDestination};
 use crate::workspaces::user_workspaces::UserWorkspaces;
+use crate::workspaces::workspace::AdminEnablementSetting;
 use crate::{
     autoupdate, report_if_error, send_telemetry_from_ctx, settings, AgentNotificationsModel,
     BlocklistAIHistoryModel, GlobalResourceHandles, TelemetryEvent,
@@ -20427,14 +20429,17 @@ impl Workspace {
         let alias_expansion_settings = AliasExpansionSettings::as_ref(app);
         let code_settings = CodeSettings::as_ref(app);
         let input_settings = InputSettings::as_ref(app);
+        let font_settings = FontSettings::as_ref(app);
         let reporting_setings = AltScreenReporting::as_ref(app);
         let general_settings = GeneralSettings::as_ref(app);
         let theme_settings = ThemeSettings::as_ref(app);
         let ssh_settings = SshSettings::as_ref(app);
         let warpify_settings = WarpifySettings::as_ref(app);
         let terminal_settings = TerminalSettings::as_ref(app);
+        let window_settings = WindowSettings::as_ref(app);
         let pane_settings = PaneSettings::as_ref(app);
         let keys_settings = KeysSettings::as_ref(app);
+        let command_search_settings = CommandSearchSettings::as_ref(app);
 
         let is_compact_mode =
             matches!(terminal_settings.spacing_mode.value(), SpacingMode::Compact);
@@ -20479,6 +20484,9 @@ impl Workspace {
             #[allow(deprecated)]
             context.set.insert(flags::LEGACY_SSH_WRAPPER_CONTEXT_FLAG);
         }
+        if *warpify_settings.enable_ssh_warpification.value() {
+            context.set.insert(flags::SSH_WARPIFICATION_CONTEXT_FLAG);
+        }
 
         if *warpify_settings.use_ssh_tmux_wrapper.value() {
             context.set.insert(flags::SSH_TMUX_WRAPPER_CONTEXT_FLAG);
@@ -20497,6 +20505,9 @@ impl Workspace {
         if *reporting_setings.scroll_reporting_enabled.value() {
             context.set.insert(flags::SCROLL_REPORTING_CONTEXT_FLAG);
         }
+        if *reporting_setings.mouse_reporting_enabled.value() {
+            context.set.insert(flags::MOUSE_REPORTING_CONTEXT_FLAG);
+        }
 
         if *reporting_setings.focus_reporting_enabled.value() {
             context.set.insert(flags::FOCUS_REPORTING_CONTEXT_FLAG);
@@ -20511,6 +20522,25 @@ impl Workspace {
             NotificationsMode::Enabled
         ) {
             context.set.insert(flags::NOTIFICATIONS_CONTEXT_FLAG);
+        }
+        if session_settings.notifications.is_long_running_enabled {
+            context.set.insert(flags::LONG_RUNNING_NOTIFICATIONS_FLAG);
+        }
+        if session_settings
+            .notifications
+            .is_agent_task_completed_enabled
+        {
+            context
+                .set
+                .insert(flags::AGENT_TASK_COMPLETED_NOTIFICATIONS_FLAG);
+        }
+        if session_settings.notifications.is_needs_attention_enabled {
+            context
+                .set
+                .insert(flags::NEEDS_ATTENTION_NOTIFICATIONS_FLAG);
+        }
+        if session_settings.notifications.play_notification_sound {
+            context.set.insert(flags::NOTIFICATION_SOUND_FLAG);
         }
 
         if *general_settings.link_tooltip {
@@ -20560,6 +20590,19 @@ impl Workspace {
         if *safe_mode_settings.safe_mode_enabled.value() {
             context.set.insert(flags::SAFE_MODE_FLAG);
         }
+        if !privacy_settings.is_telemetry_force_enabled()
+            && matches!(
+                UserWorkspaces::as_ref(app).get_cloud_conversation_storage_enablement_setting(),
+                AdminEnablementSetting::RespectUserSetting
+            )
+        {
+            context
+                .set
+                .insert(flags::CLOUD_CONVERSATION_STORAGE_EDITABLE_FLAG);
+        }
+        if privacy_settings.is_cloud_conversation_storage_enabled {
+            context.set.insert(flags::CLOUD_CONVERSATION_STORAGE_FLAG);
+        }
 
         if privacy_settings.is_crash_reporting_enabled {
             context.set.insert(flags::CRASH_REPORTING_FLAG);
@@ -20581,6 +20624,31 @@ impl Workspace {
 
         if *pane_settings.should_dim_inactive_panes {
             context.set.insert(flags::DIM_INACTIVE_PANES_FLAG);
+        }
+        if *window_settings.open_windows_at_custom_size {
+            context.set.insert(flags::OPEN_WINDOWS_AT_CUSTOM_SIZE_FLAG);
+        }
+
+        if *window_settings.background_blur_texture {
+            context.set.insert(flags::WINDOW_BLUR_TEXTURE_FLAG);
+        }
+
+        if *window_settings.left_panel_visibility_across_tabs {
+            context
+                .set
+                .insert(flags::LEFT_PANEL_VISIBILITY_ACROSS_TABS_FLAG);
+        }
+
+        if *font_settings.match_ai_font_to_terminal_font {
+            context
+                .set
+                .insert(flags::MATCH_AI_FONT_TO_TERMINAL_FONT_FLAG);
+        }
+
+        if *font_settings.match_notebook_to_monospace_font_size {
+            context
+                .set
+                .insert(flags::MATCH_NOTEBOOK_FONT_SIZE_TO_TERMINAL_FONT_SIZE_FLAG);
         }
 
         if *pane_settings.focus_panes_on_hover {
@@ -20605,8 +20673,36 @@ impl Workspace {
         if *tab_settings.show_code_review_button.value() {
             context.set.insert(flags::SHOW_CODE_REVIEW_BUTTON_FLAG);
         }
+        if *tab_settings.show_code_review_diff_stats.value() {
+            context.set.insert(flags::SHOW_CODE_REVIEW_DIFF_STATS_FLAG);
+        }
+        if *general_settings
+            .auto_open_code_review_pane_on_first_agent_change
+            .value()
+        {
+            context.set.insert(flags::AUTO_OPEN_CODE_REVIEW_PANE_FLAG);
+        }
         if *tab_settings.use_vertical_tabs.value() {
             context.set.insert(flags::USE_VERTICAL_TABS_FLAG);
+        }
+        if *tab_settings.preserve_active_tab_color.value() {
+            context.set.insert(flags::PRESERVE_ACTIVE_TAB_COLOR_FLAG);
+        }
+        if *tab_settings
+            .show_vertical_tab_panel_in_restored_windows
+            .value()
+        {
+            context
+                .set
+                .insert(flags::SHOW_VERTICAL_TAB_PANEL_IN_RESTORED_WINDOWS_FLAG);
+        }
+        if *tab_settings
+            .use_latest_user_prompt_as_conversation_title_in_tab_names
+            .value()
+        {
+            context
+                .set
+                .insert(flags::USE_LATEST_USER_PROMPT_AS_CONVERSATION_TITLE_IN_TAB_NAMES_FLAG);
         }
         if self.should_show_session_config_tab_config_chip() {
             context
@@ -20660,6 +20756,11 @@ impl Workspace {
                 .set
                 .insert(flags::AUTOSUGGESTION_KEYBINDING_HINT_FLAG);
         }
+        if *editor_settings.show_autosuggestion_ignore_button.value() {
+            context
+                .set
+                .insert(flags::SHOW_AUTOSUGGESTION_IGNORE_BUTTON_FLAG);
+        }
 
         #[cfg(target_os = "linux")]
         {
@@ -20675,6 +20776,17 @@ impl Workspace {
         let terminal_settings = TerminalSettings::as_ref(app);
         if *terminal_settings.use_audible_bell {
             context.set.insert(flags::USE_AUDIBLE_BELL_CONTEXT_FLAG);
+        }
+        if *terminal_settings.show_terminal_zero_state_block.value() {
+            context
+                .set
+                .insert(flags::SHOW_TERMINAL_ZERO_STATE_BLOCK_FLAG);
+        }
+        if matches!(
+            terminal_settings.alt_screen_padding.value(),
+            crate::terminal::settings::AltScreenPaddingMode::Custom { .. }
+        ) {
+            context.set.insert(flags::ALT_SCREEN_PADDING_FLAG);
         }
 
         let gpu_settings = GPUSettings::as_ref(app);
@@ -20715,6 +20827,56 @@ impl Workspace {
                 .set
                 .insert(flags::SHOW_OZ_UPDATES_IN_ZERO_STATE_FLAG);
         }
+        if *ai_settings.git_operations_autogen_enabled_internal.value() {
+            context.set.insert(flags::GIT_OPERATIONS_AUTOGEN_FLAG);
+        }
+        if *ai_settings.include_agent_commands_in_history.value() {
+            context
+                .set
+                .insert(flags::INCLUDE_AGENT_COMMANDS_IN_HISTORY_FLAG);
+        }
+        if *ai_settings.feedback_bundled_skill_enabled.value() {
+            context.set.insert(flags::FEEDBACK_BUNDLED_SKILL_FLAG);
+        }
+        if *ai_settings.memory_enabled.value() {
+            context.set.insert(flags::AI_RULES_FLAG);
+        }
+        if *ai_settings.rule_suggestions_enabled_internal.value() {
+            context.set.insert(flags::SUGGESTED_RULES_FLAG);
+        }
+        if *ai_settings.warp_drive_context_enabled.value() {
+            context.set.insert(flags::WARP_DRIVE_CONTEXT_FLAG);
+        }
+        if *ai_settings.file_based_mcp_enabled.value() {
+            context.set.insert(flags::FILE_BASED_MCP_FLAG);
+        }
+        if *ai_settings.can_use_warp_credits_for_fallback.value() {
+            context.set.insert(flags::WARP_CREDIT_FALLBACK_FLAG);
+        }
+        if *session_settings.show_model_selectors_in_prompt.value() {
+            context
+                .set
+                .insert(flags::SHOW_BASE_MODEL_PICKER_IN_PROMPT_FLAG);
+        }
+        if *ai_settings.should_render_cli_agent_footer.value() {
+            context.set.insert(flags::CLI_AGENT_FOOTER_ENABLED);
+        }
+        if *ai_settings.auto_toggle_rich_input.value() {
+            context.set.insert(flags::AUTO_TOGGLE_RICH_INPUT_FLAG);
+        }
+        if *ai_settings.auto_open_rich_input_on_cli_agent_start.value() {
+            context
+                .set
+                .insert(flags::AUTO_OPEN_RICH_INPUT_ON_CLI_AGENT_START_FLAG);
+        }
+        if *ai_settings.auto_dismiss_rich_input_after_submit.value() {
+            context
+                .set
+                .insert(flags::AUTO_DISMISS_RICH_INPUT_AFTER_SUBMIT_FLAG);
+        }
+        if *ai_settings.show_agent_notifications.value() {
+            context.set.insert(flags::AGENT_IN_APP_NOTIFICATIONS_FLAG);
+        }
 
         if *ai_settings
             .should_render_use_agent_footer_for_user_commands
@@ -20745,6 +20907,26 @@ impl Workspace {
 
         if *input_settings.enable_slash_commands_in_terminal.value() {
             context.set.insert(flags::SLASH_COMMANDS_IN_TERMINAL_FLAG);
+        }
+        if *input_settings.at_context_menu_in_terminal_mode.value() {
+            context.set.insert(flags::AT_CONTEXT_MENU_IN_TERMINAL_FLAG);
+        }
+
+        if *input_settings
+            .outline_codebase_symbols_for_at_context_menu
+            .value()
+        {
+            context
+                .set
+                .insert(flags::OUTLINE_CODEBASE_SYMBOLS_FOR_AT_CONTEXT_MENU_FLAG);
+        }
+        if *command_search_settings
+            .show_global_workflows_in_universal_search
+            .value()
+        {
+            context
+                .set
+                .insert(flags::GLOBAL_WORKFLOWS_IN_COMMAND_SEARCH_FLAG);
         }
 
         if ChannelState::enable_debug_features() {

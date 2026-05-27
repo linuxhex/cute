@@ -291,6 +291,15 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
             context,
             flags::AUTOSUGGESTION_KEYBINDING_HINT_FLAG,
         ),
+        ToggleSettingActionPair::new(
+            "autosuggestion ignore button",
+            builder(SettingsAction::FeaturesPageToggle(
+                FeaturesPageAction::ToggleShowAutosuggestionIgnoreButton,
+            )),
+            context,
+            flags::SHOW_AUTOSUGGESTION_IGNORE_BUTTON_FLAG,
+        )
+        .with_enabled(|| FeatureFlag::AllowIgnoringInputSuggestions.is_enabled()),
     ];
 
     if !FeatureFlag::SSHTmuxWrapper.is_enabled() {
@@ -314,6 +323,78 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
         context,
         flags::LINK_TOOLTIP_CONTEXT_FLAG,
     ));
+    toggle_binding_pairs.push(
+        ToggleSettingActionPair::new(
+            "long-running command notifications",
+            builder(SettingsAction::FeaturesPageToggle(
+                FeaturesPageAction::ToggleLongRunningNotifications,
+            )),
+            &(context.to_owned() & id!(flags::NOTIFICATIONS_CONTEXT_FLAG)),
+            flags::LONG_RUNNING_NOTIFICATIONS_FLAG,
+        )
+        .is_supported_on_current_platform(
+            SessionSettings::as_ref(app)
+                .notifications
+                .is_supported_on_current_platform(),
+        ),
+    );
+    toggle_binding_pairs.push(
+        ToggleSettingActionPair::new(
+            "agent task completion notifications",
+            builder(SettingsAction::FeaturesPageToggle(
+                FeaturesPageAction::ToggleAgentTaskCompletedNotifications,
+            )),
+            &(context.to_owned() & id!(flags::NOTIFICATIONS_CONTEXT_FLAG)),
+            flags::AGENT_TASK_COMPLETED_NOTIFICATIONS_FLAG,
+        )
+        .is_supported_on_current_platform(
+            SessionSettings::as_ref(app)
+                .notifications
+                .is_supported_on_current_platform(),
+        ),
+    );
+    toggle_binding_pairs.push(
+        ToggleSettingActionPair::new(
+            "needs-attention notifications",
+            builder(SettingsAction::FeaturesPageToggle(
+                FeaturesPageAction::ToggleNeedsAttentionNotifications,
+            )),
+            &(context.to_owned() & id!(flags::NOTIFICATIONS_CONTEXT_FLAG)),
+            flags::NEEDS_ATTENTION_NOTIFICATIONS_FLAG,
+        )
+        .is_supported_on_current_platform(
+            SessionSettings::as_ref(app)
+                .notifications
+                .is_supported_on_current_platform(),
+        ),
+    );
+    #[cfg(target_os = "macos")]
+    toggle_binding_pairs.push(
+        ToggleSettingActionPair::new(
+            "notification sounds",
+            builder(SettingsAction::FeaturesPageToggle(
+                FeaturesPageAction::ToggleNotificationSound,
+            )),
+            &(context.to_owned() & id!(flags::NOTIFICATIONS_CONTEXT_FLAG)),
+            flags::NOTIFICATION_SOUND_FLAG,
+        )
+        .is_supported_on_current_platform(
+            SessionSettings::as_ref(app)
+                .notifications
+                .is_supported_on_current_platform(),
+        ),
+    );
+    toggle_binding_pairs.push(
+        ToggleSettingActionPair::new(
+            "in-app agent notifications",
+            builder(SettingsAction::FeaturesPageToggle(
+                FeaturesPageAction::ToggleAgentInAppNotifications,
+            )),
+            context,
+            flags::AGENT_IN_APP_NOTIFICATIONS_FLAG,
+        )
+        .with_enabled(|| FeatureFlag::HOANotifications.is_enabled()),
+    );
 
     toggle_binding_pairs.push(
         ToggleSettingActionPair::new(
@@ -327,6 +408,21 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
         .is_supported_on_current_platform(
             GeneralSettings::as_ref(app)
                 .show_warning_before_quitting
+                .is_supported_on_current_platform(),
+        ),
+    );
+    toggle_binding_pairs.push(
+        ToggleSettingActionPair::new(
+            "mouse reporting",
+            builder(SettingsAction::FeaturesPageToggle(
+                FeaturesPageAction::ToggleMouseReporting,
+            )),
+            context,
+            flags::MOUSE_REPORTING_CONTEXT_FLAG,
+        )
+        .is_supported_on_current_platform(
+            AltScreenReporting::as_ref(app)
+                .mouse_reporting_enabled
                 .is_supported_on_current_platform(),
         ),
     );
@@ -467,6 +563,23 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
         context,
         flags::SMART_SELECT_FLAG,
     ));
+    if FeatureFlag::AgentView.is_enabled() && AISettings::as_ref(app).is_any_ai_enabled(app) {
+        toggle_binding_pairs.push(
+            ToggleSettingActionPair::new(
+                "help block in new sessions",
+                builder(SettingsAction::FeaturesPageToggle(
+                    FeaturesPageAction::ToggleShowTerminalZeroStateBlock,
+                )),
+                context,
+                flags::SHOW_TERMINAL_ZERO_STATE_BLOCK_FLAG,
+            )
+            .is_supported_on_current_platform(
+                TerminalSettings::as_ref(app)
+                    .show_terminal_zero_state_block
+                    .is_supported_on_current_platform(),
+            ),
+        );
+    }
 
     toggle_binding_pairs.push(
         ToggleSettingActionPair::new(
@@ -478,6 +591,21 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
             flags::SHOW_TERMINAL_INPUT_MESSAGE_LINE_FLAG,
         )
         .with_enabled(|| FeatureFlag::AgentView.is_enabled()),
+    );
+    toggle_binding_pairs.push(
+        ToggleSettingActionPair::new(
+            "'@' context menu in terminal mode",
+            builder(SettingsAction::FeaturesPageToggle(
+                FeaturesPageAction::ToggleAtContextMenuInTerminalMode,
+            )),
+            context,
+            flags::AT_CONTEXT_MENU_IN_TERMINAL_FLAG,
+        )
+        .is_supported_on_current_platform(
+            InputSettings::as_ref(app)
+                .at_context_menu_in_terminal_mode
+                .is_supported_on_current_platform(),
+        ),
     );
 
     if FeatureFlag::AgentView.is_enabled() && AISettings::as_ref(app).is_any_ai_enabled(app) {
@@ -497,6 +625,38 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
             ),
         );
     }
+    if FeatureFlag::AIContextMenuCode.is_enabled() {
+        toggle_binding_pairs.push(
+            ToggleSettingActionPair::new(
+                "codebase symbols in the '@' context menu",
+                builder(SettingsAction::FeaturesPageToggle(
+                    FeaturesPageAction::ToggleOutlineCodebaseSymbolsForAtContextMenu,
+                )),
+                context,
+                flags::OUTLINE_CODEBASE_SYMBOLS_FOR_AT_CONTEXT_MENU_FLAG,
+            )
+            .is_supported_on_current_platform(
+                InputSettings::as_ref(app)
+                    .outline_codebase_symbols_for_at_context_menu
+                    .is_supported_on_current_platform(),
+            ),
+        );
+    }
+    toggle_binding_pairs.push(
+        ToggleSettingActionPair::new(
+            "global workflows in Command Search",
+            builder(SettingsAction::FeaturesPageToggle(
+                FeaturesPageAction::ToggleGlobalWorkflowsInUniversalSearch,
+            )),
+            context,
+            flags::GLOBAL_WORKFLOWS_IN_COMMAND_SEARCH_FLAG,
+        )
+        .is_supported_on_current_platform(
+            CommandSearchSettings::as_ref(app)
+                .show_global_workflows_in_universal_search
+                .is_supported_on_current_platform(),
+        ),
+    );
 
     if GPUState::as_ref(app).is_low_power_gpu_available() {
         toggle_binding_pairs.push(
