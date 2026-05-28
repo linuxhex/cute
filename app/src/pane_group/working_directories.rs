@@ -375,9 +375,10 @@ impl WorkingDirectoriesModel {
 
     /// Get or create a DiffStateModel for a specific repository.
     ///
-    /// If the model doesn't exist, it will be created.
-    /// For remote file locations we require a connected session for the host.
-    /// If none exists, returns `None` and callers should retry once a session is established.
+    /// If the model doesn't exist, it will be created. For remote
+    /// repositories we require a connected session for the host; returns
+    /// `None` when none exists so callers treat the panel as unavailable
+    /// for that repo rather than producing a model that cannot subscribe.
     pub fn get_or_create_diff_state_model(
         &mut self,
         key: LocalOrRemotePath,
@@ -394,11 +395,11 @@ impl WorkingDirectoriesModel {
             }
             LocalOrRemotePath::Remote(remote_path) => {
                 let mgr_handle = RemoteServerManager::handle(ctx);
-                let session_id = mgr_handle
+                mgr_handle
                     .as_ref(ctx)
-                    .find_connected_session(&remote_path.host_id)?;
+                    .client_for_host(&remote_path.host_id)?;
                 let remote_path = remote_path.clone();
-                ctx.add_model(|ctx| DiffStateModel::new_remote(remote_path, session_id, ctx))
+                ctx.add_model(|ctx| DiffStateModel::new_remote(remote_path, ctx))
             }
         };
 
