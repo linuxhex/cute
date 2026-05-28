@@ -3699,6 +3699,15 @@ impl Workspace {
                 });
                 self.check_and_trigger_onboarding(ctx);
             }
+            NewWorkspaceSource::AmbientAgent => {
+                self.add_tab_with_pane_layout(
+                    PanesLayout::AmbientAgent,
+                    Arc::new(HashMap::new()),
+                    None,
+                    ctx,
+                );
+                self.check_and_trigger_onboarding(ctx);
+            }
             NewWorkspaceSource::NotebookFromFilePath { file_path } => {
                 self.add_tab_for_file_notebook(file_path, ctx);
             }
@@ -3808,6 +3817,7 @@ impl Workspace {
             | NewWorkspaceSource::FromTemplate { .. }
             | NewWorkspaceSource::Session { .. }
             | NewWorkspaceSource::AgentSession { .. }
+            | NewWorkspaceSource::AmbientAgent
             | NewWorkspaceSource::NotebookFromFilePath { .. } => should_default_open,
             #[cfg(not(target_family = "wasm"))]
             NewWorkspaceSource::SharedSessionAsViewer { .. }
