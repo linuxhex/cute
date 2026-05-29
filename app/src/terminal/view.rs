@@ -26,8 +26,6 @@ use onboarding::callout::{FinalState, OnboardingCalloutViewEvent, OnboardingQuer
 use onboarding::{OnboardingCalloutView, OnboardingKeybindings};
 
 use crate::ai::block_context::BlockContext;
-#[cfg(feature = "local_fs")]
-use crate::ai::skills::SkillOpenOrigin;
 use crate::global_resource_handles::GlobalResourceHandlesProvider;
 pub(crate) mod docker_sandbox;
 mod link_detection;
@@ -335,7 +333,7 @@ use crate::editor::{AutosuggestionType, CrdtOperation, EditorAction};
 use crate::env_vars::env_var_collection_block::{
     EnvVarCollectionBlock, EnvVarCollectionBlockEvent,
 };
-use crate::env_vars::{CloudEnvVarCollection, EnvVar};
+use crate::env_vars::{CloudEnvVarCollection, EnvVar, EnvVarExt};
 use crate::features::FeatureFlag;
 use crate::menu::{Event as MenuEvent, Menu, MenuItem, MenuItemFields};
 use crate::pane_group::focus_state::PaneFocusHandle;
@@ -432,6 +430,7 @@ use crate::terminal::links::should_directly_open_link;
 use crate::terminal::local_tty::get_shell_starter;
 #[cfg(feature = "local_tty")]
 use crate::terminal::local_tty::shell::ShellStarter;
+#[cfg(feature = "local_tty")]
 #[cfg(all(windows, feature = "local_tty"))]
 use crate::terminal::local_tty::windows::get_user_and_system_env_variable;
 use crate::terminal::model::ansi::{ClearMode, Handler};
@@ -26594,7 +26593,7 @@ impl TypedActionView for TerminalView {
                                 source: CodeSource::Skill {
                                     reference: skill_reference.clone(),
                                     path: path.clone(),
-                                    origin: SkillOpenOrigin::OpenSkillCommand,
+                                    origin: crate::ai::skills::SkillOpenOrigin::OpenSkillCommand,
                                 },
                                 layout:
                                     *crate::util::file::external_editor::EditorSettings::as_ref(ctx)
