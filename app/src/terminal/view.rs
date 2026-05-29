@@ -324,6 +324,8 @@ use crate::code_review::telemetry_event::CodeReviewPaneEntrypoint;
 #[cfg(feature = "local_fs")]
 use crate::code_review::DiffSetScope;
 use crate::context_chips::prompt::Prompt;
+#[cfg(feature = "local_fs")]
+use crate::context_chips::prompt::PromptSelection;
 use crate::context_chips::prompt_type::PromptType;
 use crate::context_chips::ContextChipKind;
 use crate::drive::settings::WarpDriveSettings;
@@ -3970,7 +3972,6 @@ impl TerminalView {
         ctx.subscribe_to_model(&SessionSettings::handle(ctx), move |me, _, evt, ctx| {
             me.handle_session_settings_event(evt, ctx);
         });
-
         // Re-evaluate git status subscription when the prompt configuration
         // changes (e.g. chips added/removed, input type toggled).
         ctx.subscribe_to_model(&Prompt::handle(ctx), |me, _, _, ctx| {
@@ -4851,6 +4852,9 @@ impl TerminalView {
                 });
             }
         });
+        self.ai_context_model.update(ctx, |context_model, _| {
+            context_model.set_git_repo_status(None);
+        });
     }
 
     /// Fully clear the per-repo git status handle, including the input's repo
@@ -4871,26 +4875,23 @@ impl TerminalView {
             .and_then(|h| h.as_ref(ctx).metadata())
     }
 
-    /// Returns whether this terminal view should subscribe to git status updates.
-    /// We subscribe when:
-    /// 1. Agent mode is active and its chip list includes `GitDiffStats` or `GithubPullRequest`, or
-    /// 2. Terminal mode with the Warp prompt enabled and the git stats chip
-    ///    configured.
     #[cfg(feature = "local_fs")]
-    fn should_subscribe_to_git_status(&self, ctx: &AppContext) -> bool {
-        let uses_git_status = |chips: Vec<ContextChipKind>| {
-            chips.iter().any(|chip| {
-                matches!(
-                    chip,
-                    ContextChipKind::GitDiffStats | ContextChipKind::GithubPullRequest
-                )
-            })
-        };
+    fn uses_git_status_chips(chips: Vec<ContextChipKind>) -> bool {
+        chips.iter().any(|chip| {
+            matches!(
+                chip,
+                ContextChipKind::GitDiffStats | ContextChipKind::GithubPullRequest
+            )
+        })
+    }
 
+    /// Returns whether visible prompt/footer chips need git status updates.
+    #[cfg(feature = "local_fs")]
+    fn needs_git_status_for_chip_ui(&self, ctx: &AppContext) -> bool {
         // Agent view: subscribe when the configured agent footer includes
         // git stats or PR info.
         if self.agent_view_controller.as_ref(ctx).is_active() {
-            return uses_git_status(
+            return Self::uses_git_status_chips(
                 SessionSettings::as_ref(ctx)
                     .agent_footer_chip_selection
                     .all_chips(),
@@ -4899,7 +4900,7 @@ impl TerminalView {
         // CLI-agent footer: subscribe only while a CLI-agent session is active,
         // so normal terminal panes do not subscribe just because of CLI footer defaults.
         if self.has_active_cli_agent_session(ctx)
-            && uses_git_status(
+            && Self::uses_git_status_chips(
                 SessionSettings::as_ref(ctx)
                     .cli_agent_footer_chip_selection
                     .all_chips(),
@@ -4916,12 +4917,24 @@ impl TerminalView {
         if is_using_warp_prompt && Self::should_retry_default_pr_chip_validation(ctx) {
             return true;
         }
-        is_using_warp_prompt && uses_git_status(Prompt::as_ref(ctx).chip_kinds())
+        is_using_warp_prompt && Self::uses_git_status_chips(Prompt::as_ref(ctx).chip_kinds())
+    }
+
+    #[cfg(feature = "local_fs")]
+    fn needs_git_status_for_agent_context(&self, ctx: &AppContext) -> bool {
+        self.current_local_repo_path().is_some()
+            && self.ai_input_model.as_ref(ctx).is_ai_input_enabled()
+    }
+
+    /// Returns whether this terminal view should subscribe to git status updates.
+    #[cfg(feature = "local_fs")]
+    fn should_subscribe_to_git_status(&self, ctx: &AppContext) -> bool {
+        self.needs_git_status_for_chip_ui(ctx) || self.needs_git_status_for_agent_context(ctx)
     }
 
     /// Whether the terminal's prompt/footer chips need PR info.
     #[cfg(feature = "local_fs")]
-    fn needs_pr_info(&self, ctx: &AppContext) -> bool {
+    fn needs_pr_info_for_chip_ui(&self, ctx: &AppContext) -> bool {
         if self.agent_view_controller.as_ref(ctx).is_active() {
             return SessionSettings::as_ref(ctx)
                 .agent_footer_chip_selection
@@ -4947,14 +4960,23 @@ impl TerminalView {
     }
 
     #[cfg(feature = "local_fs")]
+    fn needs_pr_info_for_agent_context(&self, ctx: &AppContext) -> bool {
+        self.current_local_repo_path().is_some()
+            && self.ai_input_model.as_ref(ctx).is_ai_input_enabled()
+    }
+
+    /// Whether this terminal needs PR info from the git status model.
+    #[cfg(feature = "local_fs")]
+    fn needs_pr_info(&self, ctx: &AppContext) -> bool {
+        self.needs_pr_info_for_chip_ui(ctx) || self.needs_pr_info_for_agent_context(ctx)
+    }
+
+    #[cfg(feature = "local_fs")]
     fn should_retry_default_pr_chip_validation(ctx: &AppContext) -> bool {
         let settings = SessionSettings::as_ref(ctx);
         FeatureFlag::GithubPrPromptChip.is_enabled()
             && settings.github_pr_chip_default_validation.is_suppressed()
-            && matches!(
-                *settings.saved_prompt,
-                crate::context_chips::prompt::PromptSelection::Default
-            )
+            && matches!(*settings.saved_prompt, PromptSelection::Default)
     }
 
     /// Refresh the terminal's own `pr_info_consumer` registration on the
@@ -4979,6 +5001,9 @@ impl TerminalView {
     /// registered for this terminal.
     #[cfg(feature = "local_fs")]
     fn refresh_pr_info_after_gh_or_gt_command(&mut self, ctx: &mut ViewContext<Self>) {
+        if !self.needs_pr_info(ctx) {
+            return;
+        }
         // Ensure we have a subscription to the per-repo status model.
         // `should_subscribe_to_git_status` already returns true while
         // suppression is active so the default chip can recover, so this
@@ -5017,6 +5042,7 @@ impl TerminalView {
                             me.handle_git_repo_status_event(ctx);
                         });
                         let weak_for_prompt = handle.downgrade();
+                        let weak_for_context = handle.downgrade();
                         self.git_repo_status = Some(handle);
                         self.current_prompt.update(ctx, |prompt_type, ctx| {
                             if let PromptType::Dynamic { prompt } = prompt_type {
@@ -5025,10 +5051,13 @@ impl TerminalView {
                                 });
                             }
                         });
-                        // Register the terminal as a `pr_info` consumer if its
-                        // prompt/footer needs PR info; the per-repo model only
-                        // fetches PR info while at least one consumer is
-                        // registered.
+                        self.ai_context_model.update(ctx, |context_model, _| {
+                            context_model.set_git_repo_status(Some(weak_for_context));
+                        });
+                        // Register the terminal as a `pr_info` consumer if
+                        // either the chip UI or agent context needs PR info;
+                        // the per-repo model only fetches PR info while at
+                        // least one consumer is registered.
                         self.sync_pr_info_consumer_for_current_subscription(ctx);
                     }
                     Err(err) => {
@@ -6678,6 +6707,8 @@ impl TerminalView {
         match event {
             BlocklistAIInputEvent::InputTypeChanged { config } => {
                 self.ai_render_context.borrow_mut().is_ai_input_enabled = config.input_type.is_ai();
+                #[cfg(feature = "local_fs")]
+                self.update_git_status_subscription(ctx);
 
                 // Force re-render all AIBlocks to ensure that selected text is recolored properly
                 self.rerender_rich_content_blocks(ctx);
