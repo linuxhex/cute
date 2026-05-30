@@ -1,0 +1,9 @@
+[package]
+name = "warp_managed_secrets"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { workspace = true, features = ["derive"] }
+anyhow.workspace = true
+async-trait.workspace = true

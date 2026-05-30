@@ -149,12 +149,95 @@ pub fn launch(_mode: LaunchMode, ctx: &mut AppContext) {
     // Initialize terminal module
     terminal::init(ctx);
 
-    // Create the main window with terminal view
-    ctx.add_window(cuteui::AddWindowOptions::default(), |ctx| {
+    // Initialize Appearance singleton with default values
+    ctx.add_singleton_model(|ctx| {
+        use cuteui::fonts::FamilyId;
+        use cuteui::color::ColorU;
+        use cute_core::ui::theme::{Fill, Details, TerminalColors, AnsiColors, AnsiColor};
+        use cute_core::ui::appearance::Appearance;
+
+        // Get font cache to find a valid font family
+        let font_cache = ctx.font_cache();
+
+        // Try to find common monospace fonts
+        let monospace_family = font_cache.family_id_for_name("Menlo")
+            .or_else(|| font_cache.family_id_for_name("Monaco"))
+            .or_else(|| font_cache.family_id_for_name("Courier New"))
+            .or_else(|| font_cache.family_id_for_name("SF Mono"))
+            .unwrap_or(FamilyId(0));
+
+        // Try to find UI font
+        let ui_family = font_cache.family_id_for_name("SF Pro Text")
+            .or_else(|| font_cache.family_id_for_name("Helvetica"))
+            .or_else(|| font_cache.family_id_for_name("Arial"))
+            .unwrap_or(FamilyId(0));
+
+        log::info!("Using monospace font family: {:?}, ui font family: {:?}", monospace_family, ui_family);
+
+        // Create terminal colors (standard dark theme colors)
+        let terminal_colors = TerminalColors::new(
+            AnsiColors::new(
+                AnsiColor::from(ColorU::new(0, 0, 0, 255)),      // black
+                AnsiColor::from(ColorU::new(205, 49, 49, 255)),   // red
+                AnsiColor::from(ColorU::new(13, 188, 121, 255)),  // green
+                AnsiColor::from(ColorU::new(229, 229, 16, 255)),  // yellow
+                AnsiColor::from(ColorU::new(36, 114, 200, 255)),  // blue
+                AnsiColor::from(ColorU::new(188, 63, 188, 255)),  // magenta
+                AnsiColor::from(ColorU::new(17, 168, 205, 255)),  // cyan
+                AnsiColor::from(ColorU::new(229, 229, 229, 255)), // white
+            ),
+            AnsiColors::new(
+                AnsiColor::from(ColorU::new(102, 102, 102, 255)), // bright black
+                AnsiColor::from(ColorU::new(241, 76, 76, 255)),   // bright red
+                AnsiColor::from(ColorU::new(35, 206, 135, 255)),  // bright green
+                AnsiColor::from(ColorU::new(245, 245, 67, 255)),  // bright yellow
+                AnsiColor::from(ColorU::new(59, 142, 234, 255)),  // bright blue
+                AnsiColor::from(ColorU::new(214, 112, 214, 255)), // bright magenta
+                AnsiColor::from(ColorU::new(41, 184, 219, 255)),  // bright cyan
+                AnsiColor::from(ColorU::new(255, 255, 255, 255)), // bright white
+            ),
+        );
+
+        // Create a simple dark theme
+        let theme = cute_core::ui::theme::CuteTheme::new(
+            Fill::Solid(ColorU::new(30, 30, 30, 255)),  // background
+            ColorU::new(220, 220, 220, 255),             // foreground
+            Fill::Solid(ColorU::new(100, 180, 100, 255)), // accent
+            None,
+            Some(Details::Darker),
+            terminal_colors,
+            None,
+            Some("Dark".to_string()),
+        );
+
+        Appearance::new(
+            theme,
+            monospace_family,  // monospace font
+            14.0,              // font size
+            cuteui::fonts::Weight::Normal,
+            ui_family,         // ui font
+            1.4,               // line height ratio
+            monospace_family,  // ai font
+            monospace_family,  // password font
+        )
+    });
+
+    log::info!("Creating main window...");
+
+    // Create the main window with proper options
+    let options = cuteui::AddWindowOptions {
+        window_style: cuteui::platform::WindowStyle::Normal,
+        window_bounds: cuteui::platform::WindowBounds::Default,
+        title: Some("Cute Terminal".to_string()),
+        ..Default::default()
+    };
+
+    let (window_id, _handle) = ctx.add_window(options, |ctx| {
+        log::info!("Building TerminalView...");
         terminal::TerminalView::new()
     });
 
-    log::info!("Cute terminal initialized");
+    log::info!("Cute terminal initialized with window_id: {:?}", window_id);
 }
 
 /// Run the Cute application.
@@ -163,11 +246,26 @@ pub fn run() -> anyhow::Result<()> {
     platform::init();
 
     // Create app builder
-    let app_builder = cuteui::platform::AppBuilder::new(
+    let mut app_builder = cuteui::platform::AppBuilder::new(
         cuteui::platform::AppCallbacks::default(),
         Box::new(ASSETS),
         None,
     );
+
+    // macOS specific configuration
+    #[cfg(target_os = "macos")]
+    {
+        use cuteui::platform::mac::AppExt;
+        use cuteui::AssetProvider as _;
+
+        // Activate on launch so the window shows immediately
+        app_builder.set_activate_on_launch(true);
+
+        // Set dev icon for running outside app bundle
+        if let Ok(dev_icon) = ASSETS.get("bundled/png/local.png") {
+            app_builder.set_dev_icon(dev_icon);
+        }
+    }
 
     // Run the application
     let _ = app_builder.run(move |ctx| {

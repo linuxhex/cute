@@ -2,7 +2,7 @@
 //! A simplified terminal view with input, output, sidebars, and status
 
 use cuteui::{AppContext, Element, View, Entity, TypedActionView, ModelContext, SingletonEntity, ViewContext};
-use cuteui::elements::{Rect, Stack, Flex, Empty, Text};
+use cuteui::elements::{Rect, Stack, Flex, Empty, Text, Expanded, Container};
 use cuteui::fonts::FamilyId;
 use pathfinder_color::ColorU;
 use std::sync::Arc;
@@ -253,6 +253,11 @@ impl View for TerminalView {
     }
 
     fn render(&self, ctx: &AppContext) -> Box<dyn Element> {
+        // Get appearance for proper font
+        let appearance = cute_core::ui::appearance::Appearance::as_ref(ctx);
+        let font_family = appearance.monospace_font_family();
+        let font_size = appearance.monospace_font_size();
+
         let model = self.model.lock();
         let left_visible = model.left_sidebar_visible;
         let right_visible = model.right_panel_visible;
@@ -268,19 +273,21 @@ impl View for TerminalView {
             .finish();
 
         // Header bar
-        let header = self.render_header(&current_dir, git_branch.as_deref());
+        let header = self.render_header_with_font(&current_dir, git_branch.as_deref(), font_family, font_size);
 
-        // Main content area
-        let main_content = self.render_main_content(
+        // Main content area (expand to fill remaining space)
+        let main_content = Expanded::new(1.0, self.render_main_content_with_font(
             ctx,
             &output_lines,
             &input_buffer,
             left_visible,
             right_visible,
-        );
+            font_family,
+            font_size,
+        )).finish();
 
         // Status bar
-        let status_bar = self.render_status_bar();
+        let status_bar = self.render_status_bar_with_font(font_family, font_size);
 
         // Vertical layout
         let mut layout = Flex::column();
@@ -295,20 +302,20 @@ impl View for TerminalView {
 }
 
 impl TerminalView {
-    fn render_header(&self, current_dir: &str, git_branch: Option<&str>) -> Box<dyn Element> {
+    fn render_header_with_font(&self, current_dir: &str, git_branch: Option<&str>, font_family: FamilyId, font_size: f32) -> Box<dyn Element> {
         // Header background
         let header_bg = Rect::new()
             .with_background_color(ColorU::new(45, 45, 45, 255))
             .finish();
 
         // Directory text
-        let dir_text = Text::new(current_dir.to_string(), DEFAULT_FONT_FAMILY, FONT_SIZE)
+        let dir_text = Text::new(current_dir.to_string(), font_family, font_size)
             .with_color(ColorU::new(200, 200, 200, 255))
             .finish();
 
         // Git branch (if present)
         let git_text = if let Some(branch) = git_branch {
-            Text::new(format!("  ({})", branch), DEFAULT_FONT_FAMILY, FONT_SIZE)
+            Text::new(format!("  ({})", branch), font_family, font_size)
                 .with_color(ColorU::new(100, 180, 100, 255))
                 .finish()
         } else {
@@ -320,19 +327,27 @@ impl TerminalView {
         header_layout.extend(vec![dir_text, git_text]);
         let header_layout = header_layout.finish();
 
+        // Container with padding
+        let header_content = Container::new(header_layout)
+            .with_vertical_padding(8.0)
+            .with_horizontal_padding(12.0)
+            .finish();
+
         // Stack
         let mut stack = Stack::new();
-        stack.extend(vec![header_bg, header_layout]);
+        stack.extend(vec![header_bg, header_content]);
         stack.finish()
     }
 
-    fn render_main_content(
+    fn render_main_content_with_font(
         &self,
         ctx: &AppContext,
         output_lines: &[String],
         input_buffer: &str,
         left_visible: bool,
         right_visible: bool,
+        font_family: FamilyId,
+        font_size: f32,
     ) -> Box<dyn Element> {
         // Left sidebar
         let left_sidebar = if left_visible {
@@ -341,8 +356,8 @@ impl TerminalView {
             Empty::new().finish()
         };
 
-        // Terminal area (output + input)
-        let terminal_area = self.render_terminal_area(output_lines, input_buffer);
+        // Terminal area (output + input) - expand to fill remaining space
+        let terminal_area = Expanded::new(1.0, self.render_terminal_area_with_font(output_lines, input_buffer, font_family, font_size)).finish();
 
         // Right panel
         let right_panel = if right_visible {
@@ -357,17 +372,17 @@ impl TerminalView {
         layout.finish()
     }
 
-    fn render_terminal_area(&self, output_lines: &[String], input_buffer: &str) -> Box<dyn Element> {
+    fn render_terminal_area_with_font(&self, output_lines: &[String], input_buffer: &str, font_family: FamilyId, font_size: f32) -> Box<dyn Element> {
         // Terminal background
         let terminal_bg = Rect::new()
             .with_background_color(ColorU::new(30, 30, 30, 255))
             .finish();
 
-        // Output area
-        let output_area = self.render_output(output_lines);
+        // Output area (expand to fill remaining space)
+        let output_area = Expanded::new(1.0, self.render_output_with_font(output_lines, font_family, font_size)).finish();
 
         // Input area
-        let input_area = self.render_input(input_buffer);
+        let input_area = self.render_input_with_font(input_buffer, font_family, font_size);
 
         // Vertical layout
         let mut layout = Flex::column();
@@ -380,7 +395,7 @@ impl TerminalView {
         stack.finish()
     }
 
-    fn render_output(&self, lines: &[String]) -> Box<dyn Element> {
+    fn render_output_with_font(&self, lines: &[String], font_family: FamilyId, font_size: f32) -> Box<dyn Element> {
         // Output background
         let output_bg = Rect::new()
             .with_background_color(ColorU::new(30, 30, 30, 255))
@@ -389,37 +404,43 @@ impl TerminalView {
         // Build output lines
         let mut output_layout = Flex::column();
         for line in lines.iter().take(100) { // Limit to 100 lines for performance
-            let text = Text::new(line.clone(), DEFAULT_FONT_FAMILY, FONT_SIZE)
+            let text = Text::new(line.clone(), font_family, font_size)
                 .with_color(ColorU::new(220, 220, 220, 255))
                 .finish();
             output_layout.extend(vec![text]);
         }
         let output_layout = output_layout.finish();
 
+        // Container with padding
+        let output_content = Container::new(output_layout)
+            .with_horizontal_padding(12.0)
+            .with_padding_top(8.0)
+            .finish();
+
         // Stack
         let mut stack = Stack::new();
-        stack.extend(vec![output_bg, output_layout]);
+        stack.extend(vec![output_bg, output_content]);
         stack.finish()
     }
 
-    fn render_input(&self, buffer: &str) -> Box<dyn Element> {
+    fn render_input_with_font(&self, buffer: &str, font_family: FamilyId, font_size: f32) -> Box<dyn Element> {
         // Input background
         let input_bg = Rect::new()
             .with_background_color(ColorU::new(40, 40, 40, 255))
             .finish();
 
         // Prompt
-        let prompt = Text::new("$ ".to_string(), DEFAULT_FONT_FAMILY, FONT_SIZE)
+        let prompt = Text::new("$ ".to_string(), font_family, font_size)
             .with_color(ColorU::new(100, 200, 100, 255))
             .finish();
 
         // Input text
-        let input_text = Text::new(buffer.to_string(), DEFAULT_FONT_FAMILY, FONT_SIZE)
+        let input_text = Text::new(buffer.to_string(), font_family, font_size)
             .with_color(ColorU::new(220, 220, 220, 255))
             .finish();
 
         // Cursor
-        let cursor = Text::new("|".to_string(), DEFAULT_FONT_FAMILY, FONT_SIZE)
+        let cursor = Text::new("|".to_string(), font_family, font_size)
             .with_color(ColorU::new(200, 200, 200, 255))
             .finish();
 
@@ -428,13 +449,19 @@ impl TerminalView {
         layout.extend(vec![prompt, input_text, cursor]);
         let layout = layout.finish();
 
+        // Container with padding
+        let input_content = Container::new(layout)
+            .with_vertical_padding(8.0)
+            .with_horizontal_padding(12.0)
+            .finish();
+
         // Stack
         let mut stack = Stack::new();
-        stack.extend(vec![input_bg, layout]);
+        stack.extend(vec![input_bg, input_content]);
         stack.finish()
     }
 
-    fn render_status_bar(&self) -> Box<dyn Element> {
+    fn render_status_bar_with_font(&self, font_family: FamilyId, font_size: f32) -> Box<dyn Element> {
         let model = self.model.lock();
         let status = model.last_status;
         let exec_time = model.last_exec_time;
@@ -458,13 +485,13 @@ impl TerminalView {
             None => ColorU::new(150, 150, 150, 255),
         };
 
-        let status = Text::new(status_text, DEFAULT_FONT_FAMILY, FONT_SIZE)
+        let status = Text::new(status_text, font_family, font_size)
             .with_color(status_color)
             .finish();
 
         // Execution time
         let time_text = if let Some(t) = exec_time {
-            Text::new(format!(" {:.2}s", t), DEFAULT_FONT_FAMILY, FONT_SIZE)
+            Text::new(format!(" {:.2}s", t), font_family, font_size)
                 .with_color(ColorU::new(150, 150, 150, 255))
                 .finish()
         } else {
@@ -476,9 +503,15 @@ impl TerminalView {
         layout.extend(vec![status, time_text]);
         let layout = layout.finish();
 
+        // Container with padding
+        let status_content = Container::new(layout)
+            .with_vertical_padding(6.0)
+            .with_horizontal_padding(12.0)
+            .finish();
+
         // Stack
         let mut stack = Stack::new();
-        stack.extend(vec![status_bg, layout]);
+        stack.extend(vec![status_bg, status_content]);
         stack.finish()
     }
 }

@@ -1,7 +1,7 @@
 {
   "requirement_id": "OMJF-12301",
   "requirement_key": "restore-terminal-ui",
-  "phase": "commit",
+  "phase": "done",
   "stage": "completed",
   "main_project": "/Users/caomunian/Study/cute",
   "branch": "main",

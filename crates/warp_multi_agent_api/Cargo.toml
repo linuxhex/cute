@@ -1,0 +1,11 @@
+[package]
+name = "warp_multi_agent_api"
+version = "0.1.0"
+edition = "2021"
+publish.workspace = true
+license.workspace = true
+
+[dependencies]
+serde.workspace = true
+anyhow.workspace = true
+prost.workspace = true
