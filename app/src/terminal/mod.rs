@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 #[cfg(target_os = "macos")]
 mod view;
 
+pub use view::TerminalView;
+
 pub fn init(_app: &mut AppContext) {
     // Initialize terminal module
 }

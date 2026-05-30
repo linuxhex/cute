@@ -106,7 +106,7 @@ impl platform::WindowManager for WindowManager {
     }
 
     fn app_is_active(&self) -> bool {
-        let res: BOOL = unsafe { msg_send![app::get_cute_app(), isActive] };
+        let res: BOOL = unsafe { msg_send![app::get_warp_app(), isActive] };
         res == YES
     }
 
@@ -230,7 +230,7 @@ impl platform::WindowManager for WindowManager {
             let mut result = Vec::with_capacity(count as usize);
             for i in 0..count {
                 let window: id = ordered_windows.objectAtIndex(i);
-                if is_cute_window(window) == YES {
+                if is_warp_window(window) == YES {
                     result.push(get_window_state(&*window).window_id);
                 }
             }
@@ -416,21 +416,21 @@ mod Ivar {
 // Declarations of functions implemented in ObjC files.
 // These signatures must be manually synced - there's no type checking here.
 extern "C" {
-    fn create_cute_nswindow(
+    fn create_warp_nswindow(
         contentRect: NSRect,
         metalDevice: id,
         hideTitleBar: BOOL,
         backgroundBlurRadiusPixels: u8,
         testMode: BOOL,
     ) -> id;
-    fn create_cute_nspanel(
+    fn create_warp_nspanel(
         contentRect: NSRect,
         metalDevice: id,
         hideTitleBar: BOOL,
         backgroundBlurRadiusPixels: u8,
         testMode: BOOL,
     ) -> id;
-    fn is_cute_window(window: id) -> BOOL;
+    fn is_warp_window(window: id) -> BOOL;
     fn get_frontmost_window() -> id;
     fn set_accessibility_contents(
         window: id,
@@ -536,7 +536,7 @@ impl Window {
 
             let native_window: id = match options.style {
                 WindowStyle::Pin => {
-                    let panel: id = create_cute_nspanel(
+                    let panel: id = create_warp_nspanel(
                         frame,
                         metal_device_ptr,
                         options.hide_title_bar as BOOL,
@@ -549,7 +549,7 @@ impl Window {
                     let _: () = msg_send![panel, positionPinnedPanel];
                     panel
                 }
-                _ => create_cute_nswindow(
+                _ => create_warp_nswindow(
                     frame,
                     metal_device_ptr,
                     options.hide_title_bar as BOOL,
@@ -646,7 +646,7 @@ impl Window {
     pub fn active_window_id() -> Option<WindowId> {
         unsafe {
             let native_window = Self::key_window()?;
-            let is_ours: bool = is_cute_window(native_window) == YES;
+            let is_ours: bool = is_warp_window(native_window) == YES;
             if is_ours {
                 Some(get_window_state(&*native_window).window_id)
             } else {
@@ -658,7 +658,7 @@ impl Window {
     pub fn frontmost_window_id() -> Option<WindowId> {
         unsafe {
             let native_window: id = get_frontmost_window();
-            let is_ours: bool = is_cute_window(native_window) == YES;
+            let is_ours: bool = is_warp_window(native_window) == YES;
             if is_ours {
                 Some(get_window_state(&*native_window).window_id)
             } else {
@@ -682,7 +682,7 @@ impl Window {
             let Some(native_window) = Self::key_window() else {
                 return;
             };
-            let is_ours: bool = is_cute_window(native_window) == YES;
+            let is_ours: bool = is_warp_window(native_window) == YES;
             if is_ours {
                 Self::send_close_ime_msg(&*native_window);
             }
@@ -769,7 +769,7 @@ impl Window {
             let Some(native_window) = Self::key_window() else {
                 return false;
             };
-            let is_ours: bool = is_cute_window(native_window) == YES;
+            let is_ours: bool = is_warp_window(native_window) == YES;
             if is_ours {
                 get_window_state(&*native_window).ime_active.get()
             } else {
@@ -783,7 +783,7 @@ impl Window {
             let Some(native_window) = Self::key_window() else {
                 return;
             };
-            if is_cute_window(native_window) == YES {
+            if is_warp_window(native_window) == YES {
                 let frame = if let Some(frame) = content.frame {
                     RectF::new(
                         transform_origin_from_rect_coord_to_frame_coord(
@@ -820,7 +820,7 @@ impl Window {
             let windows: id = msg_send![NSApp(), windows];
             for i in 0..windows.count() {
                 let window: id = windows.objectAtIndex(i);
-                if is_cute_window(window) == YES {
+                if is_warp_window(window) == YES {
                     set_window_background_blur_radius(window, blur_radius_pixels)
                 }
             }
@@ -860,7 +860,7 @@ impl Window {
         (0..windows.count())
             .find(|i| {
                 let window: id = windows.objectAtIndex(*i);
-                let is_ours: bool = is_cute_window(window) == YES;
+                let is_ours: bool = is_warp_window(window) == YES;
 
                 is_ours && get_window_state(&*window).window_id == window_id
             })

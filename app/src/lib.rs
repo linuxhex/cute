@@ -2,14 +2,18 @@
 #![allow(clippy::doc_lazy_continuation)]
 
 mod alloc;
+mod git;
 #[cfg(target_os = "macos")]
 mod app;
 mod app_services;
 mod app_state;
 mod command_palette;
 mod debounce;
+mod diff_panel;
 #[cfg(windows)]
 mod dynamic_libraries;
+mod features;
+mod file_explorer;
 mod gpu_state;
 mod input_classifier;
 mod interval_timer;
@@ -22,6 +26,7 @@ mod profiling;
 mod resource_limits;
 mod safe_triangle;
 mod server;
+mod settings;
 #[cfg(test)]
 mod test_util;
 mod throttle;
@@ -29,7 +34,6 @@ mod tracing;
 mod window_settings;
 
 pub mod channel;
-pub mod features;
 pub mod terminal;
 
 use cute_cli::{CliCommand, GlobalOptions};
@@ -141,23 +145,38 @@ impl CuteApp {
 }
 
 /// Initialize the application.
-pub fn launch(mode: LaunchMode, ctx: &mut AppContext) {
-    let _execution_mode = mode.execution_mode();
-
+pub fn launch(_mode: LaunchMode, ctx: &mut AppContext) {
     // Initialize terminal module
     terminal::init(ctx);
 
-    // Create the app
-    let _app = CuteApp::new(_execution_mode);
-
-    // Set up basic app state
-    let _state = AppState::new(ctx);
+    // Create the main window with terminal view
+    ctx.add_window(cuteui::AddWindowOptions::default(), |ctx| {
+        terminal::TerminalView::new()
+    });
 
     log::info!("Cute terminal initialized");
 }
 
 /// Run the Cute application.
 pub fn run() -> anyhow::Result<()> {
-    // Stub for running the application
+    // Perform platform-specific initialization
+    platform::init();
+
+    // Create app builder
+    let app_builder = cuteui::platform::AppBuilder::new(
+        cuteui::platform::AppCallbacks::default(),
+        Box::new(ASSETS),
+        None,
+    );
+
+    // Run the application
+    let _ = app_builder.run(move |ctx| {
+        // Launch with default mode
+        launch(LaunchMode::App {
+            args: cute_cli::AppArgs::default(),
+            api_key: None,
+        }, ctx);
+    });
+
     Ok(())
 }

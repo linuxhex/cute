@@ -13853,6 +13853,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "warp_graphql"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "serde",
+]
+
+[[package]]
+name = "warp_managed_secrets"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "serde",
+]
+
+[[package]]
+name = "warp_multi_agent_api"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "prost 0.14.3",
+ "serde",
+]
+
+[[package]]
 name = "wasi"
 version = "0.11.0+wasi-snapshot-preview1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

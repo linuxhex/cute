@@ -1,8 +1,21 @@
 //! macOS platform callbacks for terminal view
 //! These are stub implementations to satisfy linker requirements
 
-use cuteui::AppContext;
+// Notification callbacks
+#[no_mangle]
+pub extern "C" fn warp_on_notification_send_error(_error: i32) {}
 
+#[no_mangle]
+pub extern "C" fn warp_on_request_notification_permissions_completed(_result: i32) {}
+
+// File picker callbacks
+#[no_mangle]
+pub extern "C" fn warp_open_panel_file_selected(_urls: *const std::ffi::c_void, _callback: *mut std::ffi::c_void) {}
+
+#[no_mangle]
+pub extern "C" fn warp_save_panel_file_selected(_url: *const std::ffi::c_void, _callback: *mut std::ffi::c_void) {}
+
+// View event handlers
 #[no_mangle]
 pub extern "C-unwind" fn warp_handle_view_event(_view_id: u64, _event_type: u32, _data: *const u8, _len: usize) {}
 
