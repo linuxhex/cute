@@ -37,6 +37,7 @@ pub mod channel;
 pub mod terminal;
 
 use cute_cli::{CliCommand, GlobalOptions};
+use cuteui::SingletonEntity;
 
 use std::borrow::Cow;
 use std::sync::Arc;
@@ -146,33 +147,30 @@ impl CuteApp {
 
 /// Initialize the application.
 pub fn launch(_mode: LaunchMode, ctx: &mut AppContext) {
+    eprintln!("[DEBUG] launch() called");
+
     // Initialize terminal module
     terminal::init(ctx);
+    eprintln!("[DEBUG] terminal::init() completed");
 
     // Initialize Appearance singleton with default values
     ctx.add_singleton_model(|ctx| {
+        eprintln!("[DEBUG] Creating Appearance singleton");
         use cuteui::fonts::FamilyId;
         use cuteui::color::ColorU;
         use cute_core::ui::theme::{Fill, Details, TerminalColors, AnsiColors, AnsiColor};
         use cute_core::ui::appearance::Appearance;
 
-        // Get font cache to find a valid font family
-        let font_cache = ctx.font_cache();
+        // Load fonts
+        let font_family = cuteui::fonts::Cache::handle(ctx)
+            .update(ctx, |cache, _| {
+                cache.load_system_font("Menlo")
+                    .or_else(|_| cache.load_system_font("Monaco"))
+                    .or_else(|_| cache.load_system_font("Helvetica"))
+                    .unwrap_or(FamilyId(0))
+            });
 
-        // Try to find common monospace fonts
-        let monospace_family = font_cache.family_id_for_name("Menlo")
-            .or_else(|| font_cache.family_id_for_name("Monaco"))
-            .or_else(|| font_cache.family_id_for_name("Courier New"))
-            .or_else(|| font_cache.family_id_for_name("SF Mono"))
-            .unwrap_or(FamilyId(0));
-
-        // Try to find UI font
-        let ui_family = font_cache.family_id_for_name("SF Pro Text")
-            .or_else(|| font_cache.family_id_for_name("Helvetica"))
-            .or_else(|| font_cache.family_id_for_name("Arial"))
-            .unwrap_or(FamilyId(0));
-
-        log::info!("Using monospace font family: {:?}, ui font family: {:?}", monospace_family, ui_family);
+        eprintln!("[DEBUG] Using font family: {:?}", font_family);
 
         // Create terminal colors (standard dark theme colors)
         let terminal_colors = TerminalColors::new(
@@ -212,32 +210,24 @@ pub fn launch(_mode: LaunchMode, ctx: &mut AppContext) {
 
         Appearance::new(
             theme,
-            monospace_family,  // monospace font
-            14.0,              // font size
+            font_family,         // monospace font
+            14.0,                // font size
             cuteui::fonts::Weight::Normal,
-            ui_family,         // ui font
-            1.4,               // line height ratio
-            monospace_family,  // ai font
-            monospace_family,  // password font
+            font_family,         // ui font
+            1.4,                 // line height ratio
+            font_family,         // ai font
+            font_family,         // password font
         )
     });
+    eprintln!("[DEBUG] Appearance singleton created");
 
-    log::info!("Creating main window...");
-
-    // Create the main window with proper options
-    let options = cuteui::AddWindowOptions {
-        window_style: cuteui::platform::WindowStyle::Normal,
-        window_bounds: cuteui::platform::WindowBounds::Default,
-        title: Some("Cute Terminal".to_string()),
-        ..Default::default()
-    };
-
-    let (window_id, _handle) = ctx.add_window(options, |ctx| {
-        log::info!("Building TerminalView...");
+    // Create the main window (like examples do)
+    let _ = ctx.add_window(cuteui::AddWindowOptions::default(), |_ctx| {
+        eprintln!("[DEBUG] Building TerminalView...");
         terminal::TerminalView::new()
     });
 
-    log::info!("Cute terminal initialized with window_id: {:?}", window_id);
+    eprintln!("[DEBUG] Window created");
 }
 
 /// Run the Cute application.

@@ -1,8 +1,15 @@
 //! macOS platform callbacks for app
 //! These are stub implementations to satisfy linker requirements
 
+// Forward to the actual implementation in cuteui
+extern "C" {
+    fn cute_app_will_finish_launching(app: *mut std::ffi::c_void);
+}
+
 #[no_mangle]
-pub extern "C-unwind" fn warp_app_will_finish_launching() {}
+pub extern "C-unwind" fn warp_app_will_finish_launching(app: *mut std::ffi::c_void) {
+    unsafe { cute_app_will_finish_launching(app) };
+}
 
 #[no_mangle]
 pub extern "C-unwind" fn warp_app_did_become_active() {}

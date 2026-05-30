@@ -156,7 +156,7 @@ extern "C-unwind" fn cute_menu_item_deallocated(ctx: *mut c_void) {
 // These signatures must be manually synced - there's no type checking here.
 extern "C" {
     fn make_delegated_menu(title: id) -> id;
-    fn make_cute_custom_menu_item(ctx: *mut c_void) -> id;
+    fn make_warp_custom_menu_item(ctx: *mut c_void) -> id;
     fn set_menu_item_submenu(item: id, submenu: id);
     fn make_services_menu_item() -> id;
 }
@@ -286,7 +286,7 @@ unsafe fn make_menu_item(menu_item: MenuItem) -> id {
                 update: custom_menu_item.updater,
             });
 
-            let nsmenu_item = make_cute_custom_menu_item(MenuItemData::into_context(data));
+            let nsmenu_item = make_warp_custom_menu_item(MenuItemData::into_context(data));
 
             // Set initial properties for the item.
             apply_changes(
