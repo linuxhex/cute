@@ -110,7 +110,8 @@ impl Display for ParsedSkill {
 /// # Returns
 /// * `Result<ParsedSkill>` - Parsed skill with validated name and description
 pub fn parse_skill(path: &Path) -> Result<ParsedSkill> {
-    let provider = get_provider_for_path(path).unwrap_or(SkillProvider::Agents);
+    let provider_path = LocalOrRemotePath::Local(path.to_path_buf());
+    let provider = get_provider_for_path(&provider_path).unwrap_or(SkillProvider::Agents);
     let scope = get_scope_for_path(path);
     parse_local_skill_internal(path, provider, scope)
 }
