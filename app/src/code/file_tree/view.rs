@@ -53,6 +53,8 @@ use crate::ui_components::icons::Icon;
 use crate::ui_components::item_highlight::{ImageOrIcon, ItemHighlightState};
 #[cfg(feature = "local_fs")]
 use crate::util::file::external_editor::EditorSettings;
+#[cfg(feature = "local_fs")]
+use crate::util::git::detect_current_branch_display;
 use crate::util::openable_file_type::{
     is_file_content_binary, is_markdown_file, EditorLayout, FileTarget,
 };
@@ -128,6 +130,9 @@ pub enum FileTreeAction {
         id: FileTreeIdentifier,
     },
     CDToDirectory {
+        id: FileTreeIdentifier,
+    },
+    AddToWorkspace {
         id: FileTreeIdentifier,
     },
     DismissEditor,
@@ -229,6 +234,8 @@ struct RootDirectory {
     item_states: HashMap<StandardizedPath, (MouseStateHandle, DraggableState)>,
     /// The remote host this root belongs to, if any. `None` for local roots.
     remote_host_id: Option<HostId>,
+    /// The current git branch name for this root, if available.
+    branch_name: Option<String>,
 }
 
 impl RootDirectory {
@@ -468,18 +475,20 @@ impl FileTreeView {
                     items: Vec::new(),
                     item_states: HashMap::new(),
                     remote_host_id: Some(host_id),
+                    branch_name: None,
                 });
 
             if !self.displayed_directories.contains(&repo_path) {
                 self.displayed_directories.push(repo_path.clone());
             }
 
-            // Auto-expand the root, respecting explicit user collapses.
-            if !self.is_explicitly_collapsed(&repo_path, &repo_path) {
-                if let Some(root_dir) = self.root_directories.get_mut(&repo_path) {
-                    root_dir.expanded_folders.insert(repo_path);
-                }
-            }
+            // For Cute: directories are collapsed by default (no auto-expand)
+            // Previously: Auto-expand the root, respecting explicit user collapses.
+            // if !self.is_explicitly_collapsed(&repo_path, &repo_path) {
+            //     if let Some(root_dir) = self.root_directories.get_mut(&repo_path) {
+            //         root_dir.expanded_folders.insert(repo_path);
+            //     }
+            // }
 
             changed = true;
         }
@@ -940,6 +949,7 @@ impl FileTreeView {
                             items: Vec::new(),
                             item_states: HashMap::new(),
                             remote_host_id: Some(host_id),
+                            branch_name: None,
                         },
                     );
                     changed = true;
@@ -1215,6 +1225,7 @@ impl FileTreeView {
                 items: Vec::new(),
                 item_states: HashMap::new(),
                 remote_host_id: None,
+                branch_name: None,
             });
 
         for absorbed_root in absorbed {
@@ -1281,6 +1292,7 @@ impl FileTreeView {
                     items: Vec::new(),
                     item_states: HashMap::new(),
                     remote_host_id: None,
+                    branch_name: None,
                 });
             let root_local = root_path.to_local_path_lossy();
             if let Some(repo_root) = DetectedRepositories::as_ref(ctx)
@@ -1349,9 +1361,45 @@ impl FileTreeView {
             }
         }
 
+        // Fetch git branch names for root directories
+        self.refresh_branch_names(ctx);
+
         self.rebuild_flattened_items();
         ctx.notify();
     }
+
+    /// Refreshes git branch names for all displayed root directories.
+    #[cfg(feature = "local_fs")]
+    fn refresh_branch_names(&mut self, ctx: &mut ViewContext<Self>) {
+        for root_path in &self.displayed_directories {
+            if let Some(root_dir) = self.root_directories.get_mut(root_path) {
+                // Skip remote roots
+                if root_dir.is_remote() {
+                    continue;
+                }
+                let root_local = root_path.to_local_path_lossy();
+                // Spawn async task to get branch name
+                let root_path_for_spawn = root_path.clone();
+                ctx.spawn(
+                    async move {
+                        detect_current_branch_display(&root_local).await.ok()
+                    },
+                    move |me, branch_result, ctx| {
+                        if let Some(branch_name) = branch_result {
+                            if let Some(root_dir) = me.root_directories.get_mut(&root_path_for_spawn) {
+                                root_dir.branch_name = Some(branch_name);
+                            }
+                            me.rebuild_flattened_items();
+                            ctx.notify();
+                        }
+                    },
+                );
+            }
+        }
+    }
+
+    #[cfg(not(feature = "local_fs"))]
+    fn refresh_branch_names(&mut self, _ctx: &mut ViewContext<Self>) {}
 
     fn ensure_loaded_path(
         &mut self,
@@ -1546,6 +1594,7 @@ impl FileTreeView {
                 items: Vec::new(),
                 item_states: HashMap::new(),
                 remote_host_id: None,
+                branch_name: None,
             });
         // When the file tree is active, index the lazy-loaded path through the
         // model so that a file watcher is started.
@@ -1887,11 +1936,17 @@ impl FileTreeView {
                 );
             }
             None => {
+                // Build display text: "directory_name (branch_name)" for root dirs with git branch
+                let display_text = if let Some(ref branch) = render_state.branch_name {
+                    format!("{} ({})", render_state.display_name, branch)
+                } else {
+                    render_state.display_name.clone()
+                };
                 header_row.add_child(
                     Shrinkable::new(
                         1.,
                         Text::new_inline(
-                            render_state.display_name,
+                            display_text,
                             appearance.ui_font_family(),
                             ITEM_FONT_SIZE,
                         )
@@ -1943,7 +1998,7 @@ impl FileTreeView {
         };
 
         let item_highlight_state = ItemHighlightState::Selected;
-        let render_state = item.to_render_state(None /* is_expanded */, appearance);
+        let render_state = item.to_render_state(None /* is_expanded */, appearance, None);
 
         let text_color = item_highlight_state.text_and_icon_color(appearance);
         let text = Text::new(
@@ -1979,7 +2034,13 @@ impl FileTreeView {
 
         let is_selected = self.selected_item.as_ref() == Some(id);
         let is_expanded = self.is_item_expanded(&id.root, item);
-        let render_state = item.to_render_state(is_expanded, appearance);
+        // For root directory (depth 0), include branch name if available
+        let branch_name = if id.index == 0 {
+            root_dir.branch_name.clone()
+        } else {
+            None
+        };
+        let render_state = item.to_render_state(is_expanded, appearance, branch_name);
 
         let item_display_name = render_state.display_name.clone();
         let item_position_id = format!("file_tree_item:{item_display_name}");
@@ -2362,6 +2423,14 @@ impl FileTreeView {
                             .into_item(),
                     );
                     items.push(MenuItem::Separator);
+                    items.push(
+                        MenuItemFields::new("Add to Workspace")
+                            .with_on_select_action(FileTreeAction::AddToWorkspace {
+                                id: id.clone(),
+                            })
+                            .into_item(),
+                    );
+                    items.push(MenuItem::Separator);
                     if self.has_terminal_session {
                         items.push(
                             MenuItemFields::new("cd to directory")
@@ -2540,6 +2609,27 @@ impl FileTreeView {
         }
 
         ctx.emit(FileTreeEvent::CDToDirectory { path });
+    }
+
+    fn add_to_workspace(&mut self, id: &FileTreeIdentifier, ctx: &mut ViewContext<Self>) {
+        let Some(root_dir) = self.root_directories.get(&id.root) else {
+            return;
+        };
+        let Some(item) = root_dir.items.get(id.index) else {
+            return;
+        };
+
+        let path = item.path().to_local_path_lossy();
+
+        if !path.is_dir() {
+            log::warn!(
+                "AddToWorkspace called on non-directory path: {}",
+                path.display()
+            );
+            return;
+        }
+
+        ctx.emit(FileTreeEvent::AddToWorkspace { path });
     }
 
     fn rename_item(&mut self, id: &FileTreeIdentifier, ctx: &mut ViewContext<Self>) {
@@ -2919,6 +3009,8 @@ pub enum FileTreeEvent {
     CDToDirectory { path: PathBuf },
     #[cfg_attr(not(feature = "local_fs"), allow(dead_code))]
     OpenDirectoryInNewTab { path: PathBuf },
+    #[cfg_attr(not(feature = "local_fs"), allow(dead_code))]
+    AddToWorkspace { path: PathBuf },
 }
 
 impl Entity for FileTreeView {
@@ -3105,6 +3197,12 @@ impl TypedActionView for FileTreeView {
             FileTreeAction::CDToDirectory { id } => {
                 if !self.is_remote_item(id) {
                     self.cd_to_directory(id, ctx);
+                }
+                self.context_menu_state.take();
+            }
+            FileTreeAction::AddToWorkspace { id } => {
+                if !self.is_remote_item(id) {
+                    self.add_to_workspace(id, ctx);
                 }
                 self.context_menu_state.take();
             }

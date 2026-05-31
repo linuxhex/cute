@@ -4,7 +4,6 @@ use warp_core::features::FeatureFlag;
 use warp_core::ui::appearance::Appearance;
 use warp_core::ui::builder::UiBuilder;
 use warp_core::ui::color::{darken, lighten};
-use warp_core::ui::theme::ColorScheme;
 use warpui::assets::asset_cache::AssetSource;
 use warpui::elements::{
     Border, CacheOption, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Fill, Flex,
@@ -117,12 +116,8 @@ where
         .finish()
 }
 
-pub fn render_square_logo(appearance: &Appearance) -> Box<dyn Element> {
-    let image_path = if appearance.theme().inferred_color_scheme() == ColorScheme::LightOnDark {
-        "bundled/svg/warp-logo-light.svg"
-    } else {
-        "bundled/svg/warp-logo-dark.svg"
-    };
+pub fn render_square_logo(_appearance: &Appearance) -> Box<dyn Element> {
+    let image_path = "bundled/png/logoimg.png";
 
     ConstrainedBox::new(
         Container::new(
@@ -132,9 +127,7 @@ pub fn render_square_logo(appearance: &Appearance) -> Box<dyn Element> {
             )
             .finish(),
         )
-        .with_background(appearance.theme().surface_2())
         .with_corner_radius(CornerRadius::with_all(Radius::Pixels(10.)))
-        .with_horizontal_padding(11.)
         .finish(),
     )
     .with_width(64.)

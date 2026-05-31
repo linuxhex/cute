@@ -11,6 +11,7 @@ impl FileTreeItem {
         &self,
         is_expanded: Option<bool>,
         appearance: &Appearance,
+        branch_name: Option<String>,
     ) -> RenderState {
         match self {
             FileTreeItem::File {
@@ -36,6 +37,7 @@ impl FileTreeItem {
                     mouse_state: mouse_state_handle.clone(),
                     draggable_state: draggable_state.clone(),
                     is_ignored: metadata.ignored,
+                    branch_name: None,
                 }
             }
             FileTreeItem::DirectoryHeader {
@@ -57,6 +59,7 @@ impl FileTreeItem {
                     mouse_state: mouse_state_handle.clone(),
                     draggable_state: draggable_state.clone(),
                     is_ignored: directory.ignored,
+                    branch_name,
                 }
             }
         }
@@ -71,4 +74,5 @@ pub(super) struct RenderState {
     pub mouse_state: MouseStateHandle,
     pub draggable_state: DraggableState,
     pub is_ignored: bool,
+    pub branch_name: Option<String>,
 }

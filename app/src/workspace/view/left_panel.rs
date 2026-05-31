@@ -811,6 +811,11 @@ impl LeftPanelView {
                     pane_group::Event::OpenDirectoryInNewTab { path: path.clone() },
                 ));
             }
+            FileTreeEvent::AddToWorkspace { path } => {
+                ctx.emit(LeftPanelEvent::FileTree(pane_group::Event::AddToWorkspace {
+                    path: path.clone(),
+                }));
+            }
         }
     }
 }

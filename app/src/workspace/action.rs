@@ -175,6 +175,10 @@ pub enum WorkspaceAction {
     /// Toggle collapsed state for the given tab group.
     ToggleTabGroupCollapsed(TabGroupId),
     AddDefaultTab,
+    /// Cute: Open a directory in a new tab
+    OpenDirectoryInNewTab {
+        path: PathBuf,
+    },
     AddTerminalTab {
         hide_homepage: bool,
     },
@@ -1005,7 +1009,8 @@ impl WorkspaceAction {
             | ShowHandoffEnvironmentCreationModal
             | ShowCloudModeV2EnvironmentCreationModal
             | OpenCreateAuthSecretModal { .. }
-            | OpenNetworkLogPane => false,
+            | OpenNetworkLogPane
+            | OpenDirectoryInNewTab { .. } => false,
             #[cfg(debug_assertions)]
             ShowHoaOnboardingFlow => false,
             #[cfg(target_family = "wasm")]

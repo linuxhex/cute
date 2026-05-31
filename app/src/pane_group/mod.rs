@@ -723,6 +723,9 @@ pub enum Event {
     OpenDirectoryInNewTab {
         path: PathBuf,
     },
+    AddToWorkspace {
+        path: PathBuf,
+    },
     InsertCodeReviewComments {
         repo_path: LocalOrRemotePath,
         comments: Vec<PendingImportedReviewComment>,
