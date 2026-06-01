@@ -916,22 +916,31 @@ impl<'a> TabComponent<'a> {
     /// When a shell command is long-running the status is overridden to
     /// `InProgress`, matching vertical-tab behavior.
     fn agent_indicator(tab: &TabData, app: &AppContext) -> Option<Indicator> {
-        let terminal_view = tab.pane_group.as_ref(app).focused_session_view(app);
-        if terminal_view.is_none() {
-            log::debug!("Cute: agent_indicator - no focused_session_view");
-            return None;
-        }
-        let terminal_view = terminal_view?;
-        let terminal_view_ref = terminal_view.as_ref(app);
+        // Cute: Check all terminal panes in the tab, not just the focused one
+        // This ensures agent indicator shows even when the tab is not active
+        let pane_group = tab.pane_group.as_ref(app);
 
-        // Cute: Check if there's an agent icon variant (same logic as vertical tabs)
-        let variant = terminal_view_agent_icon_variant(terminal_view_ref, app);
-        if variant.is_some() {
-            log::debug!("Cute: agent_indicator - found agent icon variant");
-            return Some(Indicator::AgentActive);
+        // First check focused session (most common case, fast path)
+        if let Some(terminal_view) = pane_group.focused_session_view(app) {
+            let terminal_view_ref = terminal_view.as_ref(app);
+            if terminal_view_agent_icon_variant(terminal_view_ref, app).is_some() {
+                log::debug!("Cute: agent_indicator - found agent in focused session");
+                return Some(Indicator::AgentActive);
+            }
         }
 
-        log::debug!("Cute: agent_indicator - no agent icon variant found");
+        // Check all other terminal panes in the tab
+        for pane_id in pane_group.terminal_pane_ids() {
+            if let Some(terminal_view) = pane_group.terminal_view_from_pane_id(pane_id, app) {
+                let terminal_view_ref = terminal_view.as_ref(app);
+                if terminal_view_agent_icon_variant(terminal_view_ref, app).is_some() {
+                    log::debug!("Cute: agent_indicator - found agent in pane {:?}", pane_id);
+                    return Some(Indicator::AgentActive);
+                }
+            }
+        }
+
+        log::debug!("Cute: agent_indicator - no agent found in any pane");
         None
     }
 
