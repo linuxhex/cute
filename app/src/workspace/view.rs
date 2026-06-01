@@ -5142,15 +5142,9 @@ impl Workspace {
         ctx.notify();
     }
 
-    pub fn rename_tab(&mut self, index: usize, ctx: &mut ViewContext<Self>) {
-        let tab = &self.tabs[index];
-        let title = tab.pane_group.as_ref(ctx).display_title(ctx);
-
-        self.rename_tab_internal(index, &title, ctx);
-        send_telemetry_from_ctx!(
-            TelemetryEvent::TabRenamed(TabRenameEvent::OpenedEditor),
-            ctx
-        );
+    /// Cute: Tab renaming is disabled - tab names always show the working directory path
+    pub fn rename_tab(&mut self, _index: usize, _ctx: &mut ViewContext<Self>) {
+        // No-op: tab renaming is disabled in Cute
     }
 
     fn set_active_tab_name(&mut self, title: &str, ctx: &mut ViewContext<Self>) {
@@ -5340,52 +5334,9 @@ impl Workspace {
         ctx.notify();
     }
 
-    pub fn rename_pane(&mut self, locator: PaneViewLocator, ctx: &mut ViewContext<Self>) {
-        let Some((index, tab)) = self
-            .tabs
-            .iter()
-            .enumerate()
-            .find(|(_, tab_data)| tab_data.pane_group.id() == locator.pane_group_id)
-        else {
-            log::warn!("Tried to rename pane in a missing tab");
-            return;
-        };
-
-        let Some(title) = tab
-            .pane_group
-            .as_ref(ctx)
-            .pane_by_id(locator.pane_id)
-            .map(|pane| {
-                let configuration = pane.pane_configuration();
-                let configuration = configuration.as_ref(ctx);
-                configuration
-                    .custom_vertical_tabs_title()
-                    .map(str::to_owned)
-                    .unwrap_or_else(|| {
-                        let title = configuration.title().trim();
-                        if title.is_empty() {
-                            "Untitled pane".to_string()
-                        } else {
-                            title.to_string()
-                        }
-                    })
-            })
-        else {
-            log::warn!("Tried to rename a missing pane");
-            return;
-        };
-
-        tab.pane_group.update(ctx, |pane_group, ctx| {
-            pane_group.focus_pane_by_id(locator.pane_id, ctx);
-        });
-        self.set_active_tab_index(index, ctx);
-        self.current_workspace_state.set_pane_being_renamed(locator);
-        self.clear_pane_name_editor(ctx);
-        self.pane_rename_editor.update(ctx, move |editor, ctx| {
-            editor.insert_selected_text(&title, ctx);
-        });
-        ctx.focus(&self.pane_rename_editor);
-        ctx.notify();
+    /// Cute: Pane renaming is disabled - pane names always show the working directory path
+    pub fn rename_pane(&mut self, _locator: PaneViewLocator, _ctx: &mut ViewContext<Self>) {
+        // No-op: pane renaming is disabled in Cute
     }
 
     pub fn list_tab_pane_groups(&self, app: &AppContext) -> Vec<TabPaneGroupIdentifiers> {
@@ -6165,8 +6116,48 @@ impl Workspace {
     ) -> Vec<MenuItem<WorkspaceAction>> {
         let mut menu_items = vec![];
 
-        // Cute: Show recent workspaces from history
-        let workspaces: Vec<_> = PersistedWorkspace::as_ref(ctx).workspaces().collect();
+        // Cute: First show currently open tabs
+        for (index, tab) in self.tabs.iter().enumerate() {
+            let pane_group = tab.pane_group.as_ref(ctx);
+
+            // Get the working directory from the terminal view
+            let pwd = pane_group
+                .focused_session_view(ctx)
+                .and_then(|view| view.as_ref(ctx).pwd());
+
+            if let Some(pwd) = pwd {
+                let path = std::path::PathBuf::from(&pwd);
+                let display_name = path
+                    .file_name()
+                    .map(|n| n.to_string_lossy().to_string())
+                    .unwrap_or_else(|| pwd.clone());
+
+                // Mark active tab
+                let label = if index == self.active_tab_index {
+                    format!("{} (active)", display_name)
+                } else {
+                    display_name
+                };
+
+                let item = MenuItemFields::new(label)
+                    .with_on_select_action(WorkspaceAction::ActivateTab(index))
+                    .with_icon(icons::Icon::Terminal);
+                menu_items.push(item.into_item());
+            }
+        }
+
+        // Add separator if there are open tabs
+        if !menu_items.is_empty() {
+            let separator = MenuItemFields::new("─── Recent ───".to_string())
+                .into_item();
+            menu_items.push(separator);
+        }
+
+        // Cute: Show recent workspaces from history (limit to 10 most recent)
+        let workspaces: Vec<_> = PersistedWorkspace::as_ref(ctx)
+            .workspaces()
+            .take(10)
+            .collect();
         for workspace in workspaces {
             let path = workspace.path.clone();
             let display_name = path

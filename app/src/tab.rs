@@ -37,8 +37,10 @@ use crate::shell_indicator::ShellIndicatorType;
 use crate::terminal::shared_session::render_util::shared_session_indicator_color;
 use crate::terminal::view::TerminalViewState;
 use crate::themes::theme::{AnsiColorIdentifier, Fill as ThemeFill, VerticalGradient};
+use crate::ui_components::agent_icon::terminal_view_agent_icon_variant;
 use crate::ui_components::buttons::icon_button;
 use crate::ui_components::color_dot::{render_color_dot, TAB_COLOR_OPTIONS};
+use crate::ui_components::icon_with_status::{render_icon_with_status, IconWithStatusVariant};
 use crate::ui_components::icons::{Icon, ICON_DIMENSIONS};
 use crate::util::color::{coloru_with_opacity, Opacity};
 use crate::util::truncation::truncate_from_end;
@@ -694,6 +696,8 @@ enum Indicator {
         conversation_status: Option<ConversationStatus>,
     },
     AmbientAgent,
+    /// Cute: Agent is active - show agent icon with status
+    AgentActive,
 }
 
 impl From<TerminalViewState> for Indicator {
@@ -736,6 +740,8 @@ pub struct TabComponent<'a> {
     ///     flicker), and
     ///   * does not act as its own draggable / drop target.
     for_drag_ghost: bool,
+    /// Cute: AppContext reference for agent icon rendering
+    ctx: &'a AppContext,
 }
 
 /// Structure that holds TabComponent styles.
@@ -843,13 +849,11 @@ impl<'a> TabComponent<'a> {
         let is_maximized = tab.pane_group.as_ref(ctx).is_focused_pane_maximized(ctx);
         let shell_indicator_type = tab.pane_group.as_ref(ctx).focused_shell_indicator_type(ctx);
 
-        // If a session is being shared, we want to show that indicator in the tab bar above all else.
-        // Otherwise, if the tab indicator setting is explicitly turned off, we don't want to show any indicator.
-        // But if it's on, we want to show the synced indicator if this tab is being synced.
-        // If we aren't showing the synced indicator (and we know the setting is on),
-        // we will show long-running, error indicators, etc. as applicable.
+        // Cute: Agent indicator always shows, regardless of should_show_indicators setting
         let indicator = if active_pane_is_ambient_agent_session {
             Indicator::AmbientAgent
+        } else if let Some(agent) = Self::agent_indicator(tab, ctx) {
+            agent
         } else if active_pane_has_unsaved_code_changes {
             Indicator::UnsavedChanges
         } else if FeatureFlag::CreatingSharedSessions.is_enabled() && is_being_shared {
@@ -858,8 +862,6 @@ impl<'a> TabComponent<'a> {
             Indicator::None
         } else if are_inputs_synced {
             Indicator::Synced
-        } else if let Some(agent) = Self::agent_indicator(tab, ctx) {
-            agent
         } else if let Some(shell_indicator_type) = shell_indicator_type {
             Indicator::Shell(shell_indicator_type)
         } else if has_active_pane_state_indicator {
@@ -896,6 +898,7 @@ impl<'a> TabComponent<'a> {
             is_drag_target,
             background_opacity,
             for_drag_ghost: false,
+            ctx,
         }
     }
 
@@ -911,28 +914,30 @@ impl<'a> TabComponent<'a> {
     /// When a shell command is long-running the status is overridden to
     /// `InProgress`, matching vertical-tab behavior.
     fn agent_indicator(tab: &TabData, app: &AppContext) -> Option<Indicator> {
-        let terminal_view = tab.pane_group.as_ref(app).focused_session_view(app)?;
-        let terminal_view_ref = terminal_view.as_ref(app);
-        let is_long_running = terminal_view_ref.is_long_running();
-        let conversation =
-            BlocklistAIHistoryModel::as_ref(app).active_conversation(terminal_view_ref.id())?;
-
-        // Show in-progress indicator when a shell command is running in the AgentView.
-        // This matches vertical-tab behavior.
-        if is_long_running {
-            return Some(Indicator::Agent {
-                conversation_status: Some(ConversationStatus::InProgress),
-            });
-        }
-
-        if conversation.is_empty() || conversation.is_entirely_passive() {
+        let terminal_view = tab.pane_group.as_ref(app).focused_session_view(app);
+        if terminal_view.is_none() {
+            log::debug!("Cute: agent_indicator - no focused_session_view");
             return None;
         }
+        let terminal_view = terminal_view?;
+        let terminal_view_ref = terminal_view.as_ref(app);
 
-        let conversation_status = Some(conversation.status().clone());
-        Some(Indicator::Agent {
-            conversation_status,
-        })
+        // Cute: Check if there's an agent icon variant (same logic as vertical tabs)
+        let variant = terminal_view_agent_icon_variant(terminal_view_ref, app);
+        if variant.is_some() {
+            log::debug!("Cute: agent_indicator - found agent icon variant");
+            return Some(Indicator::AgentActive);
+        }
+
+        log::debug!("Cute: agent_indicator - no agent icon variant found");
+        None
+    }
+
+    /// Get the agent icon variant for rendering
+    fn get_agent_icon_variant(tab: &TabData, app: &AppContext) -> Option<IconWithStatusVariant> {
+        let terminal_view = tab.pane_group.as_ref(app).focused_session_view(app)?;
+        let terminal_view_ref = terminal_view.as_ref(app);
+        terminal_view_agent_icon_variant(terminal_view_ref, app)
     }
 
     /// Determine if this tab is the active tab.
@@ -1013,7 +1018,10 @@ impl<'a> TabComponent<'a> {
 
     /// Check if the given indicator is an agent task indicator
     fn is_agent_task_indicator(indicator: &Indicator) -> bool {
-        matches!(indicator, Indicator::Agent { .. } | Indicator::AmbientAgent)
+        matches!(
+            indicator,
+            Indicator::Agent { .. } | Indicator::AmbientAgent | Indicator::AgentActive
+        )
     }
 
     /// Get the current working directory for the tooltip if this is an agent task
@@ -1263,64 +1271,57 @@ impl<'a> TabComponent<'a> {
             Indicator::Agent {
                 conversation_status,
             } => {
+                // Cute: Always show agent indicator with status, no hover required
                 if let Some(status) = conversation_status {
-                    if FeatureFlag::NewTabStyling.is_enabled() {
-                        let icon_size = 22.0 - STATUS_ELEMENT_PADDING * 2.;
-                        Some(render_status_element(status, icon_size, self.appearance))
-                    } else {
-                        Some(status.render_icon(self.appearance).finish())
-                    }
+                    let icon_size = 18.0;
+                    Some(render_status_element(status, icon_size, self.appearance))
                 } else {
-                    let icon_color = self.appearance.theme().nonactive_ui_text_color();
+                    // Show Oz icon when agent is active but no specific status
+                    let icon_color = self.appearance.theme().accent();
                     Some(Icon::Oz.to_warpui_icon(icon_color).finish())
                 }
             }
             Indicator::AmbientAgent => {
-                // Always use the active tab font color for the ambient agent cloud icon, with a safe fallback.
+                // Cute: Always show ambient agent icon directly, no hover required
                 let active_styles = self.styles.default.merge(self.styles.active);
                 let icon_color = active_styles
                     .font_color
                     .unwrap_or_else(|| self.appearance.theme().active_ui_text_color().into());
 
-                let ui_builder = self.ui_builder.clone();
-                let mouse_state = self.tab.indicator_hover_state.clone();
-                Some(
-                    Hoverable::new(mouse_state, move |state| {
-                        let mut stack = Stack::new()
-                            .with_child(Icon::OzCloud.to_warpui_icon(icon_color.into()).finish());
+                Some(Icon::OzCloud.to_warpui_icon(icon_color.into()).finish())
+            }
+            Indicator::AgentActive => {
+                // Cute: Use the same rendering as vertical tabs for agent icon with status
+                let terminal_view = self.tab.pane_group.as_ref(self.ctx).focused_session_view(self.ctx);
+                if let Some(terminal_view) = terminal_view {
+                    let terminal_view_ref = terminal_view.as_ref(self.ctx);
+                    if let Some(variant) = terminal_view_agent_icon_variant(terminal_view_ref, self.ctx) {
+                        let total_size = TAB_INDICATOR_HEIGHT;
+                        let overlay_extra_overhang_ratio = 0.3;
+                        let theme = self.appearance.theme();
+                        let status_container_background = ThemeFill::Solid(theme.surface_3().into_solid());
 
-                        if state.is_hovered() {
-                            let tooltip = ui_builder
-                                .tool_tip("Cloud agent run".to_string())
-                                .build()
-                                .finish();
-                            stack.add_positioned_overlay_child(
-                                tooltip,
-                                OffsetPositioning::offset_from_parent(
-                                    vec2f(0., 3.),
-                                    ParentOffsetBounds::WindowByPosition,
-                                    ParentAnchor::BottomMiddle,
-                                    ChildAnchor::TopMiddle,
-                                ),
-                            );
-                        }
-
-                        stack.finish()
-                    })
-                    .finish(),
-                )
+                        Some(render_icon_with_status(
+                            variant,
+                            total_size,
+                            overlay_extra_overhang_ratio,
+                            theme,
+                            status_container_background,
+                        ))
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
             }
         };
 
         icon.map(|icon| {
-            Container::new(
-                ConstrainedBox::new(icon)
-                    .with_max_width(TAB_INDICATOR_HEIGHT)
-                    .with_max_height(TAB_INDICATOR_HEIGHT)
-                    .finish(),
-            )
-            .with_margin_right(4.)
-            .finish()
+            // Cute: Ensure indicator doesn't get compressed
+            Container::new(icon)
+                .with_margin_right(4.)
+                .finish()
         })
     }
 
