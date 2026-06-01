@@ -25,8 +25,8 @@ if [ "$WARP_CHANNEL" = "local" ]; then
     WARP_APP_PATH="target/debug/bundle/osx/WarpLocal.app"
     WARP_SCHEME_NAME="warplocal"
 else
-    WARP_APP_PATH="target/debug/bundle/osx/WarpOss.app"
-    WARP_SCHEME_NAME="warposs"
+    WARP_APP_PATH="target/debug/bundle/osx/Cute.app"
+    WARP_SCHEME_NAME="cute"
 fi
 DONT_OPEN=false
 # Launches the binary with "open", meaning the Warp process is

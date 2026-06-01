@@ -732,6 +732,34 @@ impl PersistedWorkspace {
         }
     }
 
+    /// Cute: Ensure a workspace exists for the given directory path.
+    /// This is called when closing tabs to save the working directory to history.
+    pub fn ensure_workspace_for_path(&mut self, directory: &PathBuf) {
+        if self.workspaces.contains_key(directory) {
+            // Already exists, just update navigation timestamp
+            if let Some(workspace) = self.workspaces.get_mut(directory) {
+                workspace.metadata.navigated_ts = Some(Utc::now());
+            }
+            self.persist_metadata_for_index(directory);
+        } else {
+            // Create new workspace metadata
+            let new_metadata = WorkspaceMetadata {
+                path: directory.clone(),
+                navigated_ts: Some(Utc::now()),
+                modified_ts: None,
+                queried_ts: None,
+            };
+            self.workspaces.insert(
+                directory.clone(),
+                Workspace {
+                    metadata: new_metadata,
+                    language_servers: HashMap::new(),
+                },
+            );
+            self.persist_metadata_for_index(directory);
+        }
+    }
+
     fn handle_index_metadata_event(&mut self, root_path: &PathBuf, event: WorkspaceMetadataEvent) {
         match event {
             WorkspaceMetadataEvent::Queried => {

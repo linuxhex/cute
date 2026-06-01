@@ -167,13 +167,14 @@ pub(crate) fn render_icon_with_status(
     theme: &WarpTheme,
     status_container_background: WarpThemeFill,
 ) -> Box<dyn Element> {
-    render_icon_with_status_with_badge_style(
+    render_icon_with_status_with_animation(
         variant,
         total_size,
         overlay_extra_overhang_ratio,
         StatusBadgeStyle::DEFAULT,
         theme,
         status_container_background,
+        None, // Cute: No animation by default
     )
 }
 
@@ -186,6 +187,28 @@ pub(crate) fn render_icon_with_status_with_badge_style(
     badge_style: StatusBadgeStyle,
     theme: &WarpTheme,
     status_container_background: WarpThemeFill,
+) -> Box<dyn Element> {
+    render_icon_with_status_with_animation(
+        variant,
+        total_size,
+        overlay_extra_overhang_ratio,
+        badge_style,
+        theme,
+        status_container_background,
+        None,
+    )
+}
+
+/// Cute: Full render function with animation support
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn render_icon_with_status_with_animation(
+    variant: IconWithStatusVariant,
+    total_size: f32,
+    overlay_extra_overhang_ratio: f32,
+    badge_style: StatusBadgeStyle,
+    theme: &WarpTheme,
+    status_container_background: WarpThemeFill,
+    animation_phase: Option<f32>, // Cute: Optional breathing animation phase
 ) -> Box<dyn Element> {
     let sub_text = theme.sub_text_color(theme.background());
 
@@ -221,10 +244,12 @@ pub(crate) fn render_icon_with_status_with_badge_style(
             } else {
                 theme.main_text_color(theme.background())
             };
-            let circle = render_circle(
+            // Cute: Use animation for running agents
+            let circle = render_circle_with_animation(
                 oz_glyph.to_warpui_icon(glyph_color).finish(),
                 circle_background,
                 total_size,
+                animation_phase,
             );
             attach_status_overlay(
                 circle,
@@ -253,7 +278,8 @@ pub(crate) fn render_icon_with_status_with_badge_style(
                         .finish()
                 })
                 .unwrap_or_else(|| WarpIcon::Terminal.to_warpui_icon(sub_text).finish());
-            let circle = render_circle(icon_element, ThemeFill::Solid(brand_color), total_size);
+            // Cute: Use animation for running agents
+            let circle = render_circle_with_animation(icon_element, ThemeFill::Solid(brand_color), total_size, animation_phase);
             attach_status_overlay(
                 circle,
                 status.as_ref(),
@@ -292,15 +318,44 @@ fn render_circle(
     background: WarpThemeFill,
     total_size: f32,
 ) -> Box<dyn Element> {
+    render_circle_with_animation(icon_element, background, total_size, None)
+}
+
+/// Cute: Render circle with optional breathing animation phase (0.0 ~ 1.0)
+fn render_circle_with_animation(
+    icon_element: Box<dyn Element>,
+    background: WarpThemeFill,
+    total_size: f32,
+    animation_phase: Option<f32>,
+) -> Box<dyn Element> {
     let icon = icon_size(total_size);
     let padding = circle_padding(total_size);
     let inner = ConstrainedBox::new(icon_element)
         .with_width(icon)
         .with_height(icon)
         .finish();
+
+    // Cute: Apply breathing animation by adjusting background alpha
+    let animated_background = match (&background, animation_phase) {
+        (WarpThemeFill::Solid(color), Some(phase)) => {
+            // Breathing effect: alpha oscillates between 200 and 255
+            // phase 0.0 -> alpha 227, phase 0.5 -> alpha 255, phase 1.0 -> alpha 227
+            let alpha_range = 27.5; // (255 - 200) / 2
+            let base_alpha = 227.5; // (255 + 200) / 2
+            let alpha = (base_alpha + alpha_range * (phase * std::f32::consts::PI * 2.0).sin()) as u8;
+            WarpThemeFill::Solid(ColorU {
+                r: color.r,
+                g: color.g,
+                b: color.b,
+                a: alpha,
+            })
+        }
+        _ => background,
+    };
+
     Container::new(inner)
         .with_uniform_padding(padding)
-        .with_background(background)
+        .with_background(animated_background)
         .with_corner_radius(CornerRadius::with_all(Radius::Pixels(
             circle_size(total_size) / 2.,
         )))

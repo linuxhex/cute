@@ -64,7 +64,7 @@ use crate::menu::{Event as MenuEvent, Menu, MenuItem, MenuItemFields};
 use crate::pane_group::pane::view::PaneHeaderAction;
 use crate::terminal::view::TerminalAction;
 use crate::ui_components::icon_with_status::{
-    self, render_icon_with_status_with_badge_style, BadgeInnerShape, IconWithStatusVariant,
+    self, render_icon_with_status_with_animation, BadgeInnerShape, IconWithStatusVariant,
     StatusBadgeStyle,
 };
 use crate::ui_components::icons::Icon;
@@ -2123,7 +2123,7 @@ fn render_avatar_with_status_overlay(
         theme,
         appearance,
     );
-    let lockup = render_icon_with_status_with_badge_style(
+    let lockup = render_icon_with_status_with_animation(
         IconWithStatusVariant::CustomAvatar {
             avatar,
             status: Some(status),
@@ -2135,6 +2135,7 @@ fn render_avatar_with_status_overlay(
         theme,
         // Cutout ring color for the local badge; ignored by the cloud path.
         pill_background.into(),
+        None, // Cute: No animation for pill bar
     );
     // Bottom-anchor the lockup in the pill so the badge BR sits flush with
     // the pill's bottom edge (matches Figma).

@@ -40,7 +40,7 @@ use crate::themes::theme::{AnsiColorIdentifier, Fill as ThemeFill, VerticalGradi
 use crate::ui_components::agent_icon::terminal_view_agent_icon_variant;
 use crate::ui_components::buttons::icon_button;
 use crate::ui_components::color_dot::{render_color_dot, TAB_COLOR_OPTIONS};
-use crate::ui_components::icon_with_status::{render_icon_with_status, IconWithStatusVariant};
+use crate::ui_components::icon_with_status::{render_icon_with_status_with_animation, IconWithStatusVariant};
 use crate::ui_components::icons::{Icon, ICON_DIMENSIONS};
 use crate::util::color::{coloru_with_opacity, Opacity};
 use crate::util::truncation::truncate_from_end;
@@ -676,6 +676,8 @@ pub struct TabBarState {
     pub is_any_tab_renaming: bool,
     pub is_any_tab_dragging: bool,
     pub hover_fixed_width: Option<f32>,
+    /// Cute: Animation phase for agent breathing effect (0.0 ~ 1.0)
+    pub agent_animation_phase: f32,
 }
 
 /// Possible states of the tab indicator.
@@ -1301,12 +1303,15 @@ impl<'a> TabComponent<'a> {
                         let theme = self.appearance.theme();
                         let status_container_background = ThemeFill::Solid(theme.surface_3().into_solid());
 
-                        Some(render_icon_with_status(
+                        // Cute: Pass animation phase for breathing effect
+                        Some(render_icon_with_status_with_animation(
                             variant,
                             total_size,
                             overlay_extra_overhang_ratio,
+                            crate::ui_components::icon_with_status::StatusBadgeStyle::DEFAULT,
                             theme,
                             status_container_background,
+                            Some(self.tab_bar.agent_animation_phase),
                         ))
                     } else {
                         None

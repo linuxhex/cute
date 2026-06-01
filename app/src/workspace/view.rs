@@ -1072,6 +1072,8 @@ pub struct Workspace {
     /// transferred to another window aren't torn down when this window closes
     /// via `TerminationMode::ContentTransferred`.
     suppress_detach_panes_on_window_close: bool,
+    /// Cute: Animation phase for agent breathing effect (0.0 ~ 1.0)
+    agent_animation_phase: f32,
     /// True while this workspace is acting as the temporary preview window
     /// for a multi-tab cross-window drag. Reduces chrome (e.g. hides traffic
     /// lights). Cleared when the preview is promoted or hands off its tab.
@@ -1106,6 +1108,19 @@ impl Workspace {
 
     pub(crate) fn set_suppress_detach_panes_on_window_close(&mut self, value: bool) {
         self.suppress_detach_panes_on_window_close = value;
+    }
+
+    /// Cute: Compute animation phase for agent breathing effect (0.0 ~ 1.0)
+    fn compute_agent_animation_phase() -> f32 {
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis() as f32;
+        // 2-second breathing cycle
+        let phase = (now % 2000.0) / 2000.0;
+        // Smooth sine wave: 0 -> 1 -> 0
+        (phase * std::f32::consts::PI).sin().abs()
     }
     fn tab_rename_editor_font_size(ctx: &AppContext, appearance: &Appearance) -> f32 {
         if FeatureFlag::VerticalTabs.is_enabled() && *TabSettings::as_ref(ctx).use_vertical_tabs {
@@ -3205,6 +3220,7 @@ impl Workspace {
             hoa_vtabs_callout_pinned_position: None,
             pending_pane_group_transfer: false,
             suppress_detach_panes_on_window_close: false,
+            agent_animation_phase: 0.0,
             is_tab_drag_preview: false,
             new_session_sidecar_menu,
             show_new_session_sidecar: false,
@@ -6116,48 +6132,28 @@ impl Workspace {
     ) -> Vec<MenuItem<WorkspaceAction>> {
         let mut menu_items = vec![];
 
-        // Cute: First show currently open tabs
-        for (index, tab) in self.tabs.iter().enumerate() {
-            let pane_group = tab.pane_group.as_ref(ctx);
+        // Cute: Collect currently open directories to filter from history
+        let open_directories: std::collections::HashSet<std::path::PathBuf> = self
+            .tabs
+            .iter()
+            .filter_map(|tab| {
+                tab.pane_group
+                    .as_ref(ctx)
+                    .focused_session_view(ctx)
+                    .and_then(|view| {
+                        let pwd = view.as_ref(ctx).pwd()?;
+                        Some(std::path::PathBuf::from(&pwd))
+                    })
+            })
+            .collect();
 
-            // Get the working directory from the terminal view
-            let pwd = pane_group
-                .focused_session_view(ctx)
-                .and_then(|view| view.as_ref(ctx).pwd());
-
-            if let Some(pwd) = pwd {
-                let path = std::path::PathBuf::from(&pwd);
-                let display_name = path
-                    .file_name()
-                    .map(|n| n.to_string_lossy().to_string())
-                    .unwrap_or_else(|| pwd.clone());
-
-                // Mark active tab
-                let label = if index == self.active_tab_index {
-                    format!("{} (active)", display_name)
-                } else {
-                    display_name
-                };
-
-                let item = MenuItemFields::new(label)
-                    .with_on_select_action(WorkspaceAction::ActivateTab(index))
-                    .with_icon(icons::Icon::Terminal);
-                menu_items.push(item.into_item());
-            }
-        }
-
-        // Add separator if there are open tabs
-        if !menu_items.is_empty() {
-            let separator = MenuItemFields::new("─── Recent ───".to_string())
-                .into_item();
-            menu_items.push(separator);
-        }
-
-        // Cute: Show recent workspaces from history (limit to 10 most recent)
+        // Cute: Show recent workspaces from history (exclude currently open ones)
         let workspaces: Vec<_> = PersistedWorkspace::as_ref(ctx)
             .workspaces()
+            .filter(|workspace| !open_directories.contains(&workspace.path))
             .take(10)
             .collect();
+
         for workspace in workspaces {
             let path = workspace.path.clone();
             let display_name = path
@@ -10173,6 +10169,16 @@ impl Workspace {
             debug_assert!(false, "Tried to remove a tab with an invalid index");
             return;
         };
+
+        // Cute: Save the working directory to history before closing
+        if let Some(terminal_view) = pane_group.as_ref(ctx).focused_session_view(ctx) {
+            if let Some(pwd) = terminal_view.as_ref(ctx).pwd() {
+                let path = std::path::PathBuf::from(&pwd);
+                PersistedWorkspace::handle(ctx).update(ctx, |persisted, _ctx| {
+                    persisted.ensure_workspace_for_path(&path);
+                });
+            }
+        }
 
         // Clear a detail sidecar anchored to this tab before the tab disappears.
         self.vertical_tabs_panel
@@ -17664,6 +17670,7 @@ impl Workspace {
                 is_any_tab_renaming: false,
                 is_any_tab_dragging: false,
                 hover_fixed_width: None,
+                agent_animation_phase: Self::compute_agent_animation_phase(),
             };
             // `.for_drag_ghost()` makes the resulting element skip the
             // outer `SavePosition`, `Draggable`, and `DropTarget` wrappers
@@ -18285,6 +18292,7 @@ impl Workspace {
                 is_any_tab_dragging: self.current_workspace_state.is_tab_being_dragged
                     || drag_model.is_active(),
                 hover_fixed_width,
+                agent_animation_phase: self.agent_animation_phase,
             };
             // Collapse the detached-placeholder slot to 0 width while it
             // exists in this (source) window. After a put-back handoff the
