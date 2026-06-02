@@ -4,7 +4,7 @@ use warp_core::ui::icons::Icon as WarpIcon;
 use warp_core::ui::theme::color::internal_colors;
 use warp_core::ui::theme::{Fill as WarpThemeFill, WarpTheme};
 use warpui::elements::{
-    ChildAnchor, ConstrainedBox, Container, CornerRadius, Element, OffsetPositioning, ParentAnchor,
+    ChildAnchor, ConstrainedBox, Container, CornerRadius, Element, Empty, OffsetPositioning, ParentAnchor,
     ParentElement, ParentOffsetBounds, Radius, Stack,
 };
 
@@ -335,23 +335,69 @@ fn render_circle_with_animation(
         .with_height(icon)
         .finish();
 
-    // Cute: Apply breathing animation by adjusting background alpha
-    let animated_background = match (&background, animation_phase) {
+    // Cute: Apply breathing animation with enhanced glow effect
+    let (animated_background, glow_alpha) = match (&background, animation_phase) {
         (WarpThemeFill::Solid(color), Some(phase)) => {
-            // Breathing effect: alpha oscillates between 120 and 255
-            // phase 0.0 -> alpha 187, phase 0.5 -> alpha 255, phase 1.0 -> alpha 187
-            let alpha_range = 67.5; // (255 - 120) / 2
-            let base_alpha = 187.5; // (255 + 120) / 2
+            // Breathing effect: alpha oscillates between 80 and 255 (wider range for visibility)
+            // phase 0.0 -> alpha 167, phase 0.5 -> alpha 255, phase 1.0 -> alpha 167
+            let alpha_range = 87.5; // (255 - 80) / 2
+            let base_alpha = 167.5; // (255 + 80) / 2
             let alpha = (base_alpha + alpha_range * (phase * std::f32::consts::PI * 2.0).sin()) as u8;
-            WarpThemeFill::Solid(ColorU {
-                r: color.r,
-                g: color.g,
-                b: color.b,
-                a: alpha,
-            })
+            // Glow intensity peaks at phase 0.5 (when circle is brightest)
+            let glow = ((phase * std::f32::consts::PI * 2.0).sin().max(0.0) * 120.0) as u8;
+            (
+                WarpThemeFill::Solid(ColorU {
+                    r: color.r,
+                    g: color.g,
+                    b: color.b,
+                    a: alpha,
+                }),
+                glow,
+            )
         }
-        _ => background,
+        _ => (background, 0),
     };
+
+    // Cute: Add glow effect when animation is active
+    if glow_alpha > 0 {
+        if let WarpThemeFill::Solid(bg_color) = background {
+            // Build glow layer (larger circle behind)
+            let glow_color = ColorU {
+                r: bg_color.r,
+                g: bg_color.g,
+                b: bg_color.b,
+                a: glow_alpha,
+            };
+            let glow_size = circle_size(total_size) + 6.0;
+            let glow_inner = Container::new(Box::new(Empty::new()))
+                .with_background(WarpThemeFill::Solid(glow_color))
+                .with_corner_radius(CornerRadius::with_all(Radius::Pixels(glow_size / 2.)))
+                .finish();
+            let glow = ConstrainedBox::new(glow_inner)
+                .with_width(glow_size)
+                .with_height(glow_size)
+                .finish();
+            // Build main circle
+            let circle = Container::new(inner)
+                .with_uniform_padding(padding)
+                .with_background(animated_background)
+                .with_corner_radius(CornerRadius::with_all(Radius::Pixels(
+                    circle_size(total_size) / 2.,
+                )))
+                .finish();
+            let mut stack = Stack::new().with_child(glow);
+            stack.add_positioned_child(
+                circle,
+                OffsetPositioning::offset_from_parent(
+                    vec2f(0., 0.),
+                    ParentOffsetBounds::Unbounded,
+                    ParentAnchor::Center,
+                    ChildAnchor::Center,
+                ),
+            );
+            return stack.finish();
+        }
+    }
 
     Container::new(inner)
         .with_uniform_padding(padding)

@@ -10938,6 +10938,30 @@ impl Workspace {
                 pg.set_left_panel_open(true, ctx);
             });
         }
+
+        // Cute: Assign random color to new tab if no color is set
+        if !is_restoration {
+            let new_tab = &self.tabs[self.active_tab_index];
+            let has_color = new_tab.selected_color != SelectedTabColor::Unset
+                || new_tab.default_directory_color.is_some();
+            if !has_color {
+                use std::time::{SystemTime, UNIX_EPOCH};
+                let millis = SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_millis() as usize;
+                let color_options = [
+                    AnsiColorIdentifier::Red,
+                    AnsiColorIdentifier::Green,
+                    AnsiColorIdentifier::Yellow,
+                    AnsiColorIdentifier::Blue,
+                    AnsiColorIdentifier::Magenta,
+                    AnsiColorIdentifier::Cyan,
+                ];
+                let random_color = color_options[millis % color_options.len()];
+                self.tabs[self.active_tab_index].selected_color = SelectedTabColor::Color(random_color);
+            }
+        }
     }
 
     pub fn add_tab_from_existing_pane(

@@ -559,7 +559,7 @@ impl TabData {
         }
     }
 
-    /// New dot-based color picker: default (no-color) + color options.
+    /// New dot-based color picker: color options only (no "no-color" option).
     /// Rendered as a single custom menu item with individually clickable dots.
     fn dot_color_option_menu_items(
         &self,
@@ -567,7 +567,7 @@ impl TabData {
         terminal_colors: AnsiColors,
     ) -> Vec<MenuItem<WorkspaceAction>> {
         let effective_color = self.color();
-        let mouse_states: Vec<MouseStateHandle> = (0..TAB_COLOR_OPTIONS.len() + 1)
+        let mouse_states: Vec<MouseStateHandle> = (0..TAB_COLOR_OPTIONS.len())
             .map(|_| MouseStateHandle::default())
             .collect();
 
@@ -582,45 +582,30 @@ impl TabData {
                         .with_cross_axis_alignment(CrossAxisAlignment::Center)
                         .with_main_axis_size(MainAxisSize::Max);
 
-                    for (ansi_id, mouse_state) in std::iter::once(None)
-                        .chain(TAB_COLOR_OPTIONS.iter().copied().map(Some))
+                    for (ansi_id, mouse_state) in TAB_COLOR_OPTIONS
+                        .iter()
+                        .copied()
                         .zip(mouse_states.iter().cloned())
                     {
-                        let is_selected = match ansi_id {
-                            None => effective_color.is_none(),
-                            Some(id) => effective_color == Some(id),
-                        };
-                        let dot_color: ColorU = match ansi_id {
-                            None => ColorU::transparent_black(),
-                            Some(id) => id.to_ansi_color(&terminal_colors).into(),
-                        };
-                        let tooltip = match ansi_id {
-                            None => "Default (no color)".to_string(),
-                            Some(id) => id.to_string(),
-                        };
+                        let is_selected = effective_color == Some(ansi_id);
+                        let dot_color: ColorU = ansi_id.to_ansi_color(&terminal_colors).into();
+                        let tooltip = ansi_id.to_string();
 
                         let dot = render_color_dot(
                             mouse_state,
                             dot_color,
                             is_selected,
                             ring_color,
-                            ansi_id.is_none(),
+                            false, // Cute: No "no-color" option
                             theme.foreground(),
                             tooltip,
                             appearance,
                         )
                         .on_click(move |ctx, _, _| {
-                            if let Some(color) = ansi_id {
-                                ctx.dispatch_typed_action(WorkspaceAction::ToggleTabColor {
-                                    color,
-                                    tab_index: index,
-                                });
-                            } else if let Some(color) = effective_color {
-                                ctx.dispatch_typed_action(WorkspaceAction::ToggleTabColor {
-                                    color,
-                                    tab_index: index,
-                                });
-                            }
+                            ctx.dispatch_typed_action(WorkspaceAction::ToggleTabColor {
+                                color: ansi_id,
+                                tab_index: index,
+                            });
                             ctx.dispatch_typed_action(MenuAction::Close(true));
                         });
 
