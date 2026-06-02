@@ -13195,47 +13195,10 @@ impl Workspace {
     /// Opens the workspace-level blocking modal for creating a new managed
     /// auth secret. Persists the new secret on success and dismisses the
     /// modal; cards adopt it via `HarnessAvailabilityEvent::AuthSecretCreated`.
-    fn show_create_auth_secret_modal(&mut self, harness: Harness, ctx: &mut ViewContext<Self>) {
-        let body = ctx.add_typed_action_view(|ctx| {
-            AuthSecretFtuxView::new(harness, ctx)
-                .with_skip_hidden()
-                .with_compact_mode(ctx)
-        });
-        ctx.subscribe_to_view(&body, |me, _, event, ctx| match event {
-            AuthSecretFtuxViewEvent::SecretSelected { harness, name }
-            | AuthSecretFtuxViewEvent::Created { harness, name } => {
-                let harness = *harness;
-                let name = name.clone();
-                CloudAgentSettings::handle(ctx).update(ctx, |settings, ctx| {
-                    settings.mark_harness_auth_ftux_completed(harness, ctx);
-                    let mut map = settings.last_selected_auth_secret.value().clone();
-                    map.insert(harness.config_name().to_string(), name);
-                    let _ = settings.last_selected_auth_secret.set_value(map, ctx);
-                });
-                me.dismiss_create_auth_secret_modal(ctx);
-            }
-            AuthSecretFtuxViewEvent::Cancelled | AuthSecretFtuxViewEvent::Skipped { .. } => {
-                me.dismiss_create_auth_secret_modal(ctx);
-            }
-            // Keep the modal open on Failed; the view already toasts.
-            AuthSecretFtuxViewEvent::Failed { .. } => {}
-        });
-
-        let title = "New API key".to_string();
-        let modal = ctx.add_typed_action_view(|ctx| {
-            Modal::new(Some(title), body, ctx).with_modal_style(UiComponentStyles {
-                width: Some(520.),
-                ..Default::default()
-            })
-        });
-        ctx.subscribe_to_view(&modal, |me, _, event, ctx| {
-            if matches!(event, ModalEvent::Close) {
-                me.dismiss_create_auth_secret_modal(ctx);
-            }
-        });
-        ctx.focus(&modal);
-        self.create_auth_secret_modal = Some(modal);
-        ctx.notify();
+    /// 【Cute定制】彻底禁用密钥弹框，不再弹出需要配置API密钥的提示
+    fn show_create_auth_secret_modal(&mut self, _harness: Harness, _ctx: &mut ViewContext<Self>) {
+        // 不显示弹框，直接返回
+        // 用户可以在设置中自行配置API密钥
     }
 
     fn dismiss_create_auth_secret_modal(&mut self, ctx: &mut ViewContext<Self>) {

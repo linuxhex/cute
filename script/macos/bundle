@@ -314,6 +314,13 @@ elif [[ $RELEASE_CHANNEL = "oss" ]]; then
     # The OSS channel does not ship Sentry, so drop the cocoa_sentry feature
     # (which would otherwise pull in the Sentry framework dependency).
     FEATURES="release_bundle,extern_plist"
+elif [[ $RELEASE_CHANNEL = "cute" ]]; then
+    WARP_BIN="cute"
+    BUNDLE_ID="dev.cute.Cute"
+    WARP_APP_NAME="Cute"
+    WARP_SCHEME_NAME="cute"
+    # The Cute channel does not ship Sentry, so drop the cocoa_sentry feature
+    FEATURES="release_bundle,extern_plist"
 fi
 
 OUT_DIR="target/$TARGET_PROFILE_DIR/bundle/osx"

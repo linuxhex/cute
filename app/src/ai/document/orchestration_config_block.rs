@@ -362,46 +362,9 @@ impl OrchestrationConfigBlockView {
     /// Auto-pops the create-key modal once per view per harness/mode
     /// change when the harness has no loaded secrets. Also auto-expands
     /// the details panel so the modal opens with context visible behind it.
-    fn maybe_auto_open_create_modal(&mut self, ctx: &mut ViewContext<Self>) {
-        if self.has_auto_opened_create_modal {
-            return;
-        }
-        // Suppress on session restoration — see `user_has_interacted` doc.
-        if !self.user_has_interacted {
-            return;
-        }
-        if !self.is_approved || !self.pickers_initialized {
-            return;
-        }
-        if !oc::should_show_auth_secret_picker(&self.edit_state) {
-            return;
-        }
-        if !matches!(
-            self.edit_state.auth_secret_selection,
-            AuthSecretSelection::Unset
-        ) {
-            return;
-        }
-        let Some(harness) = Harness::parse_orchestration_harness(&self.edit_state.harness_type)
-        else {
-            return;
-        };
-        // Only auto-open on `Loaded([])`. Other fetch states are
-        // ambiguous; the `AuthSecretsLoaded` subscription will retry.
-        let has_zero_loaded = matches!(
-            HarnessAvailabilityModel::as_ref(ctx).auth_secrets_for(harness),
-            AuthSecretFetchState::Loaded(secrets) if secrets.is_empty()
-        );
-        if !has_zero_loaded {
-            return;
-        }
-        self.has_auto_opened_create_modal = true;
-        // Show the picker / validation behind the modal.
-        if !self.details_expanded {
-            self.details_expanded = true;
-        }
-        ctx.dispatch_typed_action(&WorkspaceAction::OpenCreateAuthSecretModal { harness });
-        ctx.notify();
+    /// 【Cute定制】彻底禁用自动弹出密钥弹框
+    fn maybe_auto_open_create_modal(&mut self, _ctx: &mut ViewContext<Self>) {
+        // 不自动打开弹框，用户可以在设置中自行配置API密钥
     }
 
     fn refresh_from_model(&mut self, ctx: &mut ViewContext<Self>) {

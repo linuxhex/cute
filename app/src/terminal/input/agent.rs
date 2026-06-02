@@ -504,29 +504,9 @@ impl Input {
     }
 
     pub(super) fn should_show_auth_secret_ftux(&self, app: &AppContext) -> bool {
-        let Some(view_model) = self.ambient_agent_view_model() else {
-            return false;
-        };
-        let vm = view_model.as_ref(app);
-        let harness = vm.selected_harness();
-        if harness == Harness::Oz {
-            return false;
-        }
-        // Skip FTUX for harnesses that have no auth secret types defined.
-        if crate::ai::auth_secret_types::auth_secret_types_for_harness(harness).is_empty() {
-            return false;
-        }
-        if let Some(ftux_view) = self.auth_secret_ftux_view() {
-            if ftux_view.as_ref(app).has_creation_state() {
-                return true;
-            }
-        }
-        if crate::ai::cloud_agent_settings::CloudAgentSettings::as_ref(app)
-            .is_harness_auth_ftux_completed(harness)
-        {
-            return false;
-        }
-        vm.selected_harness_auth_secret_name().is_none()
+        // 【Cute定制】彻底禁用密钥弹框，不再弹出需要配置API密钥的提示
+        // 用户可以在设置中自行配置，不需要强制弹框
+        false
     }
 
     fn render_cloud_mode_v2_content(
