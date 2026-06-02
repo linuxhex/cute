@@ -18248,6 +18248,8 @@ impl Workspace {
             };
 
             let drag_model = CrossWindowTabDrag::as_ref(ctx);
+            // Cute: Update animation phase on every render for breathing effect
+            let agent_animation_phase = Self::compute_agent_animation_phase();
             let tab_bar_state = TabBarState {
                 tab_count: self.tabs.len(),
                 active_tab_index,
@@ -18255,7 +18257,7 @@ impl Workspace {
                 is_any_tab_dragging: self.current_workspace_state.is_tab_being_dragged
                     || drag_model.is_active(),
                 hover_fixed_width,
-                agent_animation_phase: self.agent_animation_phase,
+                agent_animation_phase,
             };
             // Collapse the detached-placeholder slot to 0 width while it
             // exists in this (source) window. After a put-back handoff the

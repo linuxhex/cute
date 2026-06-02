@@ -338,10 +338,10 @@ fn render_circle_with_animation(
     // Cute: Apply breathing animation by adjusting background alpha
     let animated_background = match (&background, animation_phase) {
         (WarpThemeFill::Solid(color), Some(phase)) => {
-            // Breathing effect: alpha oscillates between 200 and 255
-            // phase 0.0 -> alpha 227, phase 0.5 -> alpha 255, phase 1.0 -> alpha 227
-            let alpha_range = 27.5; // (255 - 200) / 2
-            let base_alpha = 227.5; // (255 + 200) / 2
+            // Breathing effect: alpha oscillates between 120 and 255
+            // phase 0.0 -> alpha 187, phase 0.5 -> alpha 255, phase 1.0 -> alpha 187
+            let alpha_range = 67.5; // (255 - 120) / 2
+            let base_alpha = 187.5; // (255 + 120) / 2
             let alpha = (base_alpha + alpha_range * (phase * std::f32::consts::PI * 2.0).sin()) as u8;
             WarpThemeFill::Solid(ColorU {
                 r: color.r,
