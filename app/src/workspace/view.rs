@@ -1204,8 +1204,8 @@ impl Workspace {
             // Try to get last commit info synchronously
             let last_commit = Self::get_branch_last_commit_sync(repo_path, &full_branch_name);
 
-            // Get recent commits (last 10)
-            let recent_commits = Self::get_branch_recent_commits_sync(repo_path, &full_branch_name, 10);
+            // For remote branches, only load 3 recent commits for performance
+            let recent_commits = Self::get_branch_recent_commits_sync(repo_path, &full_branch_name, 3);
 
             branches.push(BranchInfo {
                 name: branch_name,
@@ -13422,6 +13422,8 @@ impl Workspace {
 
         // Load branches for the terminal's working directory
         let pane_group = self.active_tab_pane_group();
+        let mut should_select_first_commit = false;
+
         if let Some(terminal_view) = pane_group.as_ref(ctx).terminal_view_from_pane_id(pane_id, ctx) {
             let cwd = terminal_view.as_ref(ctx).active_session()
                 .as_ref(ctx)
@@ -13433,8 +13435,33 @@ impl Workspace {
                 branch_selector_view.update(ctx, |view, ctx| {
                     view.set_repo_path(repo_path.clone(), ctx);
                     view.set_branches(branches, current_branch, ctx);
+
+                    // 如果选中了当前分支，自动选中最新的提交记录
+                    if view.state.selected_branch_index.is_some() {
+                        should_select_first_commit = true;
+                    }
                 });
             }
+        }
+
+        // 自动选中最新的提交记录
+        if should_select_first_commit {
+            branch_selector_view.update(ctx, |view, ctx| {
+                // 选中第一个提交记录（最新的）
+                view.state.select_commit(0);
+
+                // 加载该提交的改动文件
+                let repo_path = view.state.repo_path.clone();
+                let commit_hash = view.state.selected_branch_index
+                    .and_then(|idx| view.state.branches.get(idx))
+                    .and_then(|branch| branch.recent_commits.first())
+                    .map(|commit| commit.hash.clone());
+
+                if let (Some(repo_path), Some(commit_hash)) = (repo_path, commit_hash) {
+                    let changed_files = Self::get_changed_files_for_commit(&repo_path, &commit_hash);
+                    view.set_changed_files(changed_files, ctx);
+                }
+            });
         }
 
         self.active_tab_pane_group().update(ctx, |pane_group, ctx| {
