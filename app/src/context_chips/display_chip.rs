@@ -443,17 +443,49 @@ pub struct DisplayChipConfig {
 }
 
 #[derive(Debug, Clone)]
-pub struct GitBranch(String);
+pub struct GitBranch {
+    encoded_value: String,
+    /// Latest commit hash (short form)
+    latest_commit_hash: Option<String>,
+    /// Latest commit subject/message
+    latest_commit_subject: Option<String>,
+    /// Latest commit author
+    latest_commit_author: Option<String>,
+    /// Latest commit date (relative format like "2 days ago")
+    latest_commit_date: Option<String>,
+    /// Whether this is a remote branch
+    is_remote: bool,
+}
 
 impl GitBranch {
+    pub fn new(
+        encoded_value: String,
+        latest_commit_hash: Option<String>,
+        latest_commit_subject: Option<String>,
+        latest_commit_author: Option<String>,
+        latest_commit_date: Option<String>,
+        is_remote: bool,
+    ) -> Self {
+        Self {
+            encoded_value,
+            latest_commit_hash,
+            latest_commit_subject,
+            latest_commit_author,
+            latest_commit_date,
+            is_remote,
+        }
+    }
+
     fn command(&self) -> String {
-        format_git_branch_command(&self.0)
+        format_git_branch_command(&self.encoded_value)
     }
 
     fn icon_for_menu(&self) -> Icon {
-        let branch = GitBranchOnClickValue::decode(&self.0);
+        let branch = GitBranchOnClickValue::decode(&self.encoded_value);
         if branch.is_linked_worktree {
             Icon::Dataflow02
+        } else if self.is_remote {
+            Icon::Cloud
         } else {
             Icon::GitBranch
         }
@@ -466,7 +498,7 @@ impl GenericMenuItem for GitBranch {
     }
 
     fn name(&self) -> String {
-        GitBranchOnClickValue::decode(&self.0).branch_name
+        GitBranchOnClickValue::decode(&self.encoded_value).branch_name
     }
 
     fn icon(&self, _app: &AppContext) -> Option<Icon> {
@@ -474,7 +506,36 @@ impl GenericMenuItem for GitBranch {
     }
 
     fn action_data(&self) -> String {
-        self.0.clone()
+        self.encoded_value.clone()
+    }
+
+    fn right_side_element(&self, app: &AppContext) -> Option<Box<dyn Element>> {
+        use warp_core::ui::theme::color::internal_colors;
+        use warpui::elements::{Flex, MainAxisSize, Text};
+        use warpui::fonts::{Properties, Weight};
+
+        let appearance = Appearance::handle(app).as_ref(app);
+        let theme = appearance.theme();
+        let font_family = appearance.ui_font_family();
+        let font_size = 12.0;
+
+        // Build the right side element showing commit info
+        let mut right_side = Flex::row()
+            .with_main_axis_size(MainAxisSize::Min)
+            .with_cross_axis_alignment(CrossAxisAlignment::Center);
+
+        // Show commit date if available
+        if let Some(ref date) = self.latest_commit_date {
+            right_side.add_child(
+                Text::new_inline(date.clone(), font_family, font_size)
+                    .with_color(Fill::Solid(internal_colors::neutral_1(theme)).into())
+                    .with_line_height_ratio(appearance.line_height_ratio())
+                    .with_style(Properties::default().weight(Weight::Normal))
+                    .finish(),
+            );
+        }
+
+        Some(right_side.finish())
     }
 }
 
@@ -586,11 +647,21 @@ impl DisplayChip {
                 DisplayChipKind::AgentPlanAndTodoList { plan_and_todo_list }
             }
             ContextChipKind::ShellGitBranch => {
-                // Convert git branch strings to GitBranch items
+                // Convert git branch strings to GitBranch items with commit info
                 let git_branch_items: Vec<GitBranch> = chip_result
                     .on_click_values
                     .iter()
-                    .map(|branch_name| GitBranch(branch_name.clone()))
+                    .map(|encoded_value| {
+                        let decoded = GitBranchOnClickValue::decode(encoded_value);
+                        GitBranch::new(
+                            encoded_value.clone(),
+                            decoded.latest_commit_hash,
+                            decoded.latest_commit_subject,
+                            decoded.latest_commit_author,
+                            decoded.latest_commit_date,
+                            decoded.is_remote,
+                        )
+                    })
                     .collect();
 
                 let menu_view = ctx.add_typed_action_view(move |ctx| {
@@ -634,6 +705,146 @@ impl DisplayChip {
                     PromptDisplayMenuEvent::CloseMenu => {
                         me.close_git_branch_menu(ctx);
                         ctx.emit(PromptDisplayChipEvent::ToggleMenu { open: false });
+                        ctx.notify();
+                    }
+                    PromptDisplayMenuEvent::BranchSelected { branch_name } => {
+                        // Fetch commit history for the selected branch
+                        if let Some(_menu) = &me.git_branch_menu_view() {
+                            if let Some(ref session_context) = me.session_context {
+                                let repo_path: std::path::PathBuf = std::path::PathBuf::try_from(session_context.current_working_directory.clone())
+                                    .unwrap_or_default();
+                                let branch_name_for_async = branch_name.clone();
+                                let branch_name_for_callback = branch_name.clone();
+                                ctx.spawn(
+                                    async move {
+                                        crate::util::git::get_branch_commits(
+                                            &repo_path,
+                                            &branch_name_for_async,
+                                            50, // limit to 50 commits
+                                        ).await
+                                    },
+                                    move |me, result, ctx| {
+                                        if let Ok(commits) = result {
+                                            if let Some(menu) = me.git_branch_menu_view() {
+                                                menu.update(ctx, |menu_view, ctx| {
+                                                    menu_view.update_selected_branch(
+                                                        branch_name_for_callback.clone(),
+                                                        commits,
+                                                        ctx,
+                                                    );
+                                                });
+                                            }
+                                        }
+                                    },
+                                );
+                            }
+                        }
+                        ctx.notify();
+                    }
+                    PromptDisplayMenuEvent::BranchAction { action } => {
+                        // Handle branch context menu actions
+                        use super::display_menu::BranchAction;
+                        if let Some(ref session_context) = me.session_context {
+                            let repo_path: std::path::PathBuf = std::path::PathBuf::try_from(
+                                session_context.current_working_directory.clone()
+                            ).unwrap_or_default();
+
+                            match action {
+                                BranchAction::Checkout { branch_name } => {
+                                    let branch = branch_name.clone();
+                                    ctx.spawn(
+                                        async move {
+                                            crate::util::git::checkout_branch(&repo_path, &branch).await
+                                        },
+                                        |me, result, ctx| {
+                                            if result.is_ok() {
+                                                me.close_git_branch_menu(ctx);
+                                                ctx.emit(PromptDisplayChipEvent::RefreshGitStatus);
+                                            }
+                                            ctx.notify();
+                                        },
+                                    );
+                                }
+                                BranchAction::MergeIntoCurrent { branch_name } => {
+                                    let branch = branch_name.clone();
+                                    ctx.spawn(
+                                        async move {
+                                            crate::util::git::merge_branch(&repo_path, &branch).await
+                                        },
+                                        |me, result, ctx| {
+                                            if result.is_ok() {
+                                                me.close_git_branch_menu(ctx);
+                                                ctx.emit(PromptDisplayChipEvent::RefreshGitStatus);
+                                            }
+                                            ctx.notify();
+                                        },
+                                    );
+                                }
+                                BranchAction::Delete { branch_name } => {
+                                    let branch = branch_name.clone();
+                                    ctx.spawn(
+                                        async move {
+                                            crate::util::git::delete_branch(&repo_path, &branch).await
+                                        },
+                                        |me, result, ctx| {
+                                            if result.is_ok() {
+                                                me.close_git_branch_menu(ctx);
+                                                ctx.emit(PromptDisplayChipEvent::RefreshGitStatus);
+                                            }
+                                            ctx.notify();
+                                        },
+                                    );
+                                }
+                                BranchAction::Rename { branch_name } => {
+                                    // TODO: Show rename dialog
+                                    log::info!("Rename branch: {}", branch_name);
+                                }
+                            }
+                        }
+                        ctx.notify();
+                    }
+                    PromptDisplayMenuEvent::CommitSelected { commit_hash } => {
+                        // Fetch file changes for the selected commit
+                        if let Some(menu) = &me.git_branch_menu_view() {
+                            if let Some(ref session_context) = me.session_context {
+                                let repo_path: std::path::PathBuf = std::path::PathBuf::try_from(session_context.current_working_directory.clone())
+                                    .unwrap_or_default();
+                                let commit_hash_for_async = commit_hash.clone();
+                                let commit_hash_for_callback = commit_hash.clone();
+                                // Set loading state
+                                menu.update(ctx, |menu_view, _ctx| {
+                                    menu_view.set_loading_files(true);
+                                });
+                                ctx.spawn(
+                                    async move {
+                                        crate::util::git::get_commit_files(
+                                            &repo_path,
+                                            &commit_hash_for_async,
+                                        ).await
+                                    },
+                                    move |me, result, ctx| {
+                                        if let Some(menu) = me.git_branch_menu_view() {
+                                            menu.update(ctx, |menu_view, ctx| {
+                                                menu_view.set_loading_files(false);
+                                                match result {
+                                                    Ok(files) => {
+                                                        menu_view.update_selected_commit(
+                                                            commit_hash_for_callback.clone(),
+                                                            files,
+                                                            ctx,
+                                                        );
+                                                    }
+                                                    Err(e) => {
+                                                        log::warn!("Failed to load commit files: {}", e);
+                                                    }
+                                                }
+                                            });
+                                        }
+                                        ctx.notify();
+                                    },
+                                );
+                            }
+                        }
                         ctx.notify();
                     }
                 });
@@ -748,6 +959,15 @@ impl DisplayChip {
                         me.close_working_directory_menu(ctx);
                         ctx.emit(PromptDisplayChipEvent::ToggleMenu { open: false });
                         ctx.notify();
+                    }
+                    PromptDisplayMenuEvent::BranchSelected { .. } => {
+                        // Not applicable for directory menu
+                    }
+                    PromptDisplayMenuEvent::BranchAction { .. } => {
+                        // Not applicable for directory menu
+                    }
+                    PromptDisplayMenuEvent::CommitSelected { .. } => {
+                        // Not applicable for directory menu
                     }
                 });
 
@@ -918,6 +1138,14 @@ impl DisplayChip {
         }
     }
 
+    fn git_branch_menu_view(&self) -> Option<ViewHandle<DisplayChipMenu>> {
+        if let DisplayChipKind::GitBranch { menu, .. } = &self.display_chip_kind {
+            Some(menu.clone())
+        } else {
+            None
+        }
+    }
+
     pub fn close_working_directory_menu(&mut self, ctx: &mut ViewContext<Self>) {
         if let DisplayChipKind::WorkingDirectory {
             menu_open, menu, ..
@@ -1074,12 +1302,12 @@ impl DisplayChip {
             appearance.theme().ansi_fg_green()
         };
 
-        let is_interactive =
-            !self.is_shared_session_viewer && !self.is_cli_agent_session_active(app);
+        // Allow clicking regardless of CLI agent state (like git_diff_stats_chip)
         let is_in_agent_view = self.is_in_agent_view;
         let chip_text = self.text.clone();
+
         let hover = Hoverable::new(self.mouse_state.clone(), move |state| {
-            let hovered = state.is_hovered() && is_interactive;
+            let hovered = state.is_hovered();
             let mut config =
                 UdiChipConfig::new_with_icon(Icon::GitBranch, font_color, chip_text.clone())
                     .with_hovered(hovered);
@@ -1089,7 +1317,7 @@ impl DisplayChip {
             let chip_element = render_udi_chip(config, appearance);
 
             let mut stack = Stack::new().with_child(chip_element);
-            if state.is_hovered() && is_interactive && !menu_open {
+            if state.is_hovered() && !menu_open {
                 let tool_tip = appearance
                     .ui_builder()
                     .tool_tip("Change git branch".to_string())
@@ -1100,33 +1328,24 @@ impl DisplayChip {
             stack.finish()
         });
 
-        let hover = if !is_interactive {
-            hover.finish()
-        } else {
-            hover
-                .on_click(|ctx, _app, _position| {
-                    ctx.dispatch_typed_action(DisplayChipAction::OpenBranchSelector);
-                })
-                .with_cursor(Cursor::PointingHand)
-                .finish()
-        };
+        let hover = hover
+            .on_click(|ctx, _app, _position| {
+                ctx.dispatch_typed_action(DisplayChipAction::OpenBranchSelector);
+            })
+            .with_cursor(Cursor::PointingHand)
+            .finish();
 
         let mut stack = Stack::new().with_child(hover);
 
         if menu_open {
-            let positioning = self.menu_positioning_provider.menu_position(app);
-            let (parent_anchor, child_anchor) = Self::positioning_to_anchors(positioning);
-            let offset = match positioning {
-                MenuPositioning::BelowInputBox => vec2f(0., 4.),
-                MenuPositioning::AboveInputBox => vec2f(0., -4.),
-            };
+            // Bottom sheet style - from bottom of window, but leave space for bottom bar (~50px)
             stack.add_positioned_overlay_child(
                 ChildView::new(menu).finish(),
                 OffsetPositioning::offset_from_parent(
-                    offset,
+                    vec2f(0., -50.), // Offset up to not cover bottom bar
                     ParentOffsetBounds::WindowByPosition,
-                    parent_anchor,
-                    child_anchor,
+                    ParentAnchor::BottomLeft,
+                    ChildAnchor::BottomLeft,
                 ),
             );
         }
@@ -1626,6 +1845,7 @@ pub enum PromptDisplayChipEvent {
         document_id: AIDocumentId,
         document_version: AIDocumentVersion,
     },
+    RefreshGitStatus,
 }
 
 impl TypedActionView for DisplayChip {
@@ -1753,8 +1973,9 @@ impl TypedActionView for DisplayChip {
                 ctx.notify();
             }
             DisplayChipAction::OpenBranchSelector => {
-                // Delegate to the existing ToggleMenu action for branch selector
-                self.handle_action(&DisplayChipAction::ToggleMenu, ctx);
+                // Dispatch WorkspaceAction to open the new branch selector
+                let terminal_view_id = self.terminal_view_id;
+                ctx.dispatch_typed_action(&crate::workspace::WorkspaceAction::OpenBranchSelectorFromChip { terminal_view_id });
             }
             DisplayChipAction::OpenGithubPullRequest(url) => {
                 ctx.open_url(url);

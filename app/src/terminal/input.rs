@@ -5718,6 +5718,10 @@ impl Input {
                     document_version: *document_version,
                 });
             }
+            PromptDisplayEvent::RefreshGitStatus => {
+                // Refresh git status - trigger a re-fetch of git branch info
+                self.update_prompt_display_chips(ctx);
+            }
         }
     }
 

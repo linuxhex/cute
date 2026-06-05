@@ -154,6 +154,11 @@ impl BranchPicker {
                                 return Ok(vec![BranchEntry {
                                     name: trimmed,
                                     is_main: true,
+                                    latest_commit_hash: None,
+                                    latest_commit_subject: None,
+                                    latest_commit_author: None,
+                                    latest_commit_date: None,
+                                    is_remote: false,
                                 }]);
                             }
                         }

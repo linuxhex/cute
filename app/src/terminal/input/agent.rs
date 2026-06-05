@@ -1,4 +1,3 @@
-use warp_cli::agent::Harness;
 use warp_core::settings::Setting;
 use warp_core::ui::theme::color::internal_colors;
 use warpui::elements::{
@@ -503,7 +502,7 @@ impl Input {
         SavePosition::new(outer_stack.finish(), &self.save_position_id()).finish()
     }
 
-    pub(super) fn should_show_auth_secret_ftux(&self, app: &AppContext) -> bool {
+    pub(super) fn should_show_auth_secret_ftux(&self, _app: &AppContext) -> bool {
         // 【Cute定制】彻底禁用密钥弹框，不再弹出需要配置API密钥的提示
         // 用户可以在设置中自行配置，不需要强制弹框
         false

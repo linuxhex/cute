@@ -1082,17 +1082,9 @@ pub(crate) fn initialize_app(
     let data_domain = ChannelState::data_domain();
 
     // Register an implementation of the secure storage service.
-    cfg_if::cfg_if! {
-        if #[cfg(feature = "integration_tests")] {
-            warpui_extras::secure_storage::register_noop(&data_domain, ctx);
-        } else if #[cfg(any(target_os = "linux", target_os = "freebsd"))] {
-            warpui_extras::secure_storage::register_with_fallback(&data_domain, warp_core::paths::state_dir(), ctx)
-        } else if #[cfg(target_os = "windows")] {
-            warpui_extras::secure_storage::register_with_dir(&data_domain, warp_core::paths::state_dir(), ctx)
-        } else {
-            warpui_extras::secure_storage::register(&data_domain, ctx);
-        }
-    }
+    // 使用 no-op 存储避免 macOS keychain 弹窗提示
+    // 由于设置了 SkipFirebaseAnonymousUser feature flag，不需要持久化用户认证信息
+    warpui_extras::secure_storage::register_noop(&data_domain, ctx);
 
     // One-time migration: give Preview its own config directory by
     // symlinking contents from the shared ~/.warp location. Must run

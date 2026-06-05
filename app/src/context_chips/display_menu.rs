@@ -17,15 +17,17 @@ use warpui::elements::{
     Border, ChildAnchor, ChildView, ClippedScrollStateHandle, ClippedScrollable, ConstrainedBox,
     Container, CornerRadius, CrossAxisAlignment, Dismiss, DispatchEventResult, DropShadow, Empty,
     EventHandler, Flex, Highlight, Hoverable, MainAxisAlignment, MainAxisSize, MouseInBehavior,
-    MouseStateHandle, OffsetPositioning, ParentElement, PositionedElementAnchor,
-    PositionedElementOffsetBounds, Radius, SavePosition, ScrollStateHandle, Scrollable,
-    ScrollableElement, ScrollbarWidth, Shrinkable, Stack, Text, UniformList, UniformListState,
+    MouseStateHandle, OffsetPositioning, ParentAnchor, ParentElement, ParentOffsetBounds,
+    PositionedElementAnchor, PositionedElementOffsetBounds, Radius, SavePosition, ScrollStateHandle,
+    Scrollable, ScrollableElement, ScrollbarWidth, Shrinkable, Stack, Text, UniformList,
+    UniformListState,
 };
 use warpui::fonts::{Properties, Weight};
 use warpui::keymap::FixedBinding;
 use warpui::r#async::Timer;
 use warpui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
 use warpui::units::Pixels;
+use warpui::platform::Cursor;
 use warpui::{
     AppContext, Element, Entity, FocusContext, SingletonEntity as _, TypedActionView, View,
     ViewContext, ViewHandle, WindowId,
@@ -87,11 +89,13 @@ pub enum ChipMenuType {
     Environments,
 }
 
-const LABEL_HORIZONTAL_PADDING: f32 = 14.;
+const LABEL_HORIZONTAL_PADDING: f32 = 12.;
 const SEARCH_INPUT_HORIZONTAL_PADDING: f32 = 8.;
-const LABEL_VERTICAL_PADDING: f32 = 5.;
-const MENU_VERTICAL_PADDING: f32 = 9.;
-const MENU_WIDTH: f32 = 360.;
+const LABEL_VERTICAL_PADDING: f32 = 6.;
+const MENU_VERTICAL_PADDING: f32 = 8.;
+const MENU_WIDTH: f32 = 320.;
+const COMMIT_PANEL_WIDTH: f32 = 380.;
+const MENU_MAX_HEIGHT: f32 = 400.;
 
 // Environments menu sizing from Figma mock.
 const ENV_MENU_WIDTH: f32 = 321.;
@@ -224,6 +228,45 @@ pub struct DisplayChipMenu {
     env_sidecar_copy_image_mouse_state: MouseStateHandle,
     env_sidecar_copy_feedback_times: HashMap<String, Instant>,
     env_sidecar_scroll_state: ClippedScrollStateHandle,
+
+    // Branch history panel state (for ChipMenuType::Branches)
+    selected_branch_name: Option<String>,
+    selected_branch_commits: Vec<crate::util::git::Commit>,
+    current_branch_name: Option<String>,
+    is_loading_branches: bool,
+    is_loading_commits: bool,
+    load_error: Option<String>,
+    commit_list_state: UniformListState,
+    commit_scroll_state: ScrollStateHandle,
+
+    // Commit files panel state (third pane)
+    selected_commit_hash: Option<String>,
+    selected_commit_files: Vec<crate::util::git::FileChangeEntry>,
+    is_loading_files: bool,
+    file_list_state: UniformListState,
+    file_scroll_state: ScrollStateHandle,
+
+    // Branch context menu state (right-click)
+    branch_context_menu: Option<BranchContextMenu>,
+    branch_context_menu_position: Option<warpui::geometry::vector::Vector2F>,
+    branch_context_menu_mouse_states: Vec<MouseStateHandle>,
+}
+
+/// Context menu for branch operations (shown on right-click)
+#[derive(Debug, Clone)]
+pub struct BranchContextMenu {
+    pub branch_name: String,
+    pub is_remote: bool,
+    pub is_current_branch: bool,
+}
+
+#[derive(Debug, Clone)]
+pub enum BranchContextMenuAction {
+    MergeIntoCurrent { branch_name: String },
+    Checkout { branch_name: String },
+    Delete { branch_name: String },
+    Rename { branch_name: String },
+    CopyBranchName { branch_name: String },
 }
 
 #[derive(Debug, Clone)]
@@ -236,6 +279,10 @@ pub enum DisplayChipMenuAction {
     SelectFixedFooterOption,
     CopyEnvironmentSidecarField { key: String, value: String },
     Close,
+    ShowBranchContextMenu { index: usize, position: warpui::geometry::vector::Vector2F },
+    ExecuteBranchAction { action: BranchContextMenuAction },
+    CloseBranchContextMenu,
+    SelectCommit { commit_hash: String },
 }
 
 impl DisplayChipMenu {
@@ -397,7 +444,47 @@ impl DisplayChipMenu {
             env_sidecar_copy_image_mouse_state: Default::default(),
             env_sidecar_copy_feedback_times: HashMap::new(),
             env_sidecar_scroll_state: Default::default(),
+
+            selected_branch_name: None,
+            selected_branch_commits: Vec::new(),
+            current_branch_name: None,
+            is_loading_branches: false,
+            is_loading_commits: false,
+            load_error: None,
+            commit_list_state: Default::default(),
+            commit_scroll_state: Default::default(),
+
+            // Commit files panel state
+            selected_commit_hash: None,
+            selected_commit_files: Vec::new(),
+            is_loading_files: false,
+            file_list_state: Default::default(),
+            file_scroll_state: Default::default(),
+
+            branch_context_menu: None,
+            branch_context_menu_position: None,
+            branch_context_menu_mouse_states: Vec::new(),
         }
+    }
+
+    /// Set the current branch name for highlighting
+    pub fn set_current_branch(&mut self, branch_name: Option<String>) {
+        self.current_branch_name = branch_name;
+    }
+
+    /// Set loading state for branches
+    pub fn set_loading_branches(&mut self, loading: bool) {
+        self.is_loading_branches = loading;
+    }
+
+    /// Set loading state for commits
+    pub fn set_loading_commits(&mut self, loading: bool) {
+        self.is_loading_commits = loading;
+    }
+
+    /// Set error message
+    pub fn set_error(&mut self, error: Option<String>) {
+        self.load_error = error;
     }
 
     /// Register a builder that produces a synthetic top-of-list item for
@@ -439,6 +526,38 @@ impl DisplayChipMenu {
         }
 
         ctx.notify();
+    }
+
+    /// Update the selected branch and its commit history
+    pub fn update_selected_branch(
+        &mut self,
+        branch_name: String,
+        commits: Vec<crate::util::git::Commit>,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        self.selected_branch_name = Some(branch_name);
+        self.selected_branch_commits = commits;
+        // Reset commit selection when branch changes
+        self.selected_commit_hash = None;
+        self.selected_commit_files = Vec::new();
+        ctx.notify();
+    }
+
+    /// Update the selected commit and its file changes
+    pub fn update_selected_commit(
+        &mut self,
+        commit_hash: String,
+        files: Vec<crate::util::git::FileChangeEntry>,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        self.selected_commit_hash = Some(commit_hash);
+        self.selected_commit_files = files;
+        ctx.notify();
+    }
+
+    /// Set loading state for commit files
+    pub fn set_loading_files(&mut self, loading: bool) {
+        self.is_loading_files = loading;
     }
 
     fn update_filtered_items(&mut self) {
@@ -525,6 +644,14 @@ impl DisplayChipMenu {
         if self.selected_index != index {
             self.selected_index = index;
             self.env_sidecar_scroll_state.scroll_to(Pixels::zero());
+
+            // For branches, emit event to fetch commit history
+            if self.chip_menu_type == ChipMenuType::Branches && index < self.filtered_items.len() {
+                let item = self.filtered_items[index].item.clone();
+                ctx.emit(PromptDisplayMenuEvent::BranchSelected {
+                    branch_name: item.name(),
+                });
+            }
         }
         ctx.notify();
     }
@@ -1060,6 +1187,25 @@ impl DisplayChipMenu {
     fn render_items(&self, ctx: &AppContext) -> Box<dyn Element> {
         let appearance = Appearance::as_ref(ctx);
         let theme = appearance.theme();
+
+        // Show loading state for branches
+        if self.is_loading_branches && self.chip_menu_type == ChipMenuType::Branches {
+            return Container::new(
+                Flex::column()
+                    .with_main_axis_alignment(MainAxisAlignment::Center)
+                    .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                    .with_child(
+                        Text::new_inline("Loading branches...", appearance.ui_font_family(), appearance.ui_font_size())
+                            .with_color(theme.sub_text_color(theme.surface_2()).into_solid())
+                            .finish(),
+                    )
+                    .finish(),
+            )
+            .with_horizontal_padding(LABEL_HORIZONTAL_PADDING)
+            .with_vertical_padding(20.)
+            .finish();
+        }
+
         if self.filtered_items.is_empty() {
             // Show "No results" if search is active but no matches.
             if !self.search_query.is_empty() {
@@ -1094,6 +1240,11 @@ impl DisplayChipMenu {
                 .with_vertical_padding(vertical_padding)
                 .finish();
             }
+            // For branches with no items and no search query, return empty
+            // The parent will show "No branches available" message
+            if self.chip_menu_type == ChipMenuType::Branches {
+                return Empty::new().finish();
+            }
             return Empty::new().finish();
         }
 
@@ -1105,6 +1256,7 @@ impl DisplayChipMenu {
         let item_horizontal_padding = self.menu_item_horizontal_padding();
         let item_vertical_padding = self.menu_item_vertical_padding();
         let chip_menu_type = self.chip_menu_type;
+        let current_branch_name = self.current_branch_name.clone();
         let list = UniformList::new(
             self.list_state.clone(),
             filtered_items.len(),
@@ -1118,6 +1270,7 @@ impl DisplayChipMenu {
                         let filtered_item = &filtered_items[index];
                         let item = &filtered_item.item;
                         let display_text_str = item.name();
+                        let display_text_str_for_indicator = display_text_str.clone();
 
                         let is_selected = index == selected_index && !is_footer_hovered;
 
@@ -1233,6 +1386,24 @@ impl DisplayChipMenu {
 
                         left_side.add_child(display_text.finish());
 
+                        // Add current branch indicator
+                        if chip_menu_type == ChipMenuType::Branches {
+                            if let Some(ref current) = current_branch_name {
+                                if display_text_str_for_indicator == *current {
+                                    // Add a small indicator for current branch
+                                    left_side.add_child(
+                                        Container::new(
+                                            Text::new_inline(" ●", appearance.ui_font_family(), font_size)
+                                                .with_color(theme.ansi_fg_green().into())
+                                                .finish(),
+                                        )
+                                        .with_margin_left(4.)
+                                        .finish(),
+                                    );
+                                }
+                            }
+                        }
+
                         // Add left side to main container
                         main_container.add_child(left_side.finish());
 
@@ -1262,6 +1433,14 @@ impl DisplayChipMenu {
                                 .on_left_mouse_down(move |ctx, _, _| {
                                     ctx.dispatch_typed_action(DisplayChipMenuAction::SelectItem {
                                         index,
+                                    });
+                                    DispatchEventResult::StopPropagation
+                                })
+                                .on_right_mouse_down(move |ctx, _, pos| {
+                                    // Show branch context menu on right-click
+                                    ctx.dispatch_typed_action(DisplayChipMenuAction::ShowBranchContextMenu {
+                                        index,
+                                        position: pos,
                                     });
                                     DispatchEventResult::StopPropagation
                                 })
@@ -1295,7 +1474,19 @@ impl DisplayChipMenu {
                 true,
             ),
             ChipMenuType::Directories | ChipMenuType::Branches | ChipMenuType::CodeReview => {
-                (ScrollbarWidth::None, 200., false)
+                // Use Auto scrollbar for branches to handle many branches
+                let scrollbar = if self.chip_menu_type == ChipMenuType::Branches {
+                    ScrollbarWidth::Auto
+                } else {
+                    ScrollbarWidth::None
+                };
+                // For branches, use larger height for bottom sheet
+                let height = if self.chip_menu_type == ChipMenuType::Branches {
+                    400.0 // Larger height for bottom sheet
+                } else {
+                    280.
+                };
+                (scrollbar, height, true)
             }
         };
 
@@ -1315,10 +1506,880 @@ impl DisplayChipMenu {
         }
 
         // Return just the scrollable content area (no outer styling)
-        ConstrainedBox::new(scrollable.finish())
-            .with_width(menu_width)
-            .with_max_height(max_height)
+        // For branches in dual-pane mode, don't constrain width here
+        if self.chip_menu_type == ChipMenuType::Branches {
+            ConstrainedBox::new(scrollable.finish())
+                .with_max_height(max_height)
+                .finish()
+        } else {
+            ConstrainedBox::new(scrollable.finish())
+                .with_width(menu_width)
+                .with_max_height(max_height)
+                .finish()
+        }
+    }
+
+    fn render_dual_pane_layout(&self, left_pane: Box<dyn Element>, app: &AppContext) -> Box<dyn Element> {
+        let appearance = Appearance::as_ref(app);
+        let theme = appearance.theme();
+
+        // Right pane - commit history for selected branch
+        let middle_pane = self.render_commit_history_panel(app);
+        let right_pane = self.render_file_changes_panel(app);
+
+        // Vertical dividers
+
+        let divider1 = ConstrainedBox::new(
+            Container::new(Empty::new().finish())
+                .with_background(Fill::Solid(internal_colors::neutral_2(theme)))
+                .finish(),
+        )
+        .with_width(1.)
+        .with_height(400.)
+        .finish();
+
+        let divider2 = ConstrainedBox::new(
+            Container::new(Empty::new().finish())
+                .with_background(Fill::Solid(internal_colors::neutral_2(theme)))
+                .finish(),
+        )
+        .with_width(1.)
+        .with_height(400.)
+        .finish();
+
+        // === THREE-COLUMN LAYOUT (matching IDEA screenshot) ===
+        // Left: 25% (branches), Middle: 40% (commits, widest), Right: 35% (files)
+        let left_with_width = ConstrainedBox::new(left_pane)
+            .with_width(280.)
+            .finish();
+
+        let middle_with_width = ConstrainedBox::new(middle_pane)
+            .with_width(380.)
+            .finish();
+
+        let right_with_width = ConstrainedBox::new(right_pane)
+            .with_width(320.)
+            .finish();
+
+        // Three-column layout
+        let content = Flex::row()
+            .with_child(left_with_width)
+            .with_child(divider1)
+            .with_child(middle_with_width)
+            .with_child(divider2)
+            .with_child(right_with_width)
+            .finish();
+
+        // Bottom sheet style - half screen width, from bottom
+        Container::new(content)
+            .with_background(theme.surface_2())
+            .with_corner_radius(CornerRadius::with_top(Radius::Pixels(12.)))
+            .with_border(Border::top(1.0).with_border_color(internal_colors::neutral_3(theme)))
+            .with_drop_shadow(DropShadow {
+                blur_radius: 16.0,
+                offset: pathfinder_geometry::vector::vec2f(0., -4.),
+                color: ColorU::new(0, 0, 0, 80),
+                spread_radius: 0.0,
+            })
             .finish()
+    }
+
+    fn render_commit_history_panel(&self, app: &AppContext) -> Box<dyn Element> {
+        let appearance = Appearance::as_ref(app);
+        let theme = appearance.theme();
+        let font_family = appearance.ui_font_family();
+        let font_size = appearance.ui_font_size();
+        let _mono_font_family = appearance.monospace_font_family();
+
+        let mut container = Flex::column()
+            .with_main_axis_size(MainAxisSize::Max);
+
+        // Show loading state for commits
+        if self.is_loading_commits {
+            container.add_child(
+                Container::new(
+                    Flex::column()
+                        .with_main_axis_alignment(MainAxisAlignment::Center)
+                        .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                        .with_child(
+                            Container::new(
+                                Text::new_inline("⟳", font_family, font_size * 1.5)
+                                    .with_color(theme.accent().into_solid())
+                                    .finish(),
+                            )
+                            .with_margin_bottom(8.)
+                            .finish(),
+                        )
+                        .with_child(
+                            Text::new_inline("Loading commits...", font_family, font_size)
+                                .with_color(theme.sub_text_color(theme.surface_2()).into_solid())
+                                .finish(),
+                        )
+                        .finish(),
+                )
+                .with_horizontal_padding(20.)
+                .with_vertical_padding(60.)
+                .finish(),
+            );
+            return ConstrainedBox::new(container.finish())
+                .with_width(COMMIT_PANEL_WIDTH)
+                .with_max_height(MENU_MAX_HEIGHT)
+                .finish();
+        }
+
+        // Show error if any
+        if let Some(ref error) = self.load_error {
+            container.add_child(
+                Container::new(
+                    Flex::column()
+                        .with_main_axis_alignment(MainAxisAlignment::Center)
+                        .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                        .with_child(
+                            Container::new(
+                                Icon::Warning
+                                    .to_warpui_icon(Fill::Solid(theme.ansi_fg_yellow()))
+                                    .finish(),
+                            )
+                            .with_margin_bottom(8.)
+                            .finish(),
+                        )
+                        .with_child(
+                            Text::new_inline(error.clone(), font_family, font_size)
+                                .with_color(theme.ansi_fg_red())
+                                .finish(),
+                        )
+                        .finish(),
+                )
+                .with_horizontal_padding(20.)
+                .with_vertical_padding(60.)
+                .finish(),
+            );
+            return ConstrainedBox::new(container.finish())
+                .with_width(COMMIT_PANEL_WIDTH)
+                .with_max_height(MENU_MAX_HEIGHT)
+                .finish();
+        }
+
+        // Header with branch name
+        if let Some(ref branch_name) = self.selected_branch_name {
+            // Header section
+            let mut header = Flex::column();
+
+            // Top row: icon + branch name
+            let mut header_top = Flex::row()
+                .with_cross_axis_alignment(CrossAxisAlignment::Center);
+
+            // Determine if this is a remote branch
+            let is_remote = branch_name.starts_with("origin/")
+                || branch_name.starts_with("upstream/")
+                || branch_name.starts_with("remote/");
+
+            // Branch icon with colored background pill
+            let branch_icon = if is_remote { Icon::Cloud } else { Icon::GitBranch };
+            let icon_color = theme.ansi_fg_green();
+
+            header_top.add_child(
+                Container::new(
+                    ConstrainedBox::new(
+                        branch_icon
+                            .to_warpui_icon(Fill::Solid(icon_color))
+                            .finish(),
+                    )
+                    .with_width(font_size)
+                    .with_height(font_size)
+                    .finish(),
+                )
+                .with_margin_right(8.)
+                .finish(),
+            );
+
+            // Branch name with bold weight
+            header_top.add_child(
+                Text::new_inline(branch_name.clone(), font_family, font_size)
+                    .with_color(theme.main_text_color(theme.surface_2()).into_solid())
+                    .with_style(Properties::default().weight(Weight::Semibold))
+                    .finish(),
+            );
+
+            header.add_child(
+                Container::new(header_top.finish())
+                    .with_horizontal_padding(16.)
+                    .with_padding_top(12.)
+                    .with_padding_bottom(8.)
+                    .finish(),
+            );
+
+            // Stats row with subtle background
+            let commit_count = self.selected_branch_commits.len();
+            let stats_text = if commit_count == 0 {
+                "No commits".to_string()
+            } else if commit_count == 1 {
+                "1 commit".to_string()
+            } else {
+                format!("{} commits", commit_count)
+            };
+
+            header.add_child(
+                Container::new(
+                    Flex::row()
+                        .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                        .with_child(
+                            Container::new(
+                                Icon::GitCommit
+                                    .to_warpui_icon(Fill::Solid(theme.sub_text_color(theme.surface_2()).into_solid()))
+                                    .finish(),
+                            )
+                            .with_margin_right(6.)
+                            .finish(),
+                        )
+                        .with_child(
+                            Text::new_inline(stats_text, font_family, font_size - 1.)
+                                .with_color(theme.sub_text_color(theme.surface_2()).into_solid())
+                                .finish(),
+                        )
+                        .finish(),
+                )
+                .with_horizontal_padding(16.)
+                .with_padding_top(4.)
+                .with_padding_bottom(10.)
+                .with_border(Border::bottom(1.0).with_border_color(internal_colors::neutral_2(theme)))
+                .finish(),
+            );
+
+            container.add_child(header.finish());
+
+            // Commit list
+            if !self.selected_branch_commits.is_empty() {
+                let commits = self.selected_branch_commits.clone();
+                let selected_hash = self.selected_commit_hash.clone();
+                let commit_list = UniformList::new(
+                    self.commit_list_state.clone(),
+                    commits.len(),
+                    move |mut range, app| {
+                        let appearance = Appearance::as_ref(app);
+                        let theme = appearance.theme();
+                        let font_family = appearance.ui_font_family();
+                        let font_size = appearance.ui_font_size();
+                        let mono_font_family = appearance.monospace_font_family();
+
+                        range.end = std::cmp::min(range.end, commits.len());
+                        range
+                            .map(|index| {
+                                let commit = &commits[index];
+                                let is_selected = selected_hash.as_ref() == Some(&commit.hash);
+
+                                let mut row = Flex::row()
+                                    .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                                    .with_main_axis_size(MainAxisSize::Max);
+
+                                // Commit hash (7 characters, monospace, cyan)
+                                let hash_text = if commit.hash.len() >= 7 {
+                                    &commit.hash[..7]
+                                } else {
+                                    &commit.hash
+                                };
+                                row.add_child(
+                                    Container::new(
+                                        Text::new_inline(hash_text.to_string(), mono_font_family, font_size - 1.)
+                                            .with_color(theme.ansi_fg_cyan())
+                                            .finish(),
+                                    )
+                                    .with_margin_right(12.)
+                                    .finish(),
+                                );
+
+                                // Commit message (truncate if too long)
+                                let max_msg_len = 40;
+                                let message = if commit.subject.len() > max_msg_len {
+                                    format!("{}…", &commit.subject[..max_msg_len])
+                                } else {
+                                    commit.subject.clone()
+                                };
+
+                                // Message container (takes remaining space)
+                                let mut msg_container = Flex::row()
+                                    .with_main_axis_size(MainAxisSize::Max);
+                                msg_container.add_child(
+                                    Text::new_inline(message, font_family, font_size - 1.)
+                                        .with_color(theme.main_text_color(theme.surface_2()).into_solid())
+                                        .finish(),
+                                );
+                                row.add_child(msg_container.finish());
+
+                                // Stats: +additions -deletions with colors
+                                if commit.additions > 0 || commit.deletions > 0 {
+                                    row.add_child(
+                                        Container::new(
+                                            Flex::row()
+                                                .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                                                .with_child(
+                                                    Text::new_inline(format!("+{}", commit.additions), font_family, font_size - 2.)
+                                                        .with_color(theme.ansi_fg_green())
+                                                        .finish(),
+                                                )
+                                                .with_child(
+                                                    Container::new(Empty::new().finish())
+                                                        .with_margin_left(4.)
+                                                        .finish(),
+                                                )
+                                                .with_child(
+                                                    Text::new_inline(format!("-{}", commit.deletions), font_family, font_size - 2.)
+                                                        .with_color(theme.ansi_fg_red())
+                                                        .finish(),
+                                                )
+                                                .finish(),
+                                        )
+                                        .with_margin_left(12.)
+                                        .finish(),
+                                    );
+                                }
+
+                                let hash_for_click = commit.hash.clone();
+                                let mut container = Container::new(row.finish())
+                                    .with_horizontal_padding(16.)
+                                    .with_vertical_padding(8.);
+
+                                // Highlight selected commit
+                                if is_selected {
+                                    container = container.with_background(theme.accent());
+                                }
+
+                                EventHandler::new(container.finish())
+                                    .on_left_mouse_down(move |ctx, _, _| {
+                                        ctx.dispatch_typed_action(DisplayChipMenuAction::SelectCommit {
+                                            commit_hash: hash_for_click.clone(),
+                                        });
+                                        DispatchEventResult::StopPropagation
+                                    })
+                                    .finish()
+                            })
+                            .collect::<Vec<_>>()
+                            .into_iter()
+                    },
+                );
+
+                let scrollable = Scrollable::vertical(
+                    self.commit_scroll_state.clone(),
+                    commit_list.finish_scrollable(),
+                    ScrollbarWidth::Auto,
+                    theme.nonactive_ui_detail().into(),
+                    theme.active_ui_detail().into(),
+                    warpui::elements::Fill::None,
+                )
+                .with_overlayed_scrollbar();
+
+                container.add_child(
+                    ConstrainedBox::new(scrollable.finish())
+                        .with_max_height(320.)
+                        .finish(),
+                );
+            } else {
+                // Empty state
+                container.add_child(
+                    Container::new(
+                        Flex::column()
+                            .with_main_axis_alignment(MainAxisAlignment::Center)
+                            .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                            .with_child(
+                                Container::new(
+                                    Icon::GitCommit
+                                        .to_warpui_icon(Fill::Solid(theme.sub_text_color(theme.surface_2()).into_solid()))
+                                        .finish(),
+                                )
+                                .with_margin_bottom(8.)
+                                .finish(),
+                            )
+                            .with_child(
+                                Text::new_inline("No commits found", font_family, font_size)
+                                    .with_color(theme.sub_text_color(theme.surface_2()).into_solid())
+                                    .finish(),
+                            )
+                            .finish(),
+                    )
+                    .with_horizontal_padding(16.)
+                    .with_vertical_padding(40.)
+                    .finish(),
+                );
+            }
+        } else {
+            // No branch selected - show helpful placeholder
+            container.add_child(
+                Container::new(
+                    Flex::column()
+                        .with_main_axis_alignment(MainAxisAlignment::Center)
+                        .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                        .with_child(
+                            Container::new(
+                                Icon::GitBranch
+                                    .to_warpui_icon(Fill::Solid(theme.sub_text_color(theme.surface_2()).into_solid()))
+                                    .finish(),
+                            )
+                            .with_margin_bottom(12.)
+                            .finish(),
+                        )
+                        .with_child(
+                            Text::new_inline("Select a branch", font_family, font_size)
+                                .with_color(theme.main_text_color(theme.surface_2()).into_solid())
+                                .finish(),
+                        )
+                        .with_child(
+                            Text::new_inline("to view commit history", font_family, font_size - 1.)
+                                .with_color(theme.sub_text_color(theme.surface_2()).into_solid())
+                                .finish(),
+                        )
+                        .finish(),
+                )
+                .with_horizontal_padding(20.)
+                .with_vertical_padding(60.)
+                .finish(),
+            );
+        }
+
+        ConstrainedBox::new(container.finish())
+            .with_width(COMMIT_PANEL_WIDTH)
+            .with_max_height(MENU_MAX_HEIGHT)
+            .finish()
+    }
+
+    /// Render the file changes panel (third pane) for the selected commit
+    fn render_file_changes_panel(&self, app: &AppContext) -> Box<dyn Element> {
+        let appearance = Appearance::as_ref(app);
+        let theme = appearance.theme();
+        let font_family = appearance.ui_font_family();
+        let font_size = appearance.ui_font_size();
+
+        let mut container = Flex::column()
+            .with_main_axis_size(MainAxisSize::Max);
+
+        // Show loading state
+        if self.is_loading_files {
+            container.add_child(
+                Container::new(
+                    Flex::column()
+                        .with_main_axis_alignment(MainAxisAlignment::Center)
+                        .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                        .with_child(
+                            Text::new_inline("Loading files...", font_family, font_size)
+                                .with_color(theme.sub_text_color(theme.surface_2()).into_solid())
+                                .finish(),
+                        )
+                        .finish(),
+                )
+                .with_horizontal_padding(20.)
+                .with_vertical_padding(60.)
+                .finish(),
+            );
+            return ConstrainedBox::new(container.finish())
+                .with_max_height(MENU_MAX_HEIGHT)
+                .finish();
+        }
+
+        // Show files if we have a selected commit
+        if let Some(ref commit_hash) = self.selected_commit_hash {
+            // Header with commit hash
+            let hash_text = if commit_hash.len() >= 7 {
+                &commit_hash[..7]
+            } else {
+                commit_hash
+            };
+
+            container.add_child(
+                Container::new(
+                    Flex::row()
+                        .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                        .with_child(
+                            Icon::File
+                                .to_warpui_icon(Fill::Solid(theme.sub_text_color(theme.surface_2()).into_solid()))
+                                .finish(),
+                        )
+                        .with_child(
+                            Container::new(
+                                Text::new_inline(format!("  Files in {}", hash_text), font_family, font_size)
+                                    .with_color(theme.main_text_color(theme.surface_2()).into_solid())
+                                    .finish(),
+                            )
+                            .with_margin_left(4.)
+                            .finish(),
+                        )
+                        .finish(),
+                )
+                .with_horizontal_padding(16.)
+                .with_padding_top(12.)
+                .with_padding_bottom(8.)
+                .with_border(Border::bottom(1.0).with_border_color(internal_colors::neutral_2(theme)))
+                .finish(),
+            );
+
+            // File list
+            if !self.selected_commit_files.is_empty() {
+                let files = self.selected_commit_files.clone();
+                let file_list = UniformList::new(
+                    self.file_list_state.clone(),
+                    files.len(),
+                    move |mut range, app| {
+                        let appearance = Appearance::as_ref(app);
+                        let theme = appearance.theme();
+                        let font_family = appearance.ui_font_family();
+                        let font_size = appearance.ui_font_size();
+
+                        range.end = std::cmp::min(range.end, files.len());
+                        range
+                            .map(|index| {
+                                let file = &files[index];
+
+                                let mut row = Flex::row()
+                                    .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                                    .with_main_axis_size(MainAxisSize::Max);
+
+                                // File path
+                                row.add_child(
+                                    Text::new_inline(file.path.clone(), font_family, font_size - 1.)
+                                        .with_color(theme.main_text_color(theme.surface_2()).into_solid())
+                                        .finish(),
+                                );
+
+                                // Stats
+                                if file.additions > 0 || file.deletions > 0 {
+                                    row.add_child(
+                                        Container::new(
+                                            Flex::row()
+                                                .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                                                .with_child(
+                                                    Text::new_inline(format!("+{}", file.additions), font_family, font_size - 2.)
+                                                        .with_color(theme.ansi_fg_green())
+                                                        .finish(),
+                                                )
+                                                .with_child(
+                                                    Container::new(Empty::new().finish())
+                                                        .with_margin_left(4.)
+                                                        .finish(),
+                                                )
+                                                .with_child(
+                                                    Text::new_inline(format!("-{}", file.deletions), font_family, font_size - 2.)
+                                                        .with_color(theme.ansi_fg_red())
+                                                        .finish(),
+                                                )
+                                                .finish(),
+                                        )
+                                        .with_margin_left(12.)
+                                        .finish(),
+                                    );
+                                }
+
+                                Container::new(row.finish())
+                                    .with_horizontal_padding(16.)
+                                    .with_vertical_padding(6.)
+                                    .finish()
+                            })
+                            .collect::<Vec<_>>()
+                            .into_iter()
+                    },
+                );
+
+                let scrollable = Scrollable::vertical(
+                    self.file_scroll_state.clone(),
+                    file_list.finish_scrollable(),
+                    ScrollbarWidth::Auto,
+                    theme.nonactive_ui_detail().into(),
+                    theme.active_ui_detail().into(),
+                    warpui::elements::Fill::None,
+                )
+                .with_overlayed_scrollbar();
+
+                container.add_child(
+                    ConstrainedBox::new(scrollable.finish())
+                        .with_max_height(280.)
+                        .finish(),
+                );
+            } else {
+                container.add_child(
+                    Container::new(
+                        Text::new_inline("No file changes", font_family, font_size)
+                            .with_color(theme.sub_text_color(theme.surface_2()).into_solid())
+                            .finish(),
+                    )
+                    .with_horizontal_padding(16.)
+                    .with_vertical_padding(40.)
+                    .finish(),
+                );
+            }
+        } else {
+            // No commit selected
+            container.add_child(
+                Container::new(
+                    Flex::column()
+                        .with_main_axis_alignment(MainAxisAlignment::Center)
+                        .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                        .with_child(
+                            Container::new(
+                                Icon::File
+                                    .to_warpui_icon(Fill::Solid(theme.sub_text_color(theme.surface_2()).into_solid()))
+                                    .finish(),
+                            )
+                            .with_margin_bottom(12.)
+                            .finish(),
+                        )
+                        .with_child(
+                            Text::new_inline("Select a commit", font_family, font_size)
+                                .with_color(theme.main_text_color(theme.surface_2()).into_solid())
+                                .finish(),
+                        )
+                        .with_child(
+                            Text::new_inline("to view file changes", font_family, font_size - 1.)
+                                .with_color(theme.sub_text_color(theme.surface_2()).into_solid())
+                                .finish(),
+                        )
+                        .finish(),
+                )
+                .with_horizontal_padding(20.)
+                .with_vertical_padding(60.)
+                .finish(),
+            );
+        }
+
+        ConstrainedBox::new(container.finish())
+            .with_max_height(MENU_MAX_HEIGHT)
+            .finish()
+    }
+
+    /// Show the branch context menu for the item at the given index
+    fn show_branch_context_menu(&mut self, index: usize, position: warpui::geometry::vector::Vector2F, ctx: &mut ViewContext<Self>) {
+        if index >= self.filtered_items.len() {
+            return;
+        }
+
+        let item = &self.filtered_items[index].item;
+        let branch_name = item.name();
+
+        // Determine if this is a remote branch by checking common remote prefixes
+        // Local branches can contain "/" (e.g., "feature/branch"), so we only
+        // check for known remote prefixes like "origin/", "upstream/", etc.
+        let is_remote = branch_name.starts_with("origin/")
+            || branch_name.starts_with("upstream/")
+            || branch_name.starts_with("remote/");
+
+        // Check if this is the current branch
+        let is_current_branch = self.current_branch_name
+            .as_ref()
+            .map(|current| &branch_name == current)
+            .unwrap_or(false);
+
+        self.branch_context_menu = Some(BranchContextMenu {
+            branch_name: branch_name.clone(),
+            is_remote,
+            is_current_branch,
+        });
+        self.branch_context_menu_position = Some(position);
+
+        // Pre-allocate mouse states for context menu items
+        // Maximum items: Checkout, Merge, Rename, Delete, Copy = 5
+        self.branch_context_menu_mouse_states = (0..5)
+            .map(|_| MouseStateHandle::default())
+            .collect();
+
+        ctx.notify();
+    }
+
+    /// Execute a branch context menu action
+    fn execute_branch_action(&mut self, action: &BranchContextMenuAction, ctx: &mut ViewContext<Self>) {
+        // Close the context menu first
+        self.branch_context_menu = None;
+        self.branch_context_menu_mouse_states.clear();
+
+        match action {
+            BranchContextMenuAction::MergeIntoCurrent { branch_name } => {
+                ctx.emit(PromptDisplayMenuEvent::BranchAction {
+                    action: BranchAction::MergeIntoCurrent {
+                        branch_name: branch_name.clone(),
+                    },
+                });
+            }
+            BranchContextMenuAction::Checkout { branch_name } => {
+                ctx.emit(PromptDisplayMenuEvent::BranchAction {
+                    action: BranchAction::Checkout {
+                        branch_name: branch_name.clone(),
+                    },
+                });
+            }
+            BranchContextMenuAction::Delete { branch_name } => {
+                ctx.emit(PromptDisplayMenuEvent::BranchAction {
+                    action: BranchAction::Delete {
+                        branch_name: branch_name.clone(),
+                    },
+                });
+            }
+            BranchContextMenuAction::Rename { branch_name } => {
+                ctx.emit(PromptDisplayMenuEvent::BranchAction {
+                    action: BranchAction::Rename {
+                        branch_name: branch_name.clone(),
+                    },
+                });
+            }
+            BranchContextMenuAction::CopyBranchName { branch_name } => {
+                ctx.clipboard()
+                    .write(warpui::clipboard::ClipboardContent::plain_text(branch_name.clone()));
+            }
+        }
+
+        ctx.notify();
+    }
+
+    /// Render the branch context menu popup
+    fn render_branch_context_menu(&self, app: &AppContext) -> Option<Box<dyn Element>> {
+        let context_menu = self.branch_context_menu.as_ref()?;
+        let appearance = Appearance::as_ref(app);
+        let theme = appearance.theme();
+        let font_family = appearance.ui_font_family();
+        let font_size = appearance.ui_font_size();
+
+        let mut items: Vec<(BranchContextMenuAction, String, Option<Icon>)> = vec![];
+
+        // Add menu items based on branch type
+        if !context_menu.is_remote {
+            // Local branch options
+            if !context_menu.is_current_branch {
+                items.push((
+                    BranchContextMenuAction::Checkout {
+                        branch_name: context_menu.branch_name.clone(),
+                    },
+                    "Checkout".to_string(),
+                    Some(Icon::GitBranch),
+                ));
+                items.push((
+                    BranchContextMenuAction::MergeIntoCurrent {
+                        branch_name: context_menu.branch_name.clone(),
+                    },
+                    "Merge into Current".to_string(),
+                    Some(Icon::ArrowSplit),
+                ));
+            }
+            items.push((
+                BranchContextMenuAction::Rename {
+                    branch_name: context_menu.branch_name.clone(),
+                },
+                "Rename".to_string(),
+                Some(Icon::Edit),
+            ));
+            if !context_menu.is_current_branch {
+                items.push((
+                    BranchContextMenuAction::Delete {
+                        branch_name: context_menu.branch_name.clone(),
+                    },
+                    "Delete".to_string(),
+                    Some(Icon::Trash),
+                ));
+            }
+        } else {
+            // Remote branch options - can checkout to create local tracking branch
+            items.push((
+                BranchContextMenuAction::Checkout {
+                    branch_name: context_menu.branch_name.clone(),
+                },
+                "Checkout".to_string(),
+                Some(Icon::GitBranch),
+            ));
+        }
+        items.push((
+            BranchContextMenuAction::CopyBranchName {
+                branch_name: context_menu.branch_name.clone(),
+            },
+            "Copy Branch Name".to_string(),
+            Some(Icon::Copy),
+        ));
+
+        let menu_width = 180.0;
+        let icon_size = font_size * 0.8;
+
+        let mut column = Flex::column();
+
+        for (i, (action, label, icon)) in items.iter().enumerate() {
+            let action_clone = action.clone();
+            let label_clone = label.clone();
+            let icon_clone = *icon;
+            let is_last = i == items.len() - 1;
+
+            // Use pre-allocated mouse state if available, otherwise create a new one
+            let mouse_state = self.branch_context_menu_mouse_states
+                .get(i)
+                .cloned()
+                .unwrap_or_else(|| MouseStateHandle::default());
+
+            let item = Hoverable::new(mouse_state, move |mouse_state| {
+                let is_hovered = mouse_state.is_hovered();
+                let text_color = if is_hovered {
+                    theme.main_text_color(theme.accent()).into_solid()
+                } else {
+                    theme.main_text_color(theme.surface_2()).into_solid()
+                };
+                let icon_color = if is_hovered {
+                    theme.main_text_color(theme.accent()).into_solid()
+                } else {
+                    theme.main_text_color(theme.surface_2()).into_solid()
+                };
+
+                let mut row = Flex::row()
+                    .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                    .with_main_axis_size(MainAxisSize::Max);
+
+                if let Some(icon) = icon_clone {
+                    row.add_child(
+                        Container::new(
+                            ConstrainedBox::new(
+                                icon.to_warpui_icon(Fill::Solid(icon_color))
+                                    .finish(),
+                            )
+                            .with_width(icon_size)
+                            .with_height(icon_size)
+                            .finish(),
+                        )
+                        .with_margin_right(8.)
+                        .finish(),
+                    );
+                } else {
+                    row.add_child(
+                        ConstrainedBox::new(Empty::new().finish())
+                            .with_width(icon_size + 8.)
+                            .finish(),
+                    );
+                }
+
+                row.add_child(
+                    Text::new_inline(label_clone, font_family, font_size)
+                        .with_color(text_color)
+                        .finish(),
+                );
+
+                let mut container = Container::new(row.finish())
+                    .with_horizontal_padding(12.)
+                    .with_vertical_padding(6.);
+
+                if !is_last {
+                    container = container.with_border(Border::bottom(1.0).with_border_color(internal_colors::neutral_2(theme)));
+                }
+
+                if is_hovered {
+                    container = container.with_background(theme.accent());
+                }
+                container.finish()
+            })
+            .on_click(move |ctx, _, _| {
+                ctx.dispatch_typed_action(DisplayChipMenuAction::ExecuteBranchAction {
+                    action: action_clone.clone(),
+                });
+            })
+            .finish();
+
+            column.add_child(item);
+        }
+
+        let menu = Container::new(column.finish())
+            .with_background(theme.surface_2())
+            .with_border(Border::all(1.0).with_border_color(internal_colors::neutral_4(theme)))
+            .with_corner_radius(CornerRadius::with_all(Radius::Pixels(6.0)))
+            .with_drop_shadow(DropShadow::default())
+            .finish();
+
+        Some(ConstrainedBox::new(menu).with_width(menu_width).finish())
     }
 }
 
@@ -1419,21 +2480,244 @@ impl View for DisplayChipMenu {
                 }
             };
 
-            ConstrainedBox::new(menu_container.finish())
-                .with_width(self.menu_width())
-                .finish()
+            // For branches, use wider width for bottom sheet
+            let width = if self.chip_menu_type == ChipMenuType::Branches {
+                900.0 // Wider for bottom sheet style
+            } else {
+                self.menu_width()
+            };
+
+            // For branches, add max height constraint
+            if self.chip_menu_type == ChipMenuType::Branches {
+                ConstrainedBox::new(menu_container.finish())
+                    .with_width(width)
+                    .with_max_height(450.0) // Half screen height
+                    .finish()
+            } else {
+                ConstrainedBox::new(menu_container.finish())
+                    .with_width(width)
+                    .finish()
+            }
         };
 
-        let mut stack = Stack::new();
-        stack.add_child(menu_card);
+        // For branches, render dual-pane layout as bottom sheet
+        let final_element = if self.chip_menu_type == ChipMenuType::Branches {
+            // Get window width from bounds
+            let window_width = app.window_bounds(&self.window_id)
+                .map(|bounds| bounds.size().x())
+                .unwrap_or(900.0);
 
-        if self.should_show_environment_sidecar() {
-            if let Some((sidecar, positioning)) = self.environment_sidecar_overlay(app) {
-                stack.add_positioned_overlay_child(sidecar, positioning);
+            // Calculate widths - left 40%, right 60%
+            let left_width = (window_width * 0.40).min(400.0).max(280.0);
+            let _right_width = window_width - left_width;
+
+            // === HEADER with Close Button ===
+            let close_button = Hoverable::new(MouseStateHandle::default(), move |state| {
+                let hovered = state.is_hovered();
+                let icon_color = if hovered {
+                    theme.main_text_color(theme.surface_2()).into_solid()
+                } else {
+                    theme.sub_text_color(theme.surface_2()).into_solid()
+                };
+                Icon::X
+                    .to_warpui_icon(Fill::Solid(icon_color))
+                    .finish()
+            });
+            let close_button = close_button
+                .on_click(|ctx, _, _| {
+                    ctx.dispatch_typed_action(DisplayChipMenuAction::Close);
+                })
+                .with_cursor(Cursor::PointingHand)
+                .finish();
+
+            let header = Container::new(
+                Flex::row()
+                    .with_main_axis_size(MainAxisSize::Max)
+                    .with_main_axis_alignment(MainAxisAlignment::End)
+                    .with_child(
+                        Container::new(close_button)
+                            .with_padding_top(8.)
+                            .with_padding_right(12.)
+                            .finish(),
+                    )
+                    .finish(),
+            )
+            .finish();
+
+            // === LEFT PANE: Search + Branch List ===
+            let mut left_column = Flex::column()
+                .with_main_axis_size(MainAxisSize::Max);
+
+            // Search input
+            if let Some(ref search_input_handle) = self.search_input {
+                let search_input = appearance
+                    .ui_builder()
+                    .text_input(search_input_handle.clone())
+                    .with_style(UiComponentStyles {
+                        background: Some(Fill::Solid(ColorU::new(0, 0, 0, 0)).into()),
+                        border_color: None,
+                        border_width: Some(0.),
+                        border_radius: None,
+                        width: Some(left_width - 32.),
+                        padding: Some(Coords::uniform(6.)),
+                        ..Default::default()
+                    })
+                    .build()
+                    .finish();
+
+                left_column.add_child(
+                    Container::new(search_input)
+                        .with_horizontal_padding(12.)
+                        .with_vertical_padding(8.)
+                        .with_background(theme.surface_1())
+                        .with_corner_radius(CornerRadius::with_all(Radius::Pixels(6.)))
+                        .finish(),
+                );
             }
-        }
 
-        Dismiss::new(stack.finish())
+            // Branch list - directly render items
+            if !self.filtered_items.is_empty() {
+                left_column.add_child(
+                    Container::new(self.render_items(app))
+                        .with_padding_top(4.)
+                        .finish(),
+                );
+            } else if !self.search_query.is_empty() {
+                // No results
+                left_column.add_child(
+                    Container::new(
+                        Text::new("No branches found", appearance.ui_font_family(), appearance.ui_font_size())
+                            .with_color(theme.sub_text_color(theme.surface_2()).into_solid())
+                            .finish(),
+                    )
+                    .with_horizontal_padding(16.)
+                    .with_vertical_padding(20.)
+                    .finish(),
+                );
+            } else {
+                // No branches at all - show message
+                left_column.add_child(
+                    Container::new(
+                        Text::new("No branches available", appearance.ui_font_family(), appearance.ui_font_size())
+                            .with_color(theme.sub_text_color(theme.surface_2()).into_solid())
+                            .finish(),
+                    )
+                    .with_horizontal_padding(16.)
+                    .with_vertical_padding(20.)
+                    .finish(),
+                );
+            }
+
+            let left_pane = Container::new(left_column.finish())
+                .with_background(theme.surface_2())
+                .with_padding_top(8.)
+                .with_padding_bottom(12.)
+                .with_horizontal_padding(8.)
+                .finish();
+
+            // === MIDDLE PANE: Commit History ===
+            let middle_pane = self.render_commit_history_panel(app);
+
+            // === RIGHT PANE: File Changes ===
+            let right_pane = self.render_file_changes_panel(app);
+
+            // === DIVIDERS ===
+            let divider1 = ConstrainedBox::new(
+                Container::new(Empty::new().finish())
+                    .with_background(Fill::Solid(internal_colors::neutral_2(theme)))
+                    .finish(),
+            )
+            .with_width(1.)
+            .finish();
+
+            let divider2 = ConstrainedBox::new(
+                Container::new(Empty::new().finish())
+                    .with_background(Fill::Solid(internal_colors::neutral_2(theme)))
+                    .finish(),
+            )
+            .with_width(1.)
+            .finish();
+
+            // === THREE-COLUMN LAYOUT ===
+            // Left: 20%, Middle: 50% (widest), Right: 30%
+            let left_pane_width = (window_width * 0.20).min(280.0).max(200.0);
+            let middle_pane_width = (window_width * 0.50).min(500.0).max(350.0);
+            let right_pane_width = window_width - left_pane_width - middle_pane_width;
+
+            let left_constrained = ConstrainedBox::new(left_pane)
+                .with_width(left_pane_width)
+                .with_max_height(380.) // Leave space for bottom bar
+                .finish();
+
+            let middle_constrained = ConstrainedBox::new(middle_pane)
+                .with_width(middle_pane_width)
+                .with_max_height(380.)
+                .finish();
+
+            let right_constrained = ConstrainedBox::new(right_pane)
+                .with_width(right_pane_width)
+                .with_max_height(380.)
+                .finish();
+
+            let row = Flex::row()
+                .with_child(left_constrained)
+                .with_child(divider1)
+                .with_child(middle_constrained)
+                .with_child(divider2)
+                .with_child(right_constrained)
+                .finish();
+
+            // Combine header + content
+            let content = Flex::column()
+                .with_child(header)
+                .with_child(row)
+                .finish();
+
+            // Bottom sheet container
+            let dual_pane = Container::new(content)
+                .with_background(theme.surface_2())
+                .with_corner_radius(CornerRadius::with_top(Radius::Pixels(12.)))
+                .with_border(Border::top(1.0).with_border_color(internal_colors::neutral_3(theme)))
+                .with_drop_shadow(DropShadow {
+                    blur_radius: 20.0,
+                    offset: pathfinder_geometry::vector::vec2f(0., -6.),
+                    color: ColorU::new(0, 0, 0, 100),
+                    spread_radius: 0.0,
+                })
+                .finish();
+
+            // Add context menu overlay if open
+            if let Some(context_menu) = self.render_branch_context_menu(app) {
+                let mut stack = Stack::new();
+                stack.add_child(dual_pane);
+
+                let position = self.branch_context_menu_position.unwrap_or(vec2f(100., 50.));
+                let positioning = OffsetPositioning::offset_from_parent(
+                    position,
+                    ParentOffsetBounds::WindowByPosition,
+                    ParentAnchor::TopLeft,
+                    ChildAnchor::TopLeft,
+                );
+                stack.add_positioned_overlay_child(context_menu, positioning);
+
+                stack.finish()
+            } else {
+                dual_pane
+            }
+        } else {
+            let mut stack = Stack::new();
+            stack.add_child(menu_card);
+
+            if self.should_show_environment_sidecar() {
+                if let Some((sidecar, positioning)) = self.environment_sidecar_overlay(app) {
+                    stack.add_positioned_overlay_child(sidecar, positioning);
+                }
+            }
+
+            stack.finish()
+        };
+
+        Dismiss::new(final_element)
             .on_dismiss(|ctx, _app| ctx.dispatch_typed_action(DisplayChipMenuAction::Close))
             .prevent_interaction_with_other_elements()
             .finish()
@@ -1445,9 +2729,21 @@ pub struct GenericMenuEvent {
     pub action_item: Arc<dyn GenericMenuItem>,
 }
 
+/// Branch actions that can be performed from the context menu
+#[derive(Debug, Clone)]
+pub enum BranchAction {
+    MergeIntoCurrent { branch_name: String },
+    Checkout { branch_name: String },
+    Delete { branch_name: String },
+    Rename { branch_name: String },
+}
+
 pub enum PromptDisplayMenuEvent {
     MenuAction(GenericMenuEvent),
     CloseMenu,
+    BranchSelected { branch_name: String },
+    BranchAction { action: BranchAction },
+    CommitSelected { commit_hash: String },
 }
 
 impl Entity for DisplayChipMenu {
@@ -1494,6 +2790,23 @@ impl TypedActionView for DisplayChipMenu {
                 ctx.notify();
             }
             DisplayChipMenuAction::Close => self.close(ctx),
+            DisplayChipMenuAction::ShowBranchContextMenu { index, position } => {
+                self.show_branch_context_menu(*index, *position, ctx);
+            }
+            DisplayChipMenuAction::ExecuteBranchAction { action } => {
+                self.execute_branch_action(action, ctx);
+            }
+            DisplayChipMenuAction::CloseBranchContextMenu => {
+                self.branch_context_menu = None;
+                self.branch_context_menu_mouse_states.clear();
+                ctx.notify();
+            }
+            DisplayChipMenuAction::SelectCommit { commit_hash } => {
+                // Emit event to fetch commit files
+                ctx.emit(PromptDisplayMenuEvent::CommitSelected {
+                    commit_hash: commit_hash.clone(),
+                });
+            }
         }
     }
 }

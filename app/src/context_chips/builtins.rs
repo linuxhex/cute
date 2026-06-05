@@ -144,11 +144,13 @@ pub fn shell_git_branch() -> ShellCommandGenerator {
 }
 
 pub fn shell_other_git_branches() -> ShellCommandGenerator {
-    const SH_COMMAND: &str = "git --no-optional-locks branch --no-color --sort=-committerdate; \
+    // Get branches with commit info: branch name, hash, subject, author, date
+    // Format: branch_name\037hash\037subject\037author\037date
+    const SH_COMMAND: &str = "git --no-optional-locks for-each-ref --sort=-committerdate --format='%(refname:short)%037%(objectname:short)%037%(contents:subject)%037%(authorname)%037%(committerdate:relative)' refs/heads refs/remotes 2>/dev/null; \
         printf '\\036\\n'; \
         git --no-optional-locks worktree list --porcelain";
     let pwsh_command = safe_git_powershell(
-        "git --no-optional-locks branch --no-color --sort=-committerdate; \
+        "git --no-optional-locks for-each-ref --sort=-committerdate --format='%(refname:short)%037%(objectname:short)%037%(contents:subject)%037%(authorname)%037%(committerdate:relative)' refs/heads refs/remotes 2>$null; \
         [char]30; \
         git --no-optional-locks worktree list --porcelain",
     );

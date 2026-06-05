@@ -92,6 +92,7 @@ pub enum PromptDisplayEvent {
         document_id: AIDocumentId,
         document_version: AIDocumentVersion,
     },
+    RefreshGitStatus,
 }
 
 impl PromptDisplay {
@@ -281,6 +282,11 @@ impl PromptDisplay {
                     });
                     ctx.notify();
                 }
+                PromptDisplayChipEvent::RefreshGitStatus => {
+                    // Refresh git status - this will be handled by the parent
+                    ctx.emit(PromptDisplayEvent::RefreshGitStatus);
+                    ctx.notify();
+                }
             });
 
             self.display_chips.push(view_handle.clone());
@@ -324,6 +330,13 @@ impl PromptDisplay {
             self.reset_chips(&new_chips, ctx);
             ctx.notify();
         }
+    }
+
+    /// Refresh git status by re-collecting chips
+    pub fn refresh_git_status(&mut self, ctx: &mut ViewContext<Self>) {
+        let new_chips = self.collect_chips(ctx);
+        self.reset_chips(&new_chips, ctx);
+        ctx.notify();
     }
 
     /// The current prompt text.

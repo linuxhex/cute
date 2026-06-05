@@ -41,7 +41,7 @@ use crate::ai::connected_self_hosted_workers::{
 };
 use crate::ai::document::ai_document_model::AIDocumentModel;
 use crate::ai::harness_availability::{
-    AuthSecretFetchState, HarnessAvailabilityEvent, HarnessAvailabilityModel,
+    HarnessAvailabilityEvent, HarnessAvailabilityModel,
 };
 use crate::ai::llms::{LLMPreferences, LLMPreferencesEvent};
 use crate::appearance::Appearance;

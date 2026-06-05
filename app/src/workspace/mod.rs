@@ -2,6 +2,7 @@ mod action;
 mod active_session;
 pub(crate) mod auto_handoff;
 pub mod bonus_grant_notification_model;
+pub mod branch_selector;
 #[cfg(target_os = "macos")]
 mod cli_install;
 mod close_session_confirmation_dialog;
@@ -29,6 +30,7 @@ pub use action::{
     TabContextMenuAnchor, VerticalTabsPaneContextMenuTarget, WorkspaceAction,
 };
 pub use active_session::ActiveSession;
+pub use branch_selector::{BranchInfo, BranchSelectorState, ChangedFile, CommitInfo, FileDiff, FileStatus};
 pub use global_actions::{
     ForkAIConversationParams, ForkFromExchange, ForkedConversationDestination,
 };

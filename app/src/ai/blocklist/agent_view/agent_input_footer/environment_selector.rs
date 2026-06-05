@@ -263,6 +263,15 @@ impl EnvironmentSelector {
             PromptDisplayMenuEvent::CloseMenu => {
                 me.set_menu_visibility(false, ctx);
             }
+            PromptDisplayMenuEvent::BranchSelected { .. } => {
+                // Not applicable for environment selector
+            }
+            PromptDisplayMenuEvent::BranchAction { .. } => {
+                // Not applicable for environment selector
+            }
+            PromptDisplayMenuEvent::CommitSelected { .. } => {
+                // Not applicable for environment selector
+            }
         });
 
         // Subscribe to CloudModel to refresh when environments are added/removed.

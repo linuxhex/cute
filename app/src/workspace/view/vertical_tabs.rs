@@ -1408,9 +1408,7 @@ fn render_settings_button(
             }
         },
     )
-    .on_click(|ctx, _, _| {
-        ctx.dispatch_typed_action(WorkspaceAction::ToggleVerticalTabsSettingsPopup);
-    })
+    // Cute: Settings button click disabled - settings accessible via app menu only
     .with_cursor(Cursor::PointingHand)
     .finish();
 
@@ -3660,6 +3658,7 @@ impl PaneGroup {
             IPaneType::GetStarted
             | IPaneType::NetworkLog
             | IPaneType::Welcome
+            | IPaneType::BranchSelector
             | IPaneType::DeferredPlaceholder => TypedPane::Other,
             #[cfg(test)]
             IPaneType::Dummy => TypedPane::Other,

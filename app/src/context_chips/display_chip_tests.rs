@@ -62,6 +62,11 @@ fn test_format_git_branch_command_changes_to_linked_worktree_path() {
         branch_name: "feature-a".to_string(),
         worktree_path: Some("/tmp/repo feature-a".to_string()),
         is_linked_worktree: true,
+        latest_commit_hash: None,
+        latest_commit_subject: None,
+        latest_commit_author: None,
+        latest_commit_date: None,
+        is_remote: false,
     }
     .encode();
 
@@ -77,6 +82,11 @@ fn test_format_git_branch_command_reports_missing_linked_worktree_path() {
         branch_name: "feature-a".to_string(),
         worktree_path: None,
         is_linked_worktree: true,
+        latest_commit_hash: None,
+        latest_commit_subject: None,
+        latest_commit_author: None,
+        latest_commit_date: None,
+        is_remote: false,
     }
     .encode();
 
@@ -90,7 +100,7 @@ fn test_format_git_branch_command_reports_missing_linked_worktree_path() {
 fn test_git_branch_menu_icon_uses_branch_icon_for_normal_branch() {
     let value = GitBranchOnClickValue::new("feature-a".to_string()).encode();
 
-    assert_eq!(GitBranch(value).icon_for_menu(), Icon::GitBranch);
+    assert_eq!(GitBranch::new(value, None, None, None, None, false).icon_for_menu(), Icon::GitBranch);
 }
 
 #[test]
@@ -99,10 +109,15 @@ fn test_git_branch_menu_icon_uses_worktree_icon_for_linked_worktree() {
         branch_name: "feature-a".to_string(),
         worktree_path: Some("/tmp/repo-feature-a".to_string()),
         is_linked_worktree: true,
+        latest_commit_hash: None,
+        latest_commit_subject: None,
+        latest_commit_author: None,
+        latest_commit_date: None,
+        is_remote: false,
     }
     .encode();
 
-    assert_eq!(GitBranch(value).icon_for_menu(), Icon::Dataflow02);
+    assert_eq!(GitBranch::new(value, None, None, None, None, false).icon_for_menu(), Icon::Dataflow02);
 }
 
 #[test]
