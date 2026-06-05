@@ -755,6 +755,33 @@ pub enum Event {
     FreeTierLimitCheckTriggered,
     #[cfg(not(target_family = "wasm"))]
     OpenPluginInstructionsPane(crate::terminal::CLIAgent, PluginModalKind),
+    /// Branch selected in BranchSelectorPane
+    BranchSelected {
+        pane_id: PaneId,
+        index: usize,
+    },
+    /// Commit selected in BranchSelectorPane
+    CommitSelected {
+        pane_id: PaneId,
+        commit_index: usize,
+    },
+    /// File selected in BranchSelectorPane
+    FileSelected {
+        pane_id: PaneId,
+        file_index: usize,
+    },
+    /// Switch to branch
+    SwitchBranch {
+        branch_name: String,
+    },
+    /// Merge branch into current
+    MergeBranch {
+        branch_name: String,
+    },
+    /// Delete branch
+    DeleteBranch {
+        branch_name: String,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -4807,7 +4834,7 @@ impl PaneGroup {
         self.content_by_pane_id(self.pane_id_by_index(index)?)
     }
 
-    fn content_by_pane_id(&self, pane_id: PaneId) -> Option<&dyn AnyPaneContent> {
+    pub fn content_by_pane_id(&self, pane_id: PaneId) -> Option<&dyn AnyPaneContent> {
         self.pane_contents.get(&pane_id).map(|pane| pane.as_ref())
     }
 
@@ -5561,7 +5588,7 @@ impl PaneGroup {
     }
 
     /// Handle a common pane event, such as splitting off another pane.
-    fn handle_pane_event(
+    pub(super) fn handle_pane_event(
         &mut self,
         pane_id: PaneId,
         event: &PaneEvent,
@@ -5620,6 +5647,66 @@ impl PaneGroup {
                 });
             }
         }
+    }
+
+    /// Handle branch selection event from BranchSelectorPane.
+    pub(super) fn handle_branch_selected(
+        &mut self,
+        pane_id: PaneId,
+        index: usize,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        // Emit event to workspace to handle branch selection
+        ctx.emit(Event::BranchSelected { pane_id, index });
+    }
+
+    /// Handle commit selection event from BranchSelectorPane.
+    pub(super) fn handle_commit_selected(
+        &mut self,
+        pane_id: PaneId,
+        commit_index: usize,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        // Emit event to workspace to handle commit selection
+        ctx.emit(Event::CommitSelected { pane_id, commit_index });
+    }
+
+    /// Handle file selection event from BranchSelectorPane.
+    pub(super) fn handle_file_selected(
+        &mut self,
+        pane_id: PaneId,
+        file_index: usize,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        // Emit event to workspace to handle file selection
+        ctx.emit(Event::FileSelected { pane_id, file_index });
+    }
+
+    /// Handle switch branch action from BranchSelectorPane.
+    pub(super) fn handle_switch_branch(
+        &mut self,
+        branch_name: String,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        ctx.emit(Event::SwitchBranch { branch_name });
+    }
+
+    /// Handle merge branch action from BranchSelectorPane.
+    pub(super) fn handle_merge_branch(
+        &mut self,
+        branch_name: String,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        ctx.emit(Event::MergeBranch { branch_name });
+    }
+
+    /// Handle delete branch action from BranchSelectorPane.
+    pub(super) fn handle_delete_branch(
+        &mut self,
+        branch_name: String,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        ctx.emit(Event::DeleteBranch { branch_name });
     }
 
     /// The current pane group title, based on the focused pane.

@@ -10,6 +10,8 @@
 //! used to render a [`PaneView`] which internally renders the pane, including the [`BackingView`].
 pub(super) mod ai_document_pane;
 pub(super) mod ai_fact_pane;
+pub(crate) mod branch_selector_pane;
+pub(crate) mod branch_selector_view;
 pub(super) mod code_diff_pane;
 pub(super) mod code_diff_pane_model;
 pub(super) mod code_pane;
@@ -150,6 +152,7 @@ pub(crate) enum IPaneType {
     NetworkLog,
     Welcome,
     DeferredPlaceholder,
+    BranchSelector,
     /// A pane type only for tests.
     #[cfg(test)]
     Dummy,
@@ -174,6 +177,7 @@ impl Display for IPaneType {
             IPaneType::NetworkLog => write!(f, "Network Log"),
             IPaneType::Welcome => write!(f, "Welcome"),
             IPaneType::DeferredPlaceholder => write!(f, "Placeholder"),
+            IPaneType::BranchSelector => write!(f, "Branch Selector"),
             #[cfg(test)]
             IPaneType::Dummy => write!(f, "Dummy"),
         }
@@ -274,6 +278,13 @@ impl PaneId {
         Self::new_from_ctx(IPaneType::NetworkLog, ctx)
     }
 
+    /// Creates a [`PaneId`] from a [`ViewContext<PaneView<BranchSelectorView>>`].
+    pub fn from_branch_selector_pane_ctx(
+        ctx: &ViewContext<PaneView<branch_selector_view::BranchSelectorView>>,
+    ) -> Self {
+        Self::new_from_ctx(IPaneType::BranchSelector, ctx)
+    }
+
     /// Creates a [`PaneId`] from a [`PaneView<TerminalView>`] entity ID.
     pub fn from_terminal_pane_view(
         terminal_pane_view: &ViewHandle<terminal_pane::TerminalPaneView>,
@@ -362,6 +373,13 @@ impl PaneId {
         get_started_pane_view: &ViewHandle<PaneView<GetStartedView>>,
     ) -> Self {
         Self::new(IPaneType::GetStarted, get_started_pane_view)
+    }
+
+    /// Creates a [`PaneId`] from a [`PaneView<BranchSelectorView>`] entity ID.
+    pub fn from_branch_selector_pane_view(
+        branch_selector_pane_view: &ViewHandle<PaneView<branch_selector_view::BranchSelectorView>>,
+    ) -> Self {
+        Self::new(IPaneType::BranchSelector, branch_selector_pane_view)
     }
 
     pub fn from_welcome_pane_view(welcome_pane_view: &ViewHandle<PaneView<WelcomeView>>) -> Self {
@@ -492,6 +510,9 @@ impl PaneId {
             }
             IPaneType::Welcome => {
                 ChildView::<PaneView<WelcomeView>>::with_id(self.0.pane_view_id).finish()
+            }
+            IPaneType::BranchSelector => {
+                ChildView::<PaneView<branch_selector_view::BranchSelectorView>>::with_id(self.0.pane_view_id).finish()
             }
             IPaneType::DeferredPlaceholder => warpui::elements::Empty::new().finish(),
             #[cfg(test)]

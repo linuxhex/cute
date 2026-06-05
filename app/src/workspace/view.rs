@@ -40,6 +40,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use ::settings::{Setting, ToggleableSetting};
 use ai::index::full_source_code_embedding::manager::CodebaseIndexManager;
 use autoupdate::AutoupdateStage;
+use chrono;
 #[cfg(target_os = "macos")]
 use command::blocking::Command;
 use futures::Future;
@@ -189,7 +190,6 @@ use crate::ai::blocklist::{
     BlocklistAIHistoryEvent, PendingQueryState, SerializedBlockListItem, SlashCommandRequest,
     FORK_PREFIX,
 };
-use crate::ai::cloud_agent_settings::CloudAgentSettings;
 #[cfg(target_family = "wasm")]
 use crate::ai::conversation_details_panel::ConversationDetailsPanel;
 use crate::ai::document::ai_document_model::{AIDocumentId, AIDocumentModel};
@@ -386,7 +386,7 @@ use crate::terminal::session_settings::{
 use crate::terminal::settings::{SpacingMode, TerminalSettings};
 use crate::terminal::shared_session::SharedSessionActionSource;
 use crate::terminal::shell::ShellType;
-use crate::terminal::view::ambient_agent::{AuthSecretFtuxView, AuthSecretFtuxViewEvent};
+use crate::terminal::view::ambient_agent::AuthSecretFtuxView;
 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
 use crate::terminal::view::ambient_agent::{
     HandoffSubmissionState, PendingHandoff, SnapshotUploadStatus,
@@ -1145,6 +1145,276 @@ impl Workspace {
             .update(ctx, |editor, ctx| {
                 editor.clear_buffer(ctx);
             });
+    }
+
+    // ---- Branch Selector Helper Methods ----
+    /// Load branches for a repository
+    fn load_branches_for_repo(
+        &self,
+        repo_path: &std::path::Path,
+        _ctx: &mut ViewContext<Self>,
+    ) -> Vec<crate::workspace::branch_selector::BranchInfo> {
+        use crate::workspace::branch_selector::BranchInfo;
+
+        let mut branches = Vec::new();
+
+        // Get local branches
+        let local_branches = crate::util::git::list_local_branches_sync(repo_path);
+        let current_branch = crate::util::git::detect_current_branch_sync(repo_path);
+
+        for branch_name in local_branches {
+            let is_current = current_branch.as_ref() == Some(&branch_name);
+
+            // Try to get last commit info synchronously
+            let last_commit = Self::get_branch_last_commit_sync(repo_path, &branch_name);
+
+            // Get recent commits (last 10)
+            let recent_commits = Self::get_branch_recent_commits_sync(repo_path, &branch_name, 10);
+
+            branches.push(BranchInfo {
+                name: branch_name.clone(),
+                full_name: branch_name.clone(),
+                is_current,
+                is_remote: false,
+                remote_name: None,
+                last_commit,
+                recent_commits,
+                ahead: 0,
+                behind: 0,
+            });
+        }
+
+        // Get remote branches
+        let remote_branches = crate::util::git::list_remote_branches_sync(repo_path);
+
+        for full_branch_name in remote_branches {
+            // Parse remote/branch format
+            let parts: Vec<&str> = full_branch_name.splitn(2, '/').collect();
+            if parts.len() != 2 {
+                continue;
+            }
+            let remote_name = parts[0].to_string();
+            let branch_name = parts[1].to_string();
+
+            // Skip HEAD references
+            if branch_name == "HEAD" {
+                continue;
+            }
+
+            // Try to get last commit info synchronously
+            let last_commit = Self::get_branch_last_commit_sync(repo_path, &full_branch_name);
+
+            // Get recent commits (last 10)
+            let recent_commits = Self::get_branch_recent_commits_sync(repo_path, &full_branch_name, 10);
+
+            branches.push(BranchInfo {
+                name: branch_name,
+                full_name: full_branch_name,
+                is_current: false,
+                is_remote: true,
+                remote_name: Some(remote_name),
+                last_commit,
+                recent_commits,
+                ahead: 0,
+                behind: 0,
+            });
+        }
+
+        // Sort: current branch first, then local branches, then remote branches
+        branches.sort_by(|a, b| {
+            // Current branch always first
+            if a.is_current {
+                return std::cmp::Ordering::Less;
+            }
+            if b.is_current {
+                return std::cmp::Ordering::Greater;
+            }
+
+            // Local branches before remote branches
+            if !a.is_remote && b.is_remote {
+                return std::cmp::Ordering::Less;
+            }
+            if a.is_remote && !b.is_remote {
+                return std::cmp::Ordering::Greater;
+            }
+
+            // Within same type, sort by remote name first (for remote branches), then by branch name
+            match (&a.remote_name, &b.remote_name) {
+                (Some(a_remote), Some(b_remote)) => {
+                    match a_remote.cmp(b_remote) {
+                        std::cmp::Ordering::Equal => a.name.cmp(&b.name),
+                        other => other,
+                    }
+                }
+                (None, None) => a.name.cmp(&b.name),
+                _ => a.name.cmp(&b.name),
+            }
+        });
+
+        branches
+    }
+
+    /// Check if a character is a git graph character
+    /// Git graph characters: * | \ / ` ' . space and special drawing chars
+    fn is_graph_char(c: char) -> bool {
+        matches!(c, '*' | '|' | '\\' | '/' | '`' | '\'' | '.' | ' ' | '_' | '-' | '+' | 'o')
+    }
+
+    /// Get recent commits for a branch synchronously with graph lines
+    fn get_branch_recent_commits_sync(
+        repo_path: &std::path::Path,
+        branch_name: &str,
+        limit: usize,
+    ) -> Vec<crate::workspace::branch_selector::CommitInfo> {
+        use crate::workspace::branch_selector::CommitInfo;
+
+        // 使用 --graph 参数获取分支图形信息
+        // --format 使用特殊分隔符 ||| 来分隔图形和提交信息
+        let output = command::blocking::Command::new("git")
+            .args([
+                "log",
+                &format!("-{}", limit),
+                branch_name,
+                "--graph",
+                "--format=%H|||%s|||%an|||%ae|||%at",
+            ])
+            .current_dir(repo_path)
+            .stdout(command::Stdio::piped())
+            .stderr(command::Stdio::null())
+            .output();
+
+        // 辅助函数：判断是否为 git graph 字符
+        fn is_graph_char(c: char) -> bool {
+            matches!(c, '*' | '|' | '\\' | '/' | ' ' | '`' | '\'' | '.' | '_' | '-')
+        }
+
+        let mut commits = Vec::new();
+
+        if let Ok(out) = output {
+            if out.status.success() {
+                let lines = String::from_utf8_lossy(&out.stdout);
+                for line in lines.lines() {
+                    let line = line.trim_end();
+                    if line.is_empty() {
+                        continue;
+                    }
+
+                    // 解析图形部分和提交信息部分
+                    // 图形字符：*、|、\、/、空格、`、'、. 等
+                    // 找到第一个非图形字符的位置
+                    let graph_end = line.find(|c: char| !Self::is_graph_char(c)).unwrap_or(line.len());
+
+                    // 如果没有找到分隔符，可能不是提交行（纯图形行）
+                    if graph_end == line.len() {
+                        continue;
+                    }
+
+                    let graph_line = line[..graph_end].to_string();
+                    let info_part = &line[graph_end..].trim_start();
+
+                    // 使用 ||| 分隔符解析提交信息
+                    let parts: Vec<&str> = info_part.split("|||").collect();
+                    if parts.len() >= 5 {
+                        if let Some(timestamp) = parts[4].parse::<i64>().ok() {
+                            if let Some(ts) = chrono::DateTime::from_timestamp(timestamp, 0) {
+                                commits.push(CommitInfo {
+                                    hash: parts[0].to_string(),
+                                    message: parts[1].to_string(),
+                                    author: parts[2].to_string(),
+                                    author_email: parts[3].to_string(),
+                                    timestamp: ts.with_timezone(&chrono::Utc),
+                                    graph_line: Some(graph_line),
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        commits
+    }
+
+    /// Get recent commits for a branch synchronously
+    #[allow(dead_code)]
+    fn get_branch_recent_commits_sync_no_graph(
+        repo_path: &std::path::Path,
+        branch_name: &str,
+        limit: usize,
+    ) -> Vec<crate::workspace::branch_selector::CommitInfo> {
+        use crate::workspace::branch_selector::CommitInfo;
+
+        let output = command::blocking::Command::new("git")
+            .args(["log", &format!("-{}", limit), branch_name, "--format=%H\t%s\t%an\t%ae\t%at"])
+            .current_dir(repo_path)
+            .stdout(command::Stdio::piped())
+            .stderr(command::Stdio::null())
+            .output();
+
+        let mut commits = Vec::new();
+
+        if let Ok(out) = output {
+            if out.status.success() {
+                let lines = String::from_utf8_lossy(&out.stdout);
+                for line in lines.lines() {
+                    let parts: Vec<&str> = line.trim().split('\t').collect();
+                    if parts.len() >= 5 {
+                        if let Some(timestamp) = parts[4].parse::<i64>().ok() {
+                            if let Some(ts) = chrono::DateTime::from_timestamp(timestamp, 0) {
+                                commits.push(CommitInfo {
+                                    hash: parts[0].to_string(),
+                                    message: parts[1].to_string(),
+                                    author: parts[2].to_string(),
+                                    author_email: parts[3].to_string(),
+                                    timestamp: ts.with_timezone(&chrono::Utc),
+                                    graph_line: None,
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        commits
+    }
+
+    /// Get last commit info for a branch synchronously
+    fn get_branch_last_commit_sync(
+        repo_path: &std::path::Path,
+        branch_name: &str,
+    ) -> Option<crate::workspace::branch_selector::CommitInfo> {
+        use crate::workspace::branch_selector::CommitInfo;
+
+        let output = command::blocking::Command::new("git")
+            .args(["log", "-1", branch_name, "--format=%H\t%s\t%an\t%ae\t%at"])
+            .current_dir(repo_path)
+            .stdout(command::Stdio::piped())
+            .stderr(command::Stdio::null())
+            .output();
+
+        if let Ok(out) = output {
+            if out.status.success() {
+                let line = String::from_utf8_lossy(&out.stdout);
+                let parts: Vec<&str> = line.trim().split('\t').collect();
+                if parts.len() >= 5 {
+                    let timestamp = parts[4].parse::<i64>().ok()?;
+                    return Some(CommitInfo {
+                        hash: parts[0].to_string(),
+                        message: parts[1].to_string(),
+                        author: parts[2].to_string(),
+                        author_email: parts[3].to_string(),
+                        timestamp: chrono::DateTime::from_timestamp(timestamp, 0)?
+                            .with_timezone(&chrono::Utc),
+                        graph_line: None,
+                    });
+                }
+            }
+        }
+        None
+    }
+
+    fn clear_new_session_sidecar_menu(&mut self, ctx: &mut ViewContext<Self>) {
         self.new_session_sidecar_menu.update(ctx, |menu, view_ctx| {
             menu.clear_pinned_header_builder();
             menu.clear_pinned_footer_builder();
@@ -13139,6 +13409,499 @@ impl Workspace {
         });
     }
 
+    /// Opens the branch selector pane as a right-split of the active pane.
+    pub(crate) fn open_branch_selector_pane(
+        &mut self,
+        pane_id: crate::pane_group::PaneId,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        use crate::pane_group::pane::branch_selector_pane::BranchSelectorPane;
+
+        let pane = BranchSelectorPane::new(ctx);
+        let branch_selector_view = pane.branch_selector_view(ctx);
+
+        // Load branches for the terminal's working directory
+        let pane_group = self.active_tab_pane_group();
+        if let Some(terminal_view) = pane_group.as_ref(ctx).terminal_view_from_pane_id(pane_id, ctx) {
+            let cwd = terminal_view.as_ref(ctx).active_session()
+                .as_ref(ctx)
+                .current_working_directory_location(ctx);
+            if let Some(warp_util::local_or_remote_path::LocalOrRemotePath::Local(repo_path)) = cwd {
+                let current_branch = crate::util::git::detect_current_branch_sync(&repo_path);
+                let branches = self.load_branches_for_repo(&repo_path, ctx);
+
+                branch_selector_view.update(ctx, |view, ctx| {
+                    view.set_repo_path(repo_path.clone(), ctx);
+                    view.set_branches(branches, current_branch, ctx);
+                });
+            }
+        }
+
+        self.active_tab_pane_group().update(ctx, |pane_group, ctx| {
+            let pane: Box<dyn crate::pane_group::pane::AnyPaneContent> = Box::new(pane);
+            pane_group.add_pane_sibling(
+                pane_id,
+                Direction::Right,
+                pane,
+                true, /* focus_new_pane */
+                ctx,
+            );
+        });
+    }
+
+    /// Handle branch selection in BranchSelectorPane
+    fn handle_branch_selected(
+        &mut self,
+        pane_id: crate::pane_group::PaneId,
+        index: usize,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        use crate::pane_group::pane::branch_selector_pane::BranchSelectorPane;
+
+        let pane_group = self.active_tab_pane_group();
+
+        // Get the BranchSelectorPane and its view
+        pane_group.update(ctx, |pane_group, ctx| {
+            if let Some(pane_content) = pane_group.content_by_pane_id(pane_id) {
+                let any_ref = pane_content.as_any();
+                if let Some(branch_pane) = any_ref.downcast_ref::<BranchSelectorPane>() {
+                    let branch_view = branch_pane.branch_selector_view(ctx);
+
+                    // Get the selected branch info
+                    branch_view.update(ctx, |view, ctx| {
+                        if let Some(branch) = view.state.branches.get(index) {
+                            // Load changed files for this branch vs current branch
+                            if let Some(repo_path) = &view.state.repo_path {
+                                if let Some(ref current) = view.state.current_branch {
+                                    if branch.name != *current {
+                                        // Get changed files between current and selected branch
+                                        let changed_files = Self::get_changed_files_between_branches(
+                                            repo_path,
+                                            current,
+                                            &branch.name,
+                                        );
+                                        view.set_changed_files(changed_files, ctx);
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    /// Handle commit selection in BranchSelectorPane
+    fn handle_commit_selected(
+        &mut self,
+        pane_id: crate::pane_group::PaneId,
+        commit_index: usize,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        use crate::pane_group::pane::branch_selector_pane::BranchSelectorPane;
+
+        let pane_group = self.active_tab_pane_group();
+
+        pane_group.update(ctx, |pane_group, ctx| {
+            if let Some(pane_content) = pane_group.content_by_pane_id(pane_id) {
+                let any_ref = pane_content.as_any();
+                if let Some(branch_pane) = any_ref.downcast_ref::<BranchSelectorPane>() {
+                    let branch_view = branch_pane.branch_selector_view(ctx);
+
+                    // Load changed files for the selected commit
+                    branch_view.update(ctx, |view, ctx| {
+                        // Extract the data we need first
+                        let repo_path = view.state.repo_path.clone();
+                        let commit_hash = view.state.selected_branch_index
+                            .and_then(|idx| view.state.branches.get(idx))
+                            .and_then(|branch| branch.recent_commits.get(commit_index))
+                            .map(|commit| commit.hash.clone());
+
+                        if let (Some(repo_path), Some(commit_hash)) = (repo_path, commit_hash) {
+                            // Get changed files for this commit
+                            let changed_files = Self::get_changed_files_for_commit(
+                                &repo_path,
+                                &commit_hash,
+                            );
+                            view.set_changed_files(changed_files, ctx);
+                            log::info!("Loaded {} changed files for commit {}", view.state.changed_files.len(), &commit_hash[..7.min(commit_hash.len())]);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    /// Handle file selection in BranchSelectorPane
+    fn handle_file_selected(
+        &mut self,
+        pane_id: crate::pane_group::PaneId,
+        file_index: usize,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        use crate::pane_group::pane::branch_selector_pane::BranchSelectorPane;
+
+        let pane_group = self.active_tab_pane_group();
+
+        pane_group.update(ctx, |pane_group, ctx| {
+            if let Some(pane_content) = pane_group.content_by_pane_id(pane_id) {
+                let any_ref = pane_content.as_any();
+                if let Some(branch_pane) = any_ref.downcast_ref::<BranchSelectorPane>() {
+                    let branch_view = branch_pane.branch_selector_view(ctx);
+
+                    // Load diff for the selected file
+                    branch_view.update(ctx, |view, ctx| {
+                        if let Some(file) = view.state.changed_files.get(file_index) {
+                            if let Some(repo_path) = &view.state.repo_path {
+                                if let Some(ref current) = view.state.current_branch {
+                                    if let Some(selected_idx) = view.state.selected_branch_index {
+                                        if let Some(selected_branch) = view.state.branches.get(selected_idx) {
+                                            // Get diff for this file
+                                            let diff = Self::get_file_diff_between_branches(
+                                                repo_path,
+                                                current,
+                                                &selected_branch.name,
+                                                &file.path,
+                                            );
+                                            if let Some(diff) = diff {
+                                                view.open_diff_viewer(diff, ctx);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    /// Handle switch branch action
+    fn handle_switch_branch(&mut self, branch_name: String, ctx: &mut ViewContext<Self>) {
+        // Get the active terminal's working directory
+        if let Some(terminal_view) = self.active_session_view(ctx) {
+            let cwd = terminal_view.as_ref(ctx).active_session()
+                .as_ref(ctx)
+                .current_working_directory_location(ctx);
+
+            if let Some(warp_util::local_or_remote_path::LocalOrRemotePath::Local(repo_path)) = cwd {
+                // Execute git checkout command
+                let branch_name_clone = branch_name.clone();
+                let _output = std::process::Command::new("git")
+                    .args(["checkout", &branch_name])
+                    .current_dir(&repo_path)
+                    .output();
+
+                log::info!("Switched to branch: {}", branch_name_clone);
+            }
+        }
+    }
+
+    /// Handle merge branch action
+    fn handle_merge_branch(&mut self, branch_name: String, ctx: &mut ViewContext<Self>) {
+        // Get the active terminal's working directory
+        if let Some(terminal_view) = self.active_session_view(ctx) {
+            let cwd = terminal_view.as_ref(ctx).active_session()
+                .as_ref(ctx)
+                .current_working_directory_location(ctx);
+
+            if let Some(warp_util::local_or_remote_path::LocalOrRemotePath::Local(repo_path)) = cwd {
+                // Execute git merge command
+                let branch_name_clone = branch_name.clone();
+                let _output = std::process::Command::new("git")
+                    .args(["merge", &branch_name])
+                    .current_dir(&repo_path)
+                    .output();
+
+                log::info!("Merged branch: {}", branch_name_clone);
+            }
+        }
+    }
+
+    /// Handle delete branch action
+    fn handle_delete_branch(&mut self, branch_name: String, ctx: &mut ViewContext<Self>) {
+        // Get the active terminal's working directory
+        if let Some(terminal_view) = self.active_session_view(ctx) {
+            let cwd = terminal_view.as_ref(ctx).active_session()
+                .as_ref(ctx)
+                .current_working_directory_location(ctx);
+
+            if let Some(warp_util::local_or_remote_path::LocalOrRemotePath::Local(repo_path)) = cwd {
+                // Execute git branch -d command
+                let branch_name_clone = branch_name.clone();
+                let _output = std::process::Command::new("git")
+                    .args(["branch", "-d", &branch_name])
+                    .current_dir(&repo_path)
+                    .output();
+
+                log::info!("Deleted branch: {}", branch_name_clone);
+            }
+        }
+    }
+
+    /// Get changed files for a specific commit
+    fn get_changed_files_for_commit(
+        repo_path: &std::path::Path,
+        commit_hash: &str,
+    ) -> Vec<crate::workspace::branch_selector::ChangedFile> {
+        use crate::workspace::branch_selector::{ChangedFile, FileStatus};
+
+        // Get file changes with stats
+        let output = command::blocking::Command::new("git")
+            .args([
+                "show",
+                "--name-status",
+                "--numstat",
+                "--format=",  // Don't show commit info, just files
+                commit_hash,
+            ])
+            .current_dir(repo_path)
+            .stdout(command::Stdio::piped())
+            .stderr(command::Stdio::null())
+            .output();
+
+        let mut files = Vec::new();
+
+        if let Ok(out) = output {
+            if out.status.success() {
+                let lines = String::from_utf8_lossy(&out.stdout);
+                for line in lines.lines() {
+                    let line = line.trim();
+                    if line.is_empty() {
+                        continue;
+                    }
+
+                    // Parse numstat format: additions\tdeletions\tfilename
+                    // Or name-status format: M\tfilename
+                    let parts: Vec<&str> = line.split_whitespace().collect();
+                    if parts.len() >= 2 {
+                        // Check if first part is a status char
+                        let first = parts[0];
+                        if first.len() == 1 {
+                            let status = match first.chars().next() {
+                                Some('M') => FileStatus::Modified,
+                                Some('A') => FileStatus::Added,
+                                Some('D') => FileStatus::Deleted,
+                                Some('R') => FileStatus::Renamed,
+                                _ => continue,
+                            };
+
+                            let path = parts.last().unwrap_or(&"").to_string();
+                            files.push(ChangedFile {
+                                path,
+                                status,
+                                additions: 0,
+                                deletions: 0,
+                            });
+                        } else {
+                            // numstat format: additions deletions filename
+                            if parts.len() >= 3 {
+                                let additions: u32 = parts[0].parse().unwrap_or(0);
+                                let deletions: u32 = parts[1].parse().unwrap_or(0);
+                                let path = parts[2].to_string();
+
+                                // Determine status from additions/deletions
+                                let status = if additions > 0 && deletions == 0 {
+                                    FileStatus::Added
+                                } else if additions == 0 && deletions > 0 {
+                                    FileStatus::Deleted
+                                } else {
+                                    FileStatus::Modified
+                                };
+
+                                files.push(ChangedFile {
+                                    path,
+                                    status,
+                                    additions,
+                                    deletions,
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        files
+    }
+
+    /// Get changed files between two branches
+    fn get_changed_files_between_branches(
+        repo_path: &std::path::Path,
+        base_branch: &str,
+        target_branch: &str,
+    ) -> Vec<crate::workspace::branch_selector::ChangedFile> {
+        use crate::workspace::branch_selector::{ChangedFile, FileStatus};
+
+        let output = command::blocking::Command::new("git")
+            .args([
+                "diff",
+                "--name-status",
+                "--numstat",
+                &format!("{}...{}", base_branch, target_branch),
+            ])
+            .current_dir(repo_path)
+            .stdout(command::Stdio::piped())
+            .stderr(command::Stdio::null())
+            .output();
+
+        let mut files = Vec::new();
+
+        if let Ok(out) = output {
+            if out.status.success() {
+                let lines = String::from_utf8_lossy(&out.stdout);
+                for line in lines.lines() {
+                    let parts: Vec<&str> = line.split_whitespace().collect();
+                    if parts.len() >= 2 {
+                        let status = match parts[0].chars().next() {
+                            Some('M') => FileStatus::Modified,
+                            Some('A') => FileStatus::Added,
+                            Some('D') => FileStatus::Deleted,
+                            Some('R') => FileStatus::Renamed,
+                            _ => continue,
+                        };
+
+                        let path = parts.last().unwrap_or(&"").to_string();
+                        let additions = 0;
+                        let deletions = 0;
+
+                        files.push(ChangedFile {
+                            path,
+                            status,
+                            additions,
+                            deletions,
+                        });
+                    }
+                }
+            }
+        }
+
+        files
+    }
+
+    /// Get file diff between two branches
+    fn get_file_diff_between_branches(
+        repo_path: &std::path::Path,
+        base_branch: &str,
+        target_branch: &str,
+        file_path: &str,
+    ) -> Option<crate::workspace::branch_selector::FileDiff> {
+        use crate::workspace::branch_selector::{DiffHunk, DiffLine, DiffLineType, FileDiff};
+
+        let output = command::blocking::Command::new("git")
+            .args([
+                "diff",
+                &format!("{}...{}", base_branch, target_branch),
+                "--",
+                file_path,
+            ])
+            .current_dir(repo_path)
+            .stdout(command::Stdio::piped())
+            .stderr(command::Stdio::null())
+            .output();
+
+        if let Ok(out) = output {
+            if out.status.success() {
+                let diff_text = String::from_utf8_lossy(&out.stdout);
+                let mut hunks: Vec<DiffHunk> = Vec::new();
+                let mut current_hunk: Option<DiffHunk> = None;
+                let mut old_line = 0u32;
+                let mut new_line = 0u32;
+
+                for line in diff_text.lines() {
+                    if line.starts_with("@@ ") {
+                        // Save previous hunk
+                        if let Some(hunk) = current_hunk.take() {
+                            hunks.push(hunk);
+                        }
+
+                        // Parse hunk header: @@ -old_start,old_count +new_start,new_count @@
+                        let header = line.trim_start_matches('@').trim();
+                        if let Some(range_part) = header.split(" @@").next() {
+                            let ranges: Vec<&str> = range_part.split_whitespace().collect();
+                            if ranges.len() >= 2 {
+                                let old_range = ranges[0].trim_start_matches('-');
+                                let new_range = ranges[1].trim_start_matches('+');
+
+                                let old_start = old_range.split(',').next()
+                                    .and_then(|s| s.parse::<u32>().ok())
+                                    .unwrap_or(1);
+                                let new_start = new_range.split(',').next()
+                                    .and_then(|s| s.parse::<u32>().ok())
+                                    .unwrap_or(1);
+
+                                old_line = old_start;
+                                new_line = new_start;
+
+                                current_hunk = Some(DiffHunk {
+                                    old_start,
+                                    old_count: 0,
+                                    new_start,
+                                    new_count: 0,
+                                    lines: Vec::new(),
+                                });
+                            }
+                        }
+                    } else if let Some(ref mut hunk) = current_hunk {
+                        let line = line.trim_start_matches('+').trim_start_matches('-').trim_start_matches(' ');
+                        let (line_type, content) = if line.starts_with('+') {
+                            (DiffLineType::Add, line[1..].to_string())
+                        } else if line.starts_with('-') {
+                            (DiffLineType::Delete, line[1..].to_string())
+                        } else {
+                            (DiffLineType::Context, line.to_string())
+                        };
+
+                        let (old_ln, new_ln) = match line_type {
+                            DiffLineType::Context => {
+                                let o = Some(old_line);
+                                let n = Some(new_line);
+                                old_line += 1;
+                                new_line += 1;
+                                (o, n)
+                            }
+                            DiffLineType::Add => {
+                                let n = Some(new_line);
+                                new_line += 1;
+                                (None, n)
+                            }
+                            DiffLineType::Delete => {
+                                let o = Some(old_line);
+                                old_line += 1;
+                                (o, None)
+                            }
+                        };
+
+                        hunk.lines.push(DiffLine {
+                            line_type,
+                            content,
+                            old_line: old_ln,
+                            new_line: new_ln,
+                        });
+
+                        hunk.old_count += 1;
+                        hunk.new_count += 1;
+                    }
+                }
+
+                // Save last hunk
+                if let Some(hunk) = current_hunk {
+                    hunks.push(hunk);
+                }
+
+                return Some(FileDiff {
+                    file_path: file_path.to_string(),
+                    old_content: None,
+                    new_content: None,
+                    hunks,
+                });
+            }
+        }
+
+        None
+    }
+
     fn show_handoff_environment_creation_modal(&mut self, ctx: &mut ViewContext<Self>) {
         // Capture the initiating source view now, before async creation begins.
         // If we waited until the Created callback, the user may have switched panes.
@@ -15089,6 +15852,24 @@ impl Workspace {
             }
             pane_group::Event::FreeTierLimitCheckTriggered => {
                 self.free_tier_limit_check_triggered = true;
+            }
+            pane_group::Event::BranchSelected { pane_id, index } => {
+                self.handle_branch_selected(*pane_id, *index, ctx);
+            }
+            pane_group::Event::CommitSelected { pane_id, commit_index } => {
+                self.handle_commit_selected(*pane_id, *commit_index, ctx);
+            }
+            pane_group::Event::FileSelected { pane_id, file_index } => {
+                self.handle_file_selected(*pane_id, *file_index, ctx);
+            }
+            pane_group::Event::SwitchBranch { branch_name } => {
+                self.handle_switch_branch(branch_name.clone(), ctx);
+            }
+            pane_group::Event::MergeBranch { branch_name } => {
+                self.handle_merge_branch(branch_name.clone(), ctx);
+            }
+            pane_group::Event::DeleteBranch { branch_name } => {
+                self.handle_delete_branch(branch_name.clone(), ctx);
             }
         }
     }
@@ -22938,6 +23719,26 @@ impl TypedActionView for Workspace {
             SyncTrafficLights => {
                 self.sync_window_button_visibility(ctx);
             }
+            // ========== Branch Selector Actions ==========
+            OpenBranchSelector { pane_id } => {
+                // Open branch selector in split pane instead of popup
+                self.open_branch_selector_pane(*pane_id, ctx);
+            }
+            OpenBranchSelectorFromChip { terminal_view_id } => {
+                // Open branch selector in split pane from chip click
+                // Find the terminal view and get its pane_id
+                for tab in self.tabs.iter() {
+                    let pane_group = tab.pane_group.as_ref(ctx);
+                    if let Some(pane_id) = pane_group.find_pane_id_for_terminal_view(*terminal_view_id, ctx) {
+                        self.open_branch_selector_pane(pane_id, ctx);
+                        break;
+                    }
+                }
+            }
+            ToggleBranchMenu { pane_id, click_position: _ } => {
+                // Open branch selector in a split pane instead of popup
+                self.open_branch_selector_pane(*pane_id, ctx);
+            }
         };
         if action.should_save_app_state_on_action() {
             ctx.dispatch_global_action("workspace:save_app", ());
@@ -23951,6 +24752,8 @@ impl View for Workspace {
         if let Some(lightbox_view) = &self.lightbox_view {
             stack.add_child(ChildView::new(lightbox_view).finish());
         }
+
+        // Branch selector is now rendered as a split pane, not a popup
 
         if let Some(handoff_modal) = &self.handoff_environment_creation_modal {
             stack.add_child(ChildView::new(handoff_modal).finish());

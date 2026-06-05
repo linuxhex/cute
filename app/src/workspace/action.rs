@@ -26,7 +26,7 @@ use crate::auth::auth_manager::LoginGatedFeature;
 use crate::drive::items::WarpDriveItemId;
 use crate::drive::CloudObjectTypeAndId;
 use crate::palette::PaletteMode;
-use crate::pane_group::PaneGroup;
+use crate::pane_group::{PaneGroup, PaneId};
 use crate::prompt::editor_modal::OpenSource as PromptEditorOpenSource;
 use crate::search;
 use crate::server::ids::SyncId;
@@ -309,6 +309,11 @@ pub enum WorkspaceAction {
     ToggleVerticalTabsShowPrLink,
     ToggleVerticalTabsShowDiffStats,
     ToggleVerticalTabsShowDetailsOnHover,
+    /// Toggle the branch selector menu for a specific pane.
+    ToggleBranchMenu {
+        pane_id: PaneId,
+        click_position: Option<warpui::geometry::vector::Vector2F>,
+    },
     /// Closes the focused panel. This happens as an explicit action from the user.
     ClosePanel,
     CopyTextToClipboard(String),
@@ -732,6 +737,15 @@ pub enum WorkspaceAction {
     /// Opens (or focuses) the in-app network log pane as a right-split of the
     /// active pane group. Gated on `ContextFlag::NetworkLogConsole`.
     OpenNetworkLogPane,
+    // ========== Branch Selector Actions ==========
+    /// Open the branch selector in a split pane
+    OpenBranchSelector {
+        pane_id: PaneId,
+    },
+    /// Open the branch selector from a chip click (uses terminal_view_id)
+    OpenBranchSelectorFromChip {
+        terminal_view_id: EntityId,
+    },
 }
 
 impl From<&WorkspaceAction> for LoginGatedFeature {
@@ -1010,6 +1024,8 @@ impl WorkspaceAction {
             | ShowCloudModeV2EnvironmentCreationModal
             | OpenCreateAuthSecretModal { .. }
             | OpenNetworkLogPane
+            | OpenBranchSelector { .. }
+            | OpenBranchSelectorFromChip { .. }
             | OpenDirectoryInNewTab { .. } => false,
             #[cfg(debug_assertions)]
             ShowHoaOnboardingFlow => false,
@@ -1038,6 +1054,7 @@ impl WorkspaceAction {
             #[cfg(feature = "local_fs")]
             FileDeleted { .. } => false, // File deletion doesn't change workspace state
             OpenEnvironmentManagementPane => false,
+            ToggleBranchMenu { .. } => false,
             #[cfg(target_os = "linux")]
             DismissWaylandCrashRecoveryBannerAndOpenLink => false,
             #[cfg(target_family = "wasm")]
