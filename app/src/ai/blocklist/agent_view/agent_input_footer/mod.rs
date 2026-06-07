@@ -221,6 +221,7 @@ pub struct AgentInputFooter {
     render_ftu_callout: bool,
 
     // CLI agent-specific buttons (rendered when a CLI agent session is active).
+    #[allow(dead_code)]
     file_explorer_button: ViewHandle<ActionButton>,
     rich_input_button: ViewHandle<ActionButton>,
     settings_button: ViewHandle<ActionButton>,

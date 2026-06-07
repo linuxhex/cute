@@ -1381,12 +1381,12 @@ impl FileTreeView {
                 // Spawn async task to get branch name
                 let root_path_for_spawn = root_path.clone();
                 ctx.spawn(
-                    async move {
-                        detect_current_branch_display(&root_local).await.ok()
-                    },
+                    async move { detect_current_branch_display(&root_local).await.ok() },
                     move |me, branch_result, ctx| {
                         if let Some(branch_name) = branch_result {
-                            if let Some(root_dir) = me.root_directories.get_mut(&root_path_for_spawn) {
+                            if let Some(root_dir) =
+                                me.root_directories.get_mut(&root_path_for_spawn)
+                            {
                                 root_dir.branch_name = Some(branch_name);
                             }
                             me.rebuild_flattened_items();
@@ -1945,14 +1945,10 @@ impl FileTreeView {
                 header_row.add_child(
                     Shrinkable::new(
                         1.,
-                        Text::new_inline(
-                            display_text,
-                            appearance.ui_font_family(),
-                            ITEM_FONT_SIZE,
-                        )
-                        .with_color(text_color)
-                        .with_style(text_style)
-                        .finish(),
+                        Text::new_inline(display_text, appearance.ui_font_family(), ITEM_FONT_SIZE)
+                            .with_color(text_color)
+                            .with_style(text_style)
+                            .finish(),
                     )
                     .finish(),
                 );

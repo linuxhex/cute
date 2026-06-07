@@ -18,16 +18,16 @@ use warpui::elements::{
     Container, CornerRadius, CrossAxisAlignment, Dismiss, DispatchEventResult, DropShadow, Empty,
     EventHandler, Flex, Highlight, Hoverable, MainAxisAlignment, MainAxisSize, MouseInBehavior,
     MouseStateHandle, OffsetPositioning, ParentAnchor, ParentElement, ParentOffsetBounds,
-    PositionedElementAnchor, PositionedElementOffsetBounds, Radius, SavePosition, ScrollStateHandle,
-    Scrollable, ScrollableElement, ScrollbarWidth, Shrinkable, Stack, Text, UniformList,
-    UniformListState,
+    PositionedElementAnchor, PositionedElementOffsetBounds, Radius, SavePosition,
+    ScrollStateHandle, Scrollable, ScrollableElement, ScrollbarWidth, Shrinkable, Stack, Text,
+    UniformList, UniformListState,
 };
 use warpui::fonts::{Properties, Weight};
 use warpui::keymap::FixedBinding;
+use warpui::platform::Cursor;
 use warpui::r#async::Timer;
 use warpui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
 use warpui::units::Pixels;
-use warpui::platform::Cursor;
 use warpui::{
     AppContext, Element, Entity, FocusContext, SingletonEntity as _, TypedActionView, View,
     ViewContext, ViewHandle, WindowId,
@@ -271,18 +271,32 @@ pub enum BranchContextMenuAction {
 
 #[derive(Debug, Clone)]
 pub enum DisplayChipMenuAction {
-    SelectItem { index: usize },
-    Select { index: usize },
+    SelectItem {
+        index: usize,
+    },
+    Select {
+        index: usize,
+    },
     SelectUp,
     SelectDown,
     SelectEnter,
     SelectFixedFooterOption,
-    CopyEnvironmentSidecarField { key: String, value: String },
+    CopyEnvironmentSidecarField {
+        key: String,
+        value: String,
+    },
     Close,
-    ShowBranchContextMenu { index: usize, position: warpui::geometry::vector::Vector2F },
-    ExecuteBranchAction { action: BranchContextMenuAction },
+    ShowBranchContextMenu {
+        index: usize,
+        position: warpui::geometry::vector::Vector2F,
+    },
+    ExecuteBranchAction {
+        action: BranchContextMenuAction,
+    },
     CloseBranchContextMenu,
-    SelectCommit { commit_hash: String },
+    SelectCommit {
+        commit_hash: String,
+    },
 }
 
 impl DisplayChipMenu {
@@ -1195,9 +1209,13 @@ impl DisplayChipMenu {
                     .with_main_axis_alignment(MainAxisAlignment::Center)
                     .with_cross_axis_alignment(CrossAxisAlignment::Center)
                     .with_child(
-                        Text::new_inline("Loading branches...", appearance.ui_font_family(), appearance.ui_font_size())
-                            .with_color(theme.sub_text_color(theme.surface_2()).into_solid())
-                            .finish(),
+                        Text::new_inline(
+                            "Loading branches...",
+                            appearance.ui_font_family(),
+                            appearance.ui_font_size(),
+                        )
+                        .with_color(theme.sub_text_color(theme.surface_2()).into_solid())
+                        .finish(),
                     )
                     .finish(),
             )
@@ -1393,9 +1411,13 @@ impl DisplayChipMenu {
                                     // Add a small indicator for current branch
                                     left_side.add_child(
                                         Container::new(
-                                            Text::new_inline(" ●", appearance.ui_font_family(), font_size)
-                                                .with_color(theme.ansi_fg_green().into())
-                                                .finish(),
+                                            Text::new_inline(
+                                                " ●",
+                                                appearance.ui_font_family(),
+                                                font_size,
+                                            )
+                                            .with_color(theme.ansi_fg_green().into())
+                                            .finish(),
                                         )
                                         .with_margin_left(4.)
                                         .finish(),
@@ -1438,10 +1460,12 @@ impl DisplayChipMenu {
                                 })
                                 .on_right_mouse_down(move |ctx, _, pos| {
                                     // Show branch context menu on right-click
-                                    ctx.dispatch_typed_action(DisplayChipMenuAction::ShowBranchContextMenu {
-                                        index,
-                                        position: pos,
-                                    });
+                                    ctx.dispatch_typed_action(
+                                        DisplayChipMenuAction::ShowBranchContextMenu {
+                                            index,
+                                            position: pos,
+                                        },
+                                    );
                                     DispatchEventResult::StopPropagation
                                 })
                                 .on_mouse_in(
@@ -1519,7 +1543,11 @@ impl DisplayChipMenu {
         }
     }
 
-    fn render_dual_pane_layout(&self, left_pane: Box<dyn Element>, app: &AppContext) -> Box<dyn Element> {
+    fn render_dual_pane_layout(
+        &self,
+        left_pane: Box<dyn Element>,
+        app: &AppContext,
+    ) -> Box<dyn Element> {
         let appearance = Appearance::as_ref(app);
         let theme = appearance.theme();
 
@@ -1549,17 +1577,11 @@ impl DisplayChipMenu {
 
         // === THREE-COLUMN LAYOUT (matching IDEA screenshot) ===
         // Left: 25% (branches), Middle: 40% (commits, widest), Right: 35% (files)
-        let left_with_width = ConstrainedBox::new(left_pane)
-            .with_width(280.)
-            .finish();
+        let left_with_width = ConstrainedBox::new(left_pane).with_width(280.).finish();
 
-        let middle_with_width = ConstrainedBox::new(middle_pane)
-            .with_width(380.)
-            .finish();
+        let middle_with_width = ConstrainedBox::new(middle_pane).with_width(380.).finish();
 
-        let right_with_width = ConstrainedBox::new(right_pane)
-            .with_width(320.)
-            .finish();
+        let right_with_width = ConstrainedBox::new(right_pane).with_width(320.).finish();
 
         // Three-column layout
         let content = Flex::row()
@@ -1591,8 +1613,7 @@ impl DisplayChipMenu {
         let font_size = appearance.ui_font_size();
         let _mono_font_family = appearance.monospace_font_family();
 
-        let mut container = Flex::column()
-            .with_main_axis_size(MainAxisSize::Max);
+        let mut container = Flex::column().with_main_axis_size(MainAxisSize::Max);
 
         // Show loading state for commits
         if self.is_loading_commits {
@@ -1666,8 +1687,7 @@ impl DisplayChipMenu {
             let mut header = Flex::column();
 
             // Top row: icon + branch name
-            let mut header_top = Flex::row()
-                .with_cross_axis_alignment(CrossAxisAlignment::Center);
+            let mut header_top = Flex::row().with_cross_axis_alignment(CrossAxisAlignment::Center);
 
             // Determine if this is a remote branch
             let is_remote = branch_name.starts_with("origin/")
@@ -1675,15 +1695,17 @@ impl DisplayChipMenu {
                 || branch_name.starts_with("remote/");
 
             // Branch icon with colored background pill
-            let branch_icon = if is_remote { Icon::Cloud } else { Icon::GitBranch };
+            let branch_icon = if is_remote {
+                Icon::Cloud
+            } else {
+                Icon::GitBranch
+            };
             let icon_color = theme.ansi_fg_green();
 
             header_top.add_child(
                 Container::new(
                     ConstrainedBox::new(
-                        branch_icon
-                            .to_warpui_icon(Fill::Solid(icon_color))
-                            .finish(),
+                        branch_icon.to_warpui_icon(Fill::Solid(icon_color)).finish(),
                     )
                     .with_width(font_size)
                     .with_height(font_size)
@@ -1726,7 +1748,9 @@ impl DisplayChipMenu {
                         .with_child(
                             Container::new(
                                 Icon::GitCommit
-                                    .to_warpui_icon(Fill::Solid(theme.sub_text_color(theme.surface_2()).into_solid()))
+                                    .to_warpui_icon(Fill::Solid(
+                                        theme.sub_text_color(theme.surface_2()).into_solid(),
+                                    ))
                                     .finish(),
                             )
                             .with_margin_right(6.)
@@ -1742,7 +1766,9 @@ impl DisplayChipMenu {
                 .with_horizontal_padding(16.)
                 .with_padding_top(4.)
                 .with_padding_bottom(10.)
-                .with_border(Border::bottom(1.0).with_border_color(internal_colors::neutral_2(theme)))
+                .with_border(
+                    Border::bottom(1.0).with_border_color(internal_colors::neutral_2(theme)),
+                )
                 .finish(),
             );
 
@@ -1780,9 +1806,13 @@ impl DisplayChipMenu {
                                 };
                                 row.add_child(
                                     Container::new(
-                                        Text::new_inline(hash_text.to_string(), mono_font_family, font_size - 1.)
-                                            .with_color(theme.ansi_fg_cyan())
-                                            .finish(),
+                                        Text::new_inline(
+                                            hash_text.to_string(),
+                                            mono_font_family,
+                                            font_size - 1.,
+                                        )
+                                        .with_color(theme.ansi_fg_cyan())
+                                        .finish(),
                                     )
                                     .with_margin_right(12.)
                                     .finish(),
@@ -1797,11 +1827,13 @@ impl DisplayChipMenu {
                                 };
 
                                 // Message container (takes remaining space)
-                                let mut msg_container = Flex::row()
-                                    .with_main_axis_size(MainAxisSize::Max);
+                                let mut msg_container =
+                                    Flex::row().with_main_axis_size(MainAxisSize::Max);
                                 msg_container.add_child(
                                     Text::new_inline(message, font_family, font_size - 1.)
-                                        .with_color(theme.main_text_color(theme.surface_2()).into_solid())
+                                        .with_color(
+                                            theme.main_text_color(theme.surface_2()).into_solid(),
+                                        )
                                         .finish(),
                                 );
                                 row.add_child(msg_container.finish());
@@ -1811,11 +1843,17 @@ impl DisplayChipMenu {
                                     row.add_child(
                                         Container::new(
                                             Flex::row()
-                                                .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                                                .with_cross_axis_alignment(
+                                                    CrossAxisAlignment::Center,
+                                                )
                                                 .with_child(
-                                                    Text::new_inline(format!("+{}", commit.additions), font_family, font_size - 2.)
-                                                        .with_color(theme.ansi_fg_green())
-                                                        .finish(),
+                                                    Text::new_inline(
+                                                        format!("+{}", commit.additions),
+                                                        font_family,
+                                                        font_size - 2.,
+                                                    )
+                                                    .with_color(theme.ansi_fg_green())
+                                                    .finish(),
                                                 )
                                                 .with_child(
                                                     Container::new(Empty::new().finish())
@@ -1823,9 +1861,13 @@ impl DisplayChipMenu {
                                                         .finish(),
                                                 )
                                                 .with_child(
-                                                    Text::new_inline(format!("-{}", commit.deletions), font_family, font_size - 2.)
-                                                        .with_color(theme.ansi_fg_red())
-                                                        .finish(),
+                                                    Text::new_inline(
+                                                        format!("-{}", commit.deletions),
+                                                        font_family,
+                                                        font_size - 2.,
+                                                    )
+                                                    .with_color(theme.ansi_fg_red())
+                                                    .finish(),
                                                 )
                                                 .finish(),
                                         )
@@ -1846,9 +1888,11 @@ impl DisplayChipMenu {
 
                                 EventHandler::new(container.finish())
                                     .on_left_mouse_down(move |ctx, _, _| {
-                                        ctx.dispatch_typed_action(DisplayChipMenuAction::SelectCommit {
-                                            commit_hash: hash_for_click.clone(),
-                                        });
+                                        ctx.dispatch_typed_action(
+                                            DisplayChipMenuAction::SelectCommit {
+                                                commit_hash: hash_for_click.clone(),
+                                            },
+                                        );
                                         DispatchEventResult::StopPropagation
                                     })
                                     .finish()
@@ -1883,7 +1927,9 @@ impl DisplayChipMenu {
                             .with_child(
                                 Container::new(
                                     Icon::GitCommit
-                                        .to_warpui_icon(Fill::Solid(theme.sub_text_color(theme.surface_2()).into_solid()))
+                                        .to_warpui_icon(Fill::Solid(
+                                            theme.sub_text_color(theme.surface_2()).into_solid(),
+                                        ))
                                         .finish(),
                                 )
                                 .with_margin_bottom(8.)
@@ -1891,7 +1937,9 @@ impl DisplayChipMenu {
                             )
                             .with_child(
                                 Text::new_inline("No commits found", font_family, font_size)
-                                    .with_color(theme.sub_text_color(theme.surface_2()).into_solid())
+                                    .with_color(
+                                        theme.sub_text_color(theme.surface_2()).into_solid(),
+                                    )
                                     .finish(),
                             )
                             .finish(),
@@ -1911,7 +1959,9 @@ impl DisplayChipMenu {
                         .with_child(
                             Container::new(
                                 Icon::GitBranch
-                                    .to_warpui_icon(Fill::Solid(theme.sub_text_color(theme.surface_2()).into_solid()))
+                                    .to_warpui_icon(Fill::Solid(
+                                        theme.sub_text_color(theme.surface_2()).into_solid(),
+                                    ))
                                     .finish(),
                             )
                             .with_margin_bottom(12.)
@@ -1948,8 +1998,7 @@ impl DisplayChipMenu {
         let font_family = appearance.ui_font_family();
         let font_size = appearance.ui_font_size();
 
-        let mut container = Flex::column()
-            .with_main_axis_size(MainAxisSize::Max);
+        let mut container = Flex::column().with_main_axis_size(MainAxisSize::Max);
 
         // Show loading state
         if self.is_loading_files {
@@ -1989,14 +2038,20 @@ impl DisplayChipMenu {
                         .with_cross_axis_alignment(CrossAxisAlignment::Center)
                         .with_child(
                             Icon::File
-                                .to_warpui_icon(Fill::Solid(theme.sub_text_color(theme.surface_2()).into_solid()))
+                                .to_warpui_icon(Fill::Solid(
+                                    theme.sub_text_color(theme.surface_2()).into_solid(),
+                                ))
                                 .finish(),
                         )
                         .with_child(
                             Container::new(
-                                Text::new_inline(format!("  Files in {}", hash_text), font_family, font_size)
-                                    .with_color(theme.main_text_color(theme.surface_2()).into_solid())
-                                    .finish(),
+                                Text::new_inline(
+                                    format!("  Files in {}", hash_text),
+                                    font_family,
+                                    font_size,
+                                )
+                                .with_color(theme.main_text_color(theme.surface_2()).into_solid())
+                                .finish(),
                             )
                             .with_margin_left(4.)
                             .finish(),
@@ -2006,7 +2061,9 @@ impl DisplayChipMenu {
                 .with_horizontal_padding(16.)
                 .with_padding_top(12.)
                 .with_padding_bottom(8.)
-                .with_border(Border::bottom(1.0).with_border_color(internal_colors::neutral_2(theme)))
+                .with_border(
+                    Border::bottom(1.0).with_border_color(internal_colors::neutral_2(theme)),
+                )
                 .finish(),
             );
 
@@ -2033,9 +2090,15 @@ impl DisplayChipMenu {
 
                                 // File path
                                 row.add_child(
-                                    Text::new_inline(file.path.clone(), font_family, font_size - 1.)
-                                        .with_color(theme.main_text_color(theme.surface_2()).into_solid())
-                                        .finish(),
+                                    Text::new_inline(
+                                        file.path.clone(),
+                                        font_family,
+                                        font_size - 1.,
+                                    )
+                                    .with_color(
+                                        theme.main_text_color(theme.surface_2()).into_solid(),
+                                    )
+                                    .finish(),
                                 );
 
                                 // Stats
@@ -2043,11 +2106,17 @@ impl DisplayChipMenu {
                                     row.add_child(
                                         Container::new(
                                             Flex::row()
-                                                .with_cross_axis_alignment(CrossAxisAlignment::Center)
+                                                .with_cross_axis_alignment(
+                                                    CrossAxisAlignment::Center,
+                                                )
                                                 .with_child(
-                                                    Text::new_inline(format!("+{}", file.additions), font_family, font_size - 2.)
-                                                        .with_color(theme.ansi_fg_green())
-                                                        .finish(),
+                                                    Text::new_inline(
+                                                        format!("+{}", file.additions),
+                                                        font_family,
+                                                        font_size - 2.,
+                                                    )
+                                                    .with_color(theme.ansi_fg_green())
+                                                    .finish(),
                                                 )
                                                 .with_child(
                                                     Container::new(Empty::new().finish())
@@ -2055,9 +2124,13 @@ impl DisplayChipMenu {
                                                         .finish(),
                                                 )
                                                 .with_child(
-                                                    Text::new_inline(format!("-{}", file.deletions), font_family, font_size - 2.)
-                                                        .with_color(theme.ansi_fg_red())
-                                                        .finish(),
+                                                    Text::new_inline(
+                                                        format!("-{}", file.deletions),
+                                                        font_family,
+                                                        font_size - 2.,
+                                                    )
+                                                    .with_color(theme.ansi_fg_red())
+                                                    .finish(),
                                                 )
                                                 .finish(),
                                         )
@@ -2113,7 +2186,9 @@ impl DisplayChipMenu {
                         .with_child(
                             Container::new(
                                 Icon::File
-                                    .to_warpui_icon(Fill::Solid(theme.sub_text_color(theme.surface_2()).into_solid()))
+                                    .to_warpui_icon(Fill::Solid(
+                                        theme.sub_text_color(theme.surface_2()).into_solid(),
+                                    ))
                                     .finish(),
                             )
                             .with_margin_bottom(12.)
@@ -2143,7 +2218,12 @@ impl DisplayChipMenu {
     }
 
     /// Show the branch context menu for the item at the given index
-    fn show_branch_context_menu(&mut self, index: usize, position: warpui::geometry::vector::Vector2F, ctx: &mut ViewContext<Self>) {
+    fn show_branch_context_menu(
+        &mut self,
+        index: usize,
+        position: warpui::geometry::vector::Vector2F,
+        ctx: &mut ViewContext<Self>,
+    ) {
         if index >= self.filtered_items.len() {
             return;
         }
@@ -2159,7 +2239,8 @@ impl DisplayChipMenu {
             || branch_name.starts_with("remote/");
 
         // Check if this is the current branch
-        let is_current_branch = self.current_branch_name
+        let is_current_branch = self
+            .current_branch_name
             .as_ref()
             .map(|current| &branch_name == current)
             .unwrap_or(false);
@@ -2173,15 +2254,18 @@ impl DisplayChipMenu {
 
         // Pre-allocate mouse states for context menu items
         // Maximum items: Checkout, Merge, Rename, Delete, Copy = 5
-        self.branch_context_menu_mouse_states = (0..5)
-            .map(|_| MouseStateHandle::default())
-            .collect();
+        self.branch_context_menu_mouse_states =
+            (0..5).map(|_| MouseStateHandle::default()).collect();
 
         ctx.notify();
     }
 
     /// Execute a branch context menu action
-    fn execute_branch_action(&mut self, action: &BranchContextMenuAction, ctx: &mut ViewContext<Self>) {
+    fn execute_branch_action(
+        &mut self,
+        action: &BranchContextMenuAction,
+        ctx: &mut ViewContext<Self>,
+    ) {
         // Close the context menu first
         self.branch_context_menu = None;
         self.branch_context_menu_mouse_states.clear();
@@ -2217,7 +2301,9 @@ impl DisplayChipMenu {
             }
             BranchContextMenuAction::CopyBranchName { branch_name } => {
                 ctx.clipboard()
-                    .write(warpui::clipboard::ClipboardContent::plain_text(branch_name.clone()));
+                    .write(warpui::clipboard::ClipboardContent::plain_text(
+                        branch_name.clone(),
+                    ));
             }
         }
 
@@ -2299,7 +2385,8 @@ impl DisplayChipMenu {
             let is_last = i == items.len() - 1;
 
             // Use pre-allocated mouse state if available, otherwise create a new one
-            let mouse_state = self.branch_context_menu_mouse_states
+            let mouse_state = self
+                .branch_context_menu_mouse_states
                 .get(i)
                 .cloned()
                 .unwrap_or_else(|| MouseStateHandle::default());
@@ -2325,8 +2412,7 @@ impl DisplayChipMenu {
                     row.add_child(
                         Container::new(
                             ConstrainedBox::new(
-                                icon.to_warpui_icon(Fill::Solid(icon_color))
-                                    .finish(),
+                                icon.to_warpui_icon(Fill::Solid(icon_color)).finish(),
                             )
                             .with_width(icon_size)
                             .with_height(icon_size)
@@ -2354,7 +2440,9 @@ impl DisplayChipMenu {
                     .with_vertical_padding(6.);
 
                 if !is_last {
-                    container = container.with_border(Border::bottom(1.0).with_border_color(internal_colors::neutral_2(theme)));
+                    container = container.with_border(
+                        Border::bottom(1.0).with_border_color(internal_colors::neutral_2(theme)),
+                    );
                 }
 
                 if is_hovered {
@@ -2503,7 +2591,8 @@ impl View for DisplayChipMenu {
         // For branches, render dual-pane layout as bottom sheet
         let final_element = if self.chip_menu_type == ChipMenuType::Branches {
             // Get window width from bounds
-            let window_width = app.window_bounds(&self.window_id)
+            let window_width = app
+                .window_bounds(&self.window_id)
                 .map(|bounds| bounds.size().x())
                 .unwrap_or(900.0);
 
@@ -2519,9 +2608,7 @@ impl View for DisplayChipMenu {
                 } else {
                     theme.sub_text_color(theme.surface_2()).into_solid()
                 };
-                Icon::X
-                    .to_warpui_icon(Fill::Solid(icon_color))
-                    .finish()
+                Icon::X.to_warpui_icon(Fill::Solid(icon_color)).finish()
             });
             let close_button = close_button
                 .on_click(|ctx, _, _| {
@@ -2545,8 +2632,7 @@ impl View for DisplayChipMenu {
             .finish();
 
             // === LEFT PANE: Search + Branch List ===
-            let mut left_column = Flex::column()
-                .with_main_axis_size(MainAxisSize::Max);
+            let mut left_column = Flex::column().with_main_axis_size(MainAxisSize::Max);
 
             // Search input
             if let Some(ref search_input_handle) = self.search_input {
@@ -2586,9 +2672,13 @@ impl View for DisplayChipMenu {
                 // No results
                 left_column.add_child(
                     Container::new(
-                        Text::new("No branches found", appearance.ui_font_family(), appearance.ui_font_size())
-                            .with_color(theme.sub_text_color(theme.surface_2()).into_solid())
-                            .finish(),
+                        Text::new(
+                            "No branches found",
+                            appearance.ui_font_family(),
+                            appearance.ui_font_size(),
+                        )
+                        .with_color(theme.sub_text_color(theme.surface_2()).into_solid())
+                        .finish(),
                     )
                     .with_horizontal_padding(16.)
                     .with_vertical_padding(20.)
@@ -2598,9 +2688,13 @@ impl View for DisplayChipMenu {
                 // No branches at all - show message
                 left_column.add_child(
                     Container::new(
-                        Text::new("No branches available", appearance.ui_font_family(), appearance.ui_font_size())
-                            .with_color(theme.sub_text_color(theme.surface_2()).into_solid())
-                            .finish(),
+                        Text::new(
+                            "No branches available",
+                            appearance.ui_font_family(),
+                            appearance.ui_font_size(),
+                        )
+                        .with_color(theme.sub_text_color(theme.surface_2()).into_solid())
+                        .finish(),
                     )
                     .with_horizontal_padding(16.)
                     .with_vertical_padding(20.)
@@ -2668,10 +2762,7 @@ impl View for DisplayChipMenu {
                 .finish();
 
             // Combine header + content
-            let content = Flex::column()
-                .with_child(header)
-                .with_child(row)
-                .finish();
+            let content = Flex::column().with_child(header).with_child(row).finish();
 
             // Bottom sheet container
             let dual_pane = Container::new(content)
@@ -2691,7 +2782,9 @@ impl View for DisplayChipMenu {
                 let mut stack = Stack::new();
                 stack.add_child(dual_pane);
 
-                let position = self.branch_context_menu_position.unwrap_or(vec2f(100., 50.));
+                let position = self
+                    .branch_context_menu_position
+                    .unwrap_or(vec2f(100., 50.));
                 let positioning = OffsetPositioning::offset_from_parent(
                     position,
                     ParentOffsetBounds::WindowByPosition,

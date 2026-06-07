@@ -596,19 +596,19 @@ pub fn run() -> Result<()> {
     if ChannelState::channel().allows_server_url_overrides() {
         if let Some(url) = args.server_root_url() {
             if let Err(e) = ChannelState::override_server_root_url(url.to_owned()) {
-                eprintln!("Error: Invalid server root URL: {e:#}");
+                log::error!("Invalid server root URL: {e:#}");
             }
         }
 
         if let Some(url) = args.ws_server_url() {
             if let Err(e) = ChannelState::override_ws_server_url(url.to_owned()) {
-                eprintln!("Error: Invalid websocket server URL: {e:#}");
+                log::error!("Invalid websocket server URL: {e:#}");
             }
         }
 
         if let Some(url) = args.session_sharing_server_url() {
             if let Err(e) = ChannelState::override_session_sharing_server_url(url.to_owned()) {
-                eprintln!("Error: Invalid session sharing server URL: {e:#}");
+                log::error!("Invalid session sharing server URL: {e:#}");
             }
         }
     }

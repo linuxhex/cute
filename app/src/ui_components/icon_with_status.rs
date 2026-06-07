@@ -4,8 +4,8 @@ use warp_core::ui::icons::Icon as WarpIcon;
 use warp_core::ui::theme::color::internal_colors;
 use warp_core::ui::theme::{Fill as WarpThemeFill, WarpTheme};
 use warpui::elements::{
-    ChildAnchor, ConstrainedBox, Container, CornerRadius, Element, Empty, OffsetPositioning, ParentAnchor,
-    ParentElement, ParentOffsetBounds, Radius, Stack,
+    ChildAnchor, ConstrainedBox, Container, CornerRadius, Element, Empty, OffsetPositioning,
+    ParentAnchor, ParentElement, ParentOffsetBounds, Radius, Stack,
 };
 
 use crate::ai::agent::conversation::{ConversationStatus, StatusColorStyle};
@@ -180,6 +180,7 @@ pub(crate) fn render_icon_with_status(
 
 /// Like [`render_icon_with_status`] but with a custom [`StatusBadgeStyle`]. The
 /// cloud-lobe path (`is_ambient`) ignores it.
+#[allow(dead_code)]
 pub(crate) fn render_icon_with_status_with_badge_style(
     variant: IconWithStatusVariant,
     total_size: f32,
@@ -279,7 +280,12 @@ pub(crate) fn render_icon_with_status_with_animation(
                 })
                 .unwrap_or_else(|| WarpIcon::Terminal.to_warpui_icon(sub_text).finish());
             // Cute: Use animation for running agents
-            let circle = render_circle_with_animation(icon_element, ThemeFill::Solid(brand_color), total_size, animation_phase);
+            let circle = render_circle_with_animation(
+                icon_element,
+                ThemeFill::Solid(brand_color),
+                total_size,
+                animation_phase,
+            );
             attach_status_overlay(
                 circle,
                 status.as_ref(),
@@ -313,6 +319,7 @@ pub(crate) fn render_icon_with_status_with_animation(
 /// to symmetric padding around the glyph.
 /// The returned element is `circle_size(total)` wide; agent callers wrap it via
 /// `attach_status_overlay` to occupy the full `total_size` footprint.
+#[allow(dead_code)]
 fn render_circle(
     icon_element: Box<dyn Element>,
     background: WarpThemeFill,
@@ -342,7 +349,8 @@ fn render_circle_with_animation(
             // phase 0.0 -> alpha 167, phase 0.5 -> alpha 255, phase 1.0 -> alpha 167
             let alpha_range = 87.5; // (255 - 80) / 2
             let base_alpha = 167.5; // (255 + 80) / 2
-            let alpha = (base_alpha + alpha_range * (phase * std::f32::consts::PI * 2.0).sin()) as u8;
+            let alpha =
+                (base_alpha + alpha_range * (phase * std::f32::consts::PI * 2.0).sin()) as u8;
             // Glow intensity peaks at phase 0.5 (when circle is brightest)
             let glow = ((phase * std::f32::consts::PI * 2.0).sin().max(0.0) * 120.0) as u8;
             (

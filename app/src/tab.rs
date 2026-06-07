@@ -40,7 +40,9 @@ use crate::themes::theme::{AnsiColorIdentifier, Fill as ThemeFill, VerticalGradi
 use crate::ui_components::agent_icon::terminal_view_agent_icon_variant;
 use crate::ui_components::buttons::icon_button;
 use crate::ui_components::color_dot::{render_color_dot, TAB_COLOR_OPTIONS};
-use crate::ui_components::icon_with_status::{render_icon_with_status_with_animation, IconWithStatusVariant};
+use crate::ui_components::icon_with_status::{
+    render_icon_with_status_with_animation, IconWithStatusVariant,
+};
 use crate::ui_components::icons::{Icon, ICON_DIMENSIONS};
 use crate::util::color::{coloru_with_opacity, Opacity};
 use crate::util::truncation::truncate_from_end;
@@ -679,6 +681,7 @@ enum Indicator {
     Maximized,
     /// We should show a shell indicator for the tab.
     Shell(ShellIndicatorType),
+    #[allow(dead_code)]
     Agent {
         conversation_status: Option<ConversationStatus>,
     },
@@ -930,6 +933,7 @@ impl<'a> TabComponent<'a> {
     }
 
     /// Get the agent icon variant for rendering
+    #[allow(dead_code)]
     fn get_agent_icon_variant(tab: &TabData, app: &AppContext) -> Option<IconWithStatusVariant> {
         let terminal_view = tab.pane_group.as_ref(app).focused_session_view(app)?;
         let terminal_view_ref = terminal_view.as_ref(app);
@@ -1288,14 +1292,21 @@ impl<'a> TabComponent<'a> {
             }
             Indicator::AgentActive => {
                 // Cute: Use the same rendering as vertical tabs for agent icon with status
-                let terminal_view = self.tab.pane_group.as_ref(self.ctx).focused_session_view(self.ctx);
+                let terminal_view = self
+                    .tab
+                    .pane_group
+                    .as_ref(self.ctx)
+                    .focused_session_view(self.ctx);
                 if let Some(terminal_view) = terminal_view {
                     let terminal_view_ref = terminal_view.as_ref(self.ctx);
-                    if let Some(variant) = terminal_view_agent_icon_variant(terminal_view_ref, self.ctx) {
+                    if let Some(variant) =
+                        terminal_view_agent_icon_variant(terminal_view_ref, self.ctx)
+                    {
                         let total_size = TAB_INDICATOR_HEIGHT;
                         let overlay_extra_overhang_ratio = 0.3;
                         let theme = self.appearance.theme();
-                        let status_container_background = ThemeFill::Solid(theme.surface_3().into_solid());
+                        let status_container_background =
+                            ThemeFill::Solid(theme.surface_3().into_solid());
 
                         // Cute: Pass animation phase for breathing effect
                         Some(render_icon_with_status_with_animation(
@@ -1318,9 +1329,7 @@ impl<'a> TabComponent<'a> {
 
         icon.map(|icon| {
             // Cute: Ensure indicator doesn't get compressed
-            Container::new(icon)
-                .with_margin_right(4.)
-                .finish()
+            Container::new(icon).with_margin_right(4.).finish()
         })
     }
 

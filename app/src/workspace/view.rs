@@ -1073,6 +1073,7 @@ pub struct Workspace {
     /// via `TerminationMode::ContentTransferred`.
     suppress_detach_panes_on_window_close: bool,
     /// Cute: Animation phase for agent breathing effect (0.0 ~ 1.0)
+    #[allow(dead_code)]
     agent_animation_phase: f32,
     /// True while this workspace is acting as the temporary preview window
     /// for a multi-tab cross-window drag. Reduces chrome (e.g. hides traffic
@@ -1168,8 +1169,8 @@ impl Workspace {
             // Try to get last commit info synchronously
             let last_commit = Self::get_branch_last_commit_sync(repo_path, &branch_name);
 
-            // Get recent commits (last 10)
-            let recent_commits = Self::get_branch_recent_commits_sync(repo_path, &branch_name, 10);
+            // 延迟加载：初始不加载 recent_commits，点击分支时再加载
+            let recent_commits = Vec::new();
 
             branches.push(BranchInfo {
                 name: branch_name.clone(),
@@ -1204,8 +1205,8 @@ impl Workspace {
             // Try to get last commit info synchronously
             let last_commit = Self::get_branch_last_commit_sync(repo_path, &full_branch_name);
 
-            // For remote branches, only load 3 recent commits for performance
-            let recent_commits = Self::get_branch_recent_commits_sync(repo_path, &full_branch_name, 3);
+            // 延迟加载：初始不加载 recent_commits，点击分支时再加载
+            let recent_commits = Vec::new();
 
             branches.push(BranchInfo {
                 name: branch_name,
@@ -1240,12 +1241,10 @@ impl Workspace {
 
             // Within same type, sort by remote name first (for remote branches), then by branch name
             match (&a.remote_name, &b.remote_name) {
-                (Some(a_remote), Some(b_remote)) => {
-                    match a_remote.cmp(b_remote) {
-                        std::cmp::Ordering::Equal => a.name.cmp(&b.name),
-                        other => other,
-                    }
-                }
+                (Some(a_remote), Some(b_remote)) => match a_remote.cmp(b_remote) {
+                    std::cmp::Ordering::Equal => a.name.cmp(&b.name),
+                    other => other,
+                },
                 (None, None) => a.name.cmp(&b.name),
                 _ => a.name.cmp(&b.name),
             }
@@ -1257,7 +1256,10 @@ impl Workspace {
     /// Check if a character is a git graph character
     /// Git graph characters: * | \ / ` ' . space and special drawing chars
     fn is_graph_char(c: char) -> bool {
-        matches!(c, '*' | '|' | '\\' | '/' | '`' | '\'' | '.' | ' ' | '_' | '-' | '+' | 'o')
+        matches!(
+            c,
+            '*' | '|' | '\\' | '/' | '`' | '\'' | '.' | ' ' | '_' | '-' | '+' | 'o'
+        )
     }
 
     /// Get recent commits for a branch synchronously with graph lines
@@ -1284,8 +1286,12 @@ impl Workspace {
             .output();
 
         // 辅助函数：判断是否为 git graph 字符
+        #[allow(dead_code)]
         fn is_graph_char(c: char) -> bool {
-            matches!(c, '*' | '|' | '\\' | '/' | ' ' | '`' | '\'' | '.' | '_' | '-')
+            matches!(
+                c,
+                '*' | '|' | '\\' | '/' | ' ' | '`' | '\'' | '.' | '_' | '-'
+            )
         }
 
         let mut commits = Vec::new();
@@ -1302,7 +1308,9 @@ impl Workspace {
                     // 解析图形部分和提交信息部分
                     // 图形字符：*、|、\、/、空格、`、'、. 等
                     // 找到第一个非图形字符的位置
-                    let graph_end = line.find(|c: char| !Self::is_graph_char(c)).unwrap_or(line.len());
+                    let graph_end = line
+                        .find(|c: char| !Self::is_graph_char(c))
+                        .unwrap_or(line.len());
 
                     // 如果没有找到分隔符，可能不是提交行（纯图形行）
                     if graph_end == line.len() {
@@ -1345,7 +1353,12 @@ impl Workspace {
         use crate::workspace::branch_selector::CommitInfo;
 
         let output = command::blocking::Command::new("git")
-            .args(["log", &format!("-{}", limit), branch_name, "--format=%H\t%s\t%an\t%ae\t%at"])
+            .args([
+                "log",
+                &format!("-{}", limit),
+                branch_name,
+                "--format=%H\t%s\t%an\t%ae\t%at",
+            ])
             .current_dir(repo_path)
             .stdout(command::Stdio::piped())
             .stderr(command::Stdio::null())
@@ -1414,6 +1427,7 @@ impl Workspace {
         None
     }
 
+    #[allow(dead_code)]
     fn clear_new_session_sidecar_menu(&mut self, ctx: &mut ViewContext<Self>) {
         self.new_session_sidecar_menu.update(ctx, |menu, view_ctx| {
             menu.clear_pinned_header_builder();
@@ -5399,6 +5413,7 @@ impl Workspace {
         ctx.windows().set_window_title(window_id, &window_title);
     }
 
+    #[allow(dead_code)]
     fn rename_tab_internal(&mut self, index: usize, title: &str, ctx: &mut ViewContext<Self>) {
         // Focusing on the clicked tab
         if index >= self.tab_count() {
@@ -11229,7 +11244,8 @@ impl Workspace {
                     AnsiColorIdentifier::Cyan,
                 ];
                 let random_color = color_options[millis % color_options.len()];
-                self.tabs[self.active_tab_index].selected_color = SelectedTabColor::Color(random_color);
+                self.tabs[self.active_tab_index].selected_color =
+                    SelectedTabColor::Color(random_color);
             }
         }
     }
@@ -13424,11 +13440,17 @@ impl Workspace {
         let pane_group = self.active_tab_pane_group();
         let mut should_select_first_commit = false;
 
-        if let Some(terminal_view) = pane_group.as_ref(ctx).terminal_view_from_pane_id(pane_id, ctx) {
-            let cwd = terminal_view.as_ref(ctx).active_session()
+        if let Some(terminal_view) = pane_group
+            .as_ref(ctx)
+            .terminal_view_from_pane_id(pane_id, ctx)
+        {
+            let cwd = terminal_view
+                .as_ref(ctx)
+                .active_session()
                 .as_ref(ctx)
                 .current_working_directory_location(ctx);
-            if let Some(warp_util::local_or_remote_path::LocalOrRemotePath::Local(repo_path)) = cwd {
+            if let Some(warp_util::local_or_remote_path::LocalOrRemotePath::Local(repo_path)) = cwd
+            {
                 let current_branch = crate::util::git::detect_current_branch_sync(&repo_path);
                 let branches = self.load_branches_for_repo(&repo_path, ctx);
 
@@ -13444,27 +13466,37 @@ impl Workspace {
             }
         }
 
-        // 自动选中最新的提交记录
+        // 自动选中最新的提交记录（延迟加载）
         if should_select_first_commit {
             branch_selector_view.update(ctx, |view, ctx| {
+                // 加载当前分支的提交记录
+                if let Some(branch_idx) = view.state.selected_branch_index {
+                    if let Some(branch) = view.state.branches.get(branch_idx) {
+                        if branch.recent_commits.is_empty() {
+                            if let Some(repo_path) = &view.state.repo_path {
+                                let recent_commits = Self::get_branch_recent_commits_sync(
+                                    repo_path,
+                                    &branch.full_name,
+                                    10,
+                                );
+                                view.state.branches[branch_idx].recent_commits = recent_commits;
+                            }
+                        }
+                    }
+                }
+
                 // 选中第一个提交记录（最新的）
                 view.state.select_commit(0);
 
-                // 加载该提交的改动文件
-                let repo_path = view.state.repo_path.clone();
-                let commit_hash = view.state.selected_branch_index
-                    .and_then(|idx| view.state.branches.get(idx))
-                    .and_then(|branch| branch.recent_commits.first())
-                    .map(|commit| commit.hash.clone());
-
-                if let (Some(repo_path), Some(commit_hash)) = (repo_path, commit_hash) {
-                    let changed_files = Self::get_changed_files_for_commit(&repo_path, &commit_hash);
+                // 当前分支：显示工作区改动，而不是最新提交的改动
+                if let Some(repo_path) = &view.state.repo_path {
+                    let changed_files = Self::get_working_directory_changes(repo_path);
                     view.set_changed_files(changed_files, ctx);
                 }
             });
         }
 
-        self.active_tab_pane_group().update(ctx, |pane_group, ctx| {
+        let _new_pane_id = self.active_tab_pane_group().update(ctx, |pane_group, ctx| {
             let pane: Box<dyn crate::pane_group::pane::AnyPaneContent> = Box::new(pane);
             pane_group.add_pane_sibling(
                 pane_id,
@@ -13472,8 +13504,9 @@ impl Workspace {
                 pane,
                 true, /* focus_new_pane */
                 ctx,
-            );
+            )
         });
+        // 新 pane 创建时已经设置为 2/3 宽度，无需额外 resize
     }
 
     /// Handle branch selection in BranchSelectorPane
@@ -13496,17 +13529,35 @@ impl Workspace {
 
                     // Get the selected branch info
                     branch_view.update(ctx, |view, ctx| {
-                        if let Some(branch) = view.state.branches.get(index) {
+                        if let Some(branch) = view.state.branches.get(index).cloned() {
+                            // 延迟加载：如果 recent_commits 为空，现在加载
+                            if branch.recent_commits.is_empty() {
+                                if let Some(repo_path) = &view.state.repo_path {
+                                    let recent_commits = Self::get_branch_recent_commits_sync(
+                                        repo_path,
+                                        &branch.full_name,
+                                        if branch.is_remote { 3 } else { 10 },
+                                    );
+                                    view.state.branches[index].recent_commits = recent_commits;
+                                }
+                            }
+
                             // Load changed files for this branch vs current branch
                             if let Some(repo_path) = &view.state.repo_path {
                                 if let Some(ref current) = view.state.current_branch {
                                     if branch.name != *current {
                                         // Get changed files between current and selected branch
-                                        let changed_files = Self::get_changed_files_between_branches(
-                                            repo_path,
-                                            current,
-                                            &branch.name,
-                                        );
+                                        let changed_files =
+                                            Self::get_changed_files_between_branches(
+                                                repo_path,
+                                                current,
+                                                &branch.name,
+                                            );
+                                        view.set_changed_files(changed_files, ctx);
+                                    } else {
+                                        // 当前分支：显示工作区改动（与 HEAD 的差异）
+                                        let changed_files =
+                                            Self::get_working_directory_changes(repo_path);
                                         view.set_changed_files(changed_files, ctx);
                                     }
                                 }
@@ -13516,6 +13567,57 @@ impl Workspace {
                 }
             }
         });
+    }
+
+    /// Get working directory changes (unstaged + staged changes)
+    fn get_working_directory_changes(
+        repo_path: &std::path::Path,
+    ) -> Vec<crate::workspace::branch_selector::ChangedFile> {
+        use crate::workspace::branch_selector::{ChangedFile, FileStatus};
+
+        // Get status output for working directory changes
+        let output = command::blocking::Command::new("git")
+            .args(["status", "--porcelain"])
+            .current_dir(repo_path)
+            .stdout(command::Stdio::piped())
+            .stderr(command::Stdio::null())
+            .output();
+
+        let mut files = Vec::new();
+
+        if let Ok(out) = output {
+            if out.status.success() {
+                let lines = String::from_utf8_lossy(&out.stdout);
+                for line in lines.lines() {
+                    if line.len() >= 2 {
+                        let index_status = line.chars().next();
+                        let worktree_status = line.chars().nth(1);
+
+                        // XY: X is index status, Y is worktree status
+                        // If Y is not space or ?, it's a worktree change
+                        // If X is not space or ?, it's a staged change
+                        let status = match (index_status, worktree_status) {
+                            (Some('D'), _) | (_, Some('D')) => FileStatus::Deleted,
+                            (Some('A'), _) | (_, Some('A')) => FileStatus::Added,
+                            (Some('R'), _) | (_, Some('R')) => FileStatus::Renamed,
+                            (Some('M'), _) | (_, Some('M')) => FileStatus::Modified,
+                            (Some('?'), Some('?')) => FileStatus::Added, // Untracked
+                            _ => continue,
+                        };
+
+                        let path = line[3..].to_string();
+                        files.push(ChangedFile {
+                            path,
+                            status,
+                            additions: 0,
+                            deletions: 0,
+                        });
+                    }
+                }
+            }
+        }
+
+        files
     }
 
     /// Handle commit selection in BranchSelectorPane
@@ -13539,19 +13641,23 @@ impl Workspace {
                     branch_view.update(ctx, |view, ctx| {
                         // Extract the data we need first
                         let repo_path = view.state.repo_path.clone();
-                        let commit_hash = view.state.selected_branch_index
+                        let commit_hash = view
+                            .state
+                            .selected_branch_index
                             .and_then(|idx| view.state.branches.get(idx))
                             .and_then(|branch| branch.recent_commits.get(commit_index))
                             .map(|commit| commit.hash.clone());
 
                         if let (Some(repo_path), Some(commit_hash)) = (repo_path, commit_hash) {
                             // Get changed files for this commit
-                            let changed_files = Self::get_changed_files_for_commit(
-                                &repo_path,
-                                &commit_hash,
-                            );
+                            let changed_files =
+                                Self::get_changed_files_for_commit(&repo_path, &commit_hash);
                             view.set_changed_files(changed_files, ctx);
-                            log::info!("Loaded {} changed files for commit {}", view.state.changed_files.len(), &commit_hash[..7.min(commit_hash.len())]);
+                            log::info!(
+                                "Loaded {} changed files for commit {}",
+                                view.state.changed_files.len(),
+                                &commit_hash[..7.min(commit_hash.len())]
+                            );
                         }
                     });
                 }
@@ -13559,7 +13665,106 @@ impl Workspace {
         });
     }
 
-    /// Handle file selection in BranchSelectorPane
+    /// Handle open diff view for selected file (double-click)
+    fn handle_open_diff_for_file(
+        &mut self,
+        pane_id: crate::pane_group::PaneId,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        use crate::pane_group::pane::branch_selector_pane::BranchSelectorPane;
+
+        let pane_group = self.active_tab_pane_group();
+
+        pane_group.update(ctx, |pane_group, ctx| {
+            if let Some(pane_content) = pane_group.content_by_pane_id(pane_id) {
+                let any_ref = pane_content.as_any();
+                if let Some(branch_pane) = any_ref.downcast_ref::<BranchSelectorPane>() {
+                    let branch_view = branch_pane.branch_selector_view(ctx);
+
+                    // Load diff for the selected file
+                    branch_view.update(ctx, |view, ctx| {
+                        // 获取选中的文件
+                        if let Some(file_idx) = view.state.selected_file_index {
+                            if let Some(file) = view.state.changed_files.get(file_idx) {
+                                if let Some(repo_path) = &view.state.repo_path {
+                                    let diff = if let Some(commit_idx) =
+                                        view.state.selected_commit_index
+                                    {
+                                        // 检查是否是当前分支且选中第一个提交（显示工作区改动）
+                                        let is_current_branch_with_working_changes =
+                                            view.state.selected_branch_index
+                                                .and_then(|idx| view.state.branches.get(idx))
+                                                .map(|b| {
+                                                    b.is_current && commit_idx == 0
+                                                })
+                                                .unwrap_or(false);
+
+                                        if is_current_branch_with_working_changes {
+                                            // 当前分支的第一个"提交"显示工作区改动
+                                            Self::get_file_diff_for_working_directory(
+                                                repo_path,
+                                                &file.path,
+                                            )
+                                        } else {
+                                            // 提交的 diff
+                                            if let Some(branch_idx) = view.state.selected_branch_index {
+                                                if let Some(branch) =
+                                                    view.state.branches.get(branch_idx)
+                                                {
+                                                    if let Some(commit) =
+                                                        branch.recent_commits.get(commit_idx)
+                                                    {
+                                                        Self::get_file_diff_for_commit(
+                                                            repo_path,
+                                                            &commit.hash,
+                                                            &file.path,
+                                                        )
+                                                    } else {
+                                                        None
+                                                    }
+                                                } else {
+                                                    None
+                                                }
+                                            } else {
+                                                None
+                                            }
+                                        }
+                                    } else if let Some(ref current) = view.state.current_branch {
+                                        // 没有选中提交时，显示分支对比的 diff
+                                        if let Some(selected_idx) = view.state.selected_branch_index
+                                        {
+                                            if let Some(selected_branch) =
+                                                view.state.branches.get(selected_idx)
+                                            {
+                                                Self::get_file_diff_between_branches(
+                                                    repo_path,
+                                                    current,
+                                                    &selected_branch.name,
+                                                    &file.path,
+                                                )
+                                            } else {
+                                                None
+                                            }
+                                        } else {
+                                            None
+                                        }
+                                    } else {
+                                        None
+                                    };
+
+                                    if let Some(diff) = diff {
+                                        view.open_diff_viewer(diff, ctx);
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    /// Handle file selection in BranchSelectorPane (single click - just select, don't open diff)
     fn handle_file_selected(
         &mut self,
         pane_id: crate::pane_group::PaneId,
@@ -13576,28 +13781,9 @@ impl Workspace {
                 if let Some(branch_pane) = any_ref.downcast_ref::<BranchSelectorPane>() {
                     let branch_view = branch_pane.branch_selector_view(ctx);
 
-                    // Load diff for the selected file
+                    // Just select the file, don't open diff (that's for double-click)
                     branch_view.update(ctx, |view, ctx| {
-                        if let Some(file) = view.state.changed_files.get(file_index) {
-                            if let Some(repo_path) = &view.state.repo_path {
-                                if let Some(ref current) = view.state.current_branch {
-                                    if let Some(selected_idx) = view.state.selected_branch_index {
-                                        if let Some(selected_branch) = view.state.branches.get(selected_idx) {
-                                            // Get diff for this file
-                                            let diff = Self::get_file_diff_between_branches(
-                                                repo_path,
-                                                current,
-                                                &selected_branch.name,
-                                                &file.path,
-                                            );
-                                            if let Some(diff) = diff {
-                                                view.open_diff_viewer(diff, ctx);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        view.select_file(file_index, ctx);
                     });
                 }
             }
@@ -13608,19 +13794,87 @@ impl Workspace {
     fn handle_switch_branch(&mut self, branch_name: String, ctx: &mut ViewContext<Self>) {
         // Get the active terminal's working directory
         if let Some(terminal_view) = self.active_session_view(ctx) {
-            let cwd = terminal_view.as_ref(ctx).active_session()
+            let cwd = terminal_view
+                .as_ref(ctx)
+                .active_session()
                 .as_ref(ctx)
                 .current_working_directory_location(ctx);
 
-            if let Some(warp_util::local_or_remote_path::LocalOrRemotePath::Local(repo_path)) = cwd {
+            if let Some(warp_util::local_or_remote_path::LocalOrRemotePath::Local(repo_path)) = cwd
+            {
                 // Execute git checkout command
-                let branch_name_clone = branch_name.clone();
-                let _output = std::process::Command::new("git")
+                let output = command::blocking::Command::new("git")
                     .args(["checkout", &branch_name])
                     .current_dir(&repo_path)
                     .output();
 
-                log::info!("Switched to branch: {}", branch_name_clone);
+                let window_id = ctx.window_id();
+                if let Ok(output) = output {
+                    if output.status.success() {
+                        log::info!("Switched to branch: {}", branch_name);
+                        ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                            toast_stack.add_ephemeral_toast(
+                                DismissibleToast::success(format!("已切换到分支 {}", branch_name)),
+                                window_id,
+                                ctx,
+                            );
+                        });
+
+                        // 刷新分支列表（当前分支变化）
+                        let current_branch =
+                            crate::util::git::detect_current_branch_sync(&repo_path);
+                        let branches = self.load_branches_for_repo(&repo_path, ctx);
+
+                        use crate::pane_group::pane::branch_selector_pane::BranchSelectorPane;
+                        let pane_group = self.active_tab_pane_group();
+                        let pane_ids: Vec<_> = pane_group.as_ref(ctx).pane_ids().collect();
+                        pane_group.update(ctx, |pane_group, ctx| {
+                            for pane_id in pane_ids {
+                                if let Some(pane_content) = pane_group.content_by_pane_id(pane_id) {
+                                    let any_ref = pane_content.as_any();
+                                    if let Some(branch_pane) = any_ref.downcast_ref::<BranchSelectorPane>() {
+                                        let branch_view = branch_pane.branch_selector_view(ctx);
+                                        branch_view.update(ctx, |view, ctx| {
+                                            view.set_branches(branches.clone(), current_branch.clone(), ctx);
+                                            // 加载当前分支的工作区改动
+                                            if let Some(ref current) = current_branch {
+                                                if view.state.selected_branch_index.is_some() {
+                                                    if let Some(selected_idx) = view.state.selected_branch_index {
+                                                        if let Some(selected_branch) = view.state.branches.get(selected_idx) {
+                                                            if selected_branch.name == *current {
+                                                                // 当前分支：显示工作区改动
+                                                                let changed_files = Self::get_working_directory_changes(&repo_path);
+                                                                view.set_changed_files(changed_files, ctx);
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    } else {
+                        log::warn!("Failed to switch branch {}", branch_name);
+                        ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                            toast_stack.add_ephemeral_toast(
+                                DismissibleToast::error(format!("切换分支失败")),
+                                window_id,
+                                ctx,
+                            );
+                        });
+                    }
+                } else {
+                    log::warn!("Failed to execute git checkout command");
+                    ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                        toast_stack.add_ephemeral_toast(
+                            DismissibleToast::error("无法执行切换分支命令".to_string()),
+                            window_id,
+                            ctx,
+                        );
+                    });
+                }
             }
         }
     }
@@ -13629,19 +13883,51 @@ impl Workspace {
     fn handle_merge_branch(&mut self, branch_name: String, ctx: &mut ViewContext<Self>) {
         // Get the active terminal's working directory
         if let Some(terminal_view) = self.active_session_view(ctx) {
-            let cwd = terminal_view.as_ref(ctx).active_session()
+            let cwd = terminal_view
+                .as_ref(ctx)
+                .active_session()
                 .as_ref(ctx)
                 .current_working_directory_location(ctx);
 
-            if let Some(warp_util::local_or_remote_path::LocalOrRemotePath::Local(repo_path)) = cwd {
+            if let Some(warp_util::local_or_remote_path::LocalOrRemotePath::Local(repo_path)) = cwd
+            {
                 // Execute git merge command
-                let branch_name_clone = branch_name.clone();
-                let _output = std::process::Command::new("git")
+                let output = command::blocking::Command::new("git")
                     .args(["merge", &branch_name])
                     .current_dir(&repo_path)
                     .output();
 
-                log::info!("Merged branch: {}", branch_name_clone);
+                let window_id = ctx.window_id();
+                if let Ok(output) = output {
+                    if output.status.success() {
+                        log::info!("Merged branch: {}", branch_name);
+                        ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                            toast_stack.add_ephemeral_toast(
+                                DismissibleToast::success(format!("已合并分支 {}", branch_name)),
+                                window_id,
+                                ctx,
+                            );
+                        });
+                    } else {
+                        log::warn!("Failed to merge branch {}", branch_name);
+                        ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                            toast_stack.add_ephemeral_toast(
+                                DismissibleToast::error("合并分支失败".to_string()),
+                                window_id,
+                                ctx,
+                            );
+                        });
+                    }
+                } else {
+                    log::warn!("Failed to execute git merge command");
+                    ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                        toast_stack.add_ephemeral_toast(
+                            DismissibleToast::error("无法执行合并分支命令".to_string()),
+                            window_id,
+                            ctx,
+                        );
+                    });
+                }
             }
         }
     }
@@ -13650,19 +13936,193 @@ impl Workspace {
     fn handle_delete_branch(&mut self, branch_name: String, ctx: &mut ViewContext<Self>) {
         // Get the active terminal's working directory
         if let Some(terminal_view) = self.active_session_view(ctx) {
-            let cwd = terminal_view.as_ref(ctx).active_session()
+            let cwd = terminal_view
+                .as_ref(ctx)
+                .active_session()
                 .as_ref(ctx)
                 .current_working_directory_location(ctx);
 
-            if let Some(warp_util::local_or_remote_path::LocalOrRemotePath::Local(repo_path)) = cwd {
-                // Execute git branch -d command
-                let branch_name_clone = branch_name.clone();
-                let _output = std::process::Command::new("git")
+            if let Some(warp_util::local_or_remote_path::LocalOrRemotePath::Local(repo_path)) = cwd
+            {
+                let window_id = ctx.window_id();
+
+                // Try normal delete first
+                let output = command::blocking::Command::new("git")
                     .args(["branch", "-d", &branch_name])
                     .current_dir(&repo_path)
                     .output();
 
-                log::info!("Deleted branch: {}", branch_name_clone);
+                let success = if let Ok(output) = output {
+                    if output.status.success() {
+                        true
+                    } else {
+                        // Try force delete
+                        let force_output = command::blocking::Command::new("git")
+                            .args(["branch", "-D", &branch_name])
+                            .current_dir(&repo_path)
+                            .output();
+
+                        force_output.map(|o| o.status.success()).unwrap_or(false)
+                    }
+                } else {
+                    false
+                };
+
+                if success {
+                    log::info!("Deleted branch: {}", branch_name);
+                    ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                        toast_stack.add_ephemeral_toast(
+                            DismissibleToast::success(format!("已删除分支 {}", branch_name)),
+                            window_id,
+                            ctx,
+                        );
+                    });
+
+                    // 刷新所有BranchSelectorPane
+                    let current_branch = crate::util::git::detect_current_branch_sync(&repo_path);
+                    let branches = self.load_branches_for_repo(&repo_path, ctx);
+
+                    use crate::pane_group::pane::branch_selector_pane::BranchSelectorPane;
+                    let pane_group = self.active_tab_pane_group();
+                    let pane_ids: Vec<_> = pane_group.as_ref(ctx).pane_ids().collect();
+                    pane_group.update(ctx, |pane_group, ctx| {
+                        for pane_id in pane_ids {
+                            if let Some(pane_content) = pane_group.content_by_pane_id(pane_id) {
+                                let any_ref = pane_content.as_any();
+                                if let Some(branch_pane) =
+                                    any_ref.downcast_ref::<BranchSelectorPane>()
+                                {
+                                    let branch_view = branch_pane.branch_selector_view(ctx);
+                                    branch_view.update(ctx, |view, ctx| {
+                                        view.set_branches(
+                                            branches.clone(),
+                                            current_branch.clone(),
+                                            ctx,
+                                        );
+                                    });
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    log::warn!("Failed to delete branch: {}", branch_name);
+                    ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                        toast_stack.add_ephemeral_toast(
+                            DismissibleToast::error("删除分支失败".to_string()),
+                            window_id,
+                            ctx,
+                        );
+                    });
+                }
+            }
+        }
+    }
+
+    /// Handle create branch from commit/base ref
+    fn handle_create_branch_from_commit(&mut self, base_ref: String, ctx: &mut ViewContext<Self>) {
+        // Get the active terminal's working directory
+        if let Some(terminal_view) = self.active_session_view(ctx) {
+            let cwd = terminal_view
+                .as_ref(ctx)
+                .active_session()
+                .as_ref(ctx)
+                .current_working_directory_location(ctx);
+
+            if let Some(warp_util::local_or_remote_path::LocalOrRemotePath::Local(repo_path)) = cwd
+            {
+                // 解析 base_ref，支持 "base:branch_name" 格式
+                let (actual_base, new_branch_name) = if let Some(colon_pos) = base_ref.find(':') {
+                    // 新格式：base_ref:branch_name
+                    let base = base_ref[..colon_pos].to_string();
+                    let name = base_ref[colon_pos + 1..].to_string();
+                    (base, name)
+                } else {
+                    // 旧格式：自动生成时间戳名称
+                    let timestamp = chrono::Local::now().format("%Y%m%d-%H%M%S");
+                    (base_ref.clone(), format!("feature-{}", timestamp))
+                };
+
+                // Execute git checkout -b command to create and switch to new branch
+                let output = command::blocking::Command::new("git")
+                    .args(["checkout", "-b", &new_branch_name, &actual_base])
+                    .current_dir(&repo_path)
+                    .output();
+
+                let window_id = ctx.window_id();
+                if let Ok(output) = output {
+                    if output.status.success() {
+                        log::info!(
+                            "Created and switched to new branch: {} from {}",
+                            new_branch_name,
+                            actual_base
+                        );
+                        ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                            toast_stack.add_ephemeral_toast(
+                                DismissibleToast::success(format!(
+                                    "已创建分支 {}",
+                                    new_branch_name
+                                )),
+                                window_id,
+                                ctx,
+                            );
+                        });
+
+                        // 刷新分支列表
+                        let current_branch =
+                            crate::util::git::detect_current_branch_sync(&repo_path);
+                        let branches = self.load_branches_for_repo(&repo_path, ctx);
+
+                        use crate::pane_group::pane::branch_selector_pane::BranchSelectorPane;
+                        let pane_group = self.active_tab_pane_group();
+                        pane_group.update(ctx, |pane_group, ctx| {
+                            let pane_ids: Vec<_> = pane_group.pane_ids().collect();
+                            for pane_id in pane_ids {
+                                if let Some(pane_content) = pane_group.content_by_pane_id(pane_id) {
+                                    let any_ref = pane_content.as_any();
+                                    if let Some(branch_pane) =
+                                        any_ref.downcast_ref::<BranchSelectorPane>()
+                                    {
+                                        let branch_view = branch_pane.branch_selector_view(ctx);
+                                        branch_view.update(ctx, |view, ctx| {
+                                            view.set_branches(
+                                                branches.clone(),
+                                                current_branch.clone(),
+                                                ctx,
+                                            );
+                                        });
+                                        break;
+                                    }
+                                }
+                            }
+                        });
+                    } else {
+                        let error_msg = String::from_utf8_lossy(&output.stderr);
+                        log::warn!(
+                            "Failed to create branch from {}: {}",
+                            actual_base,
+                            error_msg
+                        );
+                        ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                            toast_stack.add_ephemeral_toast(
+                                DismissibleToast::error(format!(
+                                    "创建分支失败: {}",
+                                    error_msg.trim()
+                                )),
+                                window_id,
+                                ctx,
+                            );
+                        });
+                    }
+                } else {
+                    log::warn!("Failed to execute git checkout -b command");
+                    ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                        toast_stack.add_ephemeral_toast(
+                            DismissibleToast::error("无法执行创建分支命令".to_string()),
+                            window_id,
+                            ctx,
+                        );
+                    });
+                }
             }
         }
     }
@@ -13680,7 +14140,7 @@ impl Workspace {
                 "show",
                 "--name-status",
                 "--numstat",
-                "--format=",  // Don't show commit info, just files
+                "--format=", // Don't show commit info, just files
                 commit_hash,
             ])
             .current_dir(repo_path)
@@ -13753,6 +14213,418 @@ impl Workspace {
         files
     }
 
+    /// Handle view commit details - show commit info in a toast
+    fn handle_view_commit_details(&mut self, commit_hash: String, ctx: &mut ViewContext<Self>) {
+        // Get the active terminal's working directory
+        if let Some(terminal_view) = self.active_session_view(ctx) {
+            let cwd = terminal_view
+                .as_ref(ctx)
+                .active_session()
+                .as_ref(ctx)
+                .current_working_directory_location(ctx);
+
+            if let Some(warp_util::local_or_remote_path::LocalOrRemotePath::Local(repo_path)) = cwd
+            {
+                // Get commit info
+                let output = command::blocking::Command::new("git")
+                    .args([
+                        "show",
+                        "--no-patch",
+                        "--format=%H%n%an%n%ae%n%s%n%ci",
+                        &commit_hash,
+                    ])
+                    .current_dir(&repo_path)
+                    .output();
+
+                let window_id = ctx.window_id();
+                if let Ok(output) = output {
+                    if output.status.success() {
+                        let info = String::from_utf8_lossy(&output.stdout);
+                        let lines: Vec<&str> = info.lines().collect();
+                        if lines.len() >= 5 {
+                            let hash = lines[0];
+                            let author = lines[1];
+                            let message = lines[3];
+                            let date = lines[4];
+                            let details = format!(
+                                "提交: {}\n作者: {}\n日期: {}\n消息: {}",
+                                &hash[..7.min(hash.len())],
+                                author,
+                                date,
+                                message
+                            );
+                            ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                                toast_stack.add_ephemeral_toast(
+                                    DismissibleToast::default(details),
+                                    window_id,
+                                    ctx,
+                                );
+                            });
+                        }
+                    } else {
+                        ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                            toast_stack.add_ephemeral_toast(
+                                DismissibleToast::error("获取提交详情失败".to_string()),
+                                window_id,
+                                ctx,
+                            );
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    /// Handle reset to commit
+    fn handle_reset_to_commit(&mut self, commit_hash: String, ctx: &mut ViewContext<Self>) {
+        if let Some(terminal_view) = self.active_session_view(ctx) {
+            let cwd = terminal_view
+                .as_ref(ctx)
+                .active_session()
+                .as_ref(ctx)
+                .current_working_directory_location(ctx);
+
+            if let Some(warp_util::local_or_remote_path::LocalOrRemotePath::Local(repo_path)) = cwd
+            {
+                // Execute git reset --hard
+                let output = command::blocking::Command::new("git")
+                    .args(["reset", "--hard", &commit_hash])
+                    .current_dir(&repo_path)
+                    .output();
+
+                let window_id = ctx.window_id();
+                if let Ok(output) = output {
+                    if output.status.success() {
+                        log::info!("Reset to commit: {}", commit_hash);
+                        ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                            toast_stack.add_ephemeral_toast(
+                                DismissibleToast::success(format!(
+                                    "已重置到提交 {}",
+                                    &commit_hash[..7.min(commit_hash.len())]
+                                )),
+                                window_id,
+                                ctx,
+                            );
+                        });
+                        // 刷新分支列表
+                        let current_branch =
+                            crate::util::git::detect_current_branch_sync(&repo_path);
+                        let branches = self.load_branches_for_repo(&repo_path, ctx);
+                        self.refresh_branch_selector_panes(
+                            &repo_path,
+                            branches,
+                            current_branch,
+                            ctx,
+                        );
+                    } else {
+                        let stderr = String::from_utf8_lossy(&output.stderr);
+                        ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                            toast_stack.add_ephemeral_toast(
+                                DismissibleToast::error(format!("重置失败: {}", stderr.trim())),
+                                window_id,
+                                ctx,
+                            );
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    /// Handle cherry pick
+    fn handle_cherry_pick(&mut self, commit_hash: String, ctx: &mut ViewContext<Self>) {
+        if let Some(terminal_view) = self.active_session_view(ctx) {
+            let cwd = terminal_view
+                .as_ref(ctx)
+                .active_session()
+                .as_ref(ctx)
+                .current_working_directory_location(ctx);
+
+            if let Some(warp_util::local_or_remote_path::LocalOrRemotePath::Local(repo_path)) = cwd
+            {
+                let output = command::blocking::Command::new("git")
+                    .args(["cherry-pick", &commit_hash])
+                    .current_dir(&repo_path)
+                    .output();
+
+                let window_id = ctx.window_id();
+                if let Ok(output) = output {
+                    if output.status.success() {
+                        log::info!("Cherry-picked commit: {}", commit_hash);
+                        ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                            toast_stack.add_ephemeral_toast(
+                                DismissibleToast::success(format!(
+                                    "已 Cherry-pick 提交 {}",
+                                    &commit_hash[..7.min(commit_hash.len())]
+                                )),
+                                window_id,
+                                ctx,
+                            );
+                        });
+                        // 刷新分支列表
+                        let current_branch =
+                            crate::util::git::detect_current_branch_sync(&repo_path);
+                        let branches = self.load_branches_for_repo(&repo_path, ctx);
+                        self.refresh_branch_selector_panes(
+                            &repo_path,
+                            branches,
+                            current_branch,
+                            ctx,
+                        );
+                    } else {
+                        let stderr = String::from_utf8_lossy(&output.stderr);
+                        ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                            toast_stack.add_ephemeral_toast(
+                                DismissibleToast::error(format!(
+                                    "Cherry-pick 失败: {}",
+                                    stderr.trim()
+                                )),
+                                window_id,
+                                ctx,
+                            );
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    /// Handle open file in editor
+    fn handle_open_in_editor(&mut self, file_path: String, ctx: &mut ViewContext<Self>) {
+        if let Some(terminal_view) = self.active_session_view(ctx) {
+            let cwd = terminal_view
+                .as_ref(ctx)
+                .active_session()
+                .as_ref(ctx)
+                .current_working_directory_location(ctx);
+
+            if let Some(warp_util::local_or_remote_path::LocalOrRemotePath::Local(repo_path)) = cwd
+            {
+                let full_path = repo_path.join(&file_path);
+
+                // 使用ctx.open_file_path打开文件
+                ctx.open_file_path(&full_path);
+
+                let window_id = ctx.window_id();
+                ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                    toast_stack.add_ephemeral_toast(
+                        DismissibleToast::success(format!("已打开文件 {}", file_path)),
+                        window_id,
+                        ctx,
+                    );
+                });
+            }
+        }
+    }
+
+    /// Handle view file history
+    fn handle_view_file_history(&mut self, file_path: String, ctx: &mut ViewContext<Self>) {
+        if let Some(terminal_view) = self.active_session_view(ctx) {
+            let cwd = terminal_view
+                .as_ref(ctx)
+                .active_session()
+                .as_ref(ctx)
+                .current_working_directory_location(ctx);
+
+            if let Some(warp_util::local_or_remote_path::LocalOrRemotePath::Local(repo_path)) = cwd
+            {
+                // Get detailed file history
+                let output = command::blocking::Command::new("git")
+                    .args([
+                        "log",
+                        "--pretty=format:%H|%s|%an|%ci",
+                        "-20",
+                        "--",
+                        &file_path,
+                    ])
+                    .current_dir(&repo_path)
+                    .output();
+
+                let window_id = ctx.window_id();
+                if let Ok(output) = output {
+                    if output.status.success() {
+                        let history_text = String::from_utf8_lossy(&output.stdout);
+                        if history_text.is_empty() {
+                            ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                                toast_stack.add_ephemeral_toast(
+                                    DismissibleToast::default("文件无提交历史".to_string()),
+                                    window_id,
+                                    ctx,
+                                );
+                            });
+                        } else {
+                            // Parse history entries
+                            use crate::workspace::branch_selector::FileHistoryEntry;
+                            let mut history_entries = Vec::new();
+                            for line in history_text.lines() {
+                                let parts: Vec<&str> = line.splitn(4, '|').collect();
+                                if parts.len() >= 4 {
+                                    let timestamp = chrono::DateTime::parse_from_str(
+                                        &format!(
+                                            "{} +0000",
+                                            parts[3]
+                                                .replace(' ', "T")
+                                                .split('.')
+                                                .next()
+                                                .unwrap_or(parts[3])
+                                        ),
+                                        "%Y-%m-%dT%H:%M:%S %z",
+                                    )
+                                    .map(|dt| dt.with_timezone(&chrono::Utc))
+                                    .unwrap_or_else(|_| chrono::Utc::now());
+
+                                    history_entries.push(FileHistoryEntry {
+                                        hash: parts[0].to_string(),
+                                        message: parts[1].to_string(),
+                                        author: parts[2].to_string(),
+                                        timestamp,
+                                    });
+                                }
+                            }
+
+                            // Open file history view in BranchSelectorPane
+                            use crate::pane_group::pane::branch_selector_pane::BranchSelectorPane;
+                            let pane_group = self.active_tab_pane_group();
+                            pane_group.update(ctx, |pane_group, ctx| {
+                                let pane_ids: Vec<_> = pane_group.pane_ids().collect();
+                                for pane_id in pane_ids {
+                                    if let Some(pane_content) =
+                                        pane_group.content_by_pane_id(pane_id)
+                                    {
+                                        let any_ref = pane_content.as_any();
+                                        if let Some(branch_pane) =
+                                            any_ref.downcast_ref::<BranchSelectorPane>()
+                                        {
+                                            let branch_view = branch_pane.branch_selector_view(ctx);
+                                            branch_view.update(ctx, |view, ctx| {
+                                                view.state.open_file_history(
+                                                    file_path.clone(),
+                                                    history_entries,
+                                                );
+                                                ctx.notify();
+                                            });
+                                            // 找到第一个BranchSelectorPane后就退出循环
+                                            break;
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    } else {
+                        ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                            toast_stack.add_ephemeral_toast(
+                                DismissibleToast::error("获取文件历史失败".to_string()),
+                                window_id,
+                                ctx,
+                            );
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    /// Handle view in browser (open remote URL)
+    fn handle_view_in_browser(&mut self, branch_name: String, ctx: &mut ViewContext<Self>) {
+        if let Some(terminal_view) = self.active_session_view(ctx) {
+            let cwd = terminal_view
+                .as_ref(ctx)
+                .active_session()
+                .as_ref(ctx)
+                .current_working_directory_location(ctx);
+
+            if let Some(warp_util::local_or_remote_path::LocalOrRemotePath::Local(repo_path)) = cwd
+            {
+                // Get remote URL
+                let remote_output = command::blocking::Command::new("git")
+                    .args(["remote", "get-url", "origin"])
+                    .current_dir(&repo_path)
+                    .output();
+
+                let window_id = ctx.window_id();
+                if let Ok(output) = remote_output {
+                    if output.status.success() {
+                        let remote_url = String::from_utf8_lossy(&output.stdout).trim().to_string();
+                        // Convert git URL to web URL
+                        let web_url = if remote_url.starts_with("git@") {
+                            // git@github.com:user/repo.git -> https://github.com/user/repo/tree/branch
+                            remote_url
+                                .replace("git@", "https://")
+                                .replace(":", "/")
+                                .trim_end_matches(".git")
+                                .to_string()
+                        } else if remote_url.starts_with("https://")
+                            || remote_url.starts_with("http://")
+                        {
+                            remote_url.trim_end_matches(".git").to_string()
+                        } else {
+                            remote_url
+                        };
+
+                        let branch_url = format!("{}/tree/{}", web_url, branch_name);
+
+                        // Open in browser
+                        #[cfg(target_os = "macos")]
+                        let _ = std::process::Command::new("open").arg(&branch_url).spawn();
+                        #[cfg(target_os = "linux")]
+                        let _ = std::process::Command::new("xdg-open")
+                            .arg(&branch_url)
+                            .spawn();
+                        #[cfg(target_os = "windows")]
+                        let _ = std::process::Command::new("cmd")
+                            .args(["/C", "start", &branch_url])
+                            .spawn();
+
+                        ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                            toast_stack.add_ephemeral_toast(
+                                DismissibleToast::success(format!(
+                                    "已在浏览器中打开 {}",
+                                    branch_url
+                                )),
+                                window_id,
+                                ctx,
+                            );
+                        });
+                    } else {
+                        ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                            toast_stack.add_ephemeral_toast(
+                                DismissibleToast::error("无法获取远程仓库地址".to_string()),
+                                window_id,
+                                ctx,
+                            );
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    /// Helper to refresh all branch selector panes
+    fn refresh_branch_selector_panes(
+        &mut self,
+        _repo_path: &std::path::Path,
+        branches: Vec<crate::workspace::branch_selector::BranchInfo>,
+        current_branch: Option<String>,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        use crate::pane_group::pane::branch_selector_pane::BranchSelectorPane;
+        let pane_group = self.active_tab_pane_group();
+        let pane_ids: Vec<_> = pane_group.as_ref(ctx).pane_ids().collect();
+        pane_group.update(ctx, |pane_group, ctx| {
+            for pane_id in pane_ids {
+                if let Some(pane_content) = pane_group.content_by_pane_id(pane_id) {
+                    let any_ref = pane_content.as_any();
+                    if let Some(branch_pane) = any_ref.downcast_ref::<BranchSelectorPane>() {
+                        let branch_view = branch_pane.branch_selector_view(ctx);
+                        branch_view.update(ctx, |view, ctx| {
+                            view.set_branches(branches.clone(), current_branch.clone(), ctx);
+                        });
+                    }
+                }
+            }
+        });
+    }
+
     /// Get changed files between two branches
     fn get_changed_files_between_branches(
         repo_path: &std::path::Path,
@@ -13807,19 +14679,28 @@ impl Workspace {
         files
     }
 
-    /// Get file diff between two branches
-    fn get_file_diff_between_branches(
+    /// Get file diff for a specific commit
+    fn get_file_diff_for_commit(
         repo_path: &std::path::Path,
-        base_branch: &str,
-        target_branch: &str,
+        commit_hash: &str,
         file_path: &str,
     ) -> Option<crate::workspace::branch_selector::FileDiff> {
         use crate::workspace::branch_selector::{DiffHunk, DiffLine, DiffLineType, FileDiff};
 
-        let output = command::blocking::Command::new("git")
+        let _output = command::blocking::Command::new("git")
+            .args(["show", &format!("{}:{}", commit_hash, file_path)])
+            .current_dir(repo_path)
+            .stdout(command::Stdio::piped())
+            .stderr(command::Stdio::null())
+            .output();
+
+        // Get the diff for this file in the commit
+        let diff_output = command::blocking::Command::new("git")
             .args([
-                "diff",
-                &format!("{}...{}", base_branch, target_branch),
+                "diff-tree",
+                "--no-commit-id",
+                "-p",
+                commit_hash,
                 "--",
                 file_path,
             ])
@@ -13828,7 +14709,7 @@ impl Workspace {
             .stderr(command::Stdio::null())
             .output();
 
-        if let Ok(out) = output {
+        if let Ok(out) = diff_output {
             if out.status.success() {
                 let diff_text = String::from_utf8_lossy(&out.stdout);
                 let mut hunks: Vec<DiffHunk> = Vec::new();
@@ -13843,7 +14724,7 @@ impl Workspace {
                             hunks.push(hunk);
                         }
 
-                        // Parse hunk header: @@ -old_start,old_count +new_start,new_count @@
+                        // Parse hunk header
                         let header = line.trim_start_matches('@').trim();
                         if let Some(range_part) = header.split(" @@").next() {
                             let ranges: Vec<&str> = range_part.split_whitespace().collect();
@@ -13851,10 +14732,14 @@ impl Workspace {
                                 let old_range = ranges[0].trim_start_matches('-');
                                 let new_range = ranges[1].trim_start_matches('+');
 
-                                let old_start = old_range.split(',').next()
+                                let old_start = old_range
+                                    .split(',')
+                                    .next()
                                     .and_then(|s| s.parse::<u32>().ok())
                                     .unwrap_or(1);
-                                let new_start = new_range.split(',').next()
+                                let new_start = new_range
+                                    .split(',')
+                                    .next()
                                     .and_then(|s| s.parse::<u32>().ok())
                                     .unwrap_or(1);
 
@@ -13871,7 +14756,6 @@ impl Workspace {
                             }
                         }
                     } else if let Some(ref mut hunk) = current_hunk {
-                        let line = line.trim_start_matches('+').trim_start_matches('-').trim_start_matches(' ');
                         let (line_type, content) = if line.starts_with('+') {
                             (DiffLineType::Add, line[1..].to_string())
                         } else if line.starts_with('-') {
@@ -13927,6 +14811,225 @@ impl Workspace {
         }
 
         None
+    }
+
+    /// Get file diff between two branches
+    fn get_file_diff_between_branches(
+        repo_path: &std::path::Path,
+        base_branch: &str,
+        target_branch: &str,
+        file_path: &str,
+    ) -> Option<crate::workspace::branch_selector::FileDiff> {
+        // 如果是同一个分支，获取工作区 diff
+        if base_branch == target_branch {
+            return Self::get_file_diff_for_working_directory(repo_path, file_path);
+        }
+
+        let output = command::blocking::Command::new("git")
+            .args([
+                "diff",
+                &format!("{}...{}", base_branch, target_branch),
+                "--",
+                file_path,
+            ])
+            .current_dir(repo_path)
+            .stdout(command::Stdio::piped())
+            .stderr(command::Stdio::null())
+            .output();
+
+        if let Ok(out) = output {
+            if out.status.success() {
+                let diff_text = String::from_utf8_lossy(&out.stdout);
+                return Self::parse_diff_text(file_path, &diff_text);
+            }
+        }
+
+        None
+    }
+
+    /// Get file diff for working directory (unstaged + staged changes)
+    fn get_file_diff_for_working_directory(
+        repo_path: &std::path::Path,
+        file_path: &str,
+    ) -> Option<crate::workspace::branch_selector::FileDiff> {
+        use crate::workspace::branch_selector::{DiffHunk, DiffLine, DiffLineType, FileDiff};
+
+        // Get diff for working directory changes (HEAD vs working tree)
+        let output = command::blocking::Command::new("git")
+            .args(["diff", "HEAD", "--", file_path])
+            .current_dir(repo_path)
+            .stdout(command::Stdio::piped())
+            .stderr(command::Stdio::null())
+            .output();
+
+        if let Ok(out) = output {
+            if out.status.success() {
+                let diff_text = String::from_utf8_lossy(&out.stdout);
+                if !diff_text.is_empty() {
+                    return Self::parse_diff_text(file_path, &diff_text);
+                }
+            }
+        }
+
+        // If no diff with HEAD, check if it's an untracked file
+        let status_output = command::blocking::Command::new("git")
+            .args(["status", "--porcelain", "--", file_path])
+            .current_dir(repo_path)
+            .stdout(command::Stdio::piped())
+            .stderr(command::Stdio::null())
+            .output();
+
+        if let Ok(out) = status_output {
+            if out.status.success() {
+                let status = String::from_utf8_lossy(&out.stdout);
+                // Check if untracked (??)
+                if status.starts_with("??") {
+                    // Read the file content and show as all added
+                    let full_path = repo_path.join(file_path);
+                    if let Ok(content) = std::fs::read_to_string(&full_path) {
+                        let lines: Vec<&str> = content.lines().collect();
+                        let diff_lines: Vec<DiffLine> = lines
+                            .iter()
+                            .enumerate()
+                            .map(|(i, line)| DiffLine {
+                                line_type: DiffLineType::Add,
+                                content: line.to_string(),
+                                old_line: None,
+                                new_line: Some((i + 1) as u32),
+                            })
+                            .collect();
+
+                        if !diff_lines.is_empty() {
+                            return Some(FileDiff {
+                                file_path: file_path.to_string(),
+                                old_content: None,
+                                new_content: Some(content),
+                                hunks: vec![DiffHunk {
+                                    old_start: 0,
+                                    old_count: 0,
+                                    new_start: 1,
+                                    new_count: diff_lines.len() as u32,
+                                    lines: diff_lines,
+                                }],
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        None
+    }
+
+    /// Parse diff text into FileDiff structure
+    fn parse_diff_text(
+        file_path: &str,
+        diff_text: &str,
+    ) -> Option<crate::workspace::branch_selector::FileDiff> {
+        use crate::workspace::branch_selector::{DiffHunk, DiffLine, DiffLineType, FileDiff};
+
+        let mut hunks: Vec<DiffHunk> = Vec::new();
+        let mut current_hunk: Option<DiffHunk> = None;
+        let mut old_line = 0u32;
+        let mut new_line = 0u32;
+
+        for line in diff_text.lines() {
+            if line.starts_with("@@ ") {
+                // Save previous hunk
+                if let Some(hunk) = current_hunk.take() {
+                    hunks.push(hunk);
+                }
+
+                // Parse hunk header: @@ -old_start,old_count +new_start,new_count @@
+                let header = line.trim_start_matches('@').trim();
+                if let Some(range_part) = header.split(" @@").next() {
+                    let ranges: Vec<&str> = range_part.split_whitespace().collect();
+                    if ranges.len() >= 2 {
+                        let old_range = ranges[0].trim_start_matches('-');
+                        let new_range = ranges[1].trim_start_matches('+');
+
+                        let old_start = old_range
+                            .split(',')
+                            .next()
+                            .and_then(|s| s.parse::<u32>().ok())
+                            .unwrap_or(1);
+                        let new_start = new_range
+                            .split(',')
+                            .next()
+                            .and_then(|s| s.parse::<u32>().ok())
+                            .unwrap_or(1);
+
+                        old_line = old_start;
+                        new_line = new_start;
+
+                        current_hunk = Some(DiffHunk {
+                            old_start,
+                            old_count: 0,
+                            new_start,
+                            new_count: 0,
+                            lines: Vec::new(),
+                        });
+                    }
+                }
+            } else if let Some(ref mut hunk) = current_hunk {
+                let (line_type, content) = if line.starts_with('+') {
+                    (DiffLineType::Add, line[1..].to_string())
+                } else if line.starts_with('-') {
+                    (DiffLineType::Delete, line[1..].to_string())
+                } else if line.starts_with(' ') {
+                    (DiffLineType::Context, line[1..].to_string())
+                } else {
+                    // Skip other lines (like "\ No newline at end of file")
+                    continue;
+                };
+
+                let (old_ln, new_ln) = match line_type {
+                    DiffLineType::Context => {
+                        let o = Some(old_line);
+                        let n = Some(new_line);
+                        old_line += 1;
+                        new_line += 1;
+                        (o, n)
+                    }
+                    DiffLineType::Add => {
+                        let n = Some(new_line);
+                        new_line += 1;
+                        (None, n)
+                    }
+                    DiffLineType::Delete => {
+                        let o = Some(old_line);
+                        old_line += 1;
+                        (o, None)
+                    }
+                };
+
+                hunk.lines.push(DiffLine {
+                    line_type,
+                    content,
+                    old_line: old_ln,
+                    new_line: new_ln,
+                });
+
+                hunk.old_count += 1;
+                hunk.new_count += 1;
+            }
+        }
+
+        // Save last hunk
+        if let Some(hunk) = current_hunk {
+            hunks.push(hunk);
+        }
+
+        if hunks.is_empty() {
+            None
+        } else {
+            Some(FileDiff {
+                file_path: file_path.to_string(),
+                old_content: None,
+                new_content: None,
+                hunks,
+            })
+        }
     }
 
     fn show_handoff_environment_creation_modal(&mut self, ctx: &mut ViewContext<Self>) {
@@ -14015,6 +15118,7 @@ impl Workspace {
         // 用户可以在设置中自行配置API密钥
     }
 
+    #[allow(dead_code)]
     fn dismiss_create_auth_secret_modal(&mut self, ctx: &mut ViewContext<Self>) {
         if self.create_auth_secret_modal.take().is_some() {
             self.focus_active_tab(ctx);
@@ -15883,10 +16987,16 @@ impl Workspace {
             pane_group::Event::BranchSelected { pane_id, index } => {
                 self.handle_branch_selected(*pane_id, *index, ctx);
             }
-            pane_group::Event::CommitSelected { pane_id, commit_index } => {
+            pane_group::Event::CommitSelected {
+                pane_id,
+                commit_index,
+            } => {
                 self.handle_commit_selected(*pane_id, *commit_index, ctx);
             }
-            pane_group::Event::FileSelected { pane_id, file_index } => {
+            pane_group::Event::FileSelected {
+                pane_id,
+                file_index,
+            } => {
                 self.handle_file_selected(*pane_id, *file_index, ctx);
             }
             pane_group::Event::SwitchBranch { branch_name } => {
@@ -15897,6 +17007,30 @@ impl Workspace {
             }
             pane_group::Event::DeleteBranch { branch_name } => {
                 self.handle_delete_branch(branch_name.clone(), ctx);
+            }
+            pane_group::Event::OpenDiffRequested { pane_id } => {
+                self.handle_open_diff_for_file(*pane_id, ctx);
+            }
+            pane_group::Event::CreateBranchFromCommit { base_ref } => {
+                self.handle_create_branch_from_commit(base_ref.clone(), ctx);
+            }
+            pane_group::Event::ViewCommitDetails { commit_hash } => {
+                self.handle_view_commit_details(commit_hash.clone(), ctx);
+            }
+            pane_group::Event::ResetToCommit { commit_hash } => {
+                self.handle_reset_to_commit(commit_hash.clone(), ctx);
+            }
+            pane_group::Event::CherryPick { commit_hash } => {
+                self.handle_cherry_pick(commit_hash.clone(), ctx);
+            }
+            pane_group::Event::OpenInEditor { file_path } => {
+                self.handle_open_in_editor(file_path.clone(), ctx);
+            }
+            pane_group::Event::ViewFileHistory { file_path } => {
+                self.handle_view_file_history(file_path.clone(), ctx);
+            }
+            pane_group::Event::ViewInBrowser { branch_name } => {
+                self.handle_view_in_browser(branch_name.clone(), ctx);
             }
         }
     }
@@ -23756,13 +24890,18 @@ impl TypedActionView for Workspace {
                 // Find the terminal view and get its pane_id
                 for tab in self.tabs.iter() {
                     let pane_group = tab.pane_group.as_ref(ctx);
-                    if let Some(pane_id) = pane_group.find_pane_id_for_terminal_view(*terminal_view_id, ctx) {
+                    if let Some(pane_id) =
+                        pane_group.find_pane_id_for_terminal_view(*terminal_view_id, ctx)
+                    {
                         self.open_branch_selector_pane(pane_id, ctx);
                         break;
                     }
                 }
             }
-            ToggleBranchMenu { pane_id, click_position: _ } => {
+            ToggleBranchMenu {
+                pane_id,
+                click_position: _,
+            } => {
                 // Open branch selector in a split pane instead of popup
                 self.open_branch_selector_pane(*pane_id, ctx);
             }

@@ -115,7 +115,8 @@ impl TerminalView {
     /// Cute: Tab names always show the working directory, not AI conversation titles.
     pub(super) fn update_pane_configuration(&mut self, ctx: &mut ViewContext<Self>) {
         // Cute: Use working directory path as pane title
-        let new_pane_title = self.pwd()
+        let new_pane_title = self
+            .pwd()
             .and_then(|p| {
                 std::path::PathBuf::from(&p)
                     .file_name()
@@ -1047,7 +1048,6 @@ impl TerminalView {
         self.selected_conversation_for_user_facing_chrome(ctx)
             .and_then(AIConversation::latest_user_query)
     }
-
 }
 
 fn default_agent_conversation_title(is_ambient_agent: bool) -> String {

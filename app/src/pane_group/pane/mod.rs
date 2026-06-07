@@ -511,9 +511,10 @@ impl PaneId {
             IPaneType::Welcome => {
                 ChildView::<PaneView<WelcomeView>>::with_id(self.0.pane_view_id).finish()
             }
-            IPaneType::BranchSelector => {
-                ChildView::<PaneView<branch_selector_view::BranchSelectorView>>::with_id(self.0.pane_view_id).finish()
-            }
+            IPaneType::BranchSelector => ChildView::<
+                PaneView<branch_selector_view::BranchSelectorView>,
+            >::with_id(self.0.pane_view_id)
+            .finish(),
             IPaneType::DeferredPlaceholder => warpui::elements::Empty::new().finish(),
             #[cfg(test)]
             IPaneType::Dummy => warpui::elements::Empty::new().finish(),

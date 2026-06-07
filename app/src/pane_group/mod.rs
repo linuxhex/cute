@@ -782,6 +782,38 @@ pub enum Event {
     DeleteBranch {
         branch_name: String,
     },
+    /// Open diff view for selected file
+    OpenDiffRequested {
+        pane_id: PaneId,
+    },
+    /// Create branch from commit/base ref
+    CreateBranchFromCommit {
+        base_ref: String,
+    },
+    /// View commit details
+    ViewCommitDetails {
+        commit_hash: String,
+    },
+    /// Reset to commit
+    ResetToCommit {
+        commit_hash: String,
+    },
+    /// Cherry pick commit
+    CherryPick {
+        commit_hash: String,
+    },
+    /// Open file in editor
+    OpenInEditor {
+        file_path: String,
+    },
+    /// View file history
+    ViewFileHistory {
+        file_path: String,
+    },
+    /// View branch in browser
+    ViewInBrowser {
+        branch_name: String,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -5668,7 +5700,10 @@ impl PaneGroup {
         ctx: &mut ViewContext<Self>,
     ) {
         // Emit event to workspace to handle commit selection
-        ctx.emit(Event::CommitSelected { pane_id, commit_index });
+        ctx.emit(Event::CommitSelected {
+            pane_id,
+            commit_index,
+        });
     }
 
     /// Handle file selection event from BranchSelectorPane.
@@ -5679,7 +5714,19 @@ impl PaneGroup {
         ctx: &mut ViewContext<Self>,
     ) {
         // Emit event to workspace to handle file selection
-        ctx.emit(Event::FileSelected { pane_id, file_index });
+        ctx.emit(Event::FileSelected {
+            pane_id,
+            file_index,
+        });
+    }
+
+    /// Handle open diff view for selected file
+    pub(super) fn handle_open_diff_for_selected_file(
+        &mut self,
+        pane_id: PaneId,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        ctx.emit(Event::OpenDiffRequested { pane_id });
     }
 
     /// Handle switch branch action from BranchSelectorPane.
@@ -5692,11 +5739,7 @@ impl PaneGroup {
     }
 
     /// Handle merge branch action from BranchSelectorPane.
-    pub(super) fn handle_merge_branch(
-        &mut self,
-        branch_name: String,
-        ctx: &mut ViewContext<Self>,
-    ) {
+    pub(super) fn handle_merge_branch(&mut self, branch_name: String, ctx: &mut ViewContext<Self>) {
         ctx.emit(Event::MergeBranch { branch_name });
     }
 
@@ -5707,6 +5750,61 @@ impl PaneGroup {
         ctx: &mut ViewContext<Self>,
     ) {
         ctx.emit(Event::DeleteBranch { branch_name });
+    }
+
+    /// Handle create branch from commit action from BranchSelectorPane.
+    pub(super) fn handle_create_branch_from_commit(
+        &mut self,
+        base_ref: String,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        ctx.emit(Event::CreateBranchFromCommit { base_ref });
+    }
+
+    /// Handle view commit details action from BranchSelectorPane.
+    pub(super) fn handle_view_commit_details(
+        &mut self,
+        commit_hash: String,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        ctx.emit(Event::ViewCommitDetails { commit_hash });
+    }
+
+    /// Handle reset to commit action from BranchSelectorPane.
+    pub(super) fn handle_reset_to_commit(
+        &mut self,
+        commit_hash: String,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        ctx.emit(Event::ResetToCommit { commit_hash });
+    }
+
+    /// Handle cherry pick action from BranchSelectorPane.
+    pub(super) fn handle_cherry_pick(&mut self, commit_hash: String, ctx: &mut ViewContext<Self>) {
+        ctx.emit(Event::CherryPick { commit_hash });
+    }
+
+    /// Handle open in editor action from BranchSelectorPane.
+    pub(super) fn handle_open_in_editor(&mut self, file_path: String, ctx: &mut ViewContext<Self>) {
+        ctx.emit(Event::OpenInEditor { file_path });
+    }
+
+    /// Handle view file history action from BranchSelectorPane.
+    pub(super) fn handle_view_file_history(
+        &mut self,
+        file_path: String,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        ctx.emit(Event::ViewFileHistory { file_path });
+    }
+
+    /// Handle view in browser action from BranchSelectorPane.
+    pub(super) fn handle_view_in_browser(
+        &mut self,
+        branch_name: String,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        ctx.emit(Event::ViewInBrowser { branch_name });
     }
 
     /// The current pane group title, based on the focused pane.
@@ -7061,6 +7159,7 @@ impl PaneGroup {
     }
 
     /// Adds a new pane to this group, relative to an existing pane.
+    /// Returns the ID of the newly added pane.
     pub fn add_pane_sibling(
         &mut self,
         relative_to: PaneId,
@@ -7068,14 +7167,14 @@ impl PaneGroup {
         pane: impl Into<Box<dyn AnyPaneContent>>,
         focus_new_pane: bool,
         ctx: &mut ViewContext<Self>,
-    ) {
-        let _ = self.add_pane(
+    ) -> Option<PaneId> {
+        self.add_pane(
             direction,
             Some(relative_to),
             pane.into(),
             focus_new_pane,
             ctx,
-        );
+        )
     }
 
     fn init_pane(

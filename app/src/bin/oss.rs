@@ -25,7 +25,8 @@ fn main() -> Result<()> {
         state = state.with_additional_features(warp_core::features::DEBUG_FLAGS);
     }
     // 跳过登录，直接进入主页面
-    state = state.with_additional_features(&[warp_core::features::FeatureFlag::SkipFirebaseAnonymousUser]);
+    state = state
+        .with_additional_features(&[warp_core::features::FeatureFlag::SkipFirebaseAnonymousUser]);
     ChannelState::set(state);
 
     warp::run()

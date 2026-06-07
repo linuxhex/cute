@@ -85,6 +85,7 @@ define_settings_group!(CloudAgentSettings, settings: [
 ]);
 
 impl CloudAgentSettings {
+    #[allow(dead_code)]
     pub fn is_harness_auth_ftux_completed(&self, harness: Harness) -> bool {
         self.harness_auth_ftux_completed
             .value()

@@ -8,8 +8,8 @@ use warp_core::features::FeatureFlag;
 use warpui::assets::asset_cache::AssetSource;
 use warpui::elements::{
     Align, Border, CacheOption, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment,
-    Element, Empty, Flex, Image, MainAxisAlignment, MouseStateHandle, ParentElement,
-    Radius, Shrinkable, Text,
+    Element, Empty, Flex, Image, MainAxisAlignment, MouseStateHandle, ParentElement, Radius,
+    Shrinkable, Text,
 };
 use warpui::keymap::ContextPredicate;
 use warpui::platform::Cursor;
@@ -330,13 +330,9 @@ impl AccountWidget {
         Flex::column()
             .with_child(
                 Container::new(
-                    Text::new_inline(
-                        "Cute Terminal",
-                        appearance.ui_font_family(),
-                        16.,
-                    )
-                    .with_color(theme.active_ui_text_color().into_solid())
-                    .finish(),
+                    Text::new_inline("Cute Terminal", appearance.ui_font_family(), 16.)
+                        .with_color(theme.active_ui_text_color().into_solid())
+                        .finish(),
                 )
                 .with_margin_top(20.)
                 .finish(),

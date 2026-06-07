@@ -3214,11 +3214,6 @@ fn test_navigate_blocks() {
     run_navigation_test(InputMode::PinnedToBottom);
 }
 
-// #[test]
-// fn test_navigate_blocks_inverted_blocklist() {
-//     run_navigation_test(InputMode::PinnedToTop);
-// }
-
 #[test]
 fn test_alt_scroll_sequences() {
     App::test((), |mut app| async move {

@@ -711,8 +711,10 @@ impl DisplayChip {
                         // Fetch commit history for the selected branch
                         if let Some(_menu) = &me.git_branch_menu_view() {
                             if let Some(ref session_context) = me.session_context {
-                                let repo_path: std::path::PathBuf = std::path::PathBuf::try_from(session_context.current_working_directory.clone())
-                                    .unwrap_or_default();
+                                let repo_path: std::path::PathBuf = std::path::PathBuf::try_from(
+                                    session_context.current_working_directory.clone(),
+                                )
+                                .unwrap_or_default();
                                 let branch_name_for_async = branch_name.clone();
                                 let branch_name_for_callback = branch_name.clone();
                                 ctx.spawn(
@@ -721,7 +723,8 @@ impl DisplayChip {
                                             &repo_path,
                                             &branch_name_for_async,
                                             50, // limit to 50 commits
-                                        ).await
+                                        )
+                                        .await
                                     },
                                     move |me, result, ctx| {
                                         if let Ok(commits) = result {
@@ -746,15 +749,17 @@ impl DisplayChip {
                         use super::display_menu::BranchAction;
                         if let Some(ref session_context) = me.session_context {
                             let repo_path: std::path::PathBuf = std::path::PathBuf::try_from(
-                                session_context.current_working_directory.clone()
-                            ).unwrap_or_default();
+                                session_context.current_working_directory.clone(),
+                            )
+                            .unwrap_or_default();
 
                             match action {
                                 BranchAction::Checkout { branch_name } => {
                                     let branch = branch_name.clone();
                                     ctx.spawn(
                                         async move {
-                                            crate::util::git::checkout_branch(&repo_path, &branch).await
+                                            crate::util::git::checkout_branch(&repo_path, &branch)
+                                                .await
                                         },
                                         |me, result, ctx| {
                                             if result.is_ok() {
@@ -769,7 +774,8 @@ impl DisplayChip {
                                     let branch = branch_name.clone();
                                     ctx.spawn(
                                         async move {
-                                            crate::util::git::merge_branch(&repo_path, &branch).await
+                                            crate::util::git::merge_branch(&repo_path, &branch)
+                                                .await
                                         },
                                         |me, result, ctx| {
                                             if result.is_ok() {
@@ -784,7 +790,8 @@ impl DisplayChip {
                                     let branch = branch_name.clone();
                                     ctx.spawn(
                                         async move {
-                                            crate::util::git::delete_branch(&repo_path, &branch).await
+                                            crate::util::git::delete_branch(&repo_path, &branch)
+                                                .await
                                         },
                                         |me, result, ctx| {
                                             if result.is_ok() {
@@ -807,8 +814,10 @@ impl DisplayChip {
                         // Fetch file changes for the selected commit
                         if let Some(menu) = &me.git_branch_menu_view() {
                             if let Some(ref session_context) = me.session_context {
-                                let repo_path: std::path::PathBuf = std::path::PathBuf::try_from(session_context.current_working_directory.clone())
-                                    .unwrap_or_default();
+                                let repo_path: std::path::PathBuf = std::path::PathBuf::try_from(
+                                    session_context.current_working_directory.clone(),
+                                )
+                                .unwrap_or_default();
                                 let commit_hash_for_async = commit_hash.clone();
                                 let commit_hash_for_callback = commit_hash.clone();
                                 // Set loading state
@@ -820,7 +829,8 @@ impl DisplayChip {
                                         crate::util::git::get_commit_files(
                                             &repo_path,
                                             &commit_hash_for_async,
-                                        ).await
+                                        )
+                                        .await
                                     },
                                     move |me, result, ctx| {
                                         if let Some(menu) = me.git_branch_menu_view() {
@@ -835,7 +845,10 @@ impl DisplayChip {
                                                         );
                                                     }
                                                     Err(e) => {
-                                                        log::warn!("Failed to load commit files: {}", e);
+                                                        log::warn!(
+                                                            "Failed to load commit files: {}",
+                                                            e
+                                                        );
                                                     }
                                                 }
                                             });
@@ -1975,7 +1988,11 @@ impl TypedActionView for DisplayChip {
             DisplayChipAction::OpenBranchSelector => {
                 // Dispatch WorkspaceAction to open the new branch selector
                 let terminal_view_id = self.terminal_view_id;
-                ctx.dispatch_typed_action(&crate::workspace::WorkspaceAction::OpenBranchSelectorFromChip { terminal_view_id });
+                ctx.dispatch_typed_action(
+                    &crate::workspace::WorkspaceAction::OpenBranchSelectorFromChip {
+                        terminal_view_id,
+                    },
+                );
             }
             DisplayChipAction::OpenGithubPullRequest(url) => {
                 ctx.open_url(url);

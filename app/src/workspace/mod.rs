@@ -30,7 +30,9 @@ pub use action::{
     TabContextMenuAnchor, VerticalTabsPaneContextMenuTarget, WorkspaceAction,
 };
 pub use active_session::ActiveSession;
-pub use branch_selector::{BranchInfo, BranchSelectorState, ChangedFile, CommitInfo, FileDiff, FileStatus};
+pub use branch_selector::{
+    BranchInfo, BranchSelectorState, ChangedFile, CommitInfo, FileDiff, FileStatus,
+};
 pub use global_actions::{
     ForkAIConversationParams, ForkFromExchange, ForkedConversationDestination,
 };

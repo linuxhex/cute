@@ -900,14 +900,15 @@ impl FindPaneByDirection for PaneNode {
 impl PaneBranch {
     fn new(old_pane: PaneNode, new_pane: PaneNode, direction: Direction) -> Self {
         let axis = direction.axis();
+        // 默认使用 2:1 比例（新 pane 占 2/3）
         PaneBranch {
             axis,
             nodes: match direction {
                 Direction::Left | Direction::Up => {
-                    vec![(DEFAULT_FLEX_SIZE, new_pane), (DEFAULT_FLEX_SIZE, old_pane)]
+                    vec![(PaneFlex(2.0), new_pane), (PaneFlex(1.0), old_pane)]
                 }
                 Direction::Right | Direction::Down => {
-                    vec![(DEFAULT_FLEX_SIZE, old_pane), (DEFAULT_FLEX_SIZE, new_pane)]
+                    vec![(PaneFlex(1.0), old_pane), (PaneFlex(2.0), new_pane)]
                 }
             },
             dividers: vec![Divider::new()],
@@ -923,6 +924,31 @@ impl PaneBranch {
         )
     }
 
+    /// Construct a branch that contains two leaves with 2:1 ratio (new pane is larger).
+    fn for_leaves_with_ratio(old_leaf: PaneId, new_leaf: PaneId, direction: Direction) -> Self {
+        let axis = direction.axis();
+        PaneBranch {
+            axis,
+            nodes: match direction {
+                Direction::Left | Direction::Up => {
+                    // 新 pane 在左边，占 2/3
+                    vec![
+                        (PaneFlex(2.0), PaneNode::Leaf(new_leaf)),
+                        (PaneFlex(1.0), PaneNode::Leaf(old_leaf)),
+                    ]
+                }
+                Direction::Right | Direction::Down => {
+                    // 新 pane 在右边，占 2/3
+                    vec![
+                        (PaneFlex(1.0), PaneNode::Leaf(old_leaf)),
+                        (PaneFlex(2.0), PaneNode::Leaf(new_leaf)),
+                    ]
+                }
+            },
+            dividers: vec![Divider::new()],
+        }
+    }
+
     fn split(&mut self, old_pane: PaneId, new_pane: PaneId, direction: Direction) -> bool {
         for (idx, (_, node)) in self.nodes.iter_mut().enumerate() {
             match node {
@@ -936,17 +962,22 @@ impl PaneBranch {
                         // If the split comes in the same direction as the previous splits
                         // on this sub-tree, we can insert the new pane into the nodes directly
                         if direction.axis() == self.axis {
-                            self.nodes.insert(
-                                match direction {
-                                    Direction::Left | Direction::Up => idx,
-                                    Direction::Right | Direction::Down => idx + 1,
-                                },
-                                (DEFAULT_FLEX_SIZE, PaneNode::Leaf(new_pane)),
-                            );
-                            self.dividers.insert(idx, Divider::new());
+                            // 新 pane 占 2/3，老 pane 占 1/3
+                            // 总 flex = 3.0，新 pane flex = 2.0，老 pane flex = 1.0
+                            let insert_idx = match direction {
+                                Direction::Left | Direction::Up => idx,
+                                Direction::Right | Direction::Down => idx + 1,
+                            };
+                            self.nodes
+                                .insert(insert_idx, (PaneFlex(2.0), PaneNode::Leaf(new_pane)));
+                            // 调整老 pane 的 flex 为 1.0
+                            let old_idx = if insert_idx <= idx { idx + 1 } else { idx };
+                            self.nodes[old_idx].0 = PaneFlex(1.0);
+                            self.dividers
+                                .insert(insert_idx.min(self.dividers.len()), Divider::new());
                         } else {
                             // Otherwise, split the current leaf into a perpendicular branch
-                            *node = PaneNode::Branch(PaneBranch::for_leaves(
+                            *node = PaneNode::Branch(PaneBranch::for_leaves_with_ratio(
                                 *pane, new_pane, direction,
                             ));
                         }

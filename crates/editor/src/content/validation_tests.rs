@@ -105,38 +105,6 @@ fn test_validate_styled_code() {
     super::validate_content(&tree);
 }
 
-// #[test]
-// #[should_panic(
-//     expected = "2: Tried to start a RunnableCodeBlock block, but Bold was active\nBuffer: a<b_s>b<code_s>c<code_e>d<b_e>"
-// )]
-// fn test_validate_start_block_with_style() {
-//     let mut tree = SumTree::new();
-//     tree.push('a'.into());
-//     tree.push(BufferText::Marker {
-//         marker_type: BufferTextStyle::Bold,
-//         dir: MarkerDir::Start,
-//     });
-//     tree.push('b'.into());
-//     tree.push(BufferText::BlockMarker {
-//         marker_type: BufferBlockStyle::CodeBlock,
-//         dir: MarkerDir::Start,
-//     });
-//     tree.push('c'.into());
-//     tree.push(BufferText::BlockMarker {
-//         marker_type: BufferBlockStyle::CodeBlock,
-//         dir: MarkerDir::End,
-//     });
-//     tree.push('d'.into());
-//     tree.push(BufferText::Marker {
-//         marker_type: BufferTextStyle::Bold,
-//         dir: MarkerDir::End,
-//     });
-
-//     // The marker pairs are balanced, but there cannot be a style active when
-//     // starting a runnable command block.
-//     super::validate_content(&tree);
-// }
-
 #[test]
 #[should_panic(expected = "0: Buffer doesn't have an active block style.\nBuffer: \\ny")]
 fn test_validate_buffer_without_start_marker() {
