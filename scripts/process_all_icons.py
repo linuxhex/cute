@@ -35,8 +35,8 @@ def remove_white_border(img, threshold=240):
 
     content_width = right - left
     content_height = bottom - top
-    padding_x = int(content_width * 0.05)
-    padding_y = int(content_height * 0.05)
+    padding_x = int(content_width * 0.02)
+    padding_y = int(content_height * 0.02)
 
     left = max(0, left - padding_x)
     top = max(0, top - padding_y)

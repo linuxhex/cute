@@ -13691,23 +13691,23 @@ impl Workspace {
                                         view.state.selected_commit_index
                                     {
                                         // 检查是否是当前分支且选中第一个提交（显示工作区改动）
-                                        let is_current_branch_with_working_changes =
-                                            view.state.selected_branch_index
-                                                .and_then(|idx| view.state.branches.get(idx))
-                                                .map(|b| {
-                                                    b.is_current && commit_idx == 0
-                                                })
-                                                .unwrap_or(false);
+                                        let is_current_branch_with_working_changes = view
+                                            .state
+                                            .selected_branch_index
+                                            .and_then(|idx| view.state.branches.get(idx))
+                                            .map(|b| b.is_current && commit_idx == 0)
+                                            .unwrap_or(false);
 
                                         if is_current_branch_with_working_changes {
                                             // 当前分支的第一个"提交"显示工作区改动
                                             Self::get_file_diff_for_working_directory(
-                                                repo_path,
-                                                &file.path,
+                                                repo_path, &file.path,
                                             )
                                         } else {
                                             // 提交的 diff
-                                            if let Some(branch_idx) = view.state.selected_branch_index {
+                                            if let Some(branch_idx) =
+                                                view.state.selected_branch_index
+                                            {
                                                 if let Some(branch) =
                                                     view.state.branches.get(branch_idx)
                                                 {
@@ -14687,6 +14687,26 @@ impl Workspace {
     ) -> Option<crate::workspace::branch_selector::FileDiff> {
         use crate::workspace::branch_selector::{DiffHunk, DiffLine, DiffLineType, FileDiff};
 
+        // Check if file is an image
+        let path = std::path::Path::new(file_path);
+        let extension = path.extension().and_then(|e| e.to_str()).unwrap_or("").to_lowercase();
+        let is_image = matches!(extension.as_str(), "png" | "jpg" | "jpeg" | "gif" | "bmp" | "webp" | "ico" | "svg");
+
+        if is_image {
+            // 对于工作区图片，直接使用本地文件路径
+            let full_path = repo_path.join(file_path);
+            let image_local_path = full_path.to_str().map(|s| s.to_string());
+
+            return Some(FileDiff {
+                file_path: file_path.to_string(),
+                old_content: None,
+                new_content: None,
+                hunks: Vec::new(),
+                is_binary: true,
+                image_local_path,
+            });
+        }
+
         let _output = command::blocking::Command::new("git")
             .args(["show", &format!("{}:{}", commit_hash, file_path)])
             .current_dir(repo_path)
@@ -14806,6 +14826,8 @@ impl Workspace {
                     old_content: None,
                     new_content: None,
                     hunks,
+                    is_binary: false,
+                    image_local_path: None,
                 });
             }
         }
@@ -14853,6 +14875,26 @@ impl Workspace {
         file_path: &str,
     ) -> Option<crate::workspace::branch_selector::FileDiff> {
         use crate::workspace::branch_selector::{DiffHunk, DiffLine, DiffLineType, FileDiff};
+
+        // Check if file is an image
+        let path = std::path::Path::new(file_path);
+        let extension = path.extension().and_then(|e| e.to_str()).unwrap_or("").to_lowercase();
+        let is_image = matches!(extension.as_str(), "png" | "jpg" | "jpeg" | "gif" | "bmp" | "webp" | "ico" | "svg");
+
+        if is_image {
+            // 对于工作区图片，直接使用本地文件路径
+            let full_path = repo_path.join(file_path);
+            let image_local_path = full_path.to_str().map(|s| s.to_string());
+
+            return Some(FileDiff {
+                file_path: file_path.to_string(),
+                old_content: None,
+                new_content: None,
+                hunks: Vec::new(),
+                is_binary: true,
+                image_local_path,
+            });
+        }
 
         // Get diff for working directory changes (HEAD vs working tree)
         let output = command::blocking::Command::new("git")
@@ -14911,6 +14953,8 @@ impl Workspace {
                                     new_count: diff_lines.len() as u32,
                                     lines: diff_lines,
                                 }],
+                                is_binary: false,
+                                image_local_path: None,
                             });
                         }
                     }
@@ -15028,6 +15072,8 @@ impl Workspace {
                 old_content: None,
                 new_content: None,
                 hunks,
+                is_binary: false,
+                image_local_path: None,
             })
         }
     }
