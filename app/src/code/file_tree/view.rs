@@ -51,6 +51,19 @@ use crate::terminal::input::InputDropTargetData;
 use crate::terminal::view::{TerminalDropTargetData, TerminalView};
 use crate::ui_components::icons::Icon;
 use crate::ui_components::item_highlight::{ImageOrIcon, ItemHighlightState};
+use warpui::elements::DropTargetData;
+
+/// Drop target data for file tree directory items
+#[derive(Debug, Clone)]
+pub struct FileTreeDirectoryDropTargetData {
+    pub id: FileTreeIdentifier,
+}
+
+impl DropTargetData for FileTreeDirectoryDropTargetData {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+}
 #[cfg(feature = "local_fs")]
 use crate::util::file::external_editor::EditorSettings;
 #[cfg(feature = "local_fs")]
@@ -143,6 +156,10 @@ pub enum FileTreeAction {
     ItemDroppedOnTerminal {
         id: FileTreeIdentifier,
         terminal_view: WeakViewHandle<TerminalView>,
+    },
+    ItemDroppedOnDirectory {
+        source_id: FileTreeIdentifier,
+        target_id: FileTreeIdentifier,
     },
 }
 
@@ -2097,7 +2114,7 @@ impl FileTreeView {
             })
             .use_copy_cursor_when_dragging_over_drop_target()
             .with_accepted_by_drop_target_fn(move |drop_target_data, _| {
-                // Allow drops on terminal input and terminal block list
+                // Allow drops on terminal input, terminal block list, and file tree directories
                 if drop_target_data
                     .as_any()
                     .downcast_ref::<InputDropTargetData>()
@@ -2105,6 +2122,10 @@ impl FileTreeView {
                     || drop_target_data
                         .as_any()
                         .downcast_ref::<TerminalDropTargetData>()
+                        .is_some()
+                    || drop_target_data
+                        .as_any()
+                        .downcast_ref::<FileTreeDirectoryDropTargetData>()
                         .is_some()
                 {
                     AcceptedByDropTarget::Yes
@@ -2129,13 +2150,40 @@ impl FileTreeView {
                         id: id_for_drop.clone(),
                         terminal_view: terminal_drop_data.terminal_view.clone(),
                     });
+                } else if let Some(directory_drop_data) = data
+                    .as_ref()
+                    .and_then(|data| data.as_any().downcast_ref::<FileTreeDirectoryDropTargetData>())
+                {
+                    ctx.dispatch_typed_action(FileTreeAction::ItemDroppedOnDirectory {
+                        source_id: directory_drop_data.id.clone(),
+                        target_id: id_for_drop.clone(),
+                    });
                 }
             })
             .with_alternate_drag_element(self.render_item_while_dragging(&id_for_drag, appearance))
             .with_keep_original_visible(true)
             .finish();
 
-        SavePosition::new(draggable, item_position_id.as_str()).finish()
+        // If this is a directory, wrap it in a DropTarget to accept file drops
+        let is_directory = matches!(item, FileTreeItem::DirectoryHeader { .. });
+        let id_for_drop_target = id.clone();
+
+        let element = if is_directory {
+            use warpui::elements::DropTarget;
+            SavePosition::new(
+                DropTarget::new(
+                    draggable,
+                    FileTreeDirectoryDropTargetData { id: id_for_drop_target },
+                )
+                .finish(),
+                item_position_id.as_str(),
+            )
+            .finish()
+        } else {
+            SavePosition::new(draggable, item_position_id.as_str()).finish()
+        };
+
+        element
     }
 
     fn selected_item_std_path(&self) -> Option<StandardizedPath> {
@@ -2682,6 +2730,77 @@ impl FileTreeView {
             // Emit event to notify workspace that a file was deleted
             ctx.emit(FileTreeEvent::FileDeleted { path: path.clone() });
 
+            ctx.notify();
+        }
+    }
+
+    /// Move an item (file or directory) to a target directory
+    fn move_item_to_directory(
+        &mut self,
+        source_id: &FileTreeIdentifier,
+        target_id: &FileTreeIdentifier,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        // Get source item
+        let Some(source_root_dir) = self.root_directories.get(&source_id.root) else {
+            return;
+        };
+        let Some(source_item) = source_root_dir.items.get(source_id.index) else {
+            return;
+        };
+
+        // Get target directory
+        let Some(target_root_dir) = self.root_directories.get(&target_id.root) else {
+            return;
+        };
+        let Some(target_item) = target_root_dir.items.get(target_id.index) else {
+            return;
+        };
+
+        // Verify target is a directory
+        let FileTreeItem::DirectoryHeader { directory: target_dir, .. } = target_item else {
+            log::warn!("Move target is not a directory");
+            return;
+        };
+
+        let source_path = source_item.path().to_local_path_lossy();
+        let target_dir_path = target_dir.path.to_local_path_lossy();
+
+        // Don't allow moving to itself or into itself
+        if source_path == target_dir_path || target_dir_path.starts_with(&source_path) {
+            log::warn!("Cannot move item to itself or into itself");
+            return;
+        }
+
+        // Build the new path
+        let source_name = source_path.file_name().expect("source should have a file name");
+        let new_path = target_dir_path.join(source_name);
+
+        // Perform the move
+        #[cfg(feature = "local_fs")]
+        {
+            use std::fs;
+
+            // Check if target already exists
+            if new_path.exists() {
+                log::warn!("Target path already exists: {}", new_path.display());
+                return;
+            }
+
+            // Perform the move
+            if let Err(e) = fs::rename(&source_path, &new_path) {
+                log::error!("Failed to move {:?} to {:?}: {}", source_path, new_path, e);
+                return;
+            }
+
+            log::info!(
+                "Moved {} to {}",
+                source_path.display(),
+                new_path.display()
+            );
+
+            // Rebuild the file tree to reflect the change
+            self.update_directory_contents(&self.displayed_directories.clone(), false, ctx);
             ctx.notify();
         }
     }
@@ -3264,6 +3383,12 @@ impl TypedActionView for FileTreeView {
                 terminal_view.update(ctx, |view, ctx| {
                     view.handle_file_tree_drop_on_active_command(&file_path, ctx);
                 });
+            }
+            FileTreeAction::ItemDroppedOnDirectory {
+                source_id,
+                target_id,
+            } => {
+                self.move_item_to_directory(source_id, target_id, ctx);
             }
         }
     }
