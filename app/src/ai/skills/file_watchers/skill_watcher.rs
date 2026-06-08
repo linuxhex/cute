@@ -27,9 +27,9 @@ use super::utils::{
     read_skills_from_directories, read_skills_from_files,
 };
 use crate::remote_server::manager::RemoteServerManager;
-use crate::warp_managed_paths_watcher::{
-    filter_repository_update_by_prefix, warp_managed_skill_dirs, WarpManagedPathsWatcher,
-    WarpManagedPathsWatcherEvent,
+use crate::cute_managed_paths_watcher::{
+    cute_managed_skill_dirs, filter_repository_update_by_prefix, CuteManagedPathsWatcher,
+    CuteManagedPathsWatcherEvent,
 };
 
 #[derive(Debug, PartialEq)]
@@ -144,8 +144,8 @@ impl SkillWatcher {
                     }
                 },
             );
-            ctx.subscribe_to_model(&WarpManagedPathsWatcher::handle(ctx), |me, event, ctx| {
-                me.handle_warp_managed_paths_event(event, ctx);
+            ctx.subscribe_to_model(&CuteManagedPathsWatcher::handle(ctx), |me, event, ctx| {
+                me.handle_cute_managed_paths_event(event, ctx);
             });
         }
 
@@ -164,7 +164,7 @@ impl SkillWatcher {
         // We use a separate HomeDirectoryWatcher to detect when those are created and start watching them after they are created.
         let mut home_provider_watchers = HashMap::new();
         if let Some(home_path) = home_dir {
-            Self::spawn_read_skills_from_directories(warp_managed_skill_dirs(), ctx);
+            Self::spawn_read_skills_from_directories(cute_managed_skill_dirs(), ctx);
             let skills_parent_paths: HashSet<PathBuf> = SKILL_PROVIDER_DEFINITIONS
                 .iter()
                 .filter(|provider| provider.provider != SkillProvider::Warp)
@@ -987,13 +987,13 @@ impl SkillWatcher {
         }
     }
 
-    fn handle_warp_managed_paths_event(
+    fn handle_cute_managed_paths_event(
         &mut self,
-        event: &WarpManagedPathsWatcherEvent,
+        event: &CuteManagedPathsWatcherEvent,
         ctx: &mut ModelContext<Self>,
     ) {
-        let WarpManagedPathsWatcherEvent::FilesChanged(update) = event;
-        for skill_dir in warp_managed_skill_dirs() {
+        let CuteManagedPathsWatcherEvent::FilesChanged(update) = event;
+        for skill_dir in cute_managed_skill_dirs() {
             if let Some(filtered_update) = filter_repository_update_by_prefix(update, &skill_dir) {
                 self.handle_repository_update(&filtered_update, ctx);
             }

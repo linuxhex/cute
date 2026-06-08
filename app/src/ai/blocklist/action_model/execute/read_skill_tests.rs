@@ -21,7 +21,7 @@ use crate::ai::agent::{
 use crate::ai::blocklist::action_model::AIConversationId;
 use crate::ai::skills::{BundledSkillActivation, SkillManager};
 use crate::settings::AISettings;
-use crate::warp_managed_paths_watcher::WarpManagedPathsWatcher;
+use crate::cute_managed_paths_watcher::CuteManagedPathsWatcher;
 
 fn initialize_app(app: &mut App) {
     app.add_singleton_model(DirectoryWatcher::new);
@@ -29,7 +29,7 @@ fn initialize_app(app: &mut App) {
     app.add_singleton_model(|_| DetectedRepositories::default());
     app.add_singleton_model(RepoMetadataModel::new);
     app.add_singleton_model(HomeDirectoryWatcher::new_for_test);
-    app.add_singleton_model(WarpManagedPathsWatcher::new_for_testing);
+    app.add_singleton_model(CuteManagedPathsWatcher::new_for_testing);
     app.add_singleton_model(SkillManager::new);
 }
 

@@ -14,7 +14,7 @@ use watcher::HomeDirectoryWatcher;
 
 use super::*;
 use crate::settings::AISettings;
-use crate::warp_managed_paths_watcher::WarpManagedPathsWatcher;
+use crate::cute_managed_paths_watcher::CuteManagedPathsWatcher;
 
 // ============================================================================
 // Tests for get_skills_for_working_directory subdirectory scoping
@@ -84,7 +84,7 @@ fn get_skills_for_working_directory_scopes_subdirectory_skills() {
         let repo_handle = app.add_singleton_model(|_| DetectedRepositories::default());
         app.add_singleton_model(RepoMetadataModel::new);
         app.add_singleton_model(HomeDirectoryWatcher::new_for_test);
-        app.add_singleton_model(WarpManagedPathsWatcher::new_for_testing);
+        app.add_singleton_model(CuteManagedPathsWatcher::new_for_testing);
         let skill_manager_handle = app.add_singleton_model(SkillManager::new);
 
         // Register the repo root so get_root_for_path returns Some.
@@ -217,7 +217,7 @@ fn get_skills_for_working_directory_name_collision_returns_both() {
         let repo_handle = app.add_singleton_model(|_| DetectedRepositories::default());
         app.add_singleton_model(RepoMetadataModel::new);
         app.add_singleton_model(HomeDirectoryWatcher::new_for_test);
-        app.add_singleton_model(WarpManagedPathsWatcher::new_for_testing);
+        app.add_singleton_model(CuteManagedPathsWatcher::new_for_testing);
         let skill_manager_handle = app.add_singleton_model(SkillManager::new);
 
         // Register the repo root so get_root_for_path returns Some.
@@ -321,7 +321,7 @@ fn cloud_environment_skills_always_included() {
         let repo_handle = app.add_singleton_model(|_| DetectedRepositories::default());
         app.add_singleton_model(RepoMetadataModel::new);
         app.add_singleton_model(HomeDirectoryWatcher::new_for_test);
-        app.add_singleton_model(WarpManagedPathsWatcher::new_for_testing);
+        app.add_singleton_model(CuteManagedPathsWatcher::new_for_testing);
         let skill_manager_handle = app.add_singleton_model(SkillManager::new);
 
         let canonical_repo_a =
@@ -530,7 +530,7 @@ fn active_skill_by_reference_resolves_exact_remote_identity() {
         app.add_singleton_model(|_| DetectedRepositories::default());
         app.add_singleton_model(RepoMetadataModel::new);
         app.add_singleton_model(HomeDirectoryWatcher::new_for_test);
-        app.add_singleton_model(WarpManagedPathsWatcher::new_for_testing);
+        app.add_singleton_model(CuteManagedPathsWatcher::new_for_testing);
         let handle = app.add_singleton_model(SkillManager::new);
 
         handle.update(&mut app, |manager, _| {
@@ -562,7 +562,7 @@ fn active_skill_by_reference_distinguishes_remote_hosts_with_the_same_display_pa
         app.add_singleton_model(|_| DetectedRepositories::default());
         app.add_singleton_model(RepoMetadataModel::new);
         app.add_singleton_model(HomeDirectoryWatcher::new_for_test);
-        app.add_singleton_model(WarpManagedPathsWatcher::new_for_testing);
+        app.add_singleton_model(CuteManagedPathsWatcher::new_for_testing);
         let handle = app.add_singleton_model(SkillManager::new);
 
         handle.update(&mut app, |manager, _| {
@@ -617,7 +617,7 @@ fn best_supported_provider_fast_path_returns_deduped_provider() {
         app.add_singleton_model(|_| DetectedRepositories::default());
         app.add_singleton_model(RepoMetadataModel::new);
         app.add_singleton_model(HomeDirectoryWatcher::new_for_test);
-        app.add_singleton_model(WarpManagedPathsWatcher::new_for_testing);
+        app.add_singleton_model(CuteManagedPathsWatcher::new_for_testing);
         let handle = app.add_singleton_model(SkillManager::new);
 
         let claude_skill = make_skill("deploy", ".claude");
@@ -643,7 +643,7 @@ fn best_supported_provider_remaps_to_supported_provider() {
         app.add_singleton_model(|_| DetectedRepositories::default());
         app.add_singleton_model(RepoMetadataModel::new);
         app.add_singleton_model(HomeDirectoryWatcher::new_for_test);
-        app.add_singleton_model(WarpManagedPathsWatcher::new_for_testing);
+        app.add_singleton_model(CuteManagedPathsWatcher::new_for_testing);
         let handle = app.add_singleton_model(SkillManager::new);
 
         let agents_skill = make_skill("deploy", ".agents");
@@ -674,7 +674,7 @@ fn best_supported_provider_falls_back_when_no_match() {
         app.add_singleton_model(|_| DetectedRepositories::default());
         app.add_singleton_model(RepoMetadataModel::new);
         app.add_singleton_model(HomeDirectoryWatcher::new_for_test);
-        app.add_singleton_model(WarpManagedPathsWatcher::new_for_testing);
+        app.add_singleton_model(CuteManagedPathsWatcher::new_for_testing);
         let handle = app.add_singleton_model(SkillManager::new);
 
         let agents_skill = make_skill("deploy", ".agents");

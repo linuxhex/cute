@@ -14,7 +14,7 @@ use super::{CloudEnvMcpScanServer, FileBasedMCPManager, FileBasedMCPManagerEvent
 use crate::ai::mcp::{FileMCPWatcher, ParsedTemplatableMCPServerResult};
 use crate::auth::AuthStateProvider;
 use crate::settings::{AISettings, FocusedTerminalInfo};
-use crate::warp_managed_paths_watcher::{warp_managed_mcp_config_path, WarpManagedPathsWatcher};
+use crate::cute_managed_paths_watcher::{cute_managed_mcp_config_path, CuteManagedPathsWatcher};
 use crate::workspaces::user_workspaces::UserWorkspaces;
 
 // Helper to initialize dependencies and return FileBasedMCPManager handle
@@ -23,7 +23,7 @@ fn setup_app(app: &mut App) -> warpui::ModelHandle<FileBasedMCPManager> {
     app.add_singleton_model(|_| DetectedRepositories::default());
     app.add_singleton_model(RepoMetadataModel::new);
     app.add_singleton_model(HomeDirectoryWatcher::new_for_test);
-    app.add_singleton_model(WarpManagedPathsWatcher::new_for_testing);
+    app.add_singleton_model(CuteManagedPathsWatcher::new_for_testing);
     app.add_singleton_model(FileMCPWatcher::new);
     app.add_singleton_model(AISettings::new_with_defaults);
     app.add_singleton_model(|_| AuthStateProvider::new_for_test());
@@ -280,7 +280,7 @@ fn test_update_file_based_servers_removes_unreferenced_servers() {
 #[test]
 fn test_global_warp_server_from_managed_home_root_always_spawns() {
     let _flag_guard = FeatureFlag::FileBasedMcp.override_enabled(true);
-    let Some(warp_mcp_config_path) = warp_managed_mcp_config_path() else {
+    let Some(cute_mcp_config_path) = cute_managed_mcp_config_path() else {
         return;
     };
     let parsed = parse_mcp_json(r#"{"global-warp": {"command": "npx", "args": ["warp"]}}"#);
@@ -289,11 +289,11 @@ fn test_global_warp_server_from_managed_home_root_always_spawns() {
         let manager = setup_app(&mut app);
         let events = subscribe_events(&mut app, &manager);
 
-        // Toggle is off by default; the watcher-produced Warp root should still
-        // be classified as the global Warp config and auto-spawn.
+        // Toggle is off by default; the watcher-produced Cute root should still
+        // be classified as the global Cute config and auto-spawn.
         manager.update(&mut app, |m, ctx| {
             m.apply_parsed_servers(
-                warp_mcp_config_path.root_path.clone(),
+                cute_mcp_config_path.root_path.clone(),
                 MCPProvider::Warp,
                 parsed,
                 ctx,
@@ -304,7 +304,7 @@ fn test_global_warp_server_from_managed_home_root_always_spawns() {
             assert_eq!(
                 e.spawned_uuids.len(),
                 1,
-                "Managed Warp MCP config should auto-spawn regardless of toggle"
+                "Managed Cute MCP config should auto-spawn regardless of toggle"
             );
         });
 
@@ -474,10 +474,10 @@ fn test_project_scoped_cloud_scan_has_detected_servers_but_empty_wait_set() {
 #[test]
 fn test_auto_started_cloud_scan_uuids_are_in_wait_set() {
     let _flag_guard = FeatureFlag::FileBasedMcp.override_enabled(true);
-    let Some(warp_mcp_config_path) = warp_managed_mcp_config_path() else {
+    let Some(cute_mcp_config_path) = cute_managed_mcp_config_path() else {
         return;
     };
-    let root_path = warp_mcp_config_path.root_path;
+    let root_path = cute_mcp_config_path.root_path;
     let parsed = parse_mcp_json(r#"{"global-warp": {"command": "npx", "args": ["warp"]}}"#);
 
     App::test((), |mut app| async move {

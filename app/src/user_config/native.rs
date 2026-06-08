@@ -19,9 +19,9 @@ use crate::features::FeatureFlag;
 use crate::launch_configs::launch_config::LaunchConfig;
 use crate::tab_configs::{TabConfig, TabConfigError};
 use crate::themes::theme::WarpThemeConfig;
-use crate::warp_managed_paths_watcher::{
-    repository_update_touches_path, repository_update_touches_prefix, WarpManagedPathsWatcher,
-    WarpManagedPathsWatcherEvent,
+use crate::cute_managed_paths_watcher::{
+    repository_update_touches_path, repository_update_touches_prefix, CuteManagedPathsWatcher,
+    CuteManagedPathsWatcherEvent,
 };
 use crate::workflows::workflow::Workflow;
 
@@ -61,8 +61,8 @@ impl super::WarpConfig {
             },
         );
         ctx.subscribe_to_model(
-            &WarpManagedPathsWatcher::handle(ctx),
-            Self::handle_warp_managed_paths_event,
+            &CuteManagedPathsWatcher::handle(ctx),
+            Self::handle_cute_managed_paths_event,
         );
 
         Self {
@@ -71,12 +71,12 @@ impl super::WarpConfig {
         }
     }
 
-    fn handle_warp_managed_paths_event(
+    fn handle_cute_managed_paths_event(
         &mut self,
-        event: &WarpManagedPathsWatcherEvent,
+        event: &CuteManagedPathsWatcherEvent,
         ctx: &mut ModelContext<Self>,
     ) {
-        let WarpManagedPathsWatcherEvent::FilesChanged(update) = event;
+        let CuteManagedPathsWatcherEvent::FilesChanged(update) = event;
 
         if update_touches_dir(update, &themes_dir()) {
             let theme_dir = themes_dir();

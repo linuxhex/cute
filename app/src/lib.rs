@@ -90,7 +90,7 @@ mod view_components;
 mod vim_registers;
 mod voice;
 mod voltron;
-mod warp_managed_paths_watcher;
+mod cute_managed_paths_watcher;
 #[cfg(target_family = "wasm")]
 mod wasm_nux_dialog;
 mod window_settings;
@@ -302,7 +302,7 @@ use crate::undo_close::UndoCloseStack;
 use crate::user_config::WarpConfig;
 use crate::util::bindings::is_binding_cross_platform;
 use crate::vim_registers::VimRegisters;
-use crate::warp_managed_paths_watcher::{ensure_warp_watch_roots_exist, WarpManagedPathsWatcher};
+use crate::cute_managed_paths_watcher::{ensure_cute_watch_roots_exist, CuteManagedPathsWatcher};
 use crate::workflows::aliases::WorkflowAliases;
 use crate::workflows::local_workflows::LocalWorkflows;
 use crate::workspace::{
@@ -1088,12 +1088,12 @@ pub(crate) fn initialize_app(
 
     // One-time migration: give Preview its own config directory by
     // symlinking contents from the shared ~/.warp location. Must run
-    // before ensure_warp_watch_roots_exist() creates the new directory.
+    // before ensure_cute_watch_roots_exist() creates the new directory.
     #[cfg(target_os = "macos")]
     preview_config_migration::migrate_preview_config_dir_if_needed();
 
-    ensure_warp_watch_roots_exist();
-    ctx.add_singleton_model(WarpManagedPathsWatcher::new);
+    ensure_cute_watch_roots_exist();
+    ctx.add_singleton_model(CuteManagedPathsWatcher::new);
 
     ctx.add_singleton_model(WarpConfig::new);
     ctx.add_singleton_model(|_ctx| SettingsManager::default());

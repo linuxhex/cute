@@ -78,7 +78,7 @@ use crate::undo_close::UndoCloseSettings;
 use crate::user_config::tab_configs_dir;
 #[cfg(windows)]
 use crate::util::traffic_lights::windows::RendererState;
-use crate::warp_managed_paths_watcher::WarpManagedPathsWatcher;
+use crate::cute_managed_paths_watcher::CuteManagedPathsWatcher;
 use crate::workflows::local_workflows::LocalWorkflows;
 use crate::workspaces::team_tester::TeamTesterStatus;
 use crate::workspaces::update_manager::TeamUpdateManager;
@@ -157,7 +157,7 @@ fn initialize_app(app: &mut App) {
     app.add_singleton_model(|_| DetectedRepositories::default());
     app.add_singleton_model(HomeDirectoryWatcher::new_for_test);
     app.add_singleton_model(DirectoryWatcher::new);
-    app.add_singleton_model(WarpManagedPathsWatcher::new_for_testing);
+    app.add_singleton_model(CuteManagedPathsWatcher::new_for_testing);
     app.add_singleton_model(FileMCPWatcher::new);
     app.add_singleton_model(|_| FileBasedMCPManager::default());
 
@@ -221,7 +221,7 @@ fn initialize_app(app: &mut App) {
     app.add_singleton_model(|_| History::new(vec![]));
 
     // SkillManager is registered after `HomeDirectoryWatcher`, `DirectoryWatcher`,
-    // `WarpManagedPathsWatcher`, `DetectedRepositories`, and `RepoMetadataModel`
+    // `CuteManagedPathsWatcher`, `DetectedRepositories`, and `RepoMetadataModel`
     // because `SkillWatcher::new` subscribes to all of them.
     app.add_singleton_model(SkillManager::new);
 

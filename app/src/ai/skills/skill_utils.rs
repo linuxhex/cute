@@ -21,7 +21,7 @@ use super::{SkillDescriptor, SkillManager};
 use crate::ai::agent::conversation::AIConversationId;
 use crate::ai::blocklist::view_util::render_provider_icon_button;
 use crate::ai::blocklist::BlocklistAIHistoryModel;
-use crate::warp_managed_paths_watcher::warp_managed_skill_dirs;
+use crate::cute_managed_paths_watcher::cute_managed_skill_dirs;
 
 lazy_static! {
     static ref CONTENT_HASHER: SipHasher = SipHasher::new_with_keys(0, 0);
@@ -184,7 +184,7 @@ pub fn skill_path_from_location(location: &LocalOrRemotePath) -> Option<LocalOrR
 pub fn skill_path_from_file_path(file_path: &Path) -> Option<PathBuf> {
     for definition in SKILL_PROVIDER_DEFINITIONS.iter() {
         let home_skill_dirs = if definition.provider == SkillProvider::Warp {
-            warp_managed_skill_dirs()
+            cute_managed_skill_dirs()
         } else {
             home_skills_path(definition.provider).into_iter().collect()
         };

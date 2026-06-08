@@ -88,7 +88,7 @@ use crate::terminal::writeable_pty::command_history::update_command_history;
 use crate::terminal::TerminalView;
 use crate::test_util::settings::initialize_settings_for_tests;
 use crate::themes::theme::AnsiColorIdentifier;
-use crate::warp_managed_paths_watcher::WarpManagedPathsWatcher;
+use crate::cute_managed_paths_watcher::CuteManagedPathsWatcher;
 use crate::workspace::{ActiveSession, OneTimeModalModel, ToastStack, WorkspaceRegistry};
 use crate::workspaces::team_tester::TeamTesterStatus;
 use crate::workspaces::update_manager::TeamUpdateManager;
@@ -174,7 +174,7 @@ pub fn initialize_app(app: &mut App) {
         crate::ai::document::ai_document_model::AIDocumentModel::new_for_test()
     });
     app.add_singleton_model(HomeDirectoryWatcher::new_for_test);
-    app.add_singleton_model(WarpManagedPathsWatcher::new_for_testing);
+    app.add_singleton_model(CuteManagedPathsWatcher::new_for_testing);
     app.add_singleton_model(SkillManager::new);
 
     // Add GlobalResourceHandlesProvider for persistence

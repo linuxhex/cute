@@ -14,7 +14,7 @@ use crate::ai::mcp::templatable_installation::TemplatableMCPServerInstallation;
 use crate::ai::mcp::ParsedTemplatableMCPServerResult;
 use crate::settings::ai::AISettings;
 use crate::settings::AISettingsChangedEvent;
-use crate::warp_managed_paths_watcher::warp_managed_mcp_config_path;
+use crate::cute_managed_paths_watcher::cute_managed_mcp_config_path;
 
 /// Singleton model to manage file-based MCP servers.
 #[derive(Default)]
@@ -283,7 +283,7 @@ impl FileBasedMCPManager {
     }
 
     fn is_global_warp_root(root_path: &Path) -> bool {
-        warp_managed_mcp_config_path().is_some_and(|path| root_path == path.root_path.as_path())
+        cute_managed_mcp_config_path().is_some_and(|path| root_path == path.root_path.as_path())
     }
     fn auto_start_decision(&self, hash: u64, file_based_mcp_enabled: bool) -> AutoStartDecision {
         let server_type = if self.is_global_warp_server(hash) {
