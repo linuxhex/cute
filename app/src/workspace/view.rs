@@ -19143,36 +19143,9 @@ impl Workspace {
         }
     }
 
-    pub fn check_and_open_free_tier_limit_modal(&mut self, ctx: &mut ViewContext<Self>) -> bool {
-        let is_free_tier = !UserWorkspaces::as_ref(ctx)
-            .current_workspace()
-            .is_some_and(|workspace| workspace.billing_metadata.is_user_on_paid_plan());
-
-        if !is_free_tier {
-            return false;
-        }
-
-        if AIRequestUsageModel::as_ref(ctx).has_any_ai_remaining(ctx) {
-            return false;
-        }
-
-        if self
-            .current_workspace_state
-            .is_free_tier_limit_hit_modal_open
-            || *GeneralSettings::as_ref(ctx).free_tier_limit_hit_modal_dismissed
-        {
-            return false;
-        }
-
-        self.current_workspace_state
-            .is_free_tier_limit_hit_modal_open = true;
-
-        send_telemetry_from_ctx!(TelemetryEvent::FreeTierLimitHitInterstitialDisplayed, ctx);
-
-        ctx.focus(&self.free_tier_limit_hit_modal);
-        ctx.notify();
-
-        true
+    /// Simplified: always returns false for local version (no free tier modal).
+    pub fn check_and_open_free_tier_limit_modal(&mut self, _ctx: &mut ViewContext<Self>) -> bool {
+        false
     }
 
     fn ask_ai_assistant(&mut self, ask_type: &AskAIType, ctx: &mut ViewContext<Self>) {
@@ -19292,48 +19265,15 @@ impl Workspace {
 
     fn open_shared_objects_creation_denied_modal(
         &mut self,
-        object_type: DriveObjectType,
-        team_uid: ServerId,
+        _object_type: DriveObjectType,
+        _team_uid: ServerId,
         ctx: &mut ViewContext<Self>,
     ) {
-        let team = UserWorkspaces::as_ref(ctx).team_from_uid(team_uid);
-        if let Some(team) = team {
-            let current_user_email = self.auth_state.user_email().unwrap_or_default();
-            let has_admin_permissions = team.has_admin_permissions(&current_user_email);
-            let team_uid = team.uid;
-            let is_delinquent_due_to_payment_issue =
-                team.billing_metadata.is_delinquent_due_to_payment_issue();
-            let customer_type = team.billing_metadata.customer_type;
-
-            // Send telemetry event only if the team is not delinquent. If the team is
-            // delinquent, then they haven't technically hit any tier limits are just in a
-            // restricted state.
-            if !is_delinquent_due_to_payment_issue {
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::TierLimitHit(TierLimitHitEvent {
-                        team_uid: team.uid,
-                        feature: object_type.to_string(),
-                    }),
-                    ctx
-                );
-            }
-
-            self.current_workspace_state
-                .is_shared_objects_creation_denied_modal_open = true;
-            self.shared_objects_creation_denied_modal
-                .update(ctx, |modal, ctx| {
-                    modal.update_modal_state(
-                        team_uid,
-                        object_type,
-                        has_admin_permissions,
-                        is_delinquent_due_to_payment_issue,
-                        customer_type,
-                        ctx,
-                    );
-                });
-            ctx.focus(&self.shared_objects_creation_denied_modal);
-            ctx.notify();
-        }
+        // Simplified: just open the modal without billing checks
+        self.current_workspace_state
+            .is_shared_objects_creation_denied_modal_open = true;
+        ctx.focus(&self.shared_objects_creation_denied_modal);
+        ctx.notify();
     }
 
     /// Opens the workflow modal in the provided space and folder with no existing content (i.e. a new workflow modal).
