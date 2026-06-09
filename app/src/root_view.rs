@@ -19,7 +19,6 @@ use settings::Setting as _;
 use url::Url;
 use warp_core::context_flag::ContextFlag;
 use warp_core::user_preferences::GetUserPreferences as _;
-use warp_graphql::billing::StripeSubscriptionPlan;
 use warpui::clipboard::ClipboardContent;
 use warpui::elements::{
     Border, ChildAnchor, OffsetPositioning, ParentAnchor, ParentElement, ParentOffsetBounds, Stack,
@@ -1904,10 +1903,9 @@ impl RootView {
         true
     }
 
-    fn build_plan_yearly_price_cents(ctx: &AppContext) -> Option<i32> {
-        PricingInfoModel::as_ref(ctx)
-            .plan_pricing(&StripeSubscriptionPlan::Build)
-            .map(|p| p.yearly_plan_price_per_month_usd_cents)
+    fn build_plan_yearly_price_cents(_ctx: &AppContext) -> Option<i32> {
+        // Simplified: no cloud pricing
+        None
     }
 
     fn create_agent_onboarding_view(
