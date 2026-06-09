@@ -1,4 +1,4 @@
-use ::settings::{Setting, ToggleableSetting};
+use ::settings::Setting;
 use lazy_static::lazy_static;
 use pathfinder_color::ColorU;
 use std::sync::{Arc, Mutex};
@@ -40,7 +40,6 @@ use crate::settings::cloud_preferences::CloudPreferencesSettings;
 use crate::workspace::WorkspaceAction;
 use crate::workspaces::update_manager::TeamUpdateManager;
 use crate::workspaces::user_workspaces::UserWorkspaces;
-use crate::{report_if_error, send_telemetry_from_ctx, TelemetryEvent};
 
 const PHOTO_SIZE: f32 = 40.;
 const REFERRAL_CTA: &str = "Earn rewards by sharing Warp with friends & colleagues";
@@ -194,20 +193,21 @@ impl TypedActionView for MainSettingsPageView {
                 ctx.notify();
             }
             MainPageAction::ToggleSettingsSync => {
-                let new_value =
-                    CloudPreferencesSettings::handle(ctx).update(ctx, |prefs_settings, ctx| {
-                        report_if_error!(prefs_settings
-                            .settings_sync_enabled
-                            .toggle_and_save_value(ctx));
-                        *prefs_settings.settings_sync_enabled
-                    });
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::ToggleSettingsSync {
-                        is_settings_sync_enabled: new_value,
-                    },
-                    ctx
-                );
-                ctx.notify();
+                // Simplified: local version has no settings sync
+                // let new_value =
+                //     CloudPreferencesSettings::handle(ctx).update(ctx, |prefs_settings, ctx| {
+                //         report_if_error!(prefs_settings
+                //             .settings_sync_enabled
+                //             .toggle_and_save_value(ctx));
+                //         *prefs_settings.settings_sync_enabled
+                //     });
+                // send_telemetry_from_ctx!(
+                //     TelemetryEvent::ToggleSettingsSync {
+                //         is_settings_sync_enabled: new_value,
+                //     },
+                //     ctx
+                // );
+                // ctx.notify();
             }
             MainPageAction::Upgrade { team_uid, user_id } => match team_uid {
                 Some(team_uid) => {
@@ -510,10 +510,12 @@ impl SettingsWidget for SettingsSyncWidget {
         "settings sync"
     }
 
-    fn should_render(&self, app: &AppContext) -> bool {
-        !AuthStateProvider::as_ref(app)
-            .get()
-            .is_anonymous_or_logged_out()
+    fn should_render(&self, _app: &AppContext) -> bool {
+        // Simplified: local version has no settings sync
+        false
+        // !AuthStateProvider::as_ref(app)
+        //     .get()
+        //     .is_anonymous_or_logged_out()
     }
 
     fn render(
