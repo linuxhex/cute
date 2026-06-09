@@ -1205,15 +1205,9 @@ impl UserWorkspaces {
             .unwrap_or_default()
     }
 
+    /// Simplified: local version has no cloud conversation storage.
     pub fn get_cloud_conversation_storage_enablement_setting(&self) -> AdminEnablementSetting {
-        self.current_team()
-            .map(|team| {
-                team.organization_settings
-                    .cloud_conversation_storage_settings
-                    .setting
-                    .clone()
-            })
-            .unwrap_or_default()
+        AdminEnablementSetting::default()
     }
 
     pub fn is_ai_allowed_in_remote_sessions(&self) -> bool {
