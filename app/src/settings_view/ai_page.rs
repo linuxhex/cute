@@ -6856,7 +6856,7 @@ impl SettingsWidget for CloudHandoffWidget {
         appearance: &Appearance,
         app: &AppContext,
     ) -> Box<dyn Element> {
-        use crate::settings::PrivacySettings;
+        
 
         let ai_settings = AISettings::as_ref(app);
         let is_any_ai_enabled = ai_settings.is_any_ai_enabled(app);

@@ -36,7 +36,6 @@ use crate::autoupdate::{self, AutoupdateStage, AutoupdateState};
 #[cfg(not(target_family = "wasm"))]
 use crate::server::iap::{IapCredentialsState, IapManager, IapManagerEvent};
 use crate::server::ids::ServerId;
-use crate::settings::cloud_preferences::CloudPreferencesSettings;
 use crate::workspace::WorkspaceAction;
 use crate::workspaces::update_manager::TeamUpdateManager;
 use crate::workspaces::user_workspaces::UserWorkspaces;
@@ -258,9 +257,10 @@ impl MainSettingsPageView {
             Self::handle_autoupdate_state_change,
         );
 
-        ctx.subscribe_to_model(&CloudPreferencesSettings::handle(ctx), |_, _, _, ctx| {
-            ctx.notify();
-        });
+        // Simplified: local version has no settings sync
+        // ctx.subscribe_to_model(&CloudPreferencesSettings::handle(ctx), |_, _, _, ctx| {
+        //     ctx.notify();
+        // });
 
         let auth_manager_handle = AuthManager::handle(ctx);
         ctx.subscribe_to_model(&auth_manager_handle, |_, _, _, ctx| {
