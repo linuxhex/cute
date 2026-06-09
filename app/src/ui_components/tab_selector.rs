@@ -8,12 +8,14 @@ use warpui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
 
 use crate::ui_components::blended_colors;
 
+#[allow(dead_code)]
 pub struct SettingsTab {
     pub label: String,
     pub mouse_state: MouseStateHandle,
 }
 
 impl SettingsTab {
+    #[allow(dead_code)]
     pub fn new(label: impl Into<String>, mouse_state: MouseStateHandle) -> Self {
         Self {
             label: label.into(),
@@ -23,6 +25,7 @@ impl SettingsTab {
 }
 
 /// Render a tab selector with a row of tabs and a bottom border indicator.
+#[allow(dead_code)]
 pub fn render_tab_selector<F>(
     tabs: Vec<SettingsTab>,
     selected_label: &str,
