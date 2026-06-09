@@ -1,4 +1,5 @@
-use ::settings::Setting;
+// Simplified: unused import removed
+// use ::settings::Setting;
 use lazy_static::lazy_static;
 use pathfinder_color::ColorU;
 use std::sync::{Arc, Mutex};

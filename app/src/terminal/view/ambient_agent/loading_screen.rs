@@ -15,7 +15,8 @@ use warpui::prelude::{CornerRadius, Radius};
 use warpui::text_layout::TextAlignment;
 use warpui::ui_components::button::ButtonVariant;
 use warpui::ui_components::components::UiComponent;
-use warpui::{AppContext, ModelHandle, SingletonEntity};
+// Simplified: unused import removed
+use warpui::{AppContext, ModelHandle};
 
 use crate::ai::agent_tips::{AITip, AITipModel};
 use crate::ai::loading::shimmering_warp_loading_text;
