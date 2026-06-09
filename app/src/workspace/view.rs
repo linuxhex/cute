@@ -16974,8 +16974,9 @@ impl Workspace {
                     });
                 }
             }
-            pane_group::Event::ShowCloudAgentCapacityModal { variant } => {
-                self.open_cloud_agent_capacity_modal(*variant, ctx);
+            // Simplified: local version has no cloud agent capacity modal
+            pane_group::Event::ShowCloudAgentCapacityModal { variant: _ } => {
+                // No-op for local version
             }
             pane_group::Event::FreeTierLimitCheckTriggered => {
                 self.free_tier_limit_check_triggered = true;
@@ -19094,23 +19095,13 @@ impl Workspace {
         }
     }
 
+    // Simplified: local version has no cloud agent capacity modal
     pub fn open_cloud_agent_capacity_modal(
         &mut self,
-        variant: CloudAgentCapacityModalVariant,
-        ctx: &mut ViewContext<Self>,
+        _variant: CloudAgentCapacityModalVariant,
+        _ctx: &mut ViewContext<Self>,
     ) {
-        if !FeatureFlag::CloudMode.is_enabled() {
-            return;
-        }
-        self.cloud_agent_capacity_modal.update(ctx, |modal, ctx| {
-            modal.set_variant(variant);
-            ctx.notify();
-        });
-        self.current_workspace_state
-            .is_cloud_agent_capacity_modal_open = true;
-        ctx.focus(&self.cloud_agent_capacity_modal);
-        ctx.notify();
-        send_telemetry_from_ctx!(TelemetryEvent::CloudAgentCapacityModalOpened, ctx);
+        // No-op for local version
     }
 
     fn handle_free_tier_limit_modal_event(

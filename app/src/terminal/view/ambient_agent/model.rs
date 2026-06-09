@@ -1366,9 +1366,8 @@ impl AmbientAgentViewModel {
                     return;
                 }
 
-                if matches!(self.status, Status::WaitingForSession { .. }) {
-                    ctx.emit(AmbientAgentViewModelEvent::ShowCloudAgentCapacityModal);
-                }
+                // Simplified: local version has no cloud agent capacity modal
+                // Ignore event
             }
             AmbientAgentEvent::TimedOut => {}
         }
@@ -1395,7 +1394,7 @@ impl AmbientAgentViewModel {
         }
         if let Some(capacity_error) = err.downcast_ref::<CloudAgentCapacityError>() {
             self.handle_spawn_error(capacity_error.error.clone(), ctx);
-            ctx.emit(AmbientAgentViewModelEvent::ShowCloudAgentCapacityModal);
+            // Simplified: local version has no cloud agent capacity modal
             return;
         }
         if let Some(ai_api_error) = err.downcast_ref::<AIApiError>() {

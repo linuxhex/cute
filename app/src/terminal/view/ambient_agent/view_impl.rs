@@ -254,16 +254,9 @@ impl TerminalView {
                 ctx.emit(TerminalViewEvent::TerminalViewStateChanged);
                 ctx.notify();
             }
+            // Simplified: local version has no cloud agent capacity modal
             AmbientAgentViewModelEvent::ShowCloudAgentCapacityModal => {
-                if FeatureFlag::CloudMode.is_enabled()
-                    && ambient_agent_view_model.as_ref(ctx).is_ambient_agent()
-                    && !self.model.lock().is_shared_ambient_agent_session()
-                {
-                    ctx.emit(crate::terminal::view::Event::ShowCloudAgentCapacityModal {
-                        variant: CloudAgentCapacityModalVariant::ConcurrentLimit,
-                    });
-                }
-
+                // No-op for local version
                 ctx.notify();
             }
             AmbientAgentViewModelEvent::ShowAICreditModal => {
