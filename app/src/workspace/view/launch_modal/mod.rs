@@ -27,7 +27,6 @@ use warpui::{
     AppContext, Element, Entity, SingletonEntity, TypedActionView, View, ViewContext, ViewHandle,
 };
 
-use crate::settings::PrivacySettings;
 use crate::ui_components::blended_colors;
 use crate::ui_components::icons::Icon;
 use crate::view_components::action_button::{ActionButton, PrimaryTheme, SecondaryTheme};
@@ -221,9 +220,11 @@ impl<S: Slide> LaunchModal<S> {
         let appearance = Appearance::handle(app).as_ref(app);
         let theme = appearance.theme();
 
-        let is_checked = PrivacySettings::handle(app)
-            .as_ref(app)
-            .is_cloud_conversation_storage_enabled;
+        // Simplified: local version has no cloud conversation storage
+        let is_checked = false;
+        // PrivacySettings::handle(app)
+        //     .as_ref(app)
+        //     .is_cloud_conversation_storage_enabled;
 
         let checkbox = appearance
             .ui_builder()

@@ -44,11 +44,8 @@ use crate::server::server_api::ai::{
 use crate::server::server_api::{
     AIApiError, ClientError, CloudAgentCapacityError, ServerApiProvider,
 };
-use crate::settings::PrivacySettings;
 use crate::terminal::view::ambient_agent::{SetupCommandGroupId, SetupCommandState};
 use crate::terminal::CLIAgent;
-use crate::workspaces::user_workspaces::UserWorkspaces;
-use crate::workspaces::workspace::AdminEnablementSetting;
 
 /// Tracks progress timestamps for each step during ambient agent spawning.
 #[derive(Debug, Clone)]
@@ -1725,15 +1722,17 @@ pub enum AmbientAgentViewModelEvent {
     RunLifecycleChanged,
 }
 
-pub(crate) fn should_disable_snapshot(ctx: &AppContext) -> bool {
-    let privacy = PrivacySettings::as_ref(ctx);
-    if !privacy.is_cloud_conversation_storage_enabled {
-        return true;
-    }
-    matches!(
-        UserWorkspaces::as_ref(ctx).get_cloud_conversation_storage_enablement_setting(),
-        AdminEnablementSetting::Disable
-    )
+pub(crate) fn should_disable_snapshot(_ctx: &AppContext) -> bool {
+    // Simplified: local version has no cloud conversation storage, always disable snapshot
+    true
+    // let privacy = PrivacySettings::as_ref(ctx);
+    // if !privacy.is_cloud_conversation_storage_enabled {
+    //     return true;
+    // }
+    // matches!(
+    //     UserWorkspaces::as_ref(ctx).get_cloud_conversation_storage_enablement_setting(),
+    //     AdminEnablementSetting::Disable
+    // )
 }
 
 impl Entity for AmbientAgentViewModel {
