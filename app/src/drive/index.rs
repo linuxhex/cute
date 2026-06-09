@@ -188,16 +188,17 @@ const RETRY_BUTTON_TOOLTIP_LABEL: &str = "Retry sync";
 const SHARED_OBJECT_LIMIT_HIT_BANNER_LINE: &str =
     "Upgrade for access to more notebooks, workflows, shared sessions, and AI credits.";
 
-const PAYMENT_ISSUE_BANNER_LINE_1: &str =
-    "Shared objects have been restricted due to a subscription payment issue.";
-
-const PAYMENT_ISSUE_BANNER_LINE_2_ADMIN: &str =
-    "Please update your payment information to restore access.";
-
-const PAYMENT_ISSUE_BANNER_LINE_2_ADMIN_ENTERPRISE: &str =
-    "Please contact support@warp.dev to restore access.";
-
-const PAYMENT_ISSUE_BANNER_LINE_2_NONADMIN: &str = "Please contact a team admin to restore access.";
+// Simplified: local version has no payment issue banner
+// const PAYMENT_ISSUE_BANNER_LINE_1: &str =
+//     "Shared objects have been restricted due to a subscription payment issue.";
+//
+// const PAYMENT_ISSUE_BANNER_LINE_2_ADMIN: &str =
+//     "Please update your payment information to restore access.";
+//
+// const PAYMENT_ISSUE_BANNER_LINE_2_ADMIN_ENTERPRISE: &str =
+//     "Please contact support@warp.dev to restore access.";
+//
+// const PAYMENT_ISSUE_BANNER_LINE_2_NONADMIN: &str = "Please contact a team admin to restore access.";
 
 /// Struct to hold different state-related information on per-space basis.
 /// Currently, we only have 1 space (1 Team), but as we're working on personal space, and add
@@ -4234,97 +4235,15 @@ impl DriveIndex {
         .finish()
     }
 
+    // Simplified: local version has no payment issue banner
     fn render_payment_issue_banner(
         &self,
-        appearance: &Appearance,
-        team_uid: ServerId,
-        has_admin_permissions: bool,
-        is_on_stripe_paid_plan: bool,
+        _appearance: &Appearance,
+        _team_uid: ServerId,
+        _has_admin_permissions: bool,
+        _is_on_stripe_paid_plan: bool,
     ) -> Box<dyn Element> {
-        let theme = appearance.theme();
-        let background_color = theme.surface_2();
-
-        let mut body = Flex::column()
-            .with_main_axis_alignment(MainAxisAlignment::Center)
-            .with_cross_axis_alignment(CrossAxisAlignment::Center);
-
-        let highlight =
-            Highlight::new().with_properties(Properties::default().weight(Weight::Bold));
-
-        let banner_line_2 = if has_admin_permissions && is_on_stripe_paid_plan {
-            PAYMENT_ISSUE_BANNER_LINE_2_ADMIN
-        } else if has_admin_permissions && !is_on_stripe_paid_plan {
-            PAYMENT_ISSUE_BANNER_LINE_2_ADMIN_ENTERPRISE
-        } else {
-            PAYMENT_ISSUE_BANNER_LINE_2_NONADMIN
-        };
-
-        body.add_child(
-            Container::new(
-                appearance
-                    .ui_builder()
-                    .wrappable_text(
-                        format!("{PAYMENT_ISSUE_BANNER_LINE_1} {banner_line_2}").to_string(),
-                        true,
-                    )
-                    .with_highlights(
-                        (0..PAYMENT_ISSUE_BANNER_LINE_1.len()).collect::<Vec<_>>(),
-                        highlight,
-                    )
-                    .with_style(UiComponentStyles {
-                        font_size: Some(12.),
-                        font_color: Some(
-                            appearance.theme().main_text_color(background_color).into(),
-                        ),
-                        ..Default::default()
-                    })
-                    .build()
-                    .finish(),
-            )
-            .finish(),
-        );
-
-        // Only show a manage billing button if they are an admin and on a paid stripe plan
-        if has_admin_permissions && is_on_stripe_paid_plan {
-            let button = appearance
-                .ui_builder()
-                .button(
-                    ButtonVariant::Accent,
-                    self.mouse_state_handles
-                        .payment_issue_banner_button_mouse_state
-                        .clone(),
-                )
-                .with_centered_text_label("Manage billing".into())
-                .with_style(UiComponentStyles {
-                    font_size: Some(14.),
-                    font_weight: Some(Weight::Light),
-                    padding: Some(Coords {
-                        top: 8.,
-                        bottom: 8.,
-                        left: 12.,
-                        right: 12.,
-                    }),
-                    ..Default::default()
-                })
-                .build()
-                .with_cursor(Cursor::PointingHand)
-                .on_click(move |ctx, _, _| {
-                    ctx.dispatch_typed_action(DriveIndexAction::ManageBilling { team_uid })
-                })
-                .finish();
-            body.add_child(Container::new(button).with_margin_top(16.).finish());
-        }
-
-        Container::new(
-            Container::new(body.finish())
-                .with_background(background_color)
-                .with_corner_radius(CornerRadius::with_all(Radius::Pixels(4.)))
-                .with_uniform_padding(16.)
-                .finish(),
-        )
-        .with_uniform_padding(8.)
-        .with_border(Border::top(1.).with_border_color(background_color.into()))
-        .finish()
+        Flex::column().finish()
     }
 
     fn menu_items(
