@@ -393,23 +393,10 @@ impl AIRequestUsageModel {
         let workspace_has_overages =
             current_workspace.is_some_and(|workspace| workspace.are_overages_remaining());
 
-        let is_payg_enabled = current_workspace
-            .is_some_and(|w| w.billing_metadata.is_enterprise_pay_as_you_go_enabled());
-        let is_enterprise_auto_reload_enabled = current_workspace
-            .is_some_and(|w| w.billing_metadata.is_enterprise_auto_reload_enabled());
-        let is_self_serve_auto_reload_enabled = current_workspace.is_some_and(|workspace| {
-            workspace
-                .billing_metadata
-                .is_purchase_add_on_credits_policy_enabled()
-                && workspace
-                    .settings
-                    .addon_credits_settings
-                    .auto_reload_enabled
-                && PricingInfoModel::as_ref(ctx)
-                    .addon_credits_options()
-                    .and_then(|options| workspace.get_auto_reload_price_cents(options))
-                    .is_some_and(|price| !workspace.would_addon_purchase_reach_limit(price))
-        });
+        // Simplified: local version has no enterprise pay-as-you-go or auto-reload
+        let is_payg_enabled = false;
+        let is_enterprise_auto_reload_enabled = false;
+        let is_self_serve_auto_reload_enabled = false;
 
         // If you have provided your own API key,
         // it doesn't matter if you are out of warp-provided requests.
@@ -549,14 +536,8 @@ impl AIRequestUsageModel {
             return BuyCreditsBannerDisplayState::Hidden;
         }
         let current_workspace = UserWorkspaces::as_ref(ctx).current_workspace();
-        let policy_allows_purchasing = current_workspace
-            .map(|w| {
-                w.billing_metadata
-                    .tier
-                    .purchase_add_on_credits_policy
-                    .is_some_and(|p| p.enabled)
-            })
-            .unwrap_or(false);
+        // Simplified: local version has no add-on credits purchase
+        let policy_allows_purchasing = false;
 
         // TODO: we might want to suggest credits purchase if request_remain/bonus credits is below certain threshold
         // something to consider after launch
