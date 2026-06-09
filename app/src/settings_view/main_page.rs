@@ -64,7 +64,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
 }
 
 fn maybe_add_settings_sync_toggle_binding<T: Action + Clone>(
-    app: &mut AppContext,
+    _app: &mut AppContext,
     context: &ContextPredicate,
     builder: fn(SettingsAction) -> T,
     toggle_binding_pairs: &mut Vec<ToggleSettingActionPair<T>>,
@@ -83,11 +83,12 @@ fn maybe_add_settings_sync_toggle_binding<T: Action + Clone>(
                 context,
                 flags::SETTINGS_SYNC_FLAG,
             )
-            .is_supported_on_current_platform(
-                CloudPreferencesSettings::as_ref(app)
-                    .settings_sync_enabled
-                    .is_supported_on_current_platform(),
-            ),
+            // Simplified: local version has no settings sync
+            // .is_supported_on_current_platform(
+            //     CloudPreferencesSettings::as_ref(app)
+            //         .settings_sync_enabled
+            //         .is_supported_on_current_platform(),
+            // ),
         );
     }
 }
@@ -522,9 +523,10 @@ impl SettingsWidget for SettingsSyncWidget {
         &self,
         _view: &Self::View,
         appearance: &Appearance,
-        app: &AppContext,
+        _app: &AppContext,
     ) -> Box<dyn Element> {
-        let preferences_settings = CloudPreferencesSettings::as_ref(app);
+        // Simplified: local version has no settings sync
+        // let preferences_settings = CloudPreferencesSettings::as_ref(app);
 
         let label_info = AdditionalInfo {
             mouse_state: self.tooltip_state.clone(),
@@ -545,7 +547,9 @@ impl SettingsWidget for SettingsSyncWidget {
             appearance
                 .ui_builder()
                 .switch(self.switch_state.clone())
-                .check(*preferences_settings.settings_sync_enabled.value())
+                // Simplified: local version has no settings sync
+                .check(false)
+                // .check(*preferences_settings.settings_sync_enabled.value())
                 .build()
                 .on_click(move |ctx, _, _| {
                     ctx.dispatch_typed_action(MainPageAction::ToggleSettingsSync)
