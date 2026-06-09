@@ -55,7 +55,7 @@ use crate::util::links::PRIVACY_POLICY_URL;
 use crate::view_components::{Dropdown, DropdownItem};
 use crate::workspaces::user_workspaces::UserWorkspaces;
 use crate::workspaces::workspace::{
-    AdminEnablementSetting, CustomerType, UgcCollectionEnablementSetting,
+    AdminEnablementSetting, UgcCollectionEnablementSetting,
 };
 use crate::{report_if_error, send_telemetry_from_ctx};
 

@@ -589,9 +589,9 @@ impl CommandSearchView {
 
     fn render_error_header(
         &self,
-        app: &AppContext,
+        _app: &AppContext,
         message: String,
-        is_ratelimit_error: bool,
+        _is_ratelimit_error: bool,
         appearance: &Appearance,
     ) -> Box<dyn Element> {
         // Simplified: just show error text for local version

@@ -33,7 +33,7 @@ use warpui::{
 
 use super::admin_actions::AdminActions;
 use super::settings_page::{
-    render_customer_type_badge, render_separator, render_sub_header, MatchData, PageType,
+    render_separator, render_sub_header, MatchData, PageType,
     SettingsPageMeta, SettingsPageViewHandle, SettingsWidget,
 };
 use super::tab_menu::Tabs;
@@ -49,7 +49,7 @@ use crate::auth::auth_view_modal::AuthViewVariant;
 use crate::auth::{AuthStateProvider, UserUid};
 use crate::channel::ChannelState;
 use crate::cloud_object::model::persistence::CloudModel;
-use crate::cloud_object::{CloudObjectEventEntrypoint, Space};
+use crate::cloud_object::CloudObjectEventEntrypoint;
 use crate::drive::cloud_action_confirmation_dialog::{
     CloudActionConfirmationDialog, CloudActionConfirmationDialogEvent,
     CloudActionConfirmationDialogVariant,
@@ -77,7 +77,7 @@ use crate::workspaces::team::{DiscoverableTeam, MembershipRole, Team, TeamDelete
 use crate::workspaces::update_manager::{TeamUpdateManager, TeamUpdateManagerEvent};
 use crate::workspaces::user_workspaces::{UserWorkspaces, UserWorkspacesEvent};
 use crate::workspaces::workspace::{
-    BillingMetadata, CustomerType, DelinquencyStatus, WorkspaceSizePolicy,
+    BillingMetadata, CustomerType, WorkspaceSizePolicy,
 };
 
 const TEAM_MEMBERS_HEADER_POSITION_ID: &str = "team_settings:team_members_header";
@@ -2432,7 +2432,7 @@ impl TeamsWidget {
         &self,
         _team: &Team,
         _cloud_model: &CloudModel,
-        appearance: &Appearance,
+        _appearance: &Appearance,
         _app: &AppContext,
     ) -> Box<dyn Element> {
         // Simplified: no plan usage display for local version

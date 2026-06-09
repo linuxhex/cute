@@ -20,7 +20,6 @@ use warpui::SingletonEntity;
 
 use crate::features::FeatureFlag;
 use crate::terminal::warpify::settings::{SshExtensionInstallMode, WarpifySettings};
-use crate::workspaces::user_workspaces::UserWorkspaces;
 
 mod convert;
 mod model;

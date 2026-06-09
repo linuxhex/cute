@@ -3,7 +3,6 @@
 //! Note: Cloud-specific logic has been removed. Simplified stub.
 
 use warpui::elements::{Container, Flex, Padding, ParentElement, Text};
-use warpui::ui_components::components::UiComponentStyles;
 use warpui::{AppContext, Element, Entity, SingletonEntity, TypedActionView, View, ViewContext};
 
 use crate::appearance::Appearance;

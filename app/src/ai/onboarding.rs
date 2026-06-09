@@ -8,7 +8,6 @@ use warpui::{AppContext, SingletonEntity};
 
 use super::llms::{DisableReason, LLMInfo, LLMPreferences};
 use crate::auth::AuthStateProvider;
-use crate::workspaces::user_workspaces::UserWorkspaces;
 
 impl From<&LLMInfo> for OnboardingModelInfo {
     fn from(llm: &LLMInfo) -> Self {

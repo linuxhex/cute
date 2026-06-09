@@ -13,7 +13,7 @@ use warpui::elements::{
 use warpui::fonts::Weight;
 use warpui::presenter::ChildView;
 use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::{AppContext, EntityId, SingletonEntity, ViewHandle};
+use warpui::{AppContext, SingletonEntity, ViewHandle};
 
 use crate::appearance::Appearance;
 use crate::settings::{AISettings, InputSettings};

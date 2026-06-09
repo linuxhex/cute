@@ -11,12 +11,11 @@ use super::team::{DiscoverableTeam, MembershipRole, Team};
 #[cfg(test)]
 use super::workspace::WorkspaceMemberUsageInfo;
 use super::workspace::{
-    AdminEnablementSetting, CustomerType, EnterpriseSecretRegex, HostEnablementSetting,
+    AdminEnablementSetting, EnterpriseSecretRegex, HostEnablementSetting,
     UgcCollectionEnablementSetting, Workspace, WorkspaceUid,
 };
 use crate::ai::llms::LLMModelHost;
 use crate::auth::{AuthStateProvider, UserUid};
-use crate::channel::ChannelState;
 use crate::cloud_object::model::persistence::CloudModel;
 use crate::cloud_object::{CloudObjectEventEntrypoint, ObjectType, Owner, Space};
 use crate::pricing::PricingInfoModel;

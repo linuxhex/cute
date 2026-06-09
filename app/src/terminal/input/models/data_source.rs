@@ -1,13 +1,12 @@
 use fuzzy_match::{match_indices_case_insensitive, FuzzyMatchResult};
 use itertools::Itertools;
-use markdown_parser::{FormattedText, FormattedTextFragment, FormattedTextLine};
 use ordered_float::OrderedFloat;
 use warp_core::ui::appearance::Appearance;
 use warp_core::ui::icons::Icon;
 use warp_core::ui::theme::color::internal_colors;
 use warp_core::ui::theme::Fill;
 use warpui::elements::{
-    ConstrainedBox, Container, CornerRadius, FormattedTextElement, Highlight, HighlightedHyperlink,
+    ConstrainedBox, Container, CornerRadius, Highlight,
     MouseStateHandle, Radius, Text,
 };
 use warpui::fonts::{Properties, Style, Weight};
@@ -28,7 +27,6 @@ use crate::ai::llms::{
     is_using_api_key_for_provider, should_show_bedrock_icon_for_model, DisableReason, LLMId,
     LLMInfo, LLMPreferences, LLMProvider, LLMSpec,
 };
-use crate::auth::AuthStateProvider;
 use crate::features::FeatureFlag;
 use crate::search::data_source::{Query, QueryFilter, QueryResult};
 use crate::search::mixer::DataSourceRunErrorWrapper;
@@ -41,7 +39,6 @@ use crate::terminal::input::inline_menu::{
 };
 use crate::terminal::input::message_bar::{Message, MessageItem};
 use crate::workspace::WorkspaceAction;
-use crate::workspaces::user_workspaces::UserWorkspaces;
 
 const AUTO_BEDROCK_TOOLTIP: &str = "Warp uses Bedrock when the model Auto selects supports it; otherwise it may use Warp-hosted inference.";
 
@@ -546,7 +543,7 @@ impl SearchItem for ModelSearchItem {
             app,
         );
 
-        let mut column = Flex::column()
+        let column = Flex::column()
             .with_child(Container::new(header).with_margin_bottom(12.).finish())
             .with_child(scores);
 

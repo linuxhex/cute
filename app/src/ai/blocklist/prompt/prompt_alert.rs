@@ -368,7 +368,7 @@ impl View for PromptAlertView {
 
         let auth_state = AuthStateProvider::as_ref(app).get();
         let current_team = UserWorkspaces::as_ref(app).current_team();
-        let has_admin_permissions = auth_state
+        let _has_admin_permissions = auth_state
             .user_email()
             .zip(current_team)
             .is_some_and(|(email, team)| team.has_admin_permissions(&email));

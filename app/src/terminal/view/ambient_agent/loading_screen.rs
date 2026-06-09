@@ -21,7 +21,6 @@ use crate::ai::agent_tips::{AITip, AITipModel};
 use crate::ai::loading::shimmering_warp_loading_text;
 use crate::terminal::view::ambient_agent::CloudModeTip;
 use crate::ui_components::blended_colors;
-use crate::workspaces::user_workspaces::UserWorkspaces;
 
 /// Icon size for the error icon
 const ERROR_ICON_SIZE: f32 = 24.;

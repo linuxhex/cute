@@ -142,7 +142,7 @@ use crate::ui_components::icons::Icon;
 use crate::util::bindings;
 use crate::view_components::dropdown::DropdownAction;
 use crate::view_components::{Dropdown, DropdownItem};
-use crate::workspaces::workspace::{AdminEnablementSetting, CustomerType};
+use crate::workspaces::workspace::AdminEnablementSetting;
 use crate::{
     report_error, report_if_error, send_telemetry_from_ctx, TelemetryEvent, UserWorkspaces,
 };

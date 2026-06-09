@@ -22,7 +22,7 @@ use warpui::{
 };
 
 use super::settings_page::{
-    render_body_item, render_customer_type_badge, AdditionalInfo, LocalOnlyIconState, MatchData,
+    render_body_item, AdditionalInfo, LocalOnlyIconState, MatchData,
     PageType, SettingsPageMeta, SettingsPageViewHandle, SettingsWidget, ToggleState,
     HEADER_PADDING,
 };
@@ -40,7 +40,6 @@ use crate::settings::cloud_preferences::CloudPreferencesSettings;
 use crate::workspace::WorkspaceAction;
 use crate::workspaces::update_manager::TeamUpdateManager;
 use crate::workspaces::user_workspaces::UserWorkspaces;
-use crate::workspaces::workspace::CustomerType;
 use crate::{report_if_error, send_telemetry_from_ctx, TelemetryEvent};
 
 const PHOTO_SIZE: f32 = 40.;
@@ -344,7 +343,7 @@ impl AccountWidget {
         &self,
         profile_image_source: Option<&AssetSource>,
         auth_state: &AuthState,
-        app: &AppContext,
+        _app: &AppContext,
         appearance: &Appearance,
     ) -> Box<dyn Element> {
         let mut user_info = Flex::row().with_cross_axis_alignment(CrossAxisAlignment::Center);
@@ -417,7 +416,7 @@ impl AccountWidget {
             user_info.add_child(display_name);
         }
 
-        let mut plan_info = Flex::column()
+        let plan_info = Flex::column()
             .with_main_axis_alignment(MainAxisAlignment::SpaceEvenly)
             .with_cross_axis_alignment(CrossAxisAlignment::End);
         // Simplified: no plan info for local version
