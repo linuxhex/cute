@@ -168,6 +168,7 @@ pub enum InitiatedBy {
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct GenericStringObjectInput<T, S>
 where
     T: StringModel<
@@ -3534,6 +3535,7 @@ impl UpdateManager {
     ///
     /// Note that if the bulk creation request fails, the client will end up retrying
     /// object creation one write and request at a time.
+    #[allow(dead_code)]
     pub fn bulk_create_generic_string_objects<S, T>(
         &mut self,
         owner: Owner,

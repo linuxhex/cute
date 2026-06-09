@@ -179,6 +179,7 @@ pub enum WorkflowModalEvent {
     Close,
     UpdatedWorkflow(SyncId),
     AiAssistError(String),
+    #[allow(dead_code)]
     AiAssistUpgradeError(Option<ServerId>, UserUid),
     ViewInWarpDrive(WarpDriveItemId),
 }
