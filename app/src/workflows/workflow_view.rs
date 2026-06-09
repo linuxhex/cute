@@ -2644,29 +2644,11 @@ impl WorkflowView {
                     Err(err) => {
                         let message = err.user_facing_message();
                         if let GeneratedCommandMetadataError::RateLimited = err {
-                            let current_user_id = pane.auth_state.user_id().unwrap_or_default();
-                            if let Some(team) = UserWorkspaces::as_ref(ctx).current_team() {
-                                let current_user_email =
-                                    pane.auth_state.user_email().unwrap_or_default();
-                                let has_admin_permissions = team.has_admin_permissions(&current_user_email);
-                                if team.billing_metadata.can_upgrade_to_higher_tier_plan() {
-                                    if has_admin_permissions {
-                                        pane.display_upgrade_error(Some(team.uid), current_user_id, ctx);
-                                    } else {
-                                        pane.display_error_toast(
-                                            "Looks like you're out of AI credits. Contact a team admin to upgrade for more credits.".to_string(),
-                                            ctx,
-                                        );
-                                    }
-                                } else {
-                                    pane.display_error_toast(
-                                        message.clone(),
-                                        ctx,
-                                    );
-                                }
-                            } else {
-                                pane.display_upgrade_error(None, current_user_id, ctx);
-                            }
+                            // Simplified: just show error toast for local version
+                            pane.display_error_toast(
+                                "Looks like you're out of AI credits.".to_string(),
+                                ctx,
+                            );
                         } else {
                             pane.display_error_toast(
                                 message.clone(),

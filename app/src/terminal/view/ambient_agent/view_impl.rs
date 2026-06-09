@@ -81,19 +81,10 @@ impl TerminalView {
     }
 
     pub(in crate::terminal::view) fn show_out_of_credits_modal(&self, ctx: &mut ViewContext<Self>) {
-        let is_on_paid_plan = UserWorkspaces::as_ref(ctx)
-            .current_workspace()
-            .is_some_and(|workspace| workspace.billing_metadata.is_user_on_paid_plan());
-
-        if is_on_paid_plan {
-            ctx.emit(crate::terminal::view::Event::ShowCloudAgentCapacityModal {
-                variant: CloudAgentCapacityModalVariant::OutOfCredits,
-            });
-        } else {
-            AIRequestUsageModel::handle(ctx).update(ctx, |model, ctx| {
-                model.refresh_request_usage_async(ctx);
-            });
-        }
+        // Simplified: always refresh request usage for local version
+        AIRequestUsageModel::handle(ctx).update(ctx, |model, ctx| {
+            model.refresh_request_usage_async(ctx);
+        });
     }
 
     /// Handles ambient agent view model events.

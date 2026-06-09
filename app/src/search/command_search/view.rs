@@ -594,31 +594,8 @@ impl CommandSearchView {
         is_ratelimit_error: bool,
         appearance: &Appearance,
     ) -> Box<dyn Element> {
-        if is_ratelimit_error {
-            let current_user_id = self.auth_state.user_id().unwrap_or_default();
-            if let Some(team) = UserWorkspaces::as_ref(app).current_team() {
-                let current_user_email = self.auth_state.user_email().unwrap_or_default();
-                let has_admin_permissions = team.has_admin_permissions(&current_user_email);
-                if team.billing_metadata.can_upgrade_to_higher_tier_plan() {
-                    if has_admin_permissions {
-                        self.render_error_header_with_upgrade_link(
-                            app,
-                            appearance,
-                            Some(team.uid),
-                            current_user_id,
-                        )
-                    } else {
-                        self.render_error_header_text("Looks like you're out of credits. Contact a team admin to upgrade for more credits.".to_string(), appearance)
-                    }
-                } else {
-                    self.render_error_header_text(message, appearance)
-                }
-            } else {
-                self.render_error_header_with_upgrade_link(app, appearance, None, current_user_id)
-            }
-        } else {
-            self.render_error_header_text(message, appearance)
-        }
+        // Simplified: just show error text for local version
+        self.render_error_header_text(message, appearance)
     }
 
     fn render_error_header_text(
