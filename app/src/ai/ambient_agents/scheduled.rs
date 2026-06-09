@@ -1,3 +1,8 @@
+//! Scheduled ambient agent management.
+//!
+//! Note: Cloud-specific logic has been removed. Only type definitions remain
+//! for local agent use.
+
 use std::collections::HashMap;
 use std::future::Future;
 
@@ -76,6 +81,7 @@ impl JsonModel for ScheduledAmbientAgent {
 }
 
 /// Parameters for updating a scheduled ambient agent.
+#[allow(dead_code)]
 pub struct UpdateScheduleParams {
     /// The new name of the scheduled agent. If not provided, the name will not be updated.
     pub name: Option<String>,

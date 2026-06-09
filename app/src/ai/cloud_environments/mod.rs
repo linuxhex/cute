@@ -1,5 +1,8 @@
 // Some of these re-exported types aren't used in the wasm build, so we suppress this
 // warning.
+//
+// Note: Cloud-specific logic has been removed. Only type definitions remain
+// for local agent use.
 #[cfg_attr(target_family = "wasm", expect(unused_imports))]
 pub use cloud_object_models::{
     AmbientAgentEnvironment, AwsProviderConfig, BaseImage, CloudAmbientAgentEnvironment,
@@ -72,6 +75,7 @@ impl JsonModel for AmbientAgentEnvironment {
 /// If the user is on a team, returns `Owner::Team`. Otherwise, returns
 /// `Owner::User` with the current user's ID. Returns `None` if the user
 /// is not logged in.
+#[allow(dead_code)]
 pub fn owner_for_new_environment(ctx: &AppContext) -> Option<Owner> {
     if let Some(team_uid) = UserWorkspaces::as_ref(ctx).current_team_uid() {
         Some(Owner::Team { team_uid })
@@ -85,6 +89,7 @@ pub fn owner_for_new_environment(ctx: &AppContext) -> Option<Owner> {
 ///
 /// Returns `Owner::User` with the current user's ID. Returns `None` if the user
 /// is not logged in.
+#[allow(dead_code)]
 pub fn owner_for_new_personal_environment(ctx: &AppContext) -> Option<Owner> {
     let user_id = AuthStateProvider::as_ref(ctx).get().user_id()?;
     Some(Owner::User { user_uid: user_id })
