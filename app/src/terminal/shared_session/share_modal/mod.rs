@@ -186,9 +186,8 @@ impl ShareSessionModal {
 
     fn handle_denied_body_event(&mut self, event: &DeniedBodyEvent, ctx: &mut ViewContext<Self>) {
         match event {
-            DeniedBodyEvent::Upgrade => {
+            DeniedBodyEvent::Close => {
                 self.close(ctx);
-                ctx.emit(ShareSessionModalEvent::Upgrade)
             }
         }
     }

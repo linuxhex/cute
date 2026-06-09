@@ -7,8 +7,9 @@ use warpui::{AppContext, Element, Entity, SingletonEntity, TypedActionView, View
 use super::style::{self, MODAL_PADDING};
 use crate::appearance::Appearance;
 
-const SESSION_BUILD_FREE_PLAN_SUBHEADER: &str = "Warp's free and pro plans come with a limited number of shared sessions.\n\nFor increased access to session sharing upgrade to the Build plan.";
-const VIEW_PLANS_TEXT: &str = "View plans";
+// Simplified: local version has no plan limits
+const SESSION_BUILD_FREE_PLAN_SUBHEADER: &str = "Session sharing is available in this version.";
+const VIEW_PLANS_TEXT: &str = "Close";
 
 pub struct DeniedBody {
     button_mouse_state: MouseStateHandle,
@@ -16,11 +17,11 @@ pub struct DeniedBody {
 
 #[derive(Debug, Clone, Copy)]
 pub enum DeniedBodyAction {
-    Upgrade,
+    Close,  // Simplified: local version just closes
 }
 
 pub enum DeniedBodyEvent {
-    Upgrade,
+    Close,  // Simplified: local version just closes
 }
 
 impl DeniedBody {
@@ -60,7 +61,7 @@ impl View for DeniedBody {
             .with_style(style::button_styles())
             .build()
             .with_cursor(Cursor::PointingHand)
-            .on_click(|ctx, _, _| ctx.dispatch_typed_action(DeniedBodyAction::Upgrade))
+            .on_click(|ctx, _, _| ctx.dispatch_typed_action(DeniedBodyAction::Close))
             .finish();
 
         col.add_child(text);
@@ -78,7 +79,7 @@ impl TypedActionView for DeniedBody {
 
     fn handle_action(&mut self, action: &Self::Action, ctx: &mut ViewContext<Self>) {
         match action {
-            DeniedBodyAction::Upgrade => ctx.emit(DeniedBodyEvent::Upgrade),
+            DeniedBodyAction::Close => ctx.emit(DeniedBodyEvent::Close),
         }
     }
 }
