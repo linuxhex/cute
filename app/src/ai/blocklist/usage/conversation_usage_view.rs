@@ -32,6 +32,7 @@ use crate::ui_components::blended_colors;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DisplayMode {
+    #[allow(dead_code)]
     Settings,
     Footer,
 }
