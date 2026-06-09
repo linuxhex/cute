@@ -347,10 +347,13 @@ enum GrowTeamWarning {
     /// Team size equals the workspace size policy limit.
     SeatCapReached,
     /// Team size exceeds the workspace size policy limit.
+    #[allow(dead_code)]
     SeatCapExceeded,
     /// Subscription has a past-due payment.
+    #[allow(dead_code)]
     PaymentPastDue,
     /// Subscription is unpaid.
+    #[allow(dead_code)]
     PaymentUnpaid,
 }
 
@@ -358,6 +361,7 @@ enum GrowTeamWarning {
 /// indicates no actionable path (non-admin viewer, enterprise with no
 /// self-serve option, or no higher-cap plan available).
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[allow(dead_code)]
 enum GrowTeamWarningCta {
     /// Self-serve upgrade is available; route to `/upgrade`.
     Upgrade,
@@ -1901,6 +1905,7 @@ impl TeamsWidget {
         GrowTeamWarningCta::None
     }
 
+    #[allow(dead_code)]
     fn has_higher_seat_cap_plan_available(
         workspace_size_policy: &WorkspaceSizePolicy,
         pricing_info: &PricingInfoModel,
@@ -2327,6 +2332,7 @@ impl TeamsWidget {
         team_name_header.finish()
     }
 
+    #[allow(dead_code)]
     fn render_contact_support_button(&self, appearance: &Appearance) -> Box<dyn Element> {
         appearance
             .ui_builder()
@@ -2352,6 +2358,7 @@ impl TeamsWidget {
             .finish()
     }
 
+    #[allow(dead_code)]
     fn render_manage_billing_button(
         &self,
         team_uid: ServerId,
@@ -3210,6 +3217,7 @@ impl TeamsWidget {
         Flex::column().with_children(children).finish()
     }
 
+    #[allow(dead_code)]
     fn render_delinquency_badge(
         &self,
         appearance: &Appearance,
@@ -3671,6 +3679,7 @@ impl TeamsWidget {
         .finish()
     }
 
+    #[allow(dead_code)]
     fn render_plan_usage_header(&self, text: String, appearance: &Appearance) -> Box<dyn Element> {
         Align::new(
             appearance
@@ -3696,6 +3705,7 @@ impl TeamsWidget {
         .finish()
     }
 
+    #[allow(dead_code)]
     fn render_plan_usage_text(&self, text: String, appearance: &Appearance) -> Box<dyn Element> {
         Align::new(
             appearance
@@ -3982,6 +3992,7 @@ impl TeamsWidget {
         }
     }
 
+    #[allow(dead_code)]
     fn render_compare_plans_button(
         &self,
         text: &str,

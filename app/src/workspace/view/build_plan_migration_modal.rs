@@ -35,6 +35,7 @@ pub fn init(app: &mut AppContext) {
 }
 
 #[derive(Debug, Clone, PartialEq, Copy)]
+#[allow(dead_code)]
 pub enum BuildPlanMigrationModalViewAction {
     GetStartedClicked,
     Close,
@@ -175,6 +176,7 @@ impl TypedActionView for BuildPlanMigrationModal {
 #[derive(Clone, Debug)]
 pub enum BuildPlanMigrationModalEvent {
     Close,
+    #[allow(dead_code)]
     ShowToast {
         message: String,
         flavor: crate::view_components::ToastFlavor,

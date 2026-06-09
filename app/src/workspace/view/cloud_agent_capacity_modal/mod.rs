@@ -173,6 +173,7 @@ pub enum CloudAgentCapacityModalEvent {
 }
 
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub enum CloudAgentCapacityModalAction {
     Close,
     Upgrade,
