@@ -15,7 +15,7 @@ use warpui::clipboard::ClipboardContent;
 use warpui::elements::{
     Align, AnchorPair, Border, ChildAnchor, ChildView, ClippedScrollStateHandle, ClippedScrollable,
     ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Dash, DropTarget, DropTargetData,
-    Empty, Flex, Highlight, Hoverable, MainAxisAlignment, MainAxisSize, MouseStateHandle,
+    Empty, Flex, Hoverable, MainAxisAlignment, MainAxisSize, MouseStateHandle,
     OffsetPositioning, OffsetType, ParentAnchor, ParentElement, ParentOffsetBounds,
     PositionedElementAnchor, PositionedElementOffsetBounds, PositioningAxis, Radius, SavePosition,
     ScrollTarget, ScrollToPositionMode, ScrollbarWidth, Shrinkable, Stack, Text, XAxisAnchor,
@@ -185,8 +185,9 @@ const SORTING_BUTTON_TOOLTIP_LABEL: &str = "Sort by";
 
 const RETRY_BUTTON_TOOLTIP_LABEL: &str = "Retry sync";
 
-const SHARED_OBJECT_LIMIT_HIT_BANNER_LINE: &str =
-    "Upgrade for access to more notebooks, workflows, shared sessions, and AI credits.";
+// Simplified: local version has no tier limits
+// const SHARED_OBJECT_LIMIT_HIT_BANNER_LINE: &str =
+//     "Upgrade for access to more notebooks, workflows, shared sessions, and AI credits.";
 
 // Simplified: local version has no payment issue banner
 // const PAYMENT_ISSUE_BANNER_LINE_1: &str =
@@ -480,8 +481,10 @@ struct MouseStateHandles {
     exit_trash_button_mouse_state: MouseStateHandle,
     join_team_button_mouse_state: MouseStateHandle,
     create_team_button_mouse_state: MouseStateHandle,
-    shared_object_limit_hit_banner_button_mouse_state: MouseStateHandle,
-    payment_issue_banner_button_mouse_state: MouseStateHandle,
+    // Simplified: local version has no tier limits
+    // shared_object_limit_hit_banner_button_mouse_state: MouseStateHandle,
+    // Simplified: local version has no payment issue banner
+    // payment_issue_banner_button_mouse_state: MouseStateHandle,
     anonymous_sign_up_button_mouse_state: MouseStateHandle,
     anonymous_object_limit_close_button_mouse_state: MouseStateHandle,
     search_button_mouse_state: MouseStateHandle,
@@ -4157,82 +4160,14 @@ impl DriveIndex {
             .finish()
     }
 
+    // Simplified: local version has no tier limits
     fn render_shared_object_limit_hit_banner(
         &self,
-        appearance: &Appearance,
-        team_uid: ServerId,
-        object_type: ObjectType,
+        _appearance: &Appearance,
+        _team_uid: ServerId,
+        _object_type: ObjectType,
     ) -> Box<dyn Element> {
-        let theme = appearance.theme();
-        let background_color = theme.surface_2();
-
-        let highlight =
-            Highlight::new().with_properties(Properties::default().weight(Weight::Bold));
-
-        let banner_line_1 = format!("You've run out of {object_type}s on your plan.");
-        let body = Container::new(
-            appearance
-                .ui_builder()
-                .wrappable_text(
-                    format!("{banner_line_1} {SHARED_OBJECT_LIMIT_HIT_BANNER_LINE}"),
-                    true,
-                )
-                .with_highlights((0..banner_line_1.len()).collect::<Vec<_>>(), highlight)
-                .with_style(UiComponentStyles {
-                    font_size: Some(12.),
-                    font_color: Some(appearance.theme().main_text_color(background_color).into()),
-                    ..Default::default()
-                })
-                .build()
-                .finish(),
-        )
-        .with_margin_bottom(16.)
-        .finish();
-
-        let button = appearance
-            .ui_builder()
-            .button(
-                ButtonVariant::Accent,
-                self.mouse_state_handles
-                    .shared_object_limit_hit_banner_button_mouse_state
-                    .clone(),
-            )
-            .with_centered_text_label("Compare plans".into())
-            .with_style(UiComponentStyles {
-                font_size: Some(14.),
-                font_weight: Some(Weight::Light),
-                padding: Some(Coords {
-                    top: 8.,
-                    bottom: 8.,
-                    left: 12.,
-                    right: 12.,
-                }),
-                ..Default::default()
-            })
-            .build()
-            .with_cursor(Cursor::PointingHand)
-            .on_click(move |ctx, _, _| {
-                ctx.dispatch_typed_action(DriveIndexAction::ViewPlans { team_uid })
-            })
-            .finish();
-
-        Container::new(
-            Container::new(
-                Flex::column()
-                    .with_main_axis_alignment(MainAxisAlignment::Center)
-                    .with_cross_axis_alignment(CrossAxisAlignment::Center)
-                    .with_child(body)
-                    .with_child(button)
-                    .finish(),
-            )
-            .with_background(background_color)
-            .with_corner_radius(CornerRadius::with_all(Radius::Pixels(4.)))
-            .with_uniform_padding(16.)
-            .finish(),
-        )
-        .with_uniform_padding(8.)
-        .with_border(Border::top(1.).with_border_color(background_color.into()))
-        .finish()
+        Flex::column().finish()
     }
 
     // Simplified: local version has no payment issue banner
