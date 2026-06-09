@@ -74,6 +74,7 @@ pub enum PromptAlertState {
     /// An anonymous user has reached the request limit.
     AnonymousUserRequestLimitHardGate,
     /// The user is delinquent due to a payment issue.
+    #[allow(dead_code)]
     DelinquentDueToPaymentIssue,
     /// Overages could be turned on, but aren't enabled.
     OveragesToggleableButNotEnabled,
