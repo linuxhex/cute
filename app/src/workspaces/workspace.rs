@@ -95,18 +95,9 @@ impl Workspace {
             .is_some_and(|member| member.role.is_admin_or_owner())
     }
 
-    pub fn resolve_usage_visibility(&self, is_admin: bool) -> UsageVisibility {
-        let Some(policy) = self.billing_metadata.tier.usage_visibility_policy else {
-            return UsageVisibility::default();
-        };
-        UsageVisibility {
-            granularity: if is_admin {
-                policy.admin_granularity
-            } else {
-                UsageVisibilityGranularity::OwnOnly
-            },
-            max_prior_cycles: policy.max_prior_cycles,
-        }
+    // Simplified: local version has no usage visibility policy
+    pub fn resolve_usage_visibility(&self, _is_admin: bool) -> UsageVisibility {
+        UsageVisibility::default()
     }
 
     pub fn can_be_deleted(&self, current_user_email: &str) -> bool {
@@ -123,39 +114,22 @@ impl Workspace {
         self.settings.llm_settings.enabled
     }
 
+    // Simplified: local version has no overages
     pub fn are_overages_toggleable(&self) -> bool {
-        self.billing_metadata
-            .tier
-            .usage_based_pricing_policy
-            .is_some_and(|policy| policy.toggleable)
-    }
-
-    pub fn are_overages_enabled(&self) -> bool {
-        self.settings.usage_based_pricing_settings.enabled
-    }
-
-    pub fn are_overages_remaining(&self) -> bool {
-        if self.settings.usage_based_pricing_settings.enabled {
-            if let Some(max_spend_cents) = self
-                .settings
-                .usage_based_pricing_settings
-                .max_monthly_spend_cents
-            {
-                if let Some(ai_overages) = &self.billing_metadata.ai_overages {
-                    return ai_overages.current_monthly_request_cost_cents < max_spend_cents as i32;
-                } else {
-                    // If they have the setting enabled but no overages usage so far,
-                    // that means they have no database entry, so they have overages remaining.
-                    return true;
-                }
-            }
-        }
-
         false
     }
 
+    pub fn are_overages_enabled(&self) -> bool {
+        false
+    }
+
+    pub fn are_overages_remaining(&self) -> bool {
+        false
+    }
+
+    // Simplified: local version has no BYO API key from billing
     pub fn is_byo_api_key_enabled(&self) -> bool {
-        self.billing_metadata.is_byo_api_key_enabled()
+        false
     }
 
     /// Returns true if the workspace has reached or exceeded its monthly addon credits spend limit.

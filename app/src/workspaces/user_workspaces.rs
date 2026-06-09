@@ -431,31 +431,9 @@ impl UserWorkspaces {
     }
 
     /// Returns true iff AI autonomy features are allowed for this client.
-    /// TODO: This should be deleted soon. AI autonomy settings have been moved into organization
-    /// settings (see `ai_autonomy_settings` above), but there could be an interim time where we
-    /// have not set up the org settings yet for an enterprise that previously had the entire
-    /// feature set disabled. To capture that case, we'll see if all the settings are `None`;
-    /// if so, we'll fall back to their billing metadata's value. Once we've migrated everyone
-    /// into org settings, we should remove `is_enabled` from the policy and delete this function.
+    /// Simplified: local version always allows AI autonomy
     pub fn is_ai_autonomy_allowed(&self) -> bool {
-        self.current_team().is_none_or(|team| {
-            let settings = &team.organization_settings.ai_autonomy_settings;
-            let all_settings_none = settings.apply_code_diffs_setting.is_none()
-                && settings.read_files_setting.is_none()
-                && settings.read_files_allowlist.is_none()
-                && settings.execute_commands_setting.is_none()
-                && settings.execute_commands_allowlist.is_none()
-                && settings.execute_commands_denylist.is_none();
-
-            if all_settings_none {
-                team.billing_metadata
-                    .tier
-                    .ai_autonomy_policy
-                    .is_some_and(|policy| policy.is_enabled)
-            } else {
-                true
-            }
-        })
+        true
     }
 
     // Returns a Vec of the user's active spaces, based on their
@@ -580,37 +558,8 @@ impl UserWorkspaces {
     }
 
     /// Checks if any workspace's service agreement sunsetted_to_build_ts field has changed.
-    fn has_sunsetted_to_build_data_changed(&self, new_workspaces: &[Workspace]) -> bool {
-        for new_workspace in new_workspaces {
-            // Find the corresponding old workspace
-            let old_workspace = self.workspaces.iter().find(|w| w.uid == new_workspace.uid);
-
-            if let Some(old_workspace) = old_workspace {
-                // Check if any team's service agreement sunsetted_to_build_ts changed
-                for new_team in &new_workspace.teams {
-                    let old_team = old_workspace.teams.iter().find(|t| t.uid == new_team.uid);
-
-                    if let Some(old_team) = old_team {
-                        let old_sunsetted = old_team
-                            .billing_metadata
-                            .service_agreements
-                            .first()
-                            .and_then(|sa| sa.sunsetted_to_build_ts);
-
-                        let new_sunsetted = new_team
-                            .billing_metadata
-                            .service_agreements
-                            .first()
-                            .and_then(|sa| sa.sunsetted_to_build_ts);
-
-                        // Detect if it changed from None to Some or changed value
-                        if old_sunsetted != new_sunsetted {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
+    /// Simplified: local version has no build plan migration
+    fn has_sunsetted_to_build_data_changed(&self, _new_workspaces: &[Workspace]) -> bool {
         false
     }
 
@@ -1183,12 +1132,9 @@ impl UserWorkspaces {
         ctx.notify();
     }
 
-    pub fn refresh_ai_overages(&mut self, ctx: &mut ModelContext<Self>) {
-        let workspace_client = self.workspace_client.clone();
-        let _ = ctx.spawn(
-            async move { workspace_client.refresh_ai_overages().await },
-            Self::on_refresh_ai_overages,
-        );
+    // Simplified: local version has no AI overages refresh
+    pub fn refresh_ai_overages(&mut self, _ctx: &mut ModelContext<Self>) {
+        // No-op for local version
     }
 
     pub fn update_addon_credits_settings(
@@ -1215,24 +1161,9 @@ impl UserWorkspaces {
         );
     }
 
-    fn on_refresh_ai_overages(&mut self, result: Result<AiOverages>, ctx: &mut ModelContext<Self>) {
-        match result {
-            Ok(fresh_ai_overages) => {
-                // TODO: We really need to stop having duplicate billing metadata...
-                if let Some(workspace) = self.current_workspace_mut() {
-                    workspace.billing_metadata.ai_overages = Some(fresh_ai_overages.clone());
-                }
-                if let Some(team) = self.current_team_mut() {
-                    team.billing_metadata.ai_overages = Some(fresh_ai_overages);
-                }
-
-                ctx.emit(UserWorkspacesEvent::AiOveragesUpdated);
-                ctx.notify();
-            }
-            Err(e) => {
-                log::warn!("Failed to refresh AI overages for workspace: {e:?}");
-            }
-        }
+    // Simplified: local version has no AI overages
+    fn on_refresh_ai_overages(&mut self, _result: Result<AiOverages>, _ctx: &mut ModelContext<Self>) {
+        // No-op for local version
     }
 
     pub fn usage_based_pricing_settings(&self) -> UsageBasedPricingSettings {
@@ -1509,22 +1440,9 @@ impl UserWorkspaces {
         );
     }
 
-    pub fn update_ai_autonomy_policy_flag(&mut self, enabled: bool, ctx: &mut ModelContext<Self>) {
-        self.update_current_workspace(
-            |workspace| {
-                if let Some(team) = workspace.teams.first_mut() {
-                    team.billing_metadata.tier.ai_autonomy_policy = Some(AIAutonomyPolicy {
-                        is_enabled: enabled,
-                        toggleable: true,
-                    });
-                } else {
-                    panic!(
-                        "No team found in current workspace. Did you call setup_test_workspace()?"
-                    );
-                }
-            },
-            ctx,
-        );
+    // Simplified: local version has no AI autonomy policy from billing
+    pub fn update_ai_autonomy_policy_flag(&mut self, _enabled: bool, _ctx: &mut ModelContext<Self>) {
+        // No-op for local version
     }
 }
 
