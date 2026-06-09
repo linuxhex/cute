@@ -188,23 +188,14 @@ impl UserWorkspaces {
         }
     }
 
-    pub fn upgrade_link(user_id: UserUid) -> String {
-        format!(
-            "{}{}/{}/{}",
-            ChannelState::server_root_url(),
-            STRIPE_SUBSCRIPTION_INTERVAL_PAGE_PREFIX,
-            "user",
-            user_id.as_str()
-        )
+    pub fn upgrade_link(_user_id: UserUid) -> String {
+        // Simplified: no cloud billing
+        String::new()
     }
 
-    pub fn upgrade_link_for_team(team_uid: ServerId) -> String {
-        format!(
-            "{}{}/{}",
-            ChannelState::server_root_url(),
-            STRIPE_SUBSCRIPTION_INTERVAL_PAGE_PREFIX,
-            team_uid
-        )
+    pub fn upgrade_link_for_team(_team_uid: ServerId) -> String {
+        // Simplified: no cloud billing
+        String::new()
     }
 
     pub fn team_from_uid(&self, team_uid: ServerId) -> Option<&Team> {

@@ -134,6 +134,16 @@ impl CloudPreferencesSyncer {
         // Simplified: just emit initial load completed
         ctx.emit(CloudPreferencesSyncerEvent::InitialLoadCompleted);
     }
+
+    /// Syncs the local preferences with the given storage keys to the cloud (simplified stub).
+    #[allow(dead_code)]
+    pub fn maybe_sync_local_prefs_to_cloud(
+        &mut self,
+        _keys_to_sync: Vec<String>,
+        _ctx: &mut ModelContext<Self>,
+    ) {
+        // Simplified: no cloud sync
+    }
 }
 
 impl Entity for CloudPreferencesSyncer {
