@@ -1325,14 +1325,15 @@ impl TypedActionView for LoginSlideView {
                 ctx.notify();
             }
             LoginSlideAction::ToggleCloudConversationStorage => {
-                let handle = PrivacySettings::handle(ctx);
-                ctx.update_model(&handle, |settings, ctx| {
-                    settings.set_is_cloud_conversation_storage_enabled(
-                        !settings.is_cloud_conversation_storage_enabled,
-                        ctx,
-                    );
-                });
-                ctx.notify();
+                // Simplified: local version has no cloud conversation storage
+                // let handle = PrivacySettings::handle(ctx);
+                // ctx.update_model(&handle, |settings, ctx| {
+                //     settings.set_is_cloud_conversation_storage_enabled(
+                //         !settings.is_cloud_conversation_storage_enabled,
+                //         ctx,
+                //     );
+                // });
+                // ctx.notify();
             }
             LoginSlideAction::DismissNotification => {
                 self.last_login_failure_reason = None;

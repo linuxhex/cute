@@ -971,14 +971,15 @@ impl TypedActionView for AuthViewBody {
                 ctx.notify();
             }
             AuthViewBodyAction::ToggleCloudConversationStorage => {
-                let privacy_settings_handle = PrivacySettings::handle(ctx);
-                ctx.update_model(&privacy_settings_handle, |privacy_settings, ctx| {
-                    privacy_settings.set_is_cloud_conversation_storage_enabled(
-                        !privacy_settings.is_cloud_conversation_storage_enabled,
-                        ctx,
-                    );
-                });
-                ctx.notify();
+                // Simplified: local version has no cloud conversation storage
+                // let privacy_settings_handle = PrivacySettings::handle(ctx);
+                // ctx.update_model(&privacy_settings_handle, |privacy_settings, ctx| {
+                //     privacy_settings.set_is_cloud_conversation_storage_enabled(
+                //         !privacy_settings.is_cloud_conversation_storage_enabled,
+                //         ctx,
+                //     );
+                // });
+                // ctx.notify();
             }
             AuthViewBodyAction::Close => {
                 ctx.emit(AuthViewBodyEvent::Close);
