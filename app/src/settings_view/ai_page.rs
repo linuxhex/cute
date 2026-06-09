@@ -6861,12 +6861,14 @@ impl SettingsWidget for CloudHandoffWidget {
         let ai_settings = AISettings::as_ref(app);
         let is_any_ai_enabled = ai_settings.is_any_ai_enabled(app);
 
-        let privacy = PrivacySettings::as_ref(app);
-        let cloud_convos_off = !privacy.is_cloud_conversation_storage_enabled
-            || matches!(
-                UserWorkspaces::as_ref(app).get_cloud_conversation_storage_enablement_setting(),
-                AdminEnablementSetting::Disable
-            );
+        // Simplified: local version has no cloud conversation storage
+        let cloud_convos_off = true;
+        // let privacy = PrivacySettings::as_ref(app);
+        // let cloud_convos_off = !privacy.is_cloud_conversation_storage_enabled
+        //     || matches!(
+        //         UserWorkspaces::as_ref(app).get_cloud_conversation_storage_enablement_setting(),
+        //         AdminEnablementSetting::Disable
+        //     );
         let is_force_disabled = !is_any_ai_enabled || cloud_convos_off;
 
         let tooltip_text = if cloud_convos_off {
