@@ -2260,19 +2260,12 @@ impl RootView {
                 self.start_autoupdate_polling(ctx);
                 ctx.notify();
             }
+            // Simplified: local version has no upgrade
             AgentOnboardingEvent::UpgradeRequested => {
-                let upgrade_url = AuthManager::handle(ctx)
-                    .update(ctx, |auth_manager, _| auth_manager.upgrade_url());
-                ctx.open_url(&upgrade_url);
+                // No-op for local version
             }
             AgentOnboardingEvent::UpgradeCopyUrlRequested => {
-                let upgrade_url = AuthManager::handle(ctx)
-                    .update(ctx, |auth_manager, _| auth_manager.upgrade_url());
-                ctx.clipboard().write(ClipboardContent {
-                    plain_text: upgrade_url.clone(),
-                    paths: Some(vec![upgrade_url]),
-                    ..Default::default()
-                });
+                // No-op for local version
             }
             AgentOnboardingEvent::UpgradePasteTokenFromClipboardRequested => {
                 let modal = ctx.add_typed_action_view(PasteAuthTokenModalView::new);
