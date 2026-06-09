@@ -2081,16 +2081,10 @@ impl TeamsWidget {
     }
 
     fn outgrow_upgrade_line_copy(
-        billing_metadata: &BillingMetadata,
+        _billing_metadata: &BillingMetadata,
     ) -> (&'static str, &'static str) {
-        if billing_metadata.customer_type == CustomerType::Business {
-            (
-                "Upgrade to Enterprise",
-                " for an unlimited team member limit.",
-            )
-        } else {
-            ("Upgrade to Business", " for a higher team member limit.")
-        }
+        // Simplified: default upgrade copy for local version
+        ("Upgrade", " for more features.")
     }
 
     fn render_team_member_cost_info(
@@ -2255,8 +2249,8 @@ impl TeamsWidget {
 
         // 7) Deleting/leaving teams
         let mut button_row = Flex::row().with_cross_axis_alignment(CrossAxisAlignment::Center);
-        let is_enterprise_team =
-            team_metadata.billing_metadata.customer_type == CustomerType::Enterprise;
+        // Simplified: no enterprise check for local version
+        let is_enterprise_team = false;
         // We don't allow users on enterprise teams to leave or delete their team,
         // since their enterprise agreement is tied to it, and it helps enforce that others
         // can't join some other team that doesn't have stricter security guarantees
@@ -2318,44 +2312,7 @@ impl TeamsWidget {
             );
         }
 
-        if team.billing_metadata.customer_type != CustomerType::Unknown {
-            left_side.add_child(
-                Container::new(render_customer_type_badge(
-                    appearance,
-                    team.billing_metadata.customer_type.to_display_string(),
-                ))
-                .with_margin_left(12.)
-                .finish(),
-            );
-        }
-
-        match team.billing_metadata.delinquency_status {
-            DelinquencyStatus::PastDue => {
-                left_side.add_child(
-                    Container::new(self.render_delinquency_badge(
-                        appearance,
-                        "PAST DUE".into(),
-                        themes::theme::Fill::from(*PAST_DUE_BADGE_COLOR).into(),
-                    ))
-                    .with_margin_left(8.)
-                    .finish(),
-                );
-            }
-            DelinquencyStatus::Unpaid => {
-                left_side.add_child(
-                    Container::new(self.render_delinquency_badge(
-                        appearance,
-                        "UNPAID".into(),
-                        themes::theme::Fill::from(*UNPAID_BADGE_COLOR).into(),
-                    ))
-                    .with_margin_left(8.)
-                    .finish(),
-                );
-            }
-            DelinquencyStatus::NoDelinquency
-            | DelinquencyStatus::TeamLimitExceeded
-            | DelinquencyStatus::Unknown => (),
-        }
+        // Simplified: no customer type badge for local version
 
         team_name_header.add_child(left_side.finish());
 
