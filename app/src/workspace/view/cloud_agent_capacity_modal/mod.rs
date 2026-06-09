@@ -83,7 +83,7 @@ impl View for CloudAgentCapacityModal {
             ),
             CloudAgentCapacityModalVariant::OutOfCredits => (
                 "Out of AI credits",
-                "You have used all available AI credits for this billing period.",
+                "You have used all available AI credits.",  // Simplified: no billing period
             ),
         };
 
