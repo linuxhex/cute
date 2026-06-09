@@ -5154,18 +5154,9 @@ impl View for DriveIndex {
             }
         };
 
+        // Simplified: local version has no payment issues
         if let Some(team) = workspaces.current_team() {
-            if team.billing_metadata.is_delinquent_due_to_payment_issue() {
-                let current_user_email = self.auth_state.user_email().unwrap_or_default();
-                let has_admin_permissions = team.has_admin_permissions(&current_user_email);
-                let is_on_stripe_paid_plan = team.billing_metadata.is_on_stripe_paid_plan();
-                drive.add_child(self.render_payment_issue_banner(
-                    appearance,
-                    team.uid,
-                    has_admin_permissions,
-                    is_on_stripe_paid_plan,
-                ));
-            } else if UserWorkspaces::is_at_tier_limit_for_object_type(
+            if UserWorkspaces::is_at_tier_limit_for_object_type(
                 team.uid,
                 ObjectType::Workflow,
                 app,
