@@ -2680,6 +2680,7 @@ impl WorkflowView {
         ctx.notify();
     }
 
+    #[allow(dead_code)]
     fn display_upgrade_error(
         &mut self,
         team_uid: Option<ServerId>,

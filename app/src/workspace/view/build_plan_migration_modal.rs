@@ -23,6 +23,7 @@ const MODAL_HEIGHT: f32 = 200.;
 const PANEL_PADDING: f32 = 24.;
 const CORNER_RADIUS: f32 = 10.;
 
+#[allow(dead_code)]
 pub fn init(app: &mut AppContext) {
     use warpui::keymap::macros::*;
 

@@ -328,6 +328,7 @@ where
         ctx.notify();
     }
 
+    #[allow(dead_code)]
     pub fn with_drop_shadow(mut self) -> Self {
         self.use_drop_shadow = true;
         self

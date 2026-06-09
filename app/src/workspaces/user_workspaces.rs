@@ -1162,6 +1162,7 @@ impl UserWorkspaces {
     }
 
     // Simplified: local version has no AI overages
+    #[allow(dead_code)]
     fn on_refresh_ai_overages(&mut self, _result: Result<AiOverages>, _ctx: &mut ModelContext<Self>) {
         // No-op for local version
     }

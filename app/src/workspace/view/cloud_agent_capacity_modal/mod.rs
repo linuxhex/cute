@@ -56,6 +56,7 @@ impl CloudAgentCapacityModal {
         }
     }
 
+    #[allow(dead_code)]
     pub fn set_variant(&mut self, variant: CloudAgentCapacityModalVariant) {
         self.variant = variant;
     }
