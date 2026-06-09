@@ -1,3 +1,7 @@
+//! Cloud preferences settings.
+//!
+//! Note: Cloud-specific logic has been removed. Simplified stub.
+
 pub use cloud_object_models::{CloudPreference, CloudPreferenceModel, Platform, Preference};
 use settings::macros::define_settings_group;
 use settings::{RespectUserSyncSetting, SupportedPlatforms, SyncToCloud};
@@ -8,6 +12,7 @@ use crate::cloud_object::{
     GenericStringObjectFormat, GenericStringObjectUniqueKey, JsonObjectType, Revision, UniquePer,
 };
 use crate::server::sync_queue::QueueItem;
+
 define_settings_group!(CloudPreferencesSettings, settings: [
    settings_sync_enabled: IsSettingsSyncEnabled {
        type: bool,
@@ -20,7 +25,7 @@ define_settings_group!(CloudPreferencesSettings, settings: [
    },
 ]);
 
-/// Defines a based model for syncing cloud preferences.
+/// Defines a based model for syncing cloud preferences (simplified stub).
 impl StringModel for Preference {
     type CloudObjectType = CloudPreference;
 
@@ -29,17 +34,14 @@ impl StringModel for Preference {
     }
 
     fn should_enforce_revisions() -> bool {
-        // Last write wins for cloud prefs
         false
     }
 
     fn should_show_activity_toasts() -> bool {
-        // No update toasts for cloud prefs
         false
     }
 
     fn warn_if_unsaved_at_quit() -> bool {
-        // Don't block quitting on unsaved cloud prefs changes
         false
     }
 
