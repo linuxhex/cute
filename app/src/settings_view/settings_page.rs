@@ -43,7 +43,6 @@ use super::warp_drive_page::WarpDriveSettingsPageView;
 use super::warpify_page::WarpifyPageView;
 use super::SettingsSection;
 use crate::appearance::Appearance;
-use crate::settings::CloudPreferencesSettings;
 use crate::themes::theme::Fill;
 use crate::ui_components::blended_colors;
 use crate::ui_components::icons::Icon;
@@ -515,12 +514,13 @@ impl LocalOnlyIconState {
         storage_key: &str,
         sync_to_cloud: SyncToCloud,
         mouse_states: &mut HashMap<String, MouseStateHandle>,
-        app: &AppContext,
+        _app: &AppContext,
     ) -> Self {
-        if !*CloudPreferencesSettings::as_ref(app).settings_sync_enabled {
-            // Only show the local-only icon if settings sync is enabled.
-            return Self::Hidden;
-        }
+        // Simplified: local version has no settings sync
+        // if !*CloudPreferencesSettings::as_ref(app).settings_sync_enabled {
+        //     // Only show the local-only icon if settings sync is enabled.
+        //     return Self::Hidden;
+        // }
 
         match sync_to_cloud {
             SyncToCloud::Never => {
