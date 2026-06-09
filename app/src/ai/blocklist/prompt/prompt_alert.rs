@@ -138,10 +138,8 @@ impl PromptAlertView {
         let privacy_settings = PrivacySettings::as_ref(app);
         if !privacy_settings.is_telemetry_enabled {
             // Fail safe: if billing status is unknown, assume paid to avoid showing confusing message to paying users
-            let is_on_paid_plan = UserWorkspaces::as_ref(app)
-                .current_workspace()
-                .map(|w| w.billing_metadata.is_user_on_paid_plan())
-                .unwrap_or(true);
+            // Simplified: local version always treats as paid plan
+            let is_on_paid_plan = true;
 
             if !is_on_paid_plan {
                 return PromptAlertState::TelemetryDisabledOnFreeTier;
@@ -170,9 +168,7 @@ impl PromptAlertView {
 
         // Next, make sure the user isn't delinquent in their plan.
         let workspace = UserWorkspaces::as_ref(app).current_workspace();
-        if workspace.is_some_and(|w| w.billing_metadata.is_delinquent_due_to_payment_issue()) {
-            return PromptAlertState::DelinquentDueToPaymentIssue;
-        }
+        // Simplified: local version has no delinquency
 
         // If there is ever any ai remaining, no alert
         if request_usage_model.has_any_ai_remaining(app) {
@@ -347,51 +343,7 @@ impl PromptAlertView {
                 }
             }
             PromptAlertState::RequestLimitReached => {
-                text_fragments.push(FormattedTextFragment::plain_text("  "));
-                if let Some(team) = UserWorkspaces::as_ref(app).current_team() {
-                    if team.billing_metadata.can_upgrade_to_higher_tier_plan() {
-                        let upgrade_url = UserWorkspaces::upgrade_link_for_team(team.uid);
-                        let upgrade_text = if !has_admin_permissions {
-                            COMPARE_PLANS_TEXT
-                        } else if team.billing_metadata.can_upgrade_to_build_plan() {
-                            "Upgrade to Build"
-                        } else {
-                            UPGRADE_TEXT
-                        };
-
-                        text_fragments
-                            .push(FormattedTextFragment::hyperlink(upgrade_text, upgrade_url));
-                    } else {
-                        text_fragments.push(FormattedTextFragment::hyperlink(
-                            CONTACT_SUPPORT_TEXT,
-                            "mailto:support@warp.dev".to_owned(),
-                        ));
-                    }
-                } else {
-                    let user_id = auth_state.user_id().unwrap_or_default();
-                    let upgrade_url = UserWorkspaces::upgrade_link(user_id);
-                    let label =
-                        if let Some(workspace) = UserWorkspaces::as_ref(app).current_workspace() {
-                            if workspace.billing_metadata.can_upgrade_to_build_plan() {
-                                "Upgrade to Build"
-                            } else {
-                                UPGRADE_TEXT
-                            }
-                        } else {
-                            UPGRADE_TEXT
-                        };
-                    text_fragments.push(FormattedTextFragment::hyperlink(label, upgrade_url));
-                }
-                if UserWorkspaces::as_ref(app).is_byo_api_key_enabled(app) {
-                    text_fragments.push(FormattedTextFragment::plain_text(" or "));
-                    text_fragments.push(FormattedTextFragment::hyperlink_action(
-                        "use your own API keys",
-                        WorkspaceAction::ShowSettingsPageWithSearch {
-                            search_query: "api".to_string(),
-                            section: Some(SettingsSection::WarpAgent),
-                        },
-                    ));
-                }
+                // Simplified: no upgrade links for local version
             }
             PromptAlertState::NoAlert => {}
         }
@@ -434,18 +386,8 @@ impl View for PromptAlertView {
             .zip(current_team)
             .is_some_and(|(email, team)| team.has_admin_permissions(&email));
 
-        let can_purchase_addon_credits = current_team
-            .and_then(|team| team.billing_metadata.tier.purchase_add_on_credits_policy)
-            .is_some_and(|policy| policy.enabled);
-
-        let suggest_buy_credits = can_purchase_addon_credits
-            && has_admin_permissions
-            && matches!(
-                state,
-                PromptAlertState::RequestLimitReached
-                    | PromptAlertState::OveragesToggleableButNotEnabled
-                    | PromptAlertState::MonthlyOveragesSpendLimitReached
-            );
+        // Simplified: local version has no add-on credits purchase
+        let suggest_buy_credits = false;
 
         if suggest_buy_credits {
             text_fragments.push(FormattedTextFragment::plain_text("  "));

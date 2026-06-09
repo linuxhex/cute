@@ -2417,44 +2417,7 @@ impl TeamsWidget {
 
         let team_uid = team.uid;
 
-        // For enterprise we actually hide both upgrade/billing links and have a contact support link instead
-        if team.billing_metadata.customer_type == CustomerType::Enterprise {
-            billing_links.add_child(
-                Container::new(self.render_contact_support_button(appearance))
-                    .with_margin_left(12.)
-                    .finish(),
-            );
-        } else {
-            // If the team is upgradeable to self-serve tier, show them the upgrade link.
-            if team.billing_metadata.can_upgrade_to_higher_tier_plan() {
-                let description = if team.billing_metadata.can_upgrade_to_build_plan() {
-                    "Upgrade to Build"
-                } else {
-                    match team.billing_metadata.customer_type {
-                        CustomerType::Prosumer => "Upgrade to Turbo plan",
-                        CustomerType::Turbo => "Upgrade to Lightspeed plan",
-                        _ => "Compare plans",
-                    }
-                };
-                billing_links.add_child(
-                    Container::new(self.render_compare_plans_button(
-                        description,
-                        self.mouse_state_handles.upgrade_link.clone(),
-                        team_uid,
-                        appearance,
-                        None,
-                    ))
-                    .with_margin_left(12.)
-                    .finish(),
-                );
-            } else if team.has_billing_history {
-                billing_links.add_child(
-                    Container::new(self.render_manage_billing_button(team_uid, appearance))
-                        .with_margin_left(12.)
-                        .finish(),
-                );
-            }
-        }
+        // Simplified: no billing links for local version
 
         billing_links.add_child(
             Container::new(self.render_admin_panel_button(team_uid, appearance))
