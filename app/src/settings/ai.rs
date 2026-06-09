@@ -31,7 +31,6 @@ use crate::ai::blocklist::BlocklistAIHistoryModel;
 use crate::ai::request_usage_model::RequestLimitInfo;
 use crate::auth::AuthStateProvider;
 use crate::report_if_error;
-use crate::settings::PrivacySettings;
 use crate::terminal::CLIAgent;
 use crate::workspaces::user_workspaces::UserWorkspaces;
 
@@ -1534,26 +1533,9 @@ impl AISettings {
     }
 
     /// Returns true when local-to-cloud handoff is effectively enabled.
-    /// False when the user/org has disabled it, cloud conversations are off,
-    /// or AI is globally off.
-    pub fn is_cloud_handoff_enabled(&self, app: &warpui::AppContext) -> bool {
-        if !self.is_any_ai_enabled(app) || *self.should_force_disable_cloud_handoff {
-            return false;
-        }
-        if !FeatureFlag::OzHandoff.is_enabled()
-            || !FeatureFlag::HandoffLocalCloud.is_enabled()
-            || !cfg!(all(feature = "local_fs", not(target_family = "wasm")))
-        {
-            return false;
-        }
-        let privacy = PrivacySettings::as_ref(app);
-        if !privacy.is_cloud_conversation_storage_enabled {
-            return false;
-        }
-        !matches!(
-            UserWorkspaces::as_ref(app).get_cloud_conversation_storage_enablement_setting(),
-            crate::workspaces::workspace::AdminEnablementSetting::Disable
-        )
+    /// Simplified: local version has no cloud handoff.
+    pub fn is_cloud_handoff_enabled(&self, _app: &warpui::AppContext) -> bool {
+        false
     }
     pub fn is_cloud_handoff_enabled_for_conversation(
         &self,
