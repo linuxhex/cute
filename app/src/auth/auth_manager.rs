@@ -790,6 +790,7 @@ impl AuthManager {
     }
 
     /// Simplified: local version has no upgrade
+    #[allow(dead_code)]
     pub fn upgrade_url(&mut self) -> String {
         String::new()
     }

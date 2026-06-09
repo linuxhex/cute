@@ -4171,6 +4171,7 @@ impl DriveIndex {
     }
 
     // Simplified: local version has no payment issue banner
+    #[allow(dead_code)]
     fn render_payment_issue_banner(
         &self,
         _appearance: &Appearance,
