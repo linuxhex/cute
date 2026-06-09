@@ -136,6 +136,7 @@ pub enum UpdateManagerEvent {
         result: ObjectOperationResult,
     },
     CloudPreferencesUpdated {
+        #[allow(dead_code)]
         updated: Vec<Preference>,
     },
     MCPGalleryUpdated {
