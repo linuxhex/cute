@@ -458,6 +458,7 @@ impl AIRequestUsageModel {
     }
 
     /// Simplified: local version has no refresh time display
+    #[allow(dead_code)]
     pub fn next_refresh_time_local(&self) -> DateTime<Local> {
         Local::now()
     }
@@ -527,6 +528,7 @@ impl AIRequestUsageModel {
     }
 
     /// Simplified: local version has no add-on credits purchase
+    #[allow(dead_code)]
     pub fn compute_buy_addon_credits_banner_display_state(
         &self,
         _ctx: &AppContext,
@@ -534,6 +536,7 @@ impl AIRequestUsageModel {
         BuyCreditsBannerDisplayState::Hidden
     }
 
+    #[allow(dead_code)]
     pub fn dismiss_buy_credits_banner(&mut self, ctx: &mut ModelContext<Self>) {
         self.buy_addon_credits_banner_dismissed = true;
         ctx.notify();
