@@ -558,184 +558,109 @@ pub struct BillingCycleUsageData {
 impl BillingMetadata {
     /// Returns whether the current tier has a usage-based pricing policy that can be toggled.
     pub fn is_usage_based_pricing_toggleable(&self) -> bool {
-        self.tier
-            .usage_based_pricing_policy
-            .as_ref()
-            .is_some_and(|policy| policy.toggleable)
+        false
     }
 
     /**
      * Returns whether customer can upgrade to the Build plan based on their current tier.
+     * Simplified: always returns false for local version.
      */
     pub fn can_upgrade_to_build_plan(&self) -> bool {
-        match self.customer_type {
-            CustomerType::Unknown
-            | CustomerType::Business
-            | CustomerType::Enterprise
-            | CustomerType::Build
-            | CustomerType::BuildMax => false,
-            CustomerType::Free
-            | CustomerType::Legacy
-            | CustomerType::Prosumer
-            | CustomerType::Turbo
-            | CustomerType::SelfServe
-            | CustomerType::Lightspeed => true,
-        }
+        false
     }
 
     /**
      * Returns whether customer can upgrade to the Build Max plan based on their current tier.
-     * Users on Build can upgrade to Build Max.
+     * Simplified: always returns false for local version.
      */
     pub fn can_upgrade_to_build_max_plan(&self) -> bool {
-        self.can_upgrade_to_build_plan() || self.customer_type == CustomerType::Build
+        false
     }
 
     /**
      * Returns whether customer can upgrade to a higher tier based on their current tier.
+     * Simplified: always returns false for local version.
      */
     pub fn can_upgrade_to_higher_tier_plan(&self) -> bool {
-        self.can_upgrade_to_build_plan()
+        false
     }
 
-    pub fn is_stripe_paid_plan(customer_type: CustomerType) -> bool {
-        match customer_type {
-            CustomerType::Turbo
-            | CustomerType::SelfServe
-            | CustomerType::Prosumer
-            | CustomerType::Business
-            | CustomerType::Lightspeed
-            | CustomerType::Build
-            | CustomerType::BuildMax => true,
-            CustomerType::Free
-            | CustomerType::Enterprise
-            | CustomerType::Legacy
-            | CustomerType::Unknown => false,
-        }
+    pub fn is_stripe_paid_plan(_customer_type: CustomerType) -> bool {
+        false
     }
 
+    /// Simplified: always returns true for local version (assume paid plan).
     pub fn is_user_on_paid_plan(&self) -> bool {
-        match self.customer_type {
-            CustomerType::Turbo
-            | CustomerType::SelfServe
-            | CustomerType::Prosumer
-            | CustomerType::Business
-            | CustomerType::Lightspeed
-            | CustomerType::Enterprise
-            | CustomerType::Legacy
-            | CustomerType::Build
-            | CustomerType::BuildMax => true,
-            CustomerType::Free | CustomerType::Unknown => false,
-        }
+        true
     }
 
     pub fn is_on_stripe_paid_plan(&self) -> bool {
-        BillingMetadata::is_stripe_paid_plan(self.customer_type)
+        false
     }
 
     pub fn is_on_build_plan(&self) -> bool {
-        self.customer_type == CustomerType::Build
+        false
     }
 
     pub fn is_on_build_max_plan(&self) -> bool {
-        self.customer_type == CustomerType::BuildMax
+        false
     }
 
     pub fn is_on_build_business_plan(&self) -> bool {
-        self.customer_type == CustomerType::Business
-            && matches!(
-                self.service_agreements.first().map(|sa| &sa.type_),
-                Some(ServiceAgreementType::SelfServe)
-            )
+        false
     }
 
     pub fn is_on_legacy_business_plan(&self) -> bool {
-        self.customer_type == CustomerType::Business && !self.is_on_build_business_plan()
+        false
     }
 
     pub fn is_enterprise_plan(&self) -> bool {
-        self.customer_type == CustomerType::Enterprise
+        false
     }
 
     pub fn is_free_plan(&self) -> bool {
-        self.customer_type == CustomerType::Free
+        false
     }
 
     pub fn is_on_legacy_paid_plan(&self) -> bool {
-        match self.customer_type {
-            CustomerType::Prosumer
-            | CustomerType::Turbo
-            | CustomerType::Lightspeed
-            | CustomerType::SelfServe => true,
-            CustomerType::Business => self.is_on_legacy_business_plan(),
-            CustomerType::Free
-            | CustomerType::Legacy
-            | CustomerType::Enterprise
-            | CustomerType::Build
-            | CustomerType::BuildMax
-            | CustomerType::Unknown => false,
-        }
+        false
     }
 
     pub fn is_delinquent_due_to_payment_issue(&self) -> bool {
-        self.delinquency_status == DelinquencyStatus::PastDue
-            || self.delinquency_status == DelinquencyStatus::Unpaid
+        false
     }
 
     // Whether the enterprise customer is our Stable Warp Enterprise team (internal team of Warpers).
     pub fn is_warp_plan(&self) -> bool {
-        self.tier.name == "Warp Plan"
+        false
     }
 
     pub fn has_active_subscription(&self) -> bool {
-        if let Some(newest_service_agreement) = self.service_agreements.first() {
-            let not_expired = Utc::now() < newest_service_agreement.current_period_end.utc();
-            let not_delinquent = !self.is_delinquent_due_to_payment_issue();
-            not_expired && not_delinquent
-        } else {
-            false
-        }
+        false
     }
 
     pub fn is_byo_api_key_enabled(&self) -> bool {
-        self.tier
-            .byo_api_key_policy
-            .is_some_and(|policy| policy.enabled)
+        false
     }
 
     pub fn has_overages_used(&self) -> bool {
-        self.ai_overages
-            .as_ref()
-            .is_some_and(|ai_overages| ai_overages.current_monthly_requests_used > 0)
+        false
     }
 
     pub fn has_failed_addon_credit_auto_reload_status(&self) -> bool {
-        self.service_agreements
-            .first()
-            .and_then(|sa| sa.addon_credit_auto_reload_status)
-            .is_some_and(|status| matches!(status, AddonCreditAutoReloadStatus::Failed))
+        false
     }
 
     pub fn is_enterprise_pay_as_you_go_enabled(&self) -> bool {
-        self.customer_type == CustomerType::Enterprise
-            && self
-                .tier
-                .enterprise_pay_as_you_go_policy
-                .is_some_and(|policy| policy.enabled)
+        false
     }
 
     pub fn is_enterprise_auto_reload_enabled(&self) -> bool {
-        self.customer_type == CustomerType::Enterprise
-            && self
-                .tier
-                .enterprise_credits_auto_reload_policy
-                .is_some_and(|policy| policy.enabled)
+        false
     }
 
     pub fn is_purchase_add_on_credits_policy_enabled(&self) -> bool {
-        self.tier
-            .purchase_add_on_credits_policy
-            .is_some_and(|policy| policy.enabled)
+        false
     }
 }
 
