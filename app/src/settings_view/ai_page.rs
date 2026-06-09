@@ -7005,6 +7005,7 @@ struct ApiKeysWidget {
     google_api_key_editor: ViewHandle<EditorView>,
 
     can_use_warp_credits_for_fallback: SwitchStateHandle,
+    #[allow(dead_code)]
     upgrade_highlight_index: HighlightedHyperlink,
 
     custom_inference_info_tooltip: MouseStateHandle,

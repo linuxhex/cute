@@ -309,6 +309,7 @@ pub struct WorkflowView {
     default_argument_id: usize,
     pub(super) ai_metadata_assist_state: AiAssistState,
     revision_ts: Option<Revision>,
+    #[allow(dead_code)]
     pub(super) auth_state: Arc<AuthState>,
     pub(super) ai_client: Arc<dyn AIClient>,
     owner: Option<Owner>,

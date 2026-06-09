@@ -310,13 +310,17 @@ impl MainSettingsPageView {
 
 #[derive(Default)]
 struct AccountWidgetStateHandles {
+    #[allow(dead_code)]
     upgrade_link: MouseStateHandle,
+    #[allow(dead_code)]
     enterprise_contact_us_link: MouseStateHandle,
+    #[allow(dead_code)]
     stripe_billing_portal_link: MouseStateHandle,
 }
 
 #[derive(Default)]
 struct AccountWidget {
+    #[allow(dead_code)]
     ui_state_handles: AccountWidgetStateHandles,
 }
 

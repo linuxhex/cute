@@ -1328,6 +1328,7 @@ impl FeaturesPageAction {
 #[derive(Default)]
 struct MouseStateHandles {
     local_only_icon_tooltip_states: RefCell<HashMap<String, MouseStateHandle>>,
+    #[allow(dead_code)]
     tab_behavior_local_only_icon: MouseStateHandle,
     activation_hotkey_keybinding_editor: MouseStateHandle,
     activation_hotkey_save: MouseStateHandle,

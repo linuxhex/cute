@@ -958,6 +958,7 @@ fn trigger_keybinding_notifier(
 
 #[derive(Default)]
 struct KeybindingsWidget {
+    #[allow(dead_code)]
     local_only_icon_mouse_state: MouseStateHandle,
 }
 

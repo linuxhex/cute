@@ -44,6 +44,7 @@ pub struct CloudPreferencesSyncer {
     client_id_provider: Arc<dyn ClientIdProvider>,
     has_completed_initial_load: bool,
     force_local_wins_on_startup: bool,
+    #[allow(dead_code)]
     toml_file_path: PathBuf,
 }
 

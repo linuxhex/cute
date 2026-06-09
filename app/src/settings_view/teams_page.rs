@@ -293,9 +293,12 @@ struct TeamsWidgetMouseHandles {
     approve_domains_button: MouseStateHandle,
     reset_invite_links_button: MouseStateHandle,
     invite_by_link_toggle_state: SwitchStateHandle,
+    #[allow(dead_code)]
     upgrade_link: MouseStateHandle,
+    #[allow(dead_code)]
     stripe_billing_portal_link: MouseStateHandle,
     manage_plan_link: MouseStateHandle,
+    #[allow(dead_code)]
     enterprise_contact_us_link: MouseStateHandle,
     discoverable_team_toggle_state: SwitchStateHandle,
     checkbox_mouse_state: MouseStateHandle,
