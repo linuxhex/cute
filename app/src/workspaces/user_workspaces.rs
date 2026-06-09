@@ -1322,11 +1322,8 @@ impl UserWorkspaces {
             return;
         }
 
-        let is_session_sharing_enabled_via_tier_policy = self
-            .current_team()
-            .and_then(|t| t.billing_metadata.tier.session_sharing_policy)
-            .map(|policy| policy.is_enabled)
-            .unwrap_or(true);
+        // Simplified: local version always enables session sharing
+        let is_session_sharing_enabled_via_tier_policy = true;
         FeatureFlag::CreatingSharedSessions.set_enabled(is_session_sharing_enabled_via_tier_policy);
     }
 }
