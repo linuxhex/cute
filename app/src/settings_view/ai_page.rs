@@ -4134,10 +4134,8 @@ impl SettingsWidget for UsageWidget {
         let ai_request_usage_model = AIRequestUsageModel::as_ref(app);
         let next_refresh_time = ai_request_usage_model.next_refresh_time();
         let formatted_next_refresh_time = next_refresh_time.format("%b %d").to_string();
-        let workspace_is_delinquent_due_to_payment_issue = UserWorkspaces::as_ref(app)
-            .current_team()
-            .map(|team| team.billing_metadata.is_delinquent_due_to_payment_issue())
-            .unwrap_or_default();
+        // Simplified: no delinquency check for local version
+        let workspace_is_delinquent_due_to_payment_issue = false;
 
         let usage_header = Container::new(
             Flex::row()
@@ -4186,42 +4184,12 @@ impl SettingsWidget for UsageWidget {
             appearance,
         );
 
-        let auth_state = AuthStateProvider::as_ref(app).get();
-        let upgrade_cta_text_fragments = if let Some(team) =
-            UserWorkspaces::as_ref(app).current_team()
-        {
-            let current_user_email = auth_state.user_email().unwrap_or_default();
-            let has_admin_permissions = team.has_admin_permissions(&current_user_email);
-            if team.billing_metadata.can_upgrade_to_higher_tier_plan() {
-                let upgrade_url = UserWorkspaces::upgrade_link_for_team(team.uid);
-                if has_admin_permissions {
-                    vec![
-                        FormattedTextFragment::hyperlink("Upgrade", upgrade_url),
-                        FormattedTextFragment::plain_text(" to get more AI usage."),
-                    ]
-                } else {
-                    // The /upgrade page says to contact their administrator.
-                    vec![
-                        FormattedTextFragment::hyperlink("Compare plans", upgrade_url),
-                        FormattedTextFragment::plain_text(" for more AI usage."),
-                    ]
-                }
-            } else {
-                vec![
-                    FormattedTextFragment::hyperlink("Contact support", "mailto:support@warp.dev"),
-                    FormattedTextFragment::plain_text(" for more AI usage."),
-                ]
-            }
-        } else {
-            let user_id = auth_state.user_id().unwrap_or_default();
-            let upgrade_url = UserWorkspaces::upgrade_link(user_id);
-            vec![
-                FormattedTextFragment::hyperlink("Upgrade", upgrade_url),
-                FormattedTextFragment::plain_text(" to get more AI usage."),
-            ]
-        };
+        // Simplified: no upgrade CTA for local version
+        let upgrade_cta_text_fragments = vec![
+            FormattedTextFragment::plain_text(""),
+        ];
 
-        let mut upgrade_cta = FormattedTextElement::new(
+        let upgrade_cta = FormattedTextElement::new(
             FormattedText::new([FormattedTextLine::Line(upgrade_cta_text_fragments)]),
             appearance.ui_font_size(),
             appearance.ui_font_family(),
@@ -4230,19 +4198,6 @@ impl SettingsWidget for UsageWidget {
             self.requests_highlight_index.clone(),
         )
         .with_hyperlink_font_color(appearance.theme().accent().into_solid());
-
-        if AuthStateProvider::as_ref(app)
-            .get()
-            .is_anonymous_or_logged_out()
-        {
-            upgrade_cta = upgrade_cta.register_default_click_handlers(|_, ctx, _| {
-                ctx.dispatch_typed_action(AISettingsPageAction::AttemptLoginGatedUpgrade);
-            });
-        } else {
-            upgrade_cta = upgrade_cta.register_default_click_handlers(|url, ctx, _| {
-                ctx.dispatch_typed_action(AISettingsPageAction::HyperlinkClick(url));
-            })
-        }
 
         Flex::column()
             .with_children([
