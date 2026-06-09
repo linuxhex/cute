@@ -428,19 +428,9 @@ impl OneTimeModalModel {
             return false;
         }
 
-        // Check if service agreement has sunsetted_to_build_ts set
-        let has_sunsetted_to_build = current_team
-            .billing_metadata
-            .service_agreements
-            .first()
-            .is_some_and(|sa| sa.sunsetted_to_build_ts.is_some());
-
-        if !has_sunsetted_to_build {
-            return false;
-        }
-
-        // All conditions met, show the modal
-        self.set_build_plan_migration_modal_open(true, ctx)
+        // Simplified: local version has no build plan migration modal
+        let _ = ctx;
+        false
     }
 }
 
