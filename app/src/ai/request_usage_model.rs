@@ -27,6 +27,7 @@ pub enum BonusGrantScope {
     Workspace(WorkspaceUid),
 }
 
+#[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, Default)]
 pub enum BuyCreditsBannerDisplayState {
     #[default]

@@ -110,6 +110,7 @@ pub struct ConversationUsageView {
 }
 
 impl ConversationUsageView {
+    #[allow(dead_code)]
     pub fn new(
         usage_info: ConversationUsageInfo,
         display_mode: DisplayMode,
