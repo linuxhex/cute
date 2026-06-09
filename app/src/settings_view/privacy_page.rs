@@ -1450,9 +1450,8 @@ impl SettingsWidget for AppAnalyticsWidget {
         let ui_builder = appearance.ui_builder();
         let description_text_color = description_text_color(appearance.theme()).into_solid();
 
-        let is_enterprise = UserWorkspaces::as_ref(app)
-            .current_workspace()
-            .is_some_and(|w| w.billing_metadata.customer_type == CustomerType::Enterprise);
+        // Simplified: local version is not enterprise
+        let is_enterprise = false;
         // Keep the old description for enterprise users because we do not collect block input/output for them.
         let description = if is_enterprise {
             TELEMETRY_DESCRIPTION_OLD
@@ -1519,10 +1518,8 @@ impl SettingsWidget for AppAnalyticsWidget {
 
         // Check if user is on free tier to show the AI requirement note
         // Fail safe: if billing status is unknown, assume paid (don't show free tier note)
-        let is_on_paid_plan = UserWorkspaces::as_ref(app)
-            .current_workspace()
-            .map(|w| w.billing_metadata.is_user_on_paid_plan())
-            .unwrap_or(true);
+        // Simplified: local version always treats as paid plan
+        let is_on_paid_plan = true;
 
         let mut column = Flex::column();
         column.add_child(super::settings_page::build_toggle_element(
