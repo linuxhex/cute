@@ -248,76 +248,24 @@ impl UserWorkspaces {
 
     // Checks if the team has capacity for another shared notebook for their current
     // billing tier, given their current notebook count and delinquency status.
+    // Simplified: always returns true for local version.
     pub fn has_capacity_for_shared_notebooks(
-        team_uid: ServerId,
-        ctx: &AppContext,
-        new_shared_notebooks: usize,
+        _team_uid: ServerId,
+        _ctx: &AppContext,
+        _new_shared_notebooks: usize,
     ) -> bool {
-        let current_shared_notebooks = CloudModel::as_ref(ctx)
-            .active_notebooks_in_space(Space::Team { team_uid }, ctx)
-            .count();
-
-        let team = UserWorkspaces::as_ref(ctx).team_from_uid(team_uid);
-        if let Some(team) = team {
-            // If the team is past due or unpaid, then don't allow new notebooks.
-            if team.billing_metadata.is_delinquent_due_to_payment_issue() {
-                return false;
-            }
-
-            if let Some(policy) = team.billing_metadata.tier.shared_notebooks_policy {
-                // Allow new notebooks if policy is unlimited or if the number of notebooks
-                // is less than the limit.
-                policy.is_unlimited
-                    || current_shared_notebooks + new_shared_notebooks
-                        <= policy
-                            .limit
-                            .try_into()
-                            .expect("shared notebooks limit should be within max i64 range")
-            } else {
-                // If no policy is set, then allow it to go through by default (should still be enforced server-side)
-                true
-            }
-        } else {
-            // If the team is not found, then allow it to go through by default (should still be enforced server-side)
-            true
-        }
+        true
     }
 
     // Checks if the team has capacity for another shared workflow for their current
     // billing tier, given their current workflow count and delinquency status.
+    // Simplified: always returns true for local version.
     pub fn has_capacity_for_shared_workflows(
-        team_uid: ServerId,
-        ctx: &AppContext,
-        new_shared_workflows: usize,
+        _team_uid: ServerId,
+        _ctx: &AppContext,
+        _new_shared_workflows: usize,
     ) -> bool {
-        let current_shared_workflows = CloudModel::as_ref(ctx)
-            .active_workflows_in_space(Space::Team { team_uid }, ctx)
-            .count();
-
-        let team = UserWorkspaces::as_ref(ctx).team_from_uid(team_uid);
-        if let Some(team) = team {
-            // If the team is past due or unpaid, then don't allow new workflows.
-            if team.billing_metadata.is_delinquent_due_to_payment_issue() {
-                return false;
-            }
-
-            if let Some(policy) = team.billing_metadata.tier.shared_workflows_policy {
-                // Allow new workflows if policy is unlimited or if the number of workflows
-                // is less than the limit.
-                policy.is_unlimited
-                    || current_shared_workflows + new_shared_workflows
-                        <= policy
-                            .limit
-                            .try_into()
-                            .expect("shared workflows limit should be within max i64 range")
-            } else {
-                // If no policy is set, then allow it to go through by default (should still be enforced server-side)
-                true
-            }
-        } else {
-            // If the team is not found, then allow it to go through by default (should still be enforced server-side)
-            true
-        }
+        true
     }
 
     /// Return the uid of user's current team (if any) without refreshing.
@@ -367,103 +315,39 @@ impl UserWorkspaces {
     }
 
     /// Returns `true` if active AI is allowed for the current workspace, based on billing config.
-    ///
-    /// In the future, we should store active AI enablement on the policy directly. For now, we
-    /// proxy whether active AI by checking whether any active AI feature is enabled.
+    /// Simplified: always returns true for local version.
     pub fn is_active_ai_allowed(&self) -> bool {
-        self.current_team().is_none_or(|team| {
-            team.billing_metadata
-                .tier
-                .warp_ai_policy
-                .is_none_or(|policy| {
-                    policy.is_prompt_suggestions_toggleable
-                        || policy.is_next_command_enabled
-                        || policy.is_code_suggestions_toggleable
-                        || policy.is_git_operations_ai_enabled
-                })
-        })
+        true
     }
 
-    /// Returns `true` if the current team's enterprise status allows AI features that have an
-    /// enterprise gate. Non-enterprise teams always pass; enterprise teams pass only if they
-    /// are on the Warp Plan or the build is dogfood (both our internal Warp team and dogfood
-    /// team are billed as enterprise).
+    /// Simplified: always returns true for local version.
     pub fn ai_allowed_for_current_team(&self) -> bool {
-        !self
-            .current_team()
-            .is_some_and(|team| team.billing_metadata.customer_type == CustomerType::Enterprise)
-            || self
-                .current_team()
-                .is_some_and(|team| team.billing_metadata.is_warp_plan())
-            || ChannelState::channel().is_dogfood()
+        true
     }
 
-    /// Whether Prompt Suggestions should be toggleable for the current user, based on the active policies.
-    /// Note that the value may be incorrect if called before the team's billing metadata has been fetched.
+    /// Simplified: always returns true for local version.
     pub fn is_prompt_suggestions_toggleable(&self) -> bool {
-        self.current_team()
-            // If the user has no team, they can toggle prompt suggestions (no restrictions).
-            .is_none_or(|team| {
-                team.billing_metadata
-                    .tier
-                    .warp_ai_policy
-                    .is_some_and(|policy| policy.is_prompt_suggestions_toggleable)
-            })
+        true
     }
 
-    /// Whether Code Suggestions should be toggleable for the current user, based on the active policies.
-    /// Note that the value may be incorrect if called before the team's billing metadata has been fetched.
+    /// Simplified: always returns true for local version.
     pub fn is_code_suggestions_toggleable(&self) -> bool {
-        self.current_team()
-            // If the user has no team, they can toggle code suggestions (no restrictions).
-            .is_none_or(|team| {
-                team.billing_metadata
-                    .tier
-                    .warp_ai_policy
-                    .is_some_and(|policy| policy.is_code_suggestions_toggleable)
-            })
+        true
     }
 
-    /// Whether Next Command should be toggleable for the current user, based on the active policies.
-    /// Note that the value may be incorrect if called before the team's billing metadata has been fetched.
+    /// Simplified: always returns true for local version.
     pub fn is_next_command_enabled(&self) -> bool {
-        self.current_team()
-            // If the user has no team, they can toggle Next Command (no restrictions).
-            .is_none_or(|team| {
-                team.billing_metadata
-                    .tier
-                    .warp_ai_policy
-                    .is_some_and(|policy| policy.is_next_command_enabled)
-            })
+        true
     }
 
-    /// Whether Git Operations AI is enabled for the current user, based on the active policies.
-    /// Note that the value may be incorrect if called before the team's billing metadata has been fetched.
+    /// Simplified: always returns true for local version.
     pub fn is_git_operations_ai_enabled(&self) -> bool {
-        self.current_team()
-            // If the user has no team, they can toggle Git Operations AI (no restrictions).
-            .is_none_or(|team| {
-                team.billing_metadata
-                    .tier
-                    .warp_ai_policy
-                    .is_some_and(|policy| policy.is_git_operations_ai_enabled)
-            })
+        true
     }
 
-    /// Whether voice input should be toggleable for the current user, based on the active policies.
-    /// Note that the value may be incorrect if called before the team's billing metadata has been fetched.
-    /// If voice input support is not compiled into this build, always returns `false`.
+    /// Simplified: returns true if voice_input feature is enabled.
     pub fn is_voice_enabled(&self) -> bool {
         cfg!(feature = "voice_input")
-            && self
-                .current_team()
-                // If the user has no team, they can toggle Voice (no restrictions).
-                .is_none_or(|team| {
-                    team.billing_metadata
-                        .tier
-                        .warp_ai_policy
-                        .is_some_and(|policy| policy.is_voice_enabled)
-                })
     }
 
     /// Whether BYO API key is enabled for the current user, based on the active policies.
@@ -481,24 +365,9 @@ impl UserWorkspaces {
             .map(|workspace| workspace.is_byo_api_key_enabled())
             .unwrap_or(FeatureFlag::SoloUserByok.is_enabled())
     }
-    /// Whether custom inference endpoints are enabled for the current user.
-    /// Anonymous or logged-out users are not allowed to use custom inference.
-    /// Enterprise workspaces require the enterprise custom inference flag, Warp Plan, or dogfood.
-    pub fn is_custom_inference_enabled(&self, app: &AppContext) -> bool {
-        if AuthStateProvider::as_ref(app)
-            .get()
-            .is_anonymous_or_logged_out()
-        {
-            return false;
-        }
-
-        self.current_workspace()
-            .map(|workspace| {
-                workspace.billing_metadata.customer_type != CustomerType::Enterprise
-                    || FeatureFlag::CustomInferenceEndpointsEnterprise.is_enabled()
-                    || ChannelState::channel().is_dogfood()
-            })
-            .unwrap_or(true)
+    /// Simplified: always returns true for local version.
+    pub fn is_custom_inference_enabled(&self, _app: &AppContext) -> bool {
+        true
     }
 
     pub fn aws_bedrock_host_settings(&self) -> Option<&super::workspace::LlmHostSettings> {
