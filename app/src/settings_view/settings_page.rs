@@ -7,7 +7,6 @@ use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::vec2f;
 use settings::Setting;
 use warp_core::settings::SyncToCloud;
-use warp_core::ui::color::blend::Blend;
 use warp_core::ui::theme::color::internal_colors;
 use warpui::elements::new_scrollable::{
     ClippedAxisConfiguration, DualAxisConfig, SingleAxisConfig,
@@ -201,35 +200,36 @@ pub enum PaneEventWrapper {
     Close,
 }
 
-pub fn render_customer_type_badge(appearance: &Appearance, text: String) -> Box<dyn Element> {
-    Container::new(
-        Text::new_inline(text, appearance.ui_font_family(), appearance.ui_font_size())
-            .with_color(
-                appearance
-                    .theme()
-                    .background()
-                    .blend(
-                        &appearance
-                            .theme()
-                            .foreground()
-                            .with_opacity(60), // Simplified: hardcoded opacity
-                    )
-                    .into(),
-            )
-            .with_style(Properties::default().weight(Weight::Medium))
-            .finish(),
-    )
-    .with_uniform_padding(4.)
-    .with_background(
-        appearance
-            .theme()
-            .background()
-            .blend(&appearance.theme().foreground().with_opacity(25)),
-    )
-    .with_corner_radius(CornerRadius::with_all(Radius::Pixels(3.)))
-    .with_margin_left(10.)
-    .finish()
-}
+// Simplified: local version has no customer type badge
+// pub fn render_customer_type_badge(appearance: &Appearance, text: String) -> Box<dyn Element> {
+//     Container::new(
+//         Text::new_inline(text, appearance.ui_font_family(), appearance.ui_font_size())
+//             .with_color(
+//                 appearance
+//                     .theme()
+//                     .background()
+//                     .blend(
+//                         &appearance
+//                             .theme()
+//                             .foreground()
+//                             .with_opacity(60), // Simplified: hardcoded opacity
+//                     )
+//                     .into(),
+//             )
+//             .with_style(Properties::default().weight(Weight::Medium))
+//             .finish(),
+//     )
+//     .with_uniform_padding(4.)
+//     .with_background(
+//         appearance
+//             .theme()
+//             .background()
+//             .blend(&appearance.theme().foreground().with_opacity(25)),
+//     )
+//     .with_corner_radius(CornerRadius::with_all(Radius::Pixels(3.)))
+//     .with_margin_left(10.)
+//     .finish()
+// }
 
 /// Adds padding to the sub header
 pub fn render_sub_header(
