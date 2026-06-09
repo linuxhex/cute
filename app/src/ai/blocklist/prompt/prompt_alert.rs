@@ -451,7 +451,7 @@ impl View for PromptAlertView {
             text_fragments.push(FormattedTextFragment::plain_text("  "));
             text_fragments.push(FormattedTextFragment::hyperlink_action(
                 "Add credits",
-                WorkspaceAction::ShowSettingsPage(SettingsSection::BillingAndUsage),
+                WorkspaceAction::ShowSettingsPage(SettingsSection::Account),
             ));
         } else {
             self.action_hyperlink(&state, &mut text_fragments, app);
