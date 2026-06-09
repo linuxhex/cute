@@ -1882,68 +1882,20 @@ impl TeamsWidget {
         Some((monthly_cost, yearly_cost))
     }
 
-    fn grow_team_warning(team: &Team) -> Option<GrowTeamWarning> {
-        match team.billing_metadata.delinquency_status {
-            DelinquencyStatus::PastDue => return Some(GrowTeamWarning::PaymentPastDue),
-            DelinquencyStatus::Unpaid => return Some(GrowTeamWarning::PaymentUnpaid),
-            DelinquencyStatus::NoDelinquency
-            // team limit is split into 2 cases below
-            | DelinquencyStatus::TeamLimitExceeded
-            | DelinquencyStatus::Unknown => {}
-        }
-        let policy = team.billing_metadata.tier.workspace_size_policy?;
-        if policy.is_unlimited {
-            return None;
-        }
-        let team_size = i64::try_from(team.members.len()).unwrap_or(i64::MAX);
-        if team_size > policy.limit {
-            return Some(GrowTeamWarning::SeatCapExceeded);
-        }
-        if team_size >= policy.limit {
-            return Some(GrowTeamWarning::SeatCapReached);
-        }
+    fn grow_team_warning(_team: &Team) -> Option<GrowTeamWarning> {
+        // Simplified: no billing warnings for local version
         None
     }
 
     /// Maps an admin's actionable path out of a `GrowTeamWarning`.
     fn grow_team_warning_cta(
-        warning: GrowTeamWarning,
-        has_admin_permissions: bool,
-        billing_metadata: &BillingMetadata,
-        pricing_info: &PricingInfoModel,
+        _warning: GrowTeamWarning,
+        _has_admin_permissions: bool,
+        _billing_metadata: &BillingMetadata,
+        _pricing_info: &PricingInfoModel,
     ) -> GrowTeamWarningCta {
-        if !has_admin_permissions {
-            return GrowTeamWarningCta::None;
-        }
-        match warning {
-            GrowTeamWarning::PaymentPastDue | GrowTeamWarning::PaymentUnpaid => {
-                // Self-serve admins should be able to fix billing themselves;
-                // everyone else (enterprise / legacy) needs to reach support.
-                if billing_metadata.is_on_stripe_paid_plan() {
-                    GrowTeamWarningCta::UpdateBilling
-                } else {
-                    GrowTeamWarningCta::ContactSupport
-                }
-            }
-            GrowTeamWarning::SeatCapReached | GrowTeamWarning::SeatCapExceeded => {
-                // Business teams route through the upgrade flow for the
-                // Enterprise upsell when they need more seats.
-                if billing_metadata.customer_type == CustomerType::Business {
-                    return GrowTeamWarningCta::Upgrade;
-                }
-                if billing_metadata.is_enterprise_plan() {
-                    return GrowTeamWarningCta::None;
-                }
-                let Some(policy) = billing_metadata.tier.workspace_size_policy else {
-                    return GrowTeamWarningCta::None;
-                };
-                if Self::has_higher_seat_cap_plan_available(&policy, pricing_info) {
-                    GrowTeamWarningCta::Upgrade
-                } else {
-                    GrowTeamWarningCta::None
-                }
-            }
-        }
+        // Simplified: no CTA for local version
+        GrowTeamWarningCta::None
     }
 
     fn has_higher_seat_cap_plan_available(
@@ -2558,74 +2510,13 @@ impl TeamsWidget {
 
     fn render_plan_usage(
         &self,
-        team: &Team,
-        cloud_model: &CloudModel,
+        _team: &Team,
+        _cloud_model: &CloudModel,
         appearance: &Appearance,
-        app: &AppContext,
+        _app: &AppContext,
     ) -> Box<dyn Element> {
-        let mut section = Flex::column();
-        let sub_header_text = match team.billing_metadata.customer_type {
-            CustomerType::Free => "Free plan usage limits",
-            _ => "Plan usage limits",
-        };
-        section.add_child(self.render_subsection_header(sub_header_text.into(), appearance));
-
-        let mut shared_objects_usage_row =
-            Flex::row().with_cross_axis_alignment(CrossAxisAlignment::Center);
-
-        if let Some(policy) = team.billing_metadata.tier.shared_notebooks_policy {
-            if !policy.is_unlimited {
-                let mut shared_notebooks_column = Flex::column();
-                shared_notebooks_column.add_child(
-                    self.render_plan_usage_header("Shared Notebooks".into(), appearance),
-                );
-                let num_shared_notebooks = cloud_model
-                    .active_notebooks_in_space(Space::Team { team_uid: team.uid }, app)
-                    .count();
-                shared_notebooks_column.add_child(
-                    Container::new(self.render_plan_usage_text(
-                        format!("{}/{}", num_shared_notebooks, policy.limit),
-                        appearance,
-                    ))
-                    .with_margin_top(4.)
-                    .finish(),
-                );
-                shared_objects_usage_row.add_child(
-                    Container::new(shared_notebooks_column.finish())
-                        .with_margin_right(64.)
-                        .finish(),
-                );
-            }
-        }
-
-        if let Some(policy) = team.billing_metadata.tier.shared_workflows_policy {
-            if !policy.is_unlimited {
-                let mut shared_workflows_column = Flex::column();
-                shared_workflows_column.add_child(
-                    self.render_plan_usage_header("Shared Workflows".into(), appearance),
-                );
-                let num_shared_workflows = cloud_model
-                    .active_workflows_in_space(Space::Team { team_uid: team.uid }, app)
-                    .count();
-                shared_workflows_column.add_child(
-                    Container::new(self.render_plan_usage_text(
-                        format!("{}/{}", num_shared_workflows, policy.limit),
-                        appearance,
-                    ))
-                    .with_margin_top(4.)
-                    .finish(),
-                );
-                shared_objects_usage_row.add_child(shared_workflows_column.finish());
-            }
-        }
-
-        section.add_child(
-            Container::new(shared_objects_usage_row.finish())
-                .with_margin_top(16.)
-                .finish(),
-        );
-
-        section.finish()
+        // Simplified: no plan usage display for local version
+        Flex::column().finish()
     }
 
     fn render_team_invitation_section(
