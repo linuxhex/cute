@@ -11918,8 +11918,9 @@ impl Workspace {
         // `ephemeral_message_model.current_message().is_none()` gate.
         let has_initial_query = summarize_after_fork || initial_prompt.is_some();
 
-        let cloud_storage_enabled =
-            PrivacySettings::as_ref(ctx).is_cloud_conversation_storage_enabled;
+        // Simplified: local version has no cloud conversation storage
+        let cloud_storage_enabled = false;
+        // PrivacySettings::as_ref(ctx).is_cloud_conversation_storage_enabled;
 
         // Load the conversation data asynchronously
         let future = history_model
