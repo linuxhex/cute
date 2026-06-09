@@ -274,20 +274,7 @@ impl PromptAlertView {
                     ENABLE_ANALYTICS_ACTION_TEXT,
                     PromptAlertAction::OpenPrivacySettingsClicked,
                 ));
-
-                // Show "or upgrade to Build" link
-                text_fragments.push(FormattedTextFragment::plain_text(" or "));
-                let upgrade_url = if let Some(team) = UserWorkspaces::as_ref(app).current_team() {
-                    UserWorkspaces::upgrade_link_for_team(team.uid)
-                } else {
-                    let user_id = auth_state.user_id().unwrap_or_default();
-                    UserWorkspaces::upgrade_link(user_id)
-                };
-                text_fragments.push(FormattedTextFragment::hyperlink(
-                    UPGRADE_TO_BUILD_ACTION_TEXT,
-                    upgrade_url,
-                ));
-                text_fragments.push(FormattedTextFragment::plain_text("."));
+                // Simplified: local version has no upgrade link
             }
             PromptAlertState::AnonymousUserRequestLimitSoftGate
             | PromptAlertState::AnonymousUserRequestLimitHardGate => {
