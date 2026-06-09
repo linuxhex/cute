@@ -37,7 +37,8 @@ use crate::workspaces::workspace::{
     AiAutonomySettings, AiOverages, SandboxedAgentSettings, UsageBasedPricingSettings,
 };
 
-const STRIPE_SUBSCRIPTION_INTERVAL_PAGE_PREFIX: &str = "/upgrade";
+// Simplified: local version has no upgrade
+// const STRIPE_SUBSCRIPTION_INTERVAL_PAGE_PREFIX: &str = "/upgrade";
 
 #[derive(Debug)]
 pub enum UserWorkspacesEvent {

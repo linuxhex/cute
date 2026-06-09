@@ -26,7 +26,8 @@ impl ClientIdProvider for DefaultClientIdProvider {
 }
 
 /// Key used to persist the hash of the settings file content.
-pub(super) const SETTINGS_FILE_LAST_SYNCED_HASH_KEY: &str = "SettingsFileLastSyncedHash";
+/// Simplified: local version has no settings sync
+// pub(super) const SETTINGS_FILE_LAST_SYNCED_HASH_KEY: &str = "SettingsFileLastSyncedHash";
 
 /// Constructs the cloud preferences syncer (simplified stub).
 pub fn initialize_cloud_preferences_syncer(

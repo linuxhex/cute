@@ -58,7 +58,8 @@ pub(super) const HEADER_FONT_SIZE: f32 = 23.;
 pub const SUBHEADER_FONT_SIZE: f32 = 16.;
 const ALTERNATING_LIST_CLOSE_BUTTON_DIAMETER: f32 = 20.0;
 const ALTERNATING_LIST_ITEM_PADDING: f32 = 8.0;
-const GREY_TEXT_OPACITY: u8 = 60;
+// Simplified: local version has no grey text opacity usage
+// const GREY_TEXT_OPACITY: u8 = 60;
 const MIN_PAGE_WIDTH: f32 = 520.;
 const MAX_PAGE_WIDTH: f32 = 800.;
 const INFO_TOOLTIP_MAX_WIDTH: f32 = 320.;
@@ -211,7 +212,7 @@ pub fn render_customer_type_badge(appearance: &Appearance, text: String) -> Box<
                         &appearance
                             .theme()
                             .foreground()
-                            .with_opacity(GREY_TEXT_OPACITY),
+                            .with_opacity(60), // Simplified: hardcoded opacity
                     )
                     .into(),
             )
