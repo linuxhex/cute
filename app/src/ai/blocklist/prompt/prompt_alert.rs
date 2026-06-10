@@ -453,9 +453,8 @@ impl TypedActionView for PromptAlertView {
             PromptAlertAction::SignUpClickedForAnonymousUser => {
                 ctx.emit(PromptAlertEvent::SignupAnonymousUser);
             }
-            PromptAlertAction::OpenSettingsClicked => {
-                ctx.emit(PromptAlertEvent::OpenBillingAndUsagePage);
-            }
+            // Simplified: local version has no billing/usage page
+            PromptAlertAction::OpenSettingsClicked => {}
             PromptAlertAction::OpenPrivacySettingsClicked => {
                 ctx.emit(PromptAlertEvent::OpenPrivacyPage);
             }
