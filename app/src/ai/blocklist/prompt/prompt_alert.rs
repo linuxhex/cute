@@ -459,11 +459,8 @@ impl TypedActionView for PromptAlertView {
             PromptAlertAction::OpenPrivacySettingsClicked => {
                 ctx.emit(PromptAlertEvent::OpenPrivacyPage);
             }
-            PromptAlertAction::ManageBillingClicked { team_uid } => {
-                ctx.emit(PromptAlertEvent::OpenBillingPortal {
-                    team_uid: *team_uid,
-                });
-            }
+            // Simplified: local version has no billing
+            PromptAlertAction::ManageBillingClicked { team_uid: _ } => {}
         }
     }
 }

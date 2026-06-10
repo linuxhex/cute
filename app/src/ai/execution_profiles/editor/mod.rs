@@ -29,7 +29,7 @@ use crate::ai::execution_profiles::{
     WriteToPtyPermission,
 };
 use crate::ai::llms::{
-    DisableReason, LLMContextWindow, LLMId, LLMInfo, LLMPreferences, LLMPreferencesEvent,
+    LLMContextWindow, LLMId, LLMInfo, LLMPreferences, LLMPreferencesEvent,
 };
 use crate::ai::paths::host_native_absolute_path;
 use crate::editor::{
@@ -53,6 +53,8 @@ const MODEL_MENU_WIDTH: f32 = 250.;
 
 /// Renders a footer banner for model dropdowns informing free-plan users that
 /// frontier models require an upgrade, with a clickable "Upgrade" link.
+/// Simplified: local version has no upgrade footer
+#[allow(dead_code)]
 fn render_upgrade_footer(
     upgrade_mouse_state: MouseStateHandle,
     app: &AppContext,
@@ -1161,7 +1163,7 @@ impl ExecutionProfileEditorView {
         get_choices: G,
         create_action: A,
         get_default_id: D,
-        upgrade_mouse_state: &MouseStateHandle,
+        _upgrade_mouse_state: &MouseStateHandle,
         ctx: &mut ViewContext<Self>,
     ) where
         G: for<'a> FnOnce(&'a LLMPreferences, &AppContext) -> Vec<&'a LLMInfo>,
@@ -1181,10 +1183,7 @@ impl ExecutionProfileEditorView {
             let llm_prefs = llm_prefs.as_ref(ctx);
             let choices = get_choices(llm_prefs, ctx);
 
-            let has_upgrade_gated_models = choices
-                .iter()
-                .any(|llm| matches!(llm.disable_reason, Some(DisableReason::RequiresUpgrade)));
-
+            // Simplified: local version has no upgrade gated models
             let items = available_model_menu_items(
                 choices,
                 |llm| DropdownAction::select_action_and_close(create_action(llm.id.clone())),
@@ -1196,15 +1195,8 @@ impl ExecutionProfileEditorView {
             );
             dropdown.set_rich_items(items, ctx);
 
-            if has_upgrade_gated_models {
-                let mouse_state = upgrade_mouse_state.clone();
-                dropdown.set_footer(
-                    move |app| render_upgrade_footer(mouse_state.clone(), app),
-                    ctx,
-                );
-            } else {
-                dropdown.clear_footer(ctx);
-            }
+            // Simplified: local version has no upgrade footer
+            dropdown.clear_footer(ctx);
 
             let llm_prefs = LLMPreferences::handle(ctx);
             let llm_prefs = llm_prefs.as_ref(ctx);

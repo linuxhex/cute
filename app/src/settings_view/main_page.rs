@@ -39,7 +39,6 @@ use crate::server::iap::{IapCredentialsState, IapManager, IapManagerEvent};
 use crate::server::ids::ServerId;
 use crate::workspace::WorkspaceAction;
 use crate::workspaces::update_manager::TeamUpdateManager;
-use crate::workspaces::user_workspaces::UserWorkspaces;
 
 const PHOTO_SIZE: f32 = 40.;
 const REFERRAL_CTA: &str = "Earn rewards by sharing Warp with friends & colleagues";
@@ -210,19 +209,10 @@ impl TypedActionView for MainSettingsPageView {
                 // );
                 // ctx.notify();
             }
-            MainPageAction::Upgrade { team_uid, user_id } => match team_uid {
-                Some(team_uid) => {
-                    ctx.open_url(&UserWorkspaces::upgrade_link_for_team(*team_uid));
-                }
-                None => {
-                    ctx.open_url(&UserWorkspaces::upgrade_link(*user_id));
-                }
-            },
-            MainPageAction::GenerateStripeBillingPortalLink { team_uid } => {
-                UserWorkspaces::handle(ctx).update(ctx, |user_workspaces, ctx| {
-                    user_workspaces.generate_stripe_billing_portal_link(*team_uid, ctx);
-                });
-            }
+            // Simplified: local version has no upgrade
+            MainPageAction::Upgrade { team_uid: _, user_id: _ } => {}
+            // Simplified: local version has no billing portal
+            MainPageAction::GenerateStripeBillingPortalLink { team_uid: _ } => {}
             MainPageAction::SignupAnonymousUser => {
                 ctx.emit(MainSettingsPageEvent::SignupAnonymousUser);
             }
@@ -273,7 +263,8 @@ impl MainSettingsPageView {
             Box::new(DividerWidget {}),
         ];
 
-        widgets.push(Box::new(SettingsSyncWidget::default()));
+        // Simplified: local version has no settings sync
+        // widgets.push(Box::new(SettingsSyncWidget::default()));
 
         widgets.push(Box::new(EarnRewardsWidget::default()));
 
@@ -503,6 +494,8 @@ impl SettingsWidget for DividerWidget {
     }
 }
 
+// Simplified: local version has no settings sync
+#[allow(dead_code)]
 #[derive(Default)]
 struct SettingsSyncWidget {
     tooltip_state: MouseStateHandle,

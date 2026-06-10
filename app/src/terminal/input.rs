@@ -6051,11 +6051,8 @@ impl Input {
             PromptAlertEvent::OpenPrivacyPage => {
                 ctx.emit(Event::OpenSettings(SettingsSection::Privacy));
             }
-            PromptAlertEvent::OpenBillingPortal { team_uid } => {
-                UserWorkspaces::handle(ctx).update(ctx, |user_workspaces, ctx| {
-                    user_workspaces.generate_stripe_billing_portal_link(*team_uid, ctx);
-                });
-            }
+            // Simplified: local version has no billing portal
+            PromptAlertEvent::OpenBillingPortal { team_uid: _ } => {}
         }
     }
 
@@ -14859,11 +14856,8 @@ impl Input {
             PromptSuggestionsEvent::OpenPrivacyPage => {
                 ctx.emit(Event::OpenSettings(SettingsSection::Privacy))
             }
-            PromptSuggestionsEvent::OpenBillingPortal { team_uid } => {
-                UserWorkspaces::handle(ctx).update(ctx, |user_workspaces, ctx| {
-                    user_workspaces.generate_stripe_billing_portal_link(*team_uid, ctx);
-                });
-            }
+            // Simplified: local version has no billing portal
+            PromptSuggestionsEvent::OpenBillingPortal { team_uid: _ } => {}
         }
     }
 

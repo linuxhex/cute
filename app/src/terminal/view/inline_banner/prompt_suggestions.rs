@@ -358,11 +358,8 @@ impl PromptSuggestionsView {
             PromptAlertEvent::OpenPrivacyPage => {
                 ctx.emit(PromptSuggestionsEvent::OpenPrivacyPage);
             }
-            PromptAlertEvent::OpenBillingPortal { team_uid } => {
-                ctx.emit(PromptSuggestionsEvent::OpenBillingPortal {
-                    team_uid: *team_uid,
-                });
-            }
+            // Simplified: local version has no billing portal
+            PromptAlertEvent::OpenBillingPortal { team_uid: _ } => {}
         }
     }
 }
@@ -464,11 +461,8 @@ impl TypedActionView for PromptSuggestionsView {
             PromptSuggestionsEvent::OpenPrivacyPage => {
                 ctx.emit(PromptSuggestionsEvent::OpenPrivacyPage);
             }
-            PromptSuggestionsEvent::OpenBillingPortal { team_uid } => {
-                ctx.emit(PromptSuggestionsEvent::OpenBillingPortal {
-                    team_uid: *team_uid,
-                });
-            }
+            // Simplified: local version has no billing portal
+            PromptSuggestionsEvent::OpenBillingPortal { team_uid: _ } => {}
         }
     }
 }

@@ -41,7 +41,7 @@ use crate::auth::auth_manager::AuthManager;
 use crate::channel::ChannelState;
 use crate::modal::{Modal, ModalEvent, ModalViewState};
 use crate::server::telemetry::TelemetryEvent;
-use crate::settings::{AISettings, CustomSecretRegex, PrivacySettings, RegexDisplayInfo};
+use crate::settings::{CustomSecretRegex, PrivacySettings, RegexDisplayInfo};
 use crate::settings_view::privacy::AddRegexModalViewState;
 use crate::settings_view::render_body_item_label;
 use crate::settings_view::settings_page::CONTENT_FONT_SIZE;
@@ -1670,20 +1670,9 @@ impl SettingsWidget for CloudConversationStorageWidget {
         "sync cloud conversation store storage ai agent"
     }
 
-    fn should_render(&self, app: &AppContext) -> bool {
-        if !FeatureFlag::CloudConversations.is_enabled() {
-            return false;
-        }
-
-        // Hide the toggle entirely when AI is disabled: the setting has no
-        // effect without AI (no agent conversations are produced), so showing
-        // it is confusing.
-        if !AISettings::as_ref(app).is_any_ai_enabled(app) {
-            return false;
-        }
-
-        let privacy_settings = PrivacySettings::as_ref(app);
-        !privacy_settings.is_telemetry_force_enabled()
+    fn should_render(&self, _app: &AppContext) -> bool {
+        // Simplified: local version has no cloud conversation storage
+        false
     }
 
     fn render(
