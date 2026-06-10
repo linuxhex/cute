@@ -23093,9 +23093,8 @@ impl TypedActionView for Workspace {
             ShowUpgrade => {
                 // No-op for local version
             }
-            ShowReferralSettingsPage => {
-                self.show_settings_with_section(Some(SettingsSection::Referrals), ctx);
-            }
+            // Simplified: local version has no referral settings
+            ShowReferralSettingsPage => {}
             JoinSlack => self.join_slack(ctx),
             ViewUserDocs => self.view_user_docs(ctx),
             ViewLatestChangelog => self.view_latest_changelog(ctx),

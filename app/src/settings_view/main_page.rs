@@ -603,10 +603,12 @@ impl SettingsWidget for EarnRewardsWidget {
         "earn rewards referral share friends"
     }
 
-    fn should_render(&self, app: &AppContext) -> bool {
-        !AuthStateProvider::as_ref(app)
-            .get()
-            .is_anonymous_or_logged_out()
+    fn should_render(&self, _app: &AppContext) -> bool {
+        // Simplified: local version has no referral/rewards
+        false
+        // !AuthStateProvider::as_ref(app)
+        //     .get()
+        //     .is_anonymous_or_logged_out()
     }
 
     fn render(
