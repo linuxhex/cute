@@ -305,6 +305,7 @@ struct TeamsWidgetMouseHandles {
     admin_panel_button: MouseStateHandle,
     grow_team_warning_cta_button: MouseStateHandle,
     team_members_count_tooltip: MouseStateHandle,
+    #[allow(dead_code)]
     outgrow_upgrade_link: MouseStateHandle,
 }
 
@@ -343,17 +344,15 @@ impl Tabs for TeamsInviteOption {
 /// `grow_team_warning`; consumed by `render_grow_team_warning_alert` and
 /// `grow_team_warning_cta`. Priority order is delinquency > over-cap > at-cap.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[allow(dead_code)]
 enum GrowTeamWarning {
     /// Team size equals the workspace size policy limit.
     SeatCapReached,
     /// Team size exceeds the workspace size policy limit.
-    #[allow(dead_code)]
     SeatCapExceeded,
     /// Subscription has a past-due payment.
-    #[allow(dead_code)]
     PaymentPastDue,
     /// Subscription is unpaid.
-    #[allow(dead_code)]
     PaymentUnpaid,
 }
 
@@ -2080,6 +2079,7 @@ impl TeamsWidget {
             .finish()
     }
 
+    #[allow(dead_code)]
     fn outgrow_upgrade_line_copy(
         _billing_metadata: &BillingMetadata,
     ) -> (&'static str, &'static str) {
@@ -2818,56 +2818,16 @@ impl TeamsWidget {
             .finish()
     }
 
-    /// "Need more seats? <Upgrade to ...> ..."
+    /// Simplified: local version has no upgrade CTA
+    #[allow(dead_code)]
     fn render_outgrow_upgrade_cta(
         &self,
-        team: &Team,
-        has_admin_permissions: bool,
-        pricing_info: &PricingInfoModel,
-        appearance: &Appearance,
+        _team: &Team,
+        _has_admin_permissions: bool,
+        _pricing_info: &PricingInfoModel,
+        _appearance: &Appearance,
     ) -> Option<Box<dyn Element>> {
-        if team.billing_metadata.is_delinquent_due_to_payment_issue() {
-            return None;
-        }
-        match Self::grow_team_warning_cta(
-            GrowTeamWarning::SeatCapReached,
-            has_admin_permissions,
-            &team.billing_metadata,
-            pricing_info,
-        ) {
-            GrowTeamWarningCta::UpdateBilling
-            | GrowTeamWarningCta::ContactSupport
-            | GrowTeamWarningCta::None => return None,
-            GrowTeamWarningCta::Upgrade => {}
-        }
-
-        let team_uid = team.uid;
-        let (link_text, suffix) = Self::outgrow_upgrade_line_copy(&team.billing_metadata);
-        let prefix = self.render_sub_text("Need more seats? ".to_string(), appearance, None);
-        let link = appearance
-            .ui_builder()
-            .link(
-                link_text.to_string(),
-                None,
-                Some(Box::new(move |ctx| {
-                    ctx.dispatch_typed_action(TeamsPageAction::GenerateUpgradeLink { team_uid });
-                })),
-                self.mouse_state_handles.outgrow_upgrade_link.clone(),
-            )
-            .soft_wrap(false)
-            .build()
-            .finish();
-        let suffix = self.render_sub_text(suffix.to_string(), appearance, None);
-
-        Some(
-            Flex::row()
-                .with_cross_axis_alignment(CrossAxisAlignment::Center)
-                .with_main_axis_size(MainAxisSize::Min)
-                .with_child(prefix)
-                .with_child(link)
-                .with_child(suffix)
-                .finish(),
-        )
+        None
     }
 
     fn render_approved_domains_section(
