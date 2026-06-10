@@ -6045,9 +6045,8 @@ impl Input {
                     entrypoint: AnonymousUserSignupEntrypoint::SignUpAIPrompt,
                 });
             }
-            PromptAlertEvent::OpenBillingAndUsagePage => {
-                ctx.emit(Event::OpenSettings(SettingsSection::Account));
-            }
+            // Simplified: local version has no billing/usage page
+            PromptAlertEvent::OpenBillingAndUsagePage => {}
             PromptAlertEvent::OpenPrivacyPage => {
                 ctx.emit(Event::OpenSettings(SettingsSection::Privacy));
             }
@@ -14850,9 +14849,8 @@ impl Input {
             PromptSuggestionsEvent::SignupAnonymousUser => ctx.emit(Event::SignupAnonymousUser {
                 entrypoint: AnonymousUserSignupEntrypoint::SignUpAIPrompt,
             }),
-            PromptSuggestionsEvent::OpenBillingAndUsagePage => {
-                ctx.emit(Event::OpenSettings(SettingsSection::Account))
-            }
+            // Simplified: local version has no billing/usage page
+            PromptSuggestionsEvent::OpenBillingAndUsagePage => {}
             PromptSuggestionsEvent::OpenPrivacyPage => {
                 ctx.emit(Event::OpenSettings(SettingsSection::Privacy))
             }
