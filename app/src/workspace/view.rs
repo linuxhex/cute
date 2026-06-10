@@ -9662,21 +9662,8 @@ impl Workspace {
             WorkflowModalEvent::ViewInWarpDrive(id) => {
                 self.view_in_and_focus_warp_drive(*id, ctx);
             }
-            WorkflowModalEvent::AiAssistUpgradeError(team_uid, user_id) => {
-                let upgrade_link = team_uid
-                    .map(UserWorkspaces::upgrade_link_for_team)
-                    .unwrap_or_else(|| UserWorkspaces::upgrade_link(*user_id));
-
-                self.toast_stack.update(ctx, |view, ctx| {
-                    let new_toast =
-                        DismissibleToast::error("Looks like you're out of AI credits.".into())
-                            .with_link(
-                                ToastLink::new("Upgrade for more credits.".into())
-                                    .with_href(upgrade_link),
-                            );
-                    view.add_ephemeral_toast(new_toast, ctx);
-                });
-            }
+            // Simplified: local version has no upgrade
+            WorkflowModalEvent::AiAssistUpgradeError(_team_uid, _user_id) => {}
         }
     }
 

@@ -576,12 +576,10 @@ impl TypedActionView for TeamsPageView {
                 domain_uid,
                 team_uid,
             } => self.delete_domain_restriction(*team_uid, *domain_uid, ctx),
-            TeamsPageAction::GenerateUpgradeLink { team_uid } => {
-                self.generate_upgrade_link(*team_uid, ctx)
-            }
-            TeamsPageAction::GenerateStripeBillingPortalLink { team_uid } => {
-                self.generate_stripe_billing_portal_link(*team_uid, ctx)
-            }
+            // Simplified: local version has no upgrade
+            TeamsPageAction::GenerateUpgradeLink { team_uid: _ } => {}
+            // Simplified: local version has no billing portal
+            TeamsPageAction::GenerateStripeBillingPortalLink { team_uid: _ } => {}
             TeamsPageAction::OpenAdminPanel { team_uid } => {
                 AdminActions::open_admin_panel(*team_uid, ctx);
             }
@@ -967,22 +965,12 @@ impl TeamsPageView {
             UserWorkspacesEvent::DeleteDomainRestrictionRejected(err) => {
                 self.show_error("Failed to delete domain restriction", Some(err), ctx)
             }
-            UserWorkspacesEvent::GenerateUpgradeLink(upgrade_link) => {
-                ctx.open_url(upgrade_link);
-            }
-            UserWorkspacesEvent::GenerateUpgradeLinkRejected(err) => self.show_error(
-                "Failed to generate upgrade link. Please contact us at feedback@warp.dev",
-                Some(err),
-                ctx,
-            ),
-            UserWorkspacesEvent::GenerateStripeBillingPortalLink(billing_session_link) => {
-                ctx.open_url(billing_session_link);
-            }
-            UserWorkspacesEvent::GenerateStripeBillingPortalLinkRejected(err) => self.show_error(
-                "Failed to generate billing link. Please contact us at feedback@warp.dev",
-                Some(err),
-                ctx,
-            ),
+            // Simplified: local version has no upgrade
+            UserWorkspacesEvent::GenerateUpgradeLink(_upgrade_link) => {}
+            UserWorkspacesEvent::GenerateUpgradeLinkRejected(_err) => {}
+            // Simplified: local version has no billing portal
+            UserWorkspacesEvent::GenerateStripeBillingPortalLink(_billing_session_link) => {}
+            UserWorkspacesEvent::GenerateStripeBillingPortalLinkRejected(_err) => {}
             UserWorkspacesEvent::ToggleTeamDiscoverabilitySuccess => {
                 self.show_success("Toggled team discoverability", ctx);
                 ctx.notify();
@@ -1637,6 +1625,8 @@ impl TeamsPageView {
             });
     }
 
+    // Simplified: local version has no upgrade
+    #[allow(dead_code)]
     fn generate_upgrade_link(&mut self, team_uid: ServerId, ctx: &mut ViewContext<Self>) {
         self.user_workspaces
             .update(ctx, move |user_workspaces, ctx| {
@@ -1644,6 +1634,8 @@ impl TeamsPageView {
             });
     }
 
+    // Simplified: local version has no billing portal
+    #[allow(dead_code)]
     fn generate_stripe_billing_portal_link(
         &mut self,
         team_uid: ServerId,
