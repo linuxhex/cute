@@ -854,8 +854,9 @@ impl Input {
                     )
                 });
             }
+            // Simplified: local version has no billing/usage pane
             usage if command.name == commands::USAGE.name => {
-                ctx.dispatch_typed_action(&TerminalAction::OpenBillingAndUsagePane);
+                // No-op: billing and usage pane removed
             }
             remote_control if command.name == commands::REMOTE_CONTROL.name => {
                 if !FeatureFlag::CreatingSharedSessions.is_enabled()

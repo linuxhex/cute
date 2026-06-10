@@ -26602,8 +26602,9 @@ impl TypedActionView for TerminalView {
                     page: Some(MCPServersSettingsPage::Edit { item_id: None }),
                 });
             }
+            // Simplified: local version has no billing/usage pane
             OpenBillingAndUsagePane => {
-                ctx.emit(Event::OpenSettings(SettingsSection::Account));
+                // No-op: billing and usage pane removed
             }
             OpenAddRulePane => {
                 ctx.emit(Event::OpenAddRulePane);
