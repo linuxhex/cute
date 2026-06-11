@@ -4628,6 +4628,26 @@ impl DriveIndex {
     pub fn sections(&self) -> &Vec<DriveIndexSection> {
         &self.sections
     }
+
+    /// Leave a shared object (stub for local version).
+    pub fn leave_object(
+        &mut self,
+        _cloud_object_type_and_id: crate::drive::CloudObjectTypeAndId,
+        _ctx: &mut ViewContext<Self>,
+    ) {
+        // Not supported in local version
+    }
+
+    /// Toggle share dialog (stub for local version).
+    pub fn toggle_share_dialog(
+        &mut self,
+        _item_id: &WarpDriveItemId,
+        _invitee_email: Option<String>,
+        _source: crate::drive::sharing::dialog::SharingDialogSource,
+        _ctx: &mut ViewContext<Self>,
+    ) {
+        // Not supported in local version
+    }
 }
 
 pub fn warp_drive_section_header_position_id(section: &DriveIndexSection) -> String {

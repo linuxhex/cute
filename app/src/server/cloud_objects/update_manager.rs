@@ -2010,6 +2010,153 @@ impl UpdateManager {
         // Not supported in local version
     }
 
+    /// Fetch a single cloud object (stub for local version).
+    pub fn fetch_single_cloud_object(
+        &mut self,
+        _server_id: &ServerId,
+        _option: FetchSingleObjectOption,
+        _ctx: &mut ModelContext<Self>,
+    ) -> oneshot::Receiver<()> {
+        let (tx, rx) = oneshot::channel();
+        let _ = tx.send(());
+        rx
+    }
+
+    /// Resync an object (stub for local version).
+    pub fn resync_object(
+        &mut self,
+        _cloud_object_type_and_id: crate::drive::CloudObjectTypeAndId,
+        _ctx: &mut ModelContext<Self>,
+    ) {
+        // Not supported in local version
+    }
+
+    /// Refresh updated objects (stub for local version).
+    pub fn refresh_updated_objects(&mut self, _ctx: &mut ModelContext<Self>) {
+        // Not supported in local version
+    }
+
+    /// Add object guests (stub for local version).
+    pub fn add_object_guests(
+        &mut self,
+        _object_id: SyncId,
+        _guests: Vec<warp_graphql::object_permissions::ObjectGuest>,
+        _ctx: &mut ModelContext<Self>,
+    ) -> oneshot::Receiver<()> {
+        let (tx, rx) = oneshot::channel();
+        let _ = tx.send(());
+        rx
+    }
+
+    /// Update object guests (stub for local version).
+    pub fn update_object_guests(
+        &mut self,
+        _object_id: SyncId,
+        _guests: Vec<warp_graphql::object_permissions::ObjectGuest>,
+        _ctx: &mut ModelContext<Self>,
+    ) -> oneshot::Receiver<()> {
+        let (tx, rx) = oneshot::channel();
+        let _ = tx.send(());
+        rx
+    }
+
+    /// Remove object guest (stub for local version).
+    pub fn remove_object_guest(
+        &mut self,
+        _object_id: SyncId,
+        _guest_uid: String,
+        _ctx: &mut ModelContext<Self>,
+    ) -> oneshot::Receiver<()> {
+        let (tx, rx) = oneshot::channel();
+        let _ = tx.send(());
+        rx
+    }
+
+    /// Add AI conversation guests (stub for local version).
+    pub fn add_ai_conversation_guests(
+        &mut self,
+        _conversation_id: SyncId,
+        _guests: Vec<warp_graphql::object_permissions::ObjectGuest>,
+        _ctx: &mut ModelContext<Self>,
+    ) -> oneshot::Receiver<()> {
+        let (tx, rx) = oneshot::channel();
+        let _ = tx.send(());
+        rx
+    }
+
+    /// Update AI conversation guests (stub for local version).
+    pub fn update_ai_conversation_guests(
+        &mut self,
+        _conversation_id: SyncId,
+        _guests: Vec<warp_graphql::object_permissions::ObjectGuest>,
+        _ctx: &mut ModelContext<Self>,
+    ) -> oneshot::Receiver<()> {
+        let (tx, rx) = oneshot::channel();
+        let _ = tx.send(());
+        rx
+    }
+
+    /// Remove AI conversation guest (stub for local version).
+    pub fn remove_ai_conversation_guest(
+        &mut self,
+        _conversation_id: SyncId,
+        _guest_uid: String,
+        _ctx: &mut ModelContext<Self>,
+    ) -> oneshot::Receiver<()> {
+        let (tx, rx) = oneshot::channel();
+        let _ = tx.send(());
+        rx
+    }
+
+    /// Set object link permissions (stub for local version).
+    pub fn set_object_link_permissions(
+        &mut self,
+        _object_id: SyncId,
+        _permissions: warp_graphql::object_permissions::AccessLevel,
+        _ctx: &mut ModelContext<Self>,
+    ) -> oneshot::Receiver<()> {
+        let (tx, rx) = oneshot::channel();
+        let _ = tx.send(());
+        rx
+    }
+
+    /// Set AI conversation link permissions (stub for local version).
+    pub fn set_ai_conversation_link_permissions(
+        &mut self,
+        _conversation_id: SyncId,
+        _permissions: warp_graphql::object_permissions::AccessLevel,
+        _ctx: &mut ModelContext<Self>,
+    ) -> oneshot::Receiver<()> {
+        let (tx, rx) = oneshot::channel();
+        let _ = tx.send(());
+        rx
+    }
+
+    /// Remove team objects (stub for local version).
+    pub fn remove_team_objects(&mut self, _team_uid: String, _ctx: &mut ModelContext<Self>) {
+        // Not supported in local version
+    }
+
+    /// Received message from server (stub for local version).
+    pub fn received_message_from_server(
+        &mut self,
+        _message: remote_server::proto::ServerMessage,
+        _ctx: &mut ModelContext<Self>,
+    ) {
+        // Not supported in local version
+    }
+
+    /// Create ambient agent environment online (stub for local version).
+    pub fn create_ambient_agent_environment_online(
+        &mut self,
+        _environment: CloudAmbientAgentEnvironmentModel,
+        _ctx: &mut ModelContext<Self>,
+    ) -> oneshot::Receiver<()> {
+        let (tx, rx) = oneshot::channel();
+        let _ = tx.send(());
+        rx
+    }
+
     /// Wait for an initial load to complete.
     pub fn initial_load_complete(&self) -> impl std::future::Future<Output = ()> {
         self.has_initial_load.wait()

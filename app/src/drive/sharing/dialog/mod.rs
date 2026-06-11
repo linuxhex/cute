@@ -43,11 +43,33 @@ use crate::server::cloud_objects::update_manager::{
     ObjectOperation, UpdateManager, UpdateManagerEvent,
 };
 use crate::server::ids::ServerId;
-use crate::server::telemetry::SharingDialogSource;
 use crate::terminal::shared_session::permissions_manager::{
     SessionPermissionsEvent, SessionPermissionsManager,
 };
 use crate::terminal::TerminalView;
+
+/// Source of the sharing dialog open action.
+#[derive(Debug, Clone, Copy)]
+pub enum SharingDialogSource {
+    /// The sharing button in the pane header.
+    PaneHeader,
+    /// The per-pane command palette entry (includes keybindings).
+    CommandPalette,
+    /// The Warp Drive index context menu.
+    DriveIndex,
+    /// The sharing dialog was auto-opened from shared session creation.
+    StartedSessionShare,
+    /// The user intented into Warp with an email address to invite.
+    InviteeRequest,
+    /// The user jumped from an inherited ACL to its definition on a parent object.
+    InheritedPermission,
+    /// The onboarding block shown after users create new personal objects.
+    OnboardingBlock,
+    /// The conversation list overflow menu.
+    ConversationList,
+    /// The AI block context menu.
+    AIBlockContextMenu,
+}
 use crate::ui_components::buttons::icon_button_with_color;
 use crate::ui_components::icons::Icon;
 use crate::view_components::DismissibleToast;
