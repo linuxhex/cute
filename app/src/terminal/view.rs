@@ -357,9 +357,10 @@ use crate::server::telemetry::{
     AnonymousUserSignupEntrypoint, BlockLatencyInfo, BootstrappingInfo,
     CommandCorrectionAcceptedType, CommandCorrectionEvent, InteractionSource, LinkOpenMethod,
     NotificationAgentVariant, NotificationsTurnedOnSource, PaletteSource, PromptSuggestionViewType,
-    SaveAsWorkflowModalSource, SecretInteraction, SharingDialogSource, SlowBootstrapInfo,
+    SaveAsWorkflowModalSource, SecretInteraction, SlowBootstrapInfo,
     TelemetryEvent, ToggleBlockFilterSource, WorkflowTelemetryMetadata,
 };
+use crate::drive::sharing::dialog::SharingDialogSource;
 use crate::session_management::{CommandContext, SessionNavigationPromptElements};
 use crate::settings::ai::FocusedTerminalInfo;
 #[cfg(feature = "local_fs")]

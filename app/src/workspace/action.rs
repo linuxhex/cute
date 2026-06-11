@@ -31,8 +31,9 @@ use crate::prompt::editor_modal::OpenSource as PromptEditorOpenSource;
 use crate::search;
 use crate::server::ids::SyncId;
 use crate::server::telemetry::{
-    AddTabWithShellSource, AgentModeEntrypoint, PaletteSource, SharingDialogSource,
+    AddTabWithShellSource, AgentModeEntrypoint, PaletteSource,
 };
+use crate::drive::sharing::dialog::SharingDialogSource;
 use crate::settings_view::{SettingsAction as SettingsTabAction, SettingsSection};
 use crate::tab::{NewSessionMenuItem, SelectedTabColor};
 use crate::tab_configs::TabConfig;

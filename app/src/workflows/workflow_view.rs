@@ -78,8 +78,9 @@ use crate::server::ids::{ClientId, ServerId, SyncId};
 use crate::server::server_api::ai::AIClient;
 use crate::server::server_api::ServerApiProvider;
 use crate::server::telemetry::{
-    CloudObjectTelemetryMetadata, SharingDialogSource, TelemetryCloudObjectType,
+    CloudObjectTelemetryMetadata, TelemetryCloudObjectType,
 };
+use crate::drive::sharing::dialog::SharingDialogSource;
 use crate::settings::app_installation_detection::{
     UserAppInstallDetectionSettings, UserAppInstallStatus,
 };

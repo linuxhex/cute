@@ -49,7 +49,7 @@ use crate::terminal::shared_session::permissions_manager::{
 use crate::terminal::TerminalView;
 
 /// Source of the sharing dialog open action.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SharingDialogSource {
     /// The sharing button in the pane header.
     PaneHeader,

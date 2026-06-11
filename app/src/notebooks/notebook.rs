@@ -70,8 +70,9 @@ use crate::server::cloud_objects::update_manager::{FetchSingleObjectOption, Upda
 use crate::server::ids::{ClientId, ServerId, SyncId};
 use crate::server::telemetry::{
     CloudObjectTelemetryMetadata, NotebookActionEvent, NotebookTelemetryMetadata,
-    SharingDialogSource, TelemetryCloudObjectType, TelemetryEvent,
+    TelemetryCloudObjectType, TelemetryEvent,
 };
+use crate::drive::sharing::dialog::SharingDialogSource;
 use crate::settings::app_installation_detection::{
     UserAppInstallDetectionSettings, UserAppInstallStatus,
 };
