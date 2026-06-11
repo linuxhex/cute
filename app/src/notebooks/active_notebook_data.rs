@@ -51,7 +51,6 @@ pub struct ActiveNotebookData {
     pub saving_status: SavingStatus,
     pub active_notebook: ActiveNotebook,
 
-    pub show_grab_edit_access_modal: bool,
     pub feature_not_available: bool,
 }
 
@@ -201,7 +200,6 @@ impl ActiveNotebookData {
     pub fn reset(&mut self) {
         self.mode = Mode::View;
         self.saving_status = SavingStatus::default();
-        self.show_grab_edit_access_modal = false;
         self.active_notebook = ActiveNotebook::None;
         self.feature_not_available = false;
     }

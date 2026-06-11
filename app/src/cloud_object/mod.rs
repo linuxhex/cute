@@ -38,7 +38,6 @@ use crate::workspaces::user_profiles::UserProfiles;
 use crate::workspaces::user_workspaces::UserWorkspaces;
 
 pub mod breadcrumbs;
-pub mod grab_edit_access_modal;
 pub mod model;
 pub mod toast_message;
 
