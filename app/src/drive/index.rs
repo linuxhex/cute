@@ -3235,7 +3235,18 @@ impl DriveIndex {
 
         // Otherwise allow object move to go through.
         UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
-            update_manager.move_object_to_location(*cloud_object_type_and_id, new_location, ctx);
+            let (destination_folder_id, space) = match new_location {
+                CloudObjectLocation::Space(space) => (None, space),
+                CloudObjectLocation::Folder(folder_id) => {
+                    let server_id = match folder_id {
+                        SyncId::ClientId(_) => None,
+                        SyncId::ServerId(id) => Some(id),
+                    };
+                    (server_id, Space::Personal)
+                },
+                CloudObjectLocation::Trash => (None, Space::Personal),
+            };
+            update_manager.move_object_to_location(*cloud_object_type_and_id, destination_folder_id, space, ctx);
         });
 
         match new_location {
