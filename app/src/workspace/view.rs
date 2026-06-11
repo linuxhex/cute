@@ -158,7 +158,6 @@ use crate::ai::agent_management::notifications::view::{
     NotificationMailboxView, NotificationMailboxViewEvent,
 };
 use crate::ai::agent_management::notifications::NotificationFilter;
-use crate::ai::agent_management::telemetry::AgentManagementTelemetryEvent;
 use crate::ai::agent_management::view::{AgentManagementView, AgentManagementViewEvent};
 use crate::ai::agent_management::AgentManagementEvent;
 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
@@ -228,8 +227,6 @@ use crate::code::editor_management::CodeManager;
 use crate::code::editor_management::CodeSource;
 use crate::code_review::diff_state::DiffStateModel;
 use crate::code_review::telemetry_event::CodeReviewPaneEntrypoint;
-#[cfg(feature = "local_fs")]
-use crate::code_review::CodeReviewTelemetryEvent;
 use crate::code_review::GlobalCodeReviewModel;
 use crate::coding_panel_enablement_state::CodingPanelEnablementState;
 use crate::context_chips::ChipRuntimeCapabilities;
@@ -325,7 +322,7 @@ use crate::settings_view::{flags, SettingsSection, SettingsView, SettingsViewEve
 use crate::shell_indicator::ShellIndicatorType;
 use crate::tab::{
     tab_position_id, uses_vertical_tabs, NewSessionMenuItem, PaneNameMenuTarget, SelectedTabColor,
-    TabBarState, TabComponent, TabData, TabTelemetryAction, TAB_BAR_BORDER_HEIGHT,
+    TabBarState, TabComponent, TabData, TAB_BAR_BORDER_HEIGHT,
 };
 use crate::tab_configs::action_sidecar::SidecarItemKind;
 use crate::tab_configs::remove_confirmation_dialog::{
@@ -336,7 +333,7 @@ use crate::tab_configs::telemetry::{
     ExistingTabConfigOpenMode, GuidedModalSessionType, TabConfigsTelemetryEvent,
 };
 #[cfg(feature = "local_fs")]
-use crate::tab_configs::telemetry::{NewWorktreeConfigOpenSource, WorktreeBranchNamingMode};
+use crate::tab_configs::telemetry::WorktreeBranchNamingMode;
 use crate::tab_configs::{
     NewWorktreeModal, NewWorktreeModalEvent, TabConfigParamsModal, TabConfigParamsModalEvent,
 };

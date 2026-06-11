@@ -32,7 +32,7 @@ use crate::root_view::{
     OpenLaunchConfigArg,
 };
 use crate::server::ids::ServerId;
-use crate::server::telemetry::{LaunchConfigUiLocation, TelemetryEvent};
+use crate::server::telemetry::LaunchConfigUiLocation;
 use crate::settings_view::SettingsSection;
 use crate::tab_configs::TabConfig;
 use crate::user_config::{load_launch_configs, load_tab_configs, tab_configs_dir};

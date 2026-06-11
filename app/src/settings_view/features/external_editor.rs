@@ -9,7 +9,6 @@ use warpui::ui_components::switch::SwitchStateHandle;
 use warpui::{Element, Entity, SingletonEntity, TypedActionView, View, ViewContext, ViewHandle};
 
 use crate::appearance::Appearance;
-use crate::server::telemetry::TelemetryEvent;
 use crate::settings_view::settings_page::{
     render_body_item, render_dropdown_item, AdditionalInfo, LocalOnlyIconState, ToggleState,
 };

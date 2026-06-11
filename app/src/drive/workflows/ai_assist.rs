@@ -8,7 +8,6 @@ use warpui::{SingletonEntity, ViewContext};
 use super::arguments::ArgumentsState;
 use super::modal::{AiAssistState, WorkflowModal, WorkflowModalEvent};
 use crate::ai::AIRequestUsageModel;
-use crate::server::telemetry::TelemetryEvent;
 use crate::workflows::workflow::{Argument, Workflow};
 
 /// Generated command metadata from server.

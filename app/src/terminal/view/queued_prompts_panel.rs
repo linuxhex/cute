@@ -35,7 +35,6 @@ use crate::editor::{
     EditorOptions, EditorView, Event as EditorEvent, PropagateAndNoOpEscapeKey,
     PropagateAndNoOpNavigationKeys, PropagateHorizontalNavigationKeys, TextOptions,
 };
-use crate::server::telemetry::TelemetryEvent;
 use crate::terminal::input::suggestions_mode_model::InputSuggestionsModeModel;
 use crate::ui_components::icons::Icon as TerminalIcon;
 use crate::util::truncation::truncate_from_end;

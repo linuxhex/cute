@@ -9,7 +9,6 @@ use super::{ActionExecution, AnyActionExecution, ExecuteActionInput, PreprocessA
 use crate::ai::agent::{AIAgentActionId, AIAgentActionType};
 use crate::ai::ambient_agents::AmbientAgentTaskId;
 use crate::ai::blocklist::BlocklistAIHistoryModel;
-use crate::server::telemetry::TelemetryEvent;
 
 pub struct RequestComputerUseExecutor {
     terminal_view_id: EntityId,

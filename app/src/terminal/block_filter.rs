@@ -22,7 +22,6 @@ use crate::editor::{
     EditOrigin, EditorView, Event as EditorEvent, PropagateAndNoOpNavigationKeys,
     SingleLineEditorOptions, TextOptions, ValidInputType,
 };
-use crate::server::telemetry::TelemetryEvent;
 use crate::terminal::model::terminal_model::BlockIndex;
 use crate::themes::theme::Fill;
 use crate::ui_components::blended_colors;

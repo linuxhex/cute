@@ -47,7 +47,7 @@ use super::items::item::{tools_panel_menu_direction, ItemStates, WarpDriveRow};
 use super::items::mcp_server_collection::WarpDriveMCPServerCollection;
 use super::items::WarpDriveItemId;
 use super::settings::WarpDriveSettings;
-use super::sharing::{ContentEditability, ShareableObject};
+use super::sharing::ContentEditability;
 use super::{CloudObjectTypeAndId, DriveObjectType, DriveSortOrder};
 use crate::ai::document::ai_document_model::AIDocumentId;
 use crate::ai::facts::{AIFact, AIMemory};
@@ -75,7 +75,7 @@ use crate::server::cloud_objects::update_manager::{
 };
 use crate::server::ids::{ClientId, ObjectUid, ServerId, SyncId};
 use crate::server::sync_queue::SyncQueue;
-use crate::server::telemetry::{AnonymousUserSignupEntrypoint, TelemetryEvent};
+use crate::server::telemetry::AnonymousUserSignupEntrypoint;
 use crate::settings::app_installation_detection::{
     UserAppInstallDetectionSettings, UserAppInstallStatus,
 };

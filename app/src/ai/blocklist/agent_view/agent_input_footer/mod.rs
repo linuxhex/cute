@@ -68,9 +68,7 @@ use crate::features::FeatureFlag;
 use crate::network::NetworkStatus;
 #[cfg(feature = "voice_input")]
 use crate::server::server_api::TranscribeError;
-#[cfg(not(target_family = "wasm"))]
-use crate::server::telemetry::PluginChipTelemetryAction;
-use crate::server::telemetry::{PluginChipTelemetryKind, TelemetryEvent};
+use crate::server::telemetry::PluginChipTelemetryKind;
 use crate::settings::{
     AISettings, AISettingsChangedEvent, PrivacySettings, PrivacySettingsChangedEvent,
 };

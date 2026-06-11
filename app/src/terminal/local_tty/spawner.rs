@@ -11,7 +11,7 @@ use {
 #[cfg(target_os = "windows")]
 use super::PseudoConsoleChild;
 use super::{PtyOptions, PtySpawnResult};
-use crate::server::telemetry::{PtySpawnMode, TelemetryEvent};
+use crate::server::telemetry::PtySpawnMode;
 use crate::terminal::local_tty::{self};
 /// A handle that can be used to interact with a pty process.
 pub trait PtyHandle: Send + Sync {

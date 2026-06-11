@@ -17,7 +17,7 @@ pub(crate) use telemetry::MalformedFinalLineProxyEvent;
 #[allow(unused_imports)]
 pub use telemetry::{EditAcceptAndContinueClickedEvent, EditAcceptClickedEvent};
 pub use telemetry::{
-    EditReceivedEvent, EditResolvedEvent, EditStats, RequestFileEditsFormatKind,
+    EditResolvedEvent, EditStats, RequestFileEditsFormatKind,
     RequestFileEditsTelemetryEvent,
 };
 use vec1::{vec1, Vec1};
@@ -34,7 +34,7 @@ use crate::ai::agent::{
 use crate::ai::blocklist::inline_action::code_diff_view::{
     CodeDiffView, CodeDiffViewEvent, DiffSessionType, FileDiff,
 };
-use crate::ai::blocklist::{BlocklistAIPermissions, RequestedEditResolution};
+use crate::ai::blocklist::BlocklistAIPermissions;
 use crate::ai::paths::host_native_absolute_path;
 use crate::terminal::model::session::active_session::ActiveSession;
 use crate::terminal::model::session::SessionType;

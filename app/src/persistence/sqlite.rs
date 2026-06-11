@@ -99,7 +99,6 @@ use crate::persistence::model::{
     ProjectRules, UserProfile, CODE_REVIEW_PANE_KIND, GET_STARTED_PANE_KIND,
 };
 use crate::server::ids::{ClientId, HashableId, ServerId, SyncId, ToServerId};
-use crate::server::telemetry::TelemetryEvent;
 use crate::settings::cloud_preferences::{CloudPreference, CloudPreferenceModel};
 use crate::settings_view::SettingsSection;
 use crate::suggestions::ignored_suggestions_model::SuggestionType;

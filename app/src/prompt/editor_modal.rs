@@ -22,7 +22,7 @@ use crate::context_chips::renderer::Renderer as ContextChipRenderer;
 use crate::context_chips::{
     available_chips, ChipAvailability, ChipRuntimeCapabilities, ContextChipKind,
 };
-use crate::server::telemetry::{PromptChoice, TelemetryEvent};
+use crate::server::telemetry::PromptChoice;
 use crate::settings::{FontSettings, WarpPromptSeparator};
 use crate::terminal::blockgrid_element::BlockGridElement;
 use crate::terminal::model::blockgrid::BlockGrid;

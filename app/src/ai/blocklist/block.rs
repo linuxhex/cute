@@ -157,7 +157,6 @@ use crate::code_review::comments::{
     CommentId, CommentOrigin,
 };
 use crate::code_review::telemetry_event::CodeReviewPaneEntrypoint;
-use crate::code_review::CodeReviewTelemetryEvent;
 use crate::editor::InteractionState;
 use crate::notebooks::editor::model::FileLinkResolutionContext;
 use crate::notebooks::editor::view::{EditorViewEvent, RichTextEditorView};

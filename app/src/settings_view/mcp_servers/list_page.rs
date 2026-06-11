@@ -48,7 +48,7 @@ use crate::editor::{
 use crate::modal::{Modal, ModalEvent, ModalViewState};
 use crate::pane_group::Direction;
 use crate::search_bar::SearchBar;
-use crate::server::telemetry::{MCPTemplateInstallationSource, TelemetryEvent};
+use crate::server::telemetry::MCPTemplateInstallationSource;
 use crate::settings::{AISettings, AISettingsChangedEvent};
 use crate::settings_view::mcp_servers::server_card::{
     ServerCardEvent, ServerCardOptions, ServerCardStatus, ServerCardView, TitleChip,

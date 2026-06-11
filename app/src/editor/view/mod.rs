@@ -105,7 +105,6 @@ use crate::search::ai_context_menu::mixer::AIContextMenuSearchableAction;
 use crate::search::ai_context_menu::view::{
     AIContextMenu, AIContextMenuCategory, AIContextMenuEvent,
 };
-use crate::server::telemetry::TelemetryEvent;
 #[cfg(feature = "voice_input")]
 use crate::settings::AISettingsChangedEvent;
 use crate::settings::{

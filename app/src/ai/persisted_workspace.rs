@@ -37,8 +37,6 @@ use crate::ai::codebase_auto_indexing::{
 use crate::ai::AIRequestUsageModel;
 #[cfg(feature = "local_fs")]
 use crate::code::language_server_shutdown_manager::LanguageServerShutdownManager;
-#[cfg(feature = "local_fs")]
-use crate::code::lsp_telemetry::LspTelemetryEvent;
 use crate::persistence::ModelEvent;
 #[cfg(feature = "local_fs")]
 use crate::server::server_api::ServerApiProvider;

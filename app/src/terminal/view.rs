@@ -344,9 +344,7 @@ use crate::pane_group::{
 };
 use crate::persistence::{self, FinishedCommandMetadata};
 use crate::projects::ProjectManagementModel;
-use crate::remote_server::manager::{
-    RemoteServerInitPhase, RemoteServerManager, RemoteServerManagerEvent,
-};
+use crate::remote_server::manager::{RemoteServerManager, RemoteServerManagerEvent};
 use crate::resource_center::{
     mark_feature_used_and_write_to_user_defaults, Tip, TipHint, TipsCompleted,
 };
@@ -12234,7 +12232,7 @@ impl TerminalView {
                 // ssh can exit cleanly instead of hanging.
                 #[cfg(not(target_family = "wasm"))]
                 if FeatureFlag::SshRemoteServer.is_enabled() {
-                    use crate::remote_server::manager::RemoteServerManager;
+                    use crate::remote_server::manager::{RemoteServerManager, RemoteServerManagerEvent};
                     RemoteServerManager::handle(ctx).update(
                         ctx,
                         |mgr: &mut RemoteServerManager, ctx| {

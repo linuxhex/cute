@@ -5,26 +5,18 @@ use std::sync::Arc;
 use chrono::{DateTime, Utc};
 #[cfg(test)]
 pub use cloud_object_client::GetCloudObjectResponse;
-pub use cloud_object_client::InitialLoadResponse;
 use futures::channel::oneshot::{self, Receiver};
-use itertools::Itertools;
 use lazy_static::lazy_static;
 use regex::Regex;
-use warp_core::report_error;
 use warp_graphql::scalars::time::ServerTimestamp;
 use warp_util::sync::Condition;
 use warpui::r#async::FutureId;
 use warpui::{AppContext, Entity, ModelContext, SingletonEntity};
 
-use crate::ai::agent::conversation::AIConversationId;
-use crate::ai::ambient_agents::scheduled::CloudScheduledAmbientAgentModel;
 use crate::ai::ambient_agents::AmbientAgentTaskId;
-use crate::ai::blocklist::BlocklistAIHistoryModel;
 use crate::ai::cloud_environments::CloudAmbientAgentEnvironmentModel;
-use crate::ai::execution_profiles::profiles::AIExecutionProfilesModel;
 use crate::ai::execution_profiles::CloudAIExecutionProfileModel;
 use crate::ai::facts::{AIFact, CloudAIFactModel};
-#[cfg(not(target_family = "wasm"))]
 use crate::ai::mcp::templatable::{CloudTemplatableMCPServerModel, TemplatableMCPServer};
 use crate::auth::auth_manager::AuthManager;
 use crate::auth::AuthStateProvider;
@@ -45,20 +37,16 @@ use crate::cloud_object::{
     ServerMetadata, ServerPermissions, ServerPreference, ServerScheduledAmbientAgent,
     ServerTemplatableMCPServer, ServerWorkflowEnum, Space, UpdateCloudObjectResult,
 };
-use crate::drive::folders::{CloudFolderModel, FolderId};
+use crate::drive::folders::CloudFolderModel;
 use crate::env_vars::{CloudEnvVarCollectionModel, EnvVarCollection};
 use crate::notebooks::{CloudNotebookModel, NotebookId};
 use crate::persistence::ModelEvent;
 use crate::server::ids::{ClientId, HashableId, HashedSqliteId, ObjectUid, ServerId, SyncId, ToServerId};
 use crate::server::server_api::object::ObjectClient;
-use crate::server::sync_queue::{
-    CreationFailureReason, GenericStringObjectToCreate, QueueItem, SyncQueue, SyncQueueEvent,
-};
+use crate::server::sync_queue::{CreationFailureReason, QueueItem, SyncQueue, SyncQueueEvent};
 use crate::workflows::workflow::Workflow;
-use crate::workflows::workflow_enum::{CloudWorkflowEnum, CloudWorkflowEnumModel, WorkflowEnum};
+use crate::workflows::workflow_enum::{CloudWorkflowEnumModel, WorkflowEnum};
 use crate::workflows::{CloudWorkflowModel, WorkflowId};
-use crate::workspaces::user_profiles::UserProfileWithUID;
-use crate::workspaces::user_profiles::UserProfiles;
 use crate::workspaces::user_workspaces::UserWorkspaces;
 
 lazy_static! {
@@ -103,8 +91,13 @@ pub enum UpdateManagerEvent {
     ObjectOperationComplete {
         result: ObjectOperationResult,
     },
-    AmbientTaskUpdated,
-    MCPGalleryUpdated,
+    AmbientTaskUpdated {
+        task_id: AmbientAgentTaskId,
+        timestamp: DateTime<Utc>,
+    },
+    MCPGalleryUpdated {
+        templates: Vec<TemplatableMCPServer>,
+    },
 }
 
 /// An enum for choosing the behavior of the fetch_single_cloud_object function.

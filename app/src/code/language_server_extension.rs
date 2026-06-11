@@ -16,7 +16,6 @@ use warpui::elements::{
 use warpui::{AppContext, Element, SingletonEntity, ViewContext};
 
 use super::editor::view::{CodeEditorRenderOptions, CodeEditorView};
-use super::lsp_telemetry::LspTelemetryEvent;
 use crate::code::local_code_editor::{
     HoverContentSegment, LocalCodeEditorView, LspHoverState, HOVER_TOOLTIP_MAX_HEIGHT,
     HOVER_TOOLTIP_MAX_WIDTH,

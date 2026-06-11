@@ -13,7 +13,6 @@ use crate::ai::blocklist::history_model::CloudConversationData;
 use crate::ai::blocklist::BlocklistAIHistoryModel;
 use crate::global_resource_handles::GlobalResourceHandlesProvider;
 use crate::persistence::ModelEvent;
-use crate::server::telemetry::TelemetryAgentViewEntryOrigin;
 use crate::terminal::input::message_bar::{Message, MessageItem};
 use crate::terminal::model::rich_content::RichContentType;
 use crate::terminal::view::load_ai_conversation::{

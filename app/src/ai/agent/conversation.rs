@@ -58,7 +58,6 @@ use crate::ai::blocklist::{
 };
 use crate::ai::llms::LLMPreferences;
 use crate::ai::skills::SkillDescriptor;
-use crate::code_review::CodeReviewTelemetryEvent;
 use crate::notebooks::NotebookId;
 use crate::persistence::model::{
     AgentConversationData, ConversationUsageMetadata, ModelTokenUsage, PersistedAutoexecuteMode,
