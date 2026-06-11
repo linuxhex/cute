@@ -46,9 +46,7 @@ use crate::auth::credentials::{AuthToken, Credentials, FirebaseToken, LoginToken
 use crate::auth::user::{FirebaseAuthTokens, User};
 use crate::auth::UserUid;
 use crate::channel::ChannelState;
-use crate::convert_to_server_experiment;
 use crate::server::datetime_ext::DateTimeExt as _;
-use crate::server::experiments::ServerExperiment;
 use crate::server::graphql::{
     default_request_options, get_request_context, get_user_facing_error_message,
 };
@@ -111,7 +109,6 @@ pub struct FetchUserResult {
     pub user: User,
     /// The credentials used to authenticate this user.
     pub credentials: Credentials,
-    pub server_experiments: Vec<ServerExperiment>,
     /// Whether this attempt to fetch the user was for refreshing an existing logged-in user.
     pub from_refresh: bool,
     /// LLM model choices for this user.
@@ -316,7 +313,6 @@ impl AuthClient for ServerApi {
 
         let UserProperties {
             user,
-            server_experiments,
             llms,
             api_key_owner_type,
         } = user_output.into();
@@ -333,7 +329,6 @@ impl AuthClient for ServerApi {
         Ok(FetchUserResult {
             user,
             credentials: new_credentials,
-            server_experiments,
             from_refresh: for_refresh,
             llms,
         })
@@ -794,7 +789,6 @@ pub type OAuth2Client = oauth2::basic::BasicClient<
 /// Intermediate type produced by converting a [`GqlUserOutput`] from the server.
 struct UserProperties {
     user: User,
-    server_experiments: Vec<ServerExperiment>,
     llms: crate::ai::llms::ModelsByFeature,
     api_key_owner_type: Option<OwnerType>,
 }
@@ -828,11 +822,6 @@ impl From<GqlUserOutput> for UserProperties {
         let local_id = UserUid::new(user_profile.uid.as_str());
         let needs_sso_link = user_profile.needs_sso_link;
 
-        let server_experiments: Vec<ServerExperiment> = user_properties
-            .experiments
-            .and_then(|experiments| convert_to_server_experiment!(experiments))
-            .unwrap_or_default();
-
         // Convert LLM model choices from GraphQL response
         let llms = user_properties.llms.try_into().unwrap_or_default();
 
@@ -851,7 +840,6 @@ impl From<GqlUserOutput> for UserProperties {
 
         UserProperties {
             user,
-            server_experiments,
             llms,
             api_key_owner_type,
         }

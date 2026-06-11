@@ -32,7 +32,6 @@ mod drive;
 #[cfg(windows)]
 mod dynamic_libraries;
 mod env_vars;
-mod experiments;
 mod external_secrets;
 #[cfg(target_family = "wasm")]
 mod font_fallback;
@@ -255,7 +254,6 @@ use crate::default_terminal::DefaultTerminal;
 use crate::drive::export::ExportManager;
 use crate::drive::CloudObjectTypeAndId;
 use crate::env_vars::manager::EnvVarCollectionManager;
-use crate::experiments::ImprovedPaletteSearch;
 pub use crate::global_resource_handles::{GlobalResourceHandles, GlobalResourceHandlesProvider};
 use crate::gpu_state::GPUState;
 use crate::network::NetworkStatus;
@@ -272,7 +270,6 @@ use crate::root_view::{
 };
 use crate::server::cloud_objects::listener::Listener;
 use crate::server::cloud_objects::update_manager::UpdateManager;
-use crate::server::experiments::ServerExperiments;
 #[cfg(not(target_family = "wasm"))]
 use crate::server::iap::IapManager;
 use crate::server::sync_queue::{QueueItem, SyncQueue};
@@ -1052,10 +1049,6 @@ fn run_internal(mut launch_mode: LaunchMode) -> Result<()> {
             pre_sentry_errors,
         );
 
-        if ImprovedPaletteSearch::improved_search_enabled(ctx) {
-            FeatureFlag::UseTantivySearch.set_enabled(true);
-        }
-
         launch(ctx, app_state, launch_mode);
     })
 }
@@ -1213,7 +1206,6 @@ pub(crate) fn initialize_app(
         mut restored_user_profiles,
         mut time_of_next_force_object_refresh,
         mut object_actions,
-        mut experiments,
         mut ai_queries,
         persisted_workspaces,
         mut workspace_language_servers,
@@ -1234,7 +1226,6 @@ pub(crate) fn initialize_app(
                 sqlite_data.user_profiles,
                 sqlite_data.time_of_next_force_object_refresh,
                 sqlite_data.object_actions,
-                sqlite_data.experiments,
                 sqlite_data.ai_queries,
                 sqlite_data.codebase_indices,
                 sqlite_data.workspace_language_servers,
@@ -1248,7 +1239,6 @@ pub(crate) fn initialize_app(
         })
         .unwrap_or_else(|| {
             (
-                Default::default(),
                 Default::default(),
                 Default::default(),
                 Default::default(),
@@ -1282,7 +1272,6 @@ pub(crate) fn initialize_app(
         restored_user_profiles = Default::default();
         time_of_next_force_object_refresh = None;
         object_actions = Default::default();
-        experiments = Default::default();
         ai_queries = Default::default();
         workspace_language_servers = Default::default();
         multi_agent_conversations = Default::default();
@@ -1292,11 +1281,6 @@ pub(crate) fn initialize_app(
         persisted_mcp_server_installations = Default::default();
         mcp_servers_to_restore = Default::default();
     }
-
-    // Initialize a global model to track server-side experiment state.
-    // This depends on the [`GlobalResourceHandlesProvider`] and so it must
-    // be initialized after it.
-    ctx.add_singleton_model(|ctx| ServerExperiments::new_from_cache(experiments, ctx));
 
     ctx.add_singleton_model(|ctx| AIRequestUsageModel::new(ai_client, ctx));
 
@@ -1338,8 +1322,6 @@ pub(crate) fn initialize_app(
     ctx.set_fallback_font_source_provider(|url| ::asset_cache::url_source(url));
 
     ctx.set_default_binding_validator(is_binding_cross_platform);
-
-    experiments::init(ctx);
 
     // Initialize timestamp for session id and last active event
     App::record_last_active_timestamp();

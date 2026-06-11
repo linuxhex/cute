@@ -1,7 +1,6 @@
 pub mod block;
 pub mod cloud_objects;
 pub mod datetime_ext;
-pub mod experiments;
 pub mod graphql;
 // IAP items are only referenced from native code paths; on wasm the
 // module compiles but every function is dead code.

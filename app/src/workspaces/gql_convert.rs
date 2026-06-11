@@ -63,7 +63,6 @@ use crate::ai::execution_profiles::{
 use crate::ai::{BonusGrant, BonusGrantScope};
 use crate::auth::UserUid;
 use crate::server::cloud_objects::listener::ObjectUpdateMessage;
-use crate::server::experiments::ServerExperiment;
 use crate::server::graphql::schema::object_action_history_from_gql;
 use crate::server::ids::ServerId;
 use crate::settings::AgentModeCommandExecutionPredicate;
@@ -72,7 +71,7 @@ use crate::workspaces::workspace::{
     EnterpriseCreditsAutoReloadPolicy, EnterprisePayAsYouGoPolicy, MultiAdminPolicy,
     PurchaseAddOnCreditsPolicy, UsageBasedPricingSettings,
 };
-use crate::{convert_to_server_experiment, report_error};
+use crate::{report_error};
 
 pub const PLACEHOLDER_WORKSPACE_UID: &str = "NOT_A_REAL_WORKSPACE_UID";
 
@@ -1040,15 +1039,10 @@ impl From<GqlUser> for WorkspacesMetadataResponse {
             .map(|gql_joinable_team| gql_joinable_team.into())
             .collect();
 
-        let experiments = gql_user
-            .experiments
-            .and_then(|experiments| convert_to_server_experiment!(experiments));
-
         // TODO(skambashi) refactor to return back workspaces, and not teams
         WorkspacesMetadataResponse {
             workspaces,
             joinable_teams,
-            experiments,
             feature_model_choices,
         }
     }
