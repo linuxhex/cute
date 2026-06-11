@@ -6993,10 +6993,10 @@ impl Input {
             } => {
                 let workflow_id = workflow.server_id();
                 let workflow_source = *workflow_source;
-                let _space: Option<_> = workflow_id.and_then(|id| {
+                let _space: Option<crate::workflows::WorkflowSource> = workflow_id.and_then(|id| {
                     CloudViewModel::as_ref(ctx)
                         .object_space(&id.to_string(), ctx)
-                        .map(Into::into)
+                        .map(|s| crate::workflows::WorkflowSource::from(s))
                 });
 
                 self.show_workflows_info_box_on_workflow_selection(

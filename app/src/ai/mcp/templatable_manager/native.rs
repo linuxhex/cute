@@ -867,7 +867,7 @@ impl TemplatableMCPServerManager {
                 me.spawned_servers.remove(&installation_uuid);
                 me.pending_oauth_csrf.retain(|_, v| *v != installation_uuid);
 
-                let _error = match server_info {
+                let _error: Option<rmcp::RmcpError> = match server_info {
                     Ok(info) => {
                         let peer = info.service.clone();
                         me.active_servers.insert(installation_uuid, info);

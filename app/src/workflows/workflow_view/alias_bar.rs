@@ -198,10 +198,9 @@ impl AliasBar {
                 alias.env_vars = sync_id;
                 self.mark_dirty(true, ctx);
 
-                let _env_vars_space: Option<_> = sync_id
+                let _env_vars_space: Option<crate::workflows::WorkflowSource> = sync_id
                     .and_then(|id| CloudModel::as_ref(ctx).get_env_var_collection(&id))
-                    .map(|env_vars| env_vars.space(ctx))
-                    .map(Into::into);
+                    .map(|env_vars| crate::workflows::WorkflowSource::from(env_vars.space(ctx)));
 
             }
         }
