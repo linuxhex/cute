@@ -40,20 +40,19 @@ use warp_graphql::workspace::{
     WriteToPtyAutonomyValue as GqlWriteToPtyAutonomyValue,
 };
 
-use super::team::{DiscoverableTeam, MembershipRole, Team, TeamMember};
 use super::user_workspaces::WorkspacesMetadataResponse;
 use super::workspace::{
     AIAutonomyPolicy, AddonCreditsSettings, AdminEnablementSetting, AiAutonomySettings,
     AiPermissionsSettings, AmbientAgentsPolicy, BillingCycleUsageData, BillingCycleUsageEntry,
     BillingCycleUsageSummary, BillingMetadata, CloudConversationStorageSettings,
-    CodebaseContextSettings, CustomerType, DelinquencyStatus, EmailInvite, EnterpriseSecretRegex,
-    HostEnablementSetting, InstanceShape, InviteLinkDomainRestriction, LinkSharingSettings,
-    LlmSettings, MaxPriorCycles, SandboxedAgentSettings, SecretRedactionSettings,
-    SessionSharingPolicy, SharedNotebooksPolicy, SharedWorkflowsPolicy,
-    TelemetryDataCollectionPolicy, TelemetrySettings, Tier, UgcCollectionEnablementSetting,
-    UgcCollectionSettings, UgcDataCollectionPolicy, UsageBasedPricingPolicy,
-    UsageVisibilityGranularity, UsageVisibilityPolicy, WarpAiPolicy, Workspace,
-    WorkspaceInviteCode, WorkspaceMember, WorkspaceMemberUsageInfo, WorkspaceSettings,
+    CodebaseContextSettings, CustomerType, DelinquencyStatus, DiscoverableTeam, EmailInvite,
+    EnterpriseSecretRegex, HostEnablementSetting, InstanceShape, InviteLinkDomainRestriction,
+    LinkSharingSettings, LlmSettings, MaxPriorCycles, MembershipRole, SandboxedAgentSettings,
+    SecretRedactionSettings, SessionSharingPolicy, SharedNotebooksPolicy, SharedWorkflowsPolicy,
+    Team, TeamMember, TelemetryDataCollectionPolicy, TelemetrySettings, Tier,
+    UgcCollectionEnablementSetting, UgcCollectionSettings, UgcDataCollectionPolicy,
+    UsageBasedPricingPolicy, UsageVisibilityGranularity, UsageVisibilityPolicy, WarpAiPolicy,
+    Workspace, WorkspaceInviteCode, WorkspaceMember, WorkspaceMemberUsageInfo, WorkspaceSettings,
     WorkspaceSizePolicy,
 };
 use crate::ai::blocklist::usage::conversation_usage_view::ConversationUsageInfo;

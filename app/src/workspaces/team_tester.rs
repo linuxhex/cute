@@ -1,5 +1,8 @@
 use warpui::{Entity, ModelContext, SingletonEntity};
 
+/// Minimal TeamTesterStatus model for local version.
+/// In the cloud version, this manages team tester specific polling and data refresh.
+/// In the local version, it's a stub that provides the same interface.
 #[derive(Clone)]
 pub struct TeamTesterStatus {}
 
@@ -14,9 +17,7 @@ impl TeamTesterStatus {
     }
 
     /// Emit an event to start or force-refresh the cloud object and workspace metadata pollers.
-    /// Polling is started when a user logs in; this method is also called with
-    /// `force_refresh: true` when data is known to be invalidated (e.g. joining a team via an
-    /// intent link).
+    /// In the local version, this is a no-op as there's no cloud to poll.
     pub fn initiate_data_pollers(&mut self, force_refresh: bool, ctx: &mut ModelContext<Self>) {
         ctx.emit(TeamTesterStatusEvent::InitiateDataPollers { force_refresh })
     }
@@ -26,7 +27,6 @@ pub enum TeamTesterStatusEvent {
     InitiateDataPollers {
         /// If true, the subscriber should attempt to refresh any state
         /// immediately rather than just wait for the next poll.
-        /// Specifically used when a user joins a team via an intent link.
         force_refresh: bool,
     },
 }

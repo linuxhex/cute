@@ -109,9 +109,9 @@ use crate::terminal::ShellLaunchData;
 use crate::themes::theme::AnsiColorIdentifier;
 use crate::workflows::workflow_enum::{CloudWorkflowEnum, CloudWorkflowEnumModel};
 use crate::workflows::{CloudWorkflow, CloudWorkflowModel, WorkflowId};
-use crate::workspaces::team::Team as TeamMetadata;
 use crate::workspaces::user_profiles::{user_profile_from_persistence, UserProfileWithUID};
 use crate::workspaces::workspace::{Workspace as WorkspaceMetadata, WorkspaceUid};
+use crate::workspaces::{MembershipRole, Team as TeamMetadata, TeamMember};
 use crate::{report_error, report_if_error, safe_info};
 
 diesel::define_sql_function! {
@@ -3137,15 +3137,15 @@ fn read_sqlite_data(
 
     let team_member_rows: Vec<model::TeamMemberRow> =
         schema::team_members::dsl::team_members.load(conn)?;
-    let members_by_team_id: HashMap<i32, Vec<crate::workspaces::team::TeamMember>> =
+    let members_by_team_id: HashMap<i32, Vec<TeamMember>> =
         team_member_rows
             .into_iter()
             .fold(HashMap::new(), |mut acc, row| {
-                let member = crate::workspaces::team::TeamMember {
+                let member = TeamMember {
                     uid: UserUid::new(&row.user_uid),
                     email: row.email,
                     role: serde_json::from_str(&row.role)
-                        .unwrap_or(crate::workspaces::team::MembershipRole::User),
+                        .unwrap_or(MembershipRole::User),
                 };
                 acc.entry(row.team_id).or_default().push(member);
                 acc
