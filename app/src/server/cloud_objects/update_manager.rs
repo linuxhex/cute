@@ -2149,14 +2149,14 @@ impl UpdateManager {
     }
 
     /// Remove team objects (stub for local version).
-    pub fn remove_team_objects(&mut self, _team_uid: String, _ctx: &mut ModelContext<Self>) {
+    pub fn remove_team_objects(&mut self, _team_uid: ServerId, _ctx: &mut ModelContext<Self>) {
         // Not supported in local version
     }
 
     /// Received message from server (stub for local version).
     pub fn received_message_from_server(
         &mut self,
-        _message: remote_server::proto::ServerMessage,
+        _message: cloud_object_client::ObjectUpdateMessage,
         _ctx: &mut ModelContext<Self>,
     ) {
         // Not supported in local version
@@ -2169,9 +2169,10 @@ impl UpdateManager {
         _client_id: ClientId,
         _owner: Owner,
         _ctx: &mut ModelContext<Self>,
-    ) -> oneshot::Receiver<()> {
+    ) -> oneshot::Receiver<ServerId> {
         let (tx, rx) = oneshot::channel();
-        let _ = tx.send(());
+        // Return a dummy ServerId for local version
+        let _ = tx.send(ServerId::default());
         rx
     }
 

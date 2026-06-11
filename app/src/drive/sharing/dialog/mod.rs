@@ -2888,8 +2888,9 @@ impl TypedActionView for SharingDialog {
                 self.set_open_menu(OpenMenuState::None, ctx);
                 if let Some(ShareableObject::WarpDriveObject(id)) = self.target.as_ref() {
                     if let Some(access_level) = access_level {
+                        let access_level: warp_graphql::object_permissions::AccessLevel = (*access_level).into();
                         UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
-                            update_manager.set_object_link_permissions(*id, access_level.into(), ctx);
+                            update_manager.set_object_link_permissions(*id, access_level, ctx);
                         });
                     }
                 } else if let Some(ShareableObject::Session { handle, .. }) = self.target.as_ref() {
@@ -2908,11 +2909,12 @@ impl TypedActionView for SharingDialog {
                         .map(|m| ServerId::from_string_lossy(m.metadata.uid.uid()))
                     {
                         if let Some(access_level) = access_level {
+                            let access_level: warp_graphql::object_permissions::AccessLevel = (*access_level).into();
                             UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
                                 update_manager.set_ai_conversation_link_permissions(
                                     server_id,
                                     *conversation_id,
-                                    access_level.into(),
+                                    access_level,
                                     ctx,
                                 );
                             });
