@@ -13,7 +13,7 @@ use warpui::elements::{
 use warpui::fonts::Weight;
 use warpui::presenter::ChildView;
 use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::{AppContext, SingletonEntity, ViewHandle};
+use warpui::{AppContext, SingletonEntity};
 
 use crate::appearance::Appearance;
 use crate::settings::{AISettings, InputSettings};
@@ -178,23 +178,6 @@ pub(super) fn add_workflow_info_overlay(
                 OffsetType::Pixel(0.),
                 menu_positioning.workflows_info_y_anchor(),
             ),
-        ),
-    );
-}
-
-/// Renders the voltron overlay over the input.
-pub(super) fn add_voltron_overlay(
-    stack: &mut Stack,
-    voltron_view: &ViewHandle<crate::voltron::Voltron>,
-    menu_positioning: MenuPositioning,
-) {
-    stack.add_positioned_overlay_child(
-        ChildView::new(voltron_view).finish(),
-        OffsetPositioning::offset_from_parent(
-            menu_positioning.voltron_offset(),
-            ParentOffsetBounds::Unbounded,
-            menu_positioning.voltron_parent_anchor(),
-            menu_positioning.voltron_child_anchor(),
         ),
     );
 }

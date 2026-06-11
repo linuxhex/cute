@@ -1,6 +1,6 @@
 //! Pricing information model.
 //!
-//! Note: Cloud-specific logic has been removed. Only type definitions remain.
+//! Note: Cloud-specific logic has been removed. Simplified stub.
 
 use warp_graphql::billing::{
     AddonCreditsOption, OveragesPricing, PlanPricing, PricingInfo, StripeSubscriptionPlan,
@@ -8,8 +8,10 @@ use warp_graphql::billing::{
 use warpui::{Entity, ModelContext, SingletonEntity};
 
 /// A global model for maintaining pricing information from the server.
+/// Simplified: local version has no pricing.
 #[derive(Debug)]
 pub struct PricingInfoModel {
+    #[allow(dead_code)]
     pricing_info: Option<PricingInfo>,
 }
 
@@ -26,43 +28,32 @@ impl PricingInfoModel {
 
     #[allow(dead_code)]
     fn overage_pricing(&self) -> Option<&OveragesPricing> {
-        self.pricing_info.as_ref().map(|info| &info.overages)
+        None
     }
 
     #[allow(dead_code)]
-    pub fn plan_pricing(&self, plan: &StripeSubscriptionPlan) -> Option<&PlanPricing> {
-        self.pricing_info
-            .as_ref()?
-            .plans
-            .iter()
-            .find(|p| &p.plan == plan)
+    pub fn plan_pricing(&self, _plan: &StripeSubscriptionPlan) -> Option<&PlanPricing> {
+        None
     }
 
     #[allow(dead_code)]
     pub fn plans(&self) -> &[PlanPricing] {
-        self.pricing_info
-            .as_ref()
-            .map(|info| info.plans.as_slice())
-            .unwrap_or(&[])
+        &[]
     }
 
     #[allow(dead_code)]
     pub fn overage_cost_dollars(&self) -> Option<f64> {
-        self.overage_pricing()
-            .map(|overages| overages.price_per_request_usd_cents as f64 / 100.0)
+        None
     }
 
     #[allow(dead_code)]
-    pub fn monthly_plan_cost_dollars(&self, plan: &StripeSubscriptionPlan) -> Option<f64> {
-        self.plan_pricing(plan)
-            .map(|pricing| pricing.monthly_plan_price_per_month_usd_cents as f64 / 100.0)
+    pub fn monthly_plan_cost_dollars(&self, _plan: &StripeSubscriptionPlan) -> Option<f64> {
+        None
     }
 
     #[allow(dead_code)]
     pub fn addon_credits_options(&self) -> Option<&[AddonCreditsOption]> {
-        self.pricing_info
-            .as_ref()
-            .map(|info| info.addon_credits_options.as_slice())
+        None
     }
 }
 

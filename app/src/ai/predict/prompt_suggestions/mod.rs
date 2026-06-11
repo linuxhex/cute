@@ -8,11 +8,7 @@ use crate::util::bindings::keybinding_name_to_keystroke;
 
 pub const ACCEPT_PROMPT_SUGGESTION_KEYBINDING: &str = "terminal:accept_prompt_suggestions";
 
-pub static REJECT_PROMPT_SUGGESTION_KEYSTROKE: LazyLock<Keystroke> = LazyLock::new(|| Keystroke {
-    ctrl: true,
-    key: "c".to_owned(),
-    ..Default::default()
-});
+// Removed: REJECT_PROMPT_SUGGESTION_KEYSTROKE - was only used for unit test suggestions which have been removed
 
 pub fn is_accept_prompt_suggestion_bound_to_cmd_enter(app: &AppContext) -> bool {
     static CMD_ENTER_KEYSTROKE: LazyLock<Keystroke> = LazyLock::new(|| Keystroke {
@@ -50,8 +46,6 @@ pub fn has_pending_code_or_unit_test_prompt_suggestion(
             }
             // Check for pending passive code diff
             let has_code_diff = block.find_undismissed_code_diff(app).is_some();
-            // Check for pending MAA suggested prompt (e.g., unit test suggestion)
-            let has_suggested_prompt = block.pending_unit_test_suggestion(app).is_some();
-            has_code_diff || has_suggested_prompt
+            has_code_diff
         })
 }

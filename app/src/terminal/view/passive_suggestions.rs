@@ -61,19 +61,13 @@ impl TerminalView {
         resolution: PromptSuggestionResolution,
         ctx: &mut ViewContext<Self>,
     ) -> bool {
-        let Some(ai_block) = self.last_ai_block() else {
+        let Some(_ai_block) = self.last_ai_block() else {
             return false;
         };
 
         let handled = match resolution {
-            PromptSuggestionResolution::Accept { interaction_source } => {
-                ai_block.update(ctx, |ai_block, ctx| {
-                    ai_block.accept_pending_unit_test_suggestion(interaction_source, ctx)
-                })
-            }
-            PromptSuggestionResolution::Reject { .. } => ai_block.update(ctx, |ai_block, ctx| {
-                ai_block.dismiss_pending_suggested_prompt(InteractionSource::Keybinding, ctx)
-            }),
+            PromptSuggestionResolution::Accept { .. } => false,
+            PromptSuggestionResolution::Reject { .. } => false,
         };
         ctx.notify();
         handled

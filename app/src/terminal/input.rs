@@ -56,7 +56,6 @@ use serde_json::json;
 use session_sharing_protocol::common::{AgentAttachment, ParticipantId, ServerConversationToken};
 use settings::{Setting as _, ToggleableSetting};
 use string_offset::{ByteOffset, CharOffset};
-use vec1::Vec1;
 use vim::vim::{VimHandler, VimMode};
 use warp_cli::agent::Harness;
 use warp_completer::completer::{
@@ -80,10 +79,10 @@ use warpui::clipboard::{ClipboardContent, ImageData};
 use warpui::clipboard_utils::CLIPBOARD_IMAGE_MIME_TYPES;
 use warpui::color::ColorU;
 use warpui::elements::{
-    resizable_state_handle, Align, AnchorPair, ChildAnchor, Clipped, ConstrainedBox, Container,
+    resizable_state_handle, Align, AnchorPair, Clipped, ConstrainedBox, Container,
     CornerRadius, CrossAxisAlignment, DispatchEventResult, DropTargetData, Element, EventHandler,
     Flex, MainAxisAlignment, MainAxisSize, MouseStateHandle, OffsetPositioning, OffsetType,
-    ParentAnchor, ParentElement, PositionedElementOffsetBounds, PositioningAxis, Radius,
+    ParentElement, PositionedElementOffsetBounds, PositioningAxis, Radius,
     ResizableStateHandle, SavePosition, SelectionHandle, Text, Wrap, XAxisAnchor, YAxisAnchor,
 };
 pub use warpui::elements::{ParentElement as _, Stack};
@@ -197,7 +196,7 @@ use crate::ai::skills::{SkillManager, SkillOpenOrigin, SkillTelemetryEvent};
 use crate::ai::AIRequestUsageModel;
 use crate::ai_assistant::execution_context::WarpAiExecutionContext;
 use crate::appearance::{Appearance, AppearanceEvent};
-use crate::channel::{Channel, ChannelState};
+use crate::channel::ChannelState;
 use crate::cloud_object::model::actions::ObjectActionType;
 use crate::cloud_object::model::generic_string_model::StringModel;
 use crate::cloud_object::model::persistence::CloudModel;
@@ -315,10 +314,6 @@ use crate::util::file::external_editor;
 use crate::util::image::MAX_IMAGE_COUNT_FOR_QUERY;
 use crate::util::truncation::truncate_from_end;
 use crate::view_components::{DismissibleToast, ToastFlavor};
-use crate::voltron::{
-    Voltron, VoltronEvent, VoltronFeatureView, VoltronFeatureViewHandle, VoltronFeatureViewMeta,
-    VoltronItem, VoltronMetadata,
-};
 use crate::workflows::aliases::WorkflowAliases;
 use crate::workflows::command_parser::{
     compute_workflow_display_data, compute_workflow_display_data_for_history_command,
@@ -1080,7 +1075,6 @@ pub enum InputAction {
     PageUp,
     PageDown,
     ClearScreen,
-    SelectAndRefreshVoltron(VoltronItem),
     ShowAiCommandSearch,
     /// Open the completions menu if the cursor is in a valid position to generate completion
     /// suggestions.
@@ -1190,27 +1184,6 @@ impl MenuPositioning {
 
     fn workflows_info_y_anchor(&self) -> AnchorPair<YAxisAnchor> {
         self.y_anchor()
-    }
-
-    fn voltron_parent_anchor(&self) -> ParentAnchor {
-        match *self {
-            MenuPositioning::AboveInputBox => ParentAnchor::BottomLeft,
-            MenuPositioning::BelowInputBox => ParentAnchor::TopLeft,
-        }
-    }
-
-    fn voltron_child_anchor(&self) -> ChildAnchor {
-        match *self {
-            MenuPositioning::AboveInputBox => ChildAnchor::BottomLeft,
-            MenuPositioning::BelowInputBox => ChildAnchor::TopLeft,
-        }
-    }
-
-    fn voltron_offset(&self) -> Vector2F {
-        match *self {
-            MenuPositioning::AboveInputBox => vec2f(11., -11.),
-            MenuPositioning::BelowInputBox => vec2f(11., -66.),
-        }
     }
 
     fn y_anchor(&self) -> AnchorPair<YAxisAnchor> {
@@ -1375,7 +1348,7 @@ pub trait Autosuggester {
     fn set_autosuggestion_future(&mut self, abort_handle: AbortHandle);
 }
 
-/// Implement this trait to provide whether menus like autocomplete, voltron, etc
+/// Implement this trait to provide whether menus like autocomplete, etc
 /// should be positionined above or below the input.
 pub trait MenuPositioningProvider {
     fn menu_position(&self, app: &AppContext) -> MenuPositioning;
@@ -1515,8 +1488,6 @@ pub struct Input {
     input_render_state_model_handle: ModelHandle<InputRenderStateModel>,
     workflows_state: WorkflowsState,
     env_var_collection_state: EnvVarCollectionState,
-    voltron_view: ViewHandle<Voltron>,
-    is_voltron_open: bool,
     command_x_ray_description: Option<Arc<Description>>,
     last_parsed_tokens: Option<decorations::ParsedTokensSnapshot>,
     debounce_input_background_tx: Sender<InputBackgroundJobOptions>,
@@ -1766,7 +1737,7 @@ pub fn init(app: &mut AppContext) {
             FixedBinding::new(
                 "ctrl-r",
                 WorkspaceAction::ShowCommandSearch(Default::default()),
-                id!("Input") & !id!("VoltronActive"),
+                id!("Input"),
             ),
         ]);
     }
@@ -1782,7 +1753,6 @@ pub fn init(app: &mut AppContext) {
             // Same goes with the LLM menu.
             id!("Input")
                 & !id!("IMEOpen")
-                & !id!("VoltronActive")
                 & !id!("WorkflowInfoBox")
                 & !id!("ProfileModelSelectorOpen")
                 & !id!("PromptChipMenuOpen")
@@ -1866,7 +1836,7 @@ pub fn init(app: &mut AppContext) {
         // Therefore, this binding is guarded with !id!("VimNormalMode"). Note that although there
         // is usually a conflict between these, that isn't always the case if the user has
         // re-mapped CommandSearch to something else. However, we don't account for that here.
-        .with_context_predicate(id!("Input") & !id!("VoltronActive") & !id!("VimNormalMode"))
+        .with_context_predicate(id!("Input") & !id!("VimNormalMode"))
         .with_custom_action(CustomAction::CommandSearch),
         EditableBinding::new(
             "input:search_command_history",
@@ -1876,7 +1846,7 @@ pub fn init(app: &mut AppContext) {
                 init_content: Default::default(),
             }),
         )
-        .with_context_predicate(id!("Input") & !id!("VoltronActive"))
+        .with_context_predicate(id!("Input"))
         .with_custom_action(CustomAction::HistorySearch),
         EditableBinding::new(
             OPEN_COMPLETIONS_KEYBINDING_NAME,
@@ -1886,29 +1856,6 @@ pub fn init(app: &mut AppContext) {
         .with_context_predicate(id!("Input"))
         .with_key_binding("tab"),
     ]);
-
-    if let Some(custom_action) = workflows::CategoriesView::custom_action() {
-        app.register_editable_bindings([EditableBinding::new(
-            "input:toggle_workflows",
-            "Workflows",
-            InputAction::SelectAndRefreshVoltron(VoltronItem::Workflows),
-        )
-        .with_context_predicate(id!("Input"))
-        .with_custom_action(custom_action)]);
-    }
-
-    if ChannelState::channel() == Channel::Integration {
-        app.register_fixed_bindings([
-            // Hack: Add explicit bindings for the tests, since the tests' injected
-            // keypresses won't trigger Mac menu items. Unfortunately we can't use
-            // cfg[test] because we are a separate process!
-            FixedBinding::new(
-                "ctrl-shift-R",
-                InputAction::SelectAndRefreshVoltron(VoltronItem::Workflows),
-                id!("Input"),
-            ),
-        ]);
-    }
 
     app.register_editable_bindings([
         EditableBinding::new(
@@ -2976,15 +2923,6 @@ impl Input {
             |_me, _ctx| {},
         );
 
-        let voltron_features = Vec1::new(VoltronFeatureView::new(
-            VoltronItem::Workflows,
-            VoltronFeatureViewHandle::Workflows(workflows_search_view.clone()),
-        ));
-        let voltron_view = { ctx.add_typed_action_view(|ctx| Voltron::new(voltron_features, ctx)) };
-        ctx.subscribe_to_view(&voltron_view, move |me, _, event, ctx| {
-            me.handle_voltron_event(event, ctx);
-        });
-
         ctx.subscribe_to_model(&SessionSettings::handle(ctx), move |me, _, evt, ctx| {
             me.handle_session_settings_event(evt, ctx);
         });
@@ -3513,8 +3451,6 @@ impl Input {
             input_render_state_model_handle,
             workflows_state,
             env_var_collection_state,
-            voltron_view,
-            is_voltron_open: false,
             command_x_ray_description: None,
             last_parsed_tokens: None,
             debounce_input_background_tx,
@@ -6045,13 +5981,9 @@ impl Input {
                     entrypoint: AnonymousUserSignupEntrypoint::SignUpAIPrompt,
                 });
             }
-            // Simplified: local version has no billing/usage page
-            PromptAlertEvent::OpenBillingAndUsagePage => {}
             PromptAlertEvent::OpenPrivacyPage => {
                 ctx.emit(Event::OpenSettings(SettingsSection::Privacy));
             }
-            // Simplified: local version has no billing portal
-            PromptAlertEvent::OpenBillingPortal { team_uid: _ } => {}
         }
     }
 
@@ -7157,7 +7089,6 @@ impl Input {
         match event {
             workflows::CategoriesViewEvent::Close => {
                 self.focus_input_box(ctx);
-                self.close_voltron(ctx);
             }
             workflows::CategoriesViewEvent::WorkflowSelected {
                 workflow,
@@ -7175,7 +7106,7 @@ impl Input {
                     TelemetryEvent::WorkflowSelected(WorkflowTelemetryMetadata {
                         workflow_source,
                         workflow_categories: workflow.as_workflow().tags().cloned(),
-                        workflow_selection_source: WorkflowSelectionSource::Voltron,
+                        workflow_selection_source: WorkflowSelectionSource::CommandPalette,
                         workflow_id,
                         workflow_space: space,
                         enum_ids: workflow.as_workflow().get_server_enum_ids()
@@ -7186,19 +7117,10 @@ impl Input {
                 self.show_workflows_info_box_on_workflow_selection(
                     *workflow.clone(),
                     workflow_source,
-                    WorkflowSelectionSource::Voltron,
+                    WorkflowSelectionSource::CommandPalette,
                     None,
                     ctx,
                 );
-                self.close_voltron(ctx);
-            }
-        }
-    }
-
-    fn handle_voltron_event(&mut self, event: &VoltronEvent, ctx: &mut ViewContext<Self>) {
-        match event {
-            VoltronEvent::Close => {
-                self.close_voltron(ctx);
             }
         }
     }
@@ -8291,7 +8213,6 @@ impl Input {
         should_restore_buffer_before_history_up: bool,
         ctx: &mut ViewContext<Input>,
     ) {
-        self.close_voltron(ctx);
         self.close_input_suggestions_and_restore_buffer(
             false,
             should_restore_buffer_before_history_up,
@@ -8301,18 +8222,10 @@ impl Input {
     }
 
     /// Closes any active suggestion mode UI when starting a new conversation.
-    ///
-    /// This is intentionally narrower than `close_overlays`: it does not close Voltron, workflow
-    /// info overlays, etc.
     fn close_suggestion_modes_for_new_conversation(&mut self, ctx: &mut ViewContext<Self>) {
         self.suggestions_mode_model.update(ctx, |model, ctx| {
             model.set_mode(InputSuggestionsMode::Closed, ctx);
         });
-    }
-
-    fn close_voltron(&mut self, ctx: &mut ViewContext<Input>) {
-        self.is_voltron_open = false;
-        ctx.notify();
     }
 
     fn editor_up(&mut self, ctx: &mut ViewContext<Self>) {
@@ -11093,8 +11006,7 @@ impl Input {
 
         let original_cursor_point = editor.single_cursor_to_point(ctx);
 
-        // Although we don't use suggestions_mode_model when using Voltron,
-        // we still close the input suggestion menu before opening the Voltron modal,
+        // We close the input suggestion menu before opening the history search modal,
         // which involves resetting the cursor point.
         let original_buffer = editor.buffer_text(ctx);
         let original_input_type = self.ai_input_model.as_ref(ctx).input_type();
@@ -11120,8 +11032,6 @@ impl Input {
             ),
             ctx
         );
-
-        self.select_and_refresh_voltron(VoltronItem::History, ctx);
 
         ctx.notify();
     }
@@ -14705,53 +14615,6 @@ impl Input {
         .finish()
     }
 
-    // TODO remove voltron from the code given we are not using it anymore, and we have universal search instead.
-    fn select_and_refresh_voltron(
-        &mut self,
-        feature_item: VoltronItem,
-        ctx: &mut ViewContext<Input>,
-    ) {
-        // View-only sessions should not show workflows menu
-        if self.model.lock().shared_session_status().is_reader() {
-            return;
-        }
-
-        let welcome_tip_feature = match feature_item {
-            VoltronItem::AiCommands => Some(Tip::Action(TipAction::AiCommandSearch)),
-            VoltronItem::History => Some(Tip::Action(TipAction::HistorySearch)),
-            VoltronItem::Workflows => None,
-        };
-
-        if let Some(welcome_tip_feature) = welcome_tip_feature {
-            self.tips_completed.update(ctx, |tips_completed, ctx| {
-                mark_feature_used_and_write_to_user_defaults(
-                    welcome_tip_feature,
-                    tips_completed,
-                    ctx,
-                );
-                ctx.notify();
-            });
-        }
-        // If input suggestions are opened we should close them when opening voltron
-        if self.suggestions_mode_model.as_ref(ctx).is_visible() {
-            self.close_input_suggestions_and_restore_buffer(true, true, ctx);
-        }
-        let active_session_path_if_local = self.active_session_path_if_local(ctx);
-        let menu_positioning = self.menu_positioning(ctx);
-        let metadata = VoltronMetadata {
-            active_session_path_if_local: active_session_path_if_local.map(|path| path.into()),
-            starting_editor_text: Some(self.editor.as_ref(ctx).buffer_text(ctx)),
-            keymap_context: Self::keymap_context(self, ctx),
-            menu_positioning,
-        };
-
-        self.voltron_view.update(ctx, |voltron, ctx| {
-            voltron.select_and_refresh_by_name(feature_item, metadata, ctx);
-            self.is_voltron_open = true;
-        });
-        ctx.notify();
-    }
-
     /// Returns whether AI command search should be displayed for the given
     /// editor contents.
     fn editor_starts_with_command_search_trigger(&self, ctx: &AppContext) -> bool {
@@ -14849,13 +14712,9 @@ impl Input {
             PromptSuggestionsEvent::SignupAnonymousUser => ctx.emit(Event::SignupAnonymousUser {
                 entrypoint: AnonymousUserSignupEntrypoint::SignUpAIPrompt,
             }),
-            // Simplified: local version has no billing/usage page
-            PromptSuggestionsEvent::OpenBillingAndUsagePage => {}
             PromptSuggestionsEvent::OpenPrivacyPage => {
                 ctx.emit(Event::OpenSettings(SettingsSection::Privacy))
             }
-            // Simplified: local version has no billing portal
-            PromptSuggestionsEvent::OpenBillingPortal { team_uid: _ } => {}
         }
     }
 
@@ -14903,9 +14762,6 @@ impl TypedActionView for Input {
             InputAction::CtrlD => self.ctrl_d(ctx),
             InputAction::CtrlR => self.ctrl_r(ctx),
             InputAction::ClearScreen => self.clear_screen(ctx),
-            InputAction::SelectAndRefreshVoltron(feature_name) => {
-                self.select_and_refresh_voltron(*feature_name, ctx);
-            }
             InputAction::ShowAiCommandSearch => self.show_ai_command_search(ctx),
             InputAction::MaybeOpenCompletionSuggestions => {
                 self.maybe_open_completion_suggestions(ctx);
@@ -15107,16 +14963,13 @@ impl View for Input {
 
     fn on_focus(&mut self, focus_ctx: &FocusContext, ctx: &mut ViewContext<Self>) {
         if focus_ctx.is_self_focused() {
-            if self.is_voltron_open {
-                ctx.focus(&self.voltron_view);
-            } else if self.prompt_render_helper.has_open_chip_menu(ctx) {
+            if self.prompt_render_helper.has_open_chip_menu(ctx) {
                 // Focus the PromptDisplay, which will in turn focus any open chip menu
                 ctx.focus(self.prompt_render_helper.prompt_view());
             } else if self.agent_input_footer.as_ref(ctx).has_open_chip_menu(ctx) {
                 // Focus the AgentInputFooter, which will in turn focus any open chip menu
                 ctx.focus(&self.agent_input_footer);
             } else {
-                self.close_voltron(ctx);
                 ctx.focus(&self.editor);
                 ctx.notify();
             }
@@ -15127,10 +14980,6 @@ impl View for Input {
     fn keymap_context(&self, app: &AppContext) -> warpui::keymap::Context {
         let mut ctx = Self::default_keymap_context();
         let ai_settings = AISettings::as_ref(app);
-
-        if self.is_voltron_open {
-            ctx.set.insert("VoltronActive");
-        }
 
         if self.ai_input_model.as_ref(app).is_ai_input_enabled() {
             ctx.set.insert("AIInput");

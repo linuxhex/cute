@@ -47,6 +47,7 @@ pub enum IapCredentialsState {
     },
     Loaded(CachedToken),
     Failed {
+        #[allow(dead_code)]
         message: String,
         // in case the last token still works... we can try to use that for a couple more mins
         previous: Option<CachedToken>,
@@ -167,10 +168,12 @@ impl IapManager {
 
     /// Returns `true` if IAP is active for this build. When `false`, all
     /// other methods on this type are no-ops.
+    #[allow(dead_code)]
     pub fn is_enabled(&self) -> bool {
         self.state.is_some()
     }
 
+    #[allow(dead_code)]
     pub fn state(&self) -> Option<IapCredentialsState> {
         self.state.as_ref().map(|s| s.state())
     }

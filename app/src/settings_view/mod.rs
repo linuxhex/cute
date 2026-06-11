@@ -10,19 +10,17 @@ use environments_page::EnvironmentsPageView;
 use features_page::{FeaturesPageView, FeaturesSettingsPageEvent};
 use itertools::Itertools as _;
 use keybindings::KeybindingsView;
-use main_page::{MainPageAction, MainSettingsPageEvent, MainSettingsPageView};
 use mcp_servers_page::MCPServersSettingsPageView;
 use nav::{SettingsNavItem, SettingsUmbrella};
 use pathfinder_geometry::vector::Vector2F;
 use privacy_page::{PrivacyPageView, PrivacyPageViewEvent};
-use referrals_page::{ReferralsPageEvent, ReferralsPageView};
+// use referrals_page::{ReferralsPageEvent, ReferralsPageView}; // Removed: referral feature
 use settings_file_footer::{render_footer, SettingsFooterKind, SettingsFooterMouseStates};
 use settings_page::{
     MatchData, SettingsPage, SettingsPageEvent, SettingsPageMeta, SettingsPageViewHandle,
     HEADER_PADDING,
 };
 use show_blocks_view::{ShowBlocksEvent, ShowBlocksView};
-use teams_page::{TeamsPageView, TeamsPageViewEvent};
 use warp_core::channel::ChannelState;
 use warp_core::context_flag::ContextFlag;
 use warp_core::features::FeatureFlag;
@@ -69,7 +67,7 @@ use crate::workspace::WorkspaceAction;
 use crate::{GlobalResourceHandlesProvider, TelemetryEvent};
 
 mod about_page;
-mod admin_actions;
+// mod admin_actions; // Removed: unused cloud feature
 mod agent_assisted_environment_modal;
 mod ai_page;
 mod appearance_page;
@@ -83,7 +81,6 @@ mod features;
 mod features_page;
 pub(crate) mod handoff_environment_creation_modal;
 pub mod keybindings;
-mod main_page;
 pub mod mcp_servers;
 pub mod mcp_servers_page;
 mod nav;
@@ -92,15 +89,13 @@ mod platform;
 mod platform_page;
 mod privacy;
 mod privacy_page;
-mod referrals_page;
+// mod referrals_page; // Removed: referral feature
 mod remove_custom_endpoint_confirmation_dialog;
 mod settings_file_footer;
 pub(crate) mod settings_page;
 mod show_blocks_view;
-mod tab_menu;
-mod teams_page;
 mod telemetry;
-mod transfer_ownership_confirmation_modal;
+// mod transfer_ownership_confirmation_modal; // Removed: unused cloud feature
 pub mod update_environment_form;
 mod warp_drive_page;
 mod warpify_page;
@@ -109,13 +104,11 @@ mod warpify_page;
 pub(crate) use ai_page::cli_agent_settings_widget_id;
 pub use code_page::CodeSettingsPageView;
 pub use features_page::FeaturesPageAction;
-pub use main_page::handle_experiment_change;
 pub use privacy_page::PrivacyPageAction;
 pub use settings_page::{
     render_body_item_label, render_info_icon, render_input_list, render_separator, AdditionalInfo,
     InputListItem, LocalOnlyIconState, ToggleState,
 };
-pub use teams_page::{OpenTeamsSettingsModalArgs, TeamsInviteOption};
 
 /// Original sidebar width used when the settings-file footer is not
 /// enabled. Preserved for Preview/Stable until `FeatureFlag::SettingsFile`
@@ -229,16 +222,19 @@ pub enum SettingsViewEvent {
 /// Different navigation sections within the settings view
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Hash)]
 pub enum SettingsSection {
-    About,
     #[default]
+    Appearance,
+    About,
+    #[allow(dead_code)]
     Account,
     MCPServers,
-    Appearance,
     Features,
     Keybindings,
     Privacy,
+    #[allow(dead_code)]
     Referrals,
     SharedBlocks,
+    #[allow(dead_code)]
     Teams,
     WarpDrive,
     Warpify,
@@ -582,7 +578,6 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
     context: &ContextPredicate,
     builder: fn(SettingsAction) -> T,
 ) {
-    main_page::init_actions_from_parent_view(app, context, builder);
     appearance_page::init_actions_from_parent_view(app, context, builder);
     features_page::init_actions_from_parent_view(app, context, builder);
     warpify_page::init_actions_from_parent_view(app, context, builder);
@@ -887,7 +882,6 @@ pub enum DebugSettingsAction {
 pub enum SettingsAction {
     SelectAndRefresh(SettingsSection),
     ToggleUmbrella(usize),
-    MainPageToggle(MainPageAction),
     AppearancePageToggle(AppearancePageAction),
     FeaturesPageToggle(FeaturesPageAction),
     PrivacyPageToggle(PrivacyPageAction),
@@ -1034,16 +1028,13 @@ fn next_stop_index(current: usize, len: usize, direction: CycleDirection) -> usi
 macro_rules! update_page {
     ($handle:expr, $update:expr, $ctx:expr) => {
         match $handle {
-            SettingsPageViewHandle::Main(handle) => $ctx.update_view(handle, $update),
             SettingsPageViewHandle::Appearance(handle) => $ctx.update_view(handle, $update),
             SettingsPageViewHandle::Features(handle) => $ctx.update_view(handle, $update),
             SettingsPageViewHandle::SharedBlocks(handle) => $ctx.update_view(handle, $update),
             SettingsPageViewHandle::Keybindings(handle) => $ctx.update_view(handle, $update),
-            SettingsPageViewHandle::Teams(handle) => $ctx.update_view(handle, $update),
             SettingsPageViewHandle::Warpify(handle) => $ctx.update_view(handle, $update),
             SettingsPageViewHandle::OzCloudAPIKeys(handle) => $ctx.update_view(handle, $update),
             SettingsPageViewHandle::Privacy(handle) => $ctx.update_view(handle, $update),
-            SettingsPageViewHandle::Referrals(handle) => $ctx.update_view(handle, $update),
             SettingsPageViewHandle::AI(handle) => $ctx.update_view(handle, $update),
             SettingsPageViewHandle::CloudEnvironments(handle) => $ctx.update_view(handle, $update),
             SettingsPageViewHandle::About(handle) => $ctx.update_view(handle, $update),
@@ -1092,11 +1083,6 @@ impl SettingsView {
         let pane_configuration = ctx.add_model(|_ctx| PaneConfiguration::new("Settings"));
 
         let global_resource_handles = GlobalResourceHandlesProvider::as_ref(ctx).get().clone();
-        // Main settings page with accounts info
-        let main_page_handle = ctx.add_typed_action_view(MainSettingsPageView::new);
-        ctx.subscribe_to_view(&main_page_handle, |me, _, event, ctx| {
-            me.handle_main_page_event(event, ctx);
-        });
 
         // Appearance & themes page
         let appearance_page_handle = ctx.add_typed_action_view(AppearanceSettingsPageView::new);
@@ -1153,20 +1139,6 @@ impl SettingsView {
             me.handle_code_page_event(event, ctx);
         });
 
-        // Teams page, adding unconditionally, as `should_render` later on decides whether it
-        // should be shown to the user or not
-        let teams_page_handle = ctx.add_typed_action_view(TeamsPageView::new);
-        ctx.subscribe_to_view(&teams_page_handle, |_, _, event, ctx| match event {
-            TeamsPageViewEvent::TeamsChanged => ctx.notify(),
-            TeamsPageViewEvent::OpenWarpDrive => ctx.emit(SettingsViewEvent::OpenWarpDrive),
-            TeamsPageViewEvent::ShowToast { message, flavor } => {
-                ctx.emit(SettingsViewEvent::ShowToast {
-                    message: message.clone(),
-                    flavor: *flavor,
-                })
-            }
-        });
-
         let warpify_page_handle = ctx.add_typed_action_view(WarpifyPageView::new);
         ctx.subscribe_to_view(&warpify_page_handle, |me, _, event, ctx| {
             me.handle_warpify_page_event(event, ctx);
@@ -1176,13 +1148,6 @@ impl SettingsView {
         let privacy_page_handle = ctx.add_typed_action_view(PrivacyPageView::new);
         ctx.subscribe_to_view(&privacy_page_handle, |me, _, event, ctx| {
             me.handle_privacy_page_event(event, ctx);
-        });
-
-        let referrals_client = ServerApiProvider::as_ref(ctx).get_referrals_client();
-        let referrals_page_handle =
-            ctx.add_typed_action_view(|ctx| ReferralsPageView::new(referrals_client, ctx));
-        ctx.subscribe_to_view(&referrals_page_handle, |me, _, event, ctx| {
-            me.handle_referrals_page_event(event, ctx);
         });
 
         // Warp Drive page
@@ -1232,16 +1197,14 @@ impl SettingsView {
         });
 
         let mut settings_pages = vec![
-            SettingsPage::new(main_page_handle),
             SettingsPage::new(ai_page_handle),
             SettingsPage::new(code_page_handle),
-            SettingsPage::new(teams_page_handle),
             SettingsPage::new(appearance_page_handle),
             SettingsPage::new(features_page_handle),
             SettingsPage::new(keybindings_handle),
             SettingsPage::new(platform_page_handle),
             SettingsPage::new(warpify_page_handle),
-            SettingsPage::new(referrals_page_handle),
+            // SettingsPage::new(referrals_page_handle), // Removed: referral feature
             SettingsPage::new(show_blocks_view_handle),
             SettingsPage::new(warp_drive_page_handle),
         ];
@@ -1636,20 +1599,6 @@ impl SettingsView {
             .collect();
     }
 
-    fn handle_main_page_event(
-        &mut self,
-        event: &MainSettingsPageEvent,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        match event {
-            MainSettingsPageEvent::CheckForUpdate => ctx.emit(SettingsViewEvent::CheckForUpdate),
-            MainSettingsPageEvent::SignupAnonymousUser => {
-                ctx.emit(SettingsViewEvent::SignupAnonymousUser)
-            }
-            _ => (),
-        }
-    }
-
     fn handle_appearance_page_event(
         &mut self,
         event: &SettingsPageEvent,
@@ -1774,25 +1723,6 @@ impl SettingsView {
             if let SettingsPageViewHandle::Keybindings(view_handle) = &settings_page.view_handle {
                 view_handle.update(ctx, |view, ctx| {
                     view.search_for_binding(keybinding_name, ctx);
-                })
-            }
-        }
-    }
-
-    fn handle_referrals_page_event(
-        &mut self,
-        event: &ReferralsPageEvent,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        match event {
-            ReferralsPageEvent::SignupAnonymousUser => {
-                ctx.emit(SettingsViewEvent::SignupAnonymousUser)
-            }
-            ReferralsPageEvent::FocusModal => ctx.focus(&self.search_editor),
-            ReferralsPageEvent::ShowToast { message, flavor } => {
-                ctx.emit(SettingsViewEvent::ShowToast {
-                    message: message.clone(),
-                    flavor: *flavor,
                 })
             }
         }
@@ -1983,8 +1913,6 @@ impl SettingsView {
 
     fn should_render_page(&self, settings_page: &SettingsPage, app: &AppContext) -> bool {
         match &settings_page.view_handle {
-            SettingsPageViewHandle::Main(v) => v.as_ref(app).should_render(app),
-            SettingsPageViewHandle::Teams(v) => v.as_ref(app).should_render(app),
             SettingsPageViewHandle::SharedBlocks(v) => v.as_ref(app).should_render(app),
             SettingsPageViewHandle::Keybindings(v) => v.as_ref(app).should_render(app),
             SettingsPageViewHandle::Features(v) => v.as_ref(app).should_render(app),
@@ -1993,27 +1921,11 @@ impl SettingsView {
             SettingsPageViewHandle::OzCloudAPIKeys(v) => v.as_ref(app).should_render(app),
             SettingsPageViewHandle::Privacy(v) => v.as_ref(app).should_render(app),
             SettingsPageViewHandle::Warpify(v) => v.as_ref(app).should_render(app),
-            SettingsPageViewHandle::Referrals(v) => v.as_ref(app).should_render(app),
             SettingsPageViewHandle::AI(v) => v.as_ref(app).should_render(app),
             SettingsPageViewHandle::CloudEnvironments(v) => v.as_ref(app).should_render(app),
             SettingsPageViewHandle::MCPServers(v) => v.as_ref(app).should_render(app),
             SettingsPageViewHandle::Code(v) => v.as_ref(app).should_render(app),
             SettingsPageViewHandle::WarpDrive(v) => v.as_ref(app).should_render(app),
-        }
-    }
-
-    /// Open the invite section of the teams page, optionally with an email to invite.
-    pub fn open_teams_page_email_invite(
-        &mut self,
-        email: Option<&String>,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        if let Some(team_page) = self.settings_page(SettingsSection::Teams) {
-            if let SettingsPageViewHandle::Teams(view) = &team_page.view_handle {
-                view.update(ctx, |view, ctx| {
-                    view.open_team_members(email, ctx);
-                })
-            }
         }
     }
 
@@ -2147,9 +2059,6 @@ impl SettingsView {
         if let Some(current_page) = self.current_settings_page() {
             match &current_page.view_handle {
                 SettingsPageViewHandle::Keybindings(view_handle) => {
-                    view_handle.update(ctx, |view, ctx| view.on_tab_pressed(ctx));
-                }
-                SettingsPageViewHandle::Teams(view_handle) => {
                     view_handle.update(ctx, |view, ctx| view.on_tab_pressed(ctx));
                 }
                 _ => (),
@@ -2560,15 +2469,6 @@ impl TypedActionView for SettingsView {
                 {
                     umbrella.toggle();
                     ctx.notify();
-                }
-            }
-            SettingsAction::MainPageToggle(main_page_action) => {
-                if let Some(main_page) = self.settings_page(SettingsSection::Account) {
-                    if let SettingsPageViewHandle::Main(view) = &main_page.view_handle {
-                        view.update(ctx, |view, ctx| {
-                            view.handle_action(main_page_action, ctx);
-                        })
-                    }
                 }
             }
             SettingsAction::AppearancePageToggle(appearance_action) => {

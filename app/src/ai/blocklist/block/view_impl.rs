@@ -1068,7 +1068,6 @@ impl View for AIBlock {
                 requested_commands: &self.requested_commands,
                 requested_mcp_tools: &self.requested_mcp_tools,
                 requested_edits: &self.requested_edits,
-                unit_test_suggestions: &self.unit_tests_suggestions,
                 todo_list_states: &self.todo_list_states,
                 collapsible_block_states: &self.collapsible_block_states,
                 is_selecting_text: self.state_handles.selection_handle.is_selecting(),

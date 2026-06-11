@@ -10,7 +10,7 @@ use std::rc::Rc;
 use std::sync::Arc;
 
 use ai::agent::action::{
-    RequestComputerUseRequest, SuggestPromptRequest, UploadArtifactRequest, UseComputerRequest,
+    RequestComputerUseRequest, UploadArtifactRequest, UseComputerRequest,
 };
 use ai::agent::file_locations::group_file_contexts_for_display;
 use ai::skills::SkillReference;
@@ -93,7 +93,6 @@ use crate::ai::blocklist::inline_action::requested_action::{
 use crate::ai::blocklist::inline_action::requested_command::RequestedCommand;
 use crate::ai::blocklist::inline_action::run_agents_card_view::RunAgentsCardView;
 use crate::ai::blocklist::inline_action::search_codebase::SearchCodebaseView;
-use crate::ai::blocklist::inline_action::suggested_unit_tests::SuggestedUnitTestsView;
 use crate::ai::blocklist::inline_action::web_fetch::WebFetchView;
 use crate::ai::blocklist::inline_action::web_search::WebSearchView;
 use crate::ai::blocklist::keyboard_navigable_buttons::KeyboardNavigableButtons;
@@ -142,8 +141,6 @@ pub(crate) struct Props<'a> {
     pub(super) requested_commands: &'a HashMap<AIAgentActionId, RequestedCommand>,
     pub(super) requested_mcp_tools: &'a HashMap<AIAgentActionId, RequestedCommand>,
     pub(super) requested_edits: &'a IndexMap<AIAgentActionId, RequestedEdit>,
-    pub(super) unit_test_suggestions:
-        &'a HashMap<AIAgentActionId, ViewHandle<SuggestedUnitTestsView>>,
     pub(super) todo_list_states: &'a HashMap<MessageId, TodoListElementState>,
     pub(super) collapsible_block_states: &'a HashMap<MessageId, CollapsibleElementState>,
     pub(crate) is_selecting_text: bool,
@@ -681,25 +678,6 @@ pub(super) fn render(props: Props, app: &AppContext) -> Box<dyn Element> {
                             }
                             _ => (),
                         },
-                        AIAgentOutputMessageType::Action(AIAgentAction {
-                            action:
-                                AIAgentActionType::SuggestPrompt(
-                                    SuggestPromptRequest::UnitTestsSuggestion { .. },
-                                ),
-                            id,
-                            ..
-                        }) => {
-                            if let Some(unit_test_suggestion_view) =
-                                props.unit_test_suggestions.get(id)
-                            {
-                                if !unit_test_suggestion_view.as_ref(app).is_hidden() {
-                                    output_items.add_child(render_unit_test_suggestion(
-                                        unit_test_suggestion_view,
-                                        app,
-                                    ));
-                                }
-                            }
-                        }
                         AIAgentOutputMessageType::Action(AIAgentAction {
                             action: AIAgentActionType::CreateDocuments { .. },
                             id,
@@ -2192,21 +2170,6 @@ fn render_requested_edits_output_message(
             }
         }
     }
-}
-
-fn render_unit_test_suggestion(
-    suggested_prompt: &ViewHandle<SuggestedUnitTestsView>,
-    app: &AppContext,
-) -> Box<dyn Element> {
-    let appearance = Appearance::as_ref(app);
-    let theme = appearance.theme();
-
-    Container::new(ChildView::new(suggested_prompt).finish())
-        .with_border(Border::all(1.).with_border_fill(theme.surface_2()))
-        .with_horizontal_padding(INLINE_ACTION_HORIZONTAL_PADDING)
-        .with_background_color(blended_colors::fg_overlay_2(theme).into())
-        .with_vertical_padding(CONTENT_ITEM_VERTICAL_MARGIN)
-        .finish()
 }
 
 fn render_ask_user_question(

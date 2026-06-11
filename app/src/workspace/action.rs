@@ -232,8 +232,8 @@ pub enum WorkspaceAction {
         mode: PaletteMode,
         source: PaletteSource,
     },
-    ShowUpgrade,
-    ShowReferralSettingsPage,
+    // Simplified: removed ShowUpgrade
+    // Simplified: removed ShowReferralSettingsPage
     JoinSlack,
     ViewUserDocs,
     ViewLatestChangelog,
@@ -861,8 +861,8 @@ impl WorkspaceAction {
             | ResetZoom
             | OpenPalette { .. }
             | TogglePalette { mode: _, source: _ }
-            | ShowUpgrade
-            | ShowReferralSettingsPage
+            // Simplified: removed ShowUpgrade
+            // Simplified: removed ShowReferralSettingsPage
             | JoinSlack
             | ViewUserDocs
             | ViewLatestChangelog

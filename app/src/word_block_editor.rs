@@ -58,6 +58,7 @@ struct Word {
     mouse_state_handle: MouseStateHandle,
 }
 
+#[allow(dead_code)]
 pub struct ChipEditorState {
     pub is_valid: bool,   // track whether list of words is valid (based on validator)
     pub is_empty: bool,   // track whether there are any elements in the list of words so far
@@ -138,10 +139,12 @@ impl WordBlockEditorView {
         words
     }
 
+    #[allow(dead_code)]
     pub fn num_chips(&self) -> usize {
         self.list_of_words.len()
     }
 
+    #[allow(dead_code)]
     pub fn with_validator(
         &mut self,
         ctx: &mut ViewContext<Self>,
@@ -192,6 +195,7 @@ impl WordBlockEditorView {
         ctx.notify();
     }
 
+    #[allow(dead_code)]
     pub fn add_word(&mut self, word: &String, ctx: &mut ViewContext<Self>) {
         self.list_of_words.push(Word {
             text: word.to_owned(),
@@ -209,6 +213,7 @@ impl WordBlockEditorView {
     }
 
     /// Forwards the interaction state to the inner editor view.
+    #[allow(dead_code)]
     pub fn set_interaction_state(&mut self, state: InteractionState, ctx: &mut ViewContext<Self>) {
         self.editor_view.update(ctx, |editor, ctx| {
             editor.set_interaction_state(state, ctx);

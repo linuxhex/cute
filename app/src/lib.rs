@@ -9,9 +9,7 @@ mod app_menus;
 mod app_services;
 mod app_state;
 mod auth;
-mod autoupdate;
 mod banner;
-mod billing;
 mod changelog_model;
 mod chip_configurator;
 mod cloud_object;
@@ -63,11 +61,11 @@ mod profiling;
 mod projects;
 mod prompt;
 mod quit_warning;
-mod referral_theme_status;
 #[allow(dead_code)]
 mod remote_server;
 mod resource_limits;
-mod reward_view;
+// #[allow(dead_code)]
+// mod reward_view; // Removed: referral feature
 mod safe_triangle;
 mod search_bar;
 mod server;
@@ -89,7 +87,6 @@ pub mod util;
 mod view_components;
 mod vim_registers;
 mod voice;
-mod voltron;
 mod cute_managed_paths_watcher;
 #[cfg(target_family = "wasm")]
 mod wasm_nux_dialog;
@@ -200,7 +197,6 @@ use itertools::Itertools;
 pub use persistence::testing as sqlite_testing;
 #[cfg(feature = "plugin_host")]
 pub use plugin::{run_plugin_host, PLUGIN_HOST_FLAG};
-use referral_theme_status::ReferralThemeStatus;
 use server::server_api::ServerApiProvider;
 use settings::{ExtraMetaKeys, PrivacySettings};
 #[cfg(feature = "local_fs")]
@@ -247,7 +243,6 @@ use crate::ai::skills::SkillManager;
 use crate::ai::AIRequestUsageModel;
 use crate::antivirus::AntivirusInfo;
 use crate::app_state::AppState;
-use crate::autoupdate::{AutoupdateState, RelaunchModel};
 use crate::changelog_model::ChangelogModel;
 use crate::cloud_object::model::actions::{ObjectAction, ObjectActions};
 use crate::cloud_object::model::persistence::CloudModel;
@@ -1184,7 +1179,6 @@ pub(crate) fn initialize_app(
 
     let model_event_sender = persistence_writer.sender();
 
-    let referral_theme_status = ctx.add_model(ReferralThemeStatus::new);
     let tips_handle = ctx.add_model(|_| user_defaults_on_startup.tips_data);
     let user_default_shell_unsupported_banner_model_handle =
         ctx.add_model(|_| user_defaults_on_startup.user_default_shell_unsupported_banner_state);
@@ -1205,7 +1199,6 @@ pub(crate) fn initialize_app(
         GlobalResourceHandlesProvider::new(GlobalResourceHandles {
             model_event_sender,
             tips_completed: tips_handle,
-            referral_theme_status,
             user_default_shell_unsupported_banner_model_handle,
             settings_file_error,
         })
@@ -1342,23 +1335,9 @@ pub(crate) fn initialize_app(
     }
     timer.mark_interval_end("INIT_CRASH_REPORTING");
 
-    if let LaunchMode::App { .. } = launch_mode {
-        autoupdate::check_and_report_update_errors(ctx);
-    }
-
     ctx.set_fallback_font_source_provider(|url| ::asset_cache::url_source(url));
 
     ctx.set_default_binding_validator(is_binding_cross_platform);
-
-    if FeatureFlag::Autoupdate.is_enabled() {
-        // Attempt to clean up any old executable, whether or not we were
-        // explicitly launched as part of the auto-update process.  We may have
-        // failed to remove the executable on a previous launch of the app and
-        // should try again.
-        if let Err(e) = autoupdate::remove_old_executable() {
-            log::error!("Failed to remove old executable: {e:?}");
-        }
-    }
 
     experiments::init(ctx);
 
@@ -1602,14 +1581,11 @@ pub(crate) fn initialize_app(
     themes::theme_creator_modal::init(ctx);
     themes::theme_deletion_modal::init(ctx);
     root_view::init(ctx);
-    voltron::init(ctx);
     auth::init(ctx);
-    reward_view::init(ctx);
     crate::view_components::find::init(ctx);
     prompt::editor_modal::init(ctx);
     ai::blocklist::agent_view::editor::init(ctx);
     undo_close::init(ctx);
-    billing::shared_objects_creation_denied_modal::init(ctx);
     tab_configs::new_worktree_modal::init(ctx);
     tab_configs::params_modal::init(ctx);
     ai::blocklist::init(ctx);
@@ -1635,7 +1611,6 @@ pub(crate) fn initialize_app(
     let display_count = ctx.windows().display_count();
     ctx.add_singleton_model(|_| DisplayCount(display_count));
 
-    ctx.add_singleton_model(|_| RelaunchModel::new());
     ctx.add_singleton_model(|_| ChangelogModel::new(server_api.clone()));
     ctx.add_singleton_model(|_| GitHubAuthNotifier::new());
     ctx.add_singleton_model(|_| NetworkStatus::new());
@@ -1649,9 +1624,6 @@ pub(crate) fn initialize_app(
     ctx.add_singleton_model(|_| ToastStack);
     ctx.add_singleton_model(|_| GlobalCodeReviewModel);
     ctx.add_singleton_model(workspace::OneTimeModalModel::new);
-    ctx.add_singleton_model(
-        workspace::bonus_grant_notification_model::BonusGrantNotificationModel::new,
-    );
     #[cfg(feature = "local_fs")]
     ctx.add_singleton_model(FileModel::new);
     ctx.add_singleton_model(GlobalBufferModel::new);
@@ -1893,8 +1865,6 @@ pub(crate) fn initialize_app(
         ctx.add_singleton_model(ScheduledAgentManager::new);
     }
 
-    AutoupdateState::register(ctx, server_api.clone());
-
     ctx.add_singleton_model(LocalWorkflows::new);
 
     ctx.add_singleton_model(LLMPreferences::new);
@@ -2117,11 +2087,10 @@ pub(crate) fn app_callbacks(is_integration_test: bool) -> warpui::platform::AppC
                 manager.terminate(ctx);
             });
 
-            // We want to tear down the terminal server before relaunching for
-            // autoupdate, to ensure we're not running any extra Warp processes
-            // when we bring up the new process.  Additionally, this must occur
-            // after terminating the persistence writer, so we don't keep track
-            // of the fact that the shell sessions terminated.
+            // We want to tear down the terminal server before app termination,
+            // to ensure we're not running any extra Warp processes.
+            // Additionally, this must occur after terminating the persistence writer,
+            // so we don't keep track of the fact that the shell sessions terminated.
             #[cfg(feature = "local_tty")]
             terminal::local_tty::spawner::PtySpawner::handle(ctx).update(ctx, |pty_spawner, _| {
                 pty_spawner.prepare_for_app_termination();
@@ -2134,7 +2103,6 @@ pub(crate) fn app_callbacks(is_integration_test: bool) -> warpui::platform::AppC
             // ensure that the new process doesn't find the old process while
             // attempting to enforce our single-instance policy on Linux.
             app_services::teardown(ctx);
-            autoupdate::spawn_child_if_necessary(ctx);
 
             // Tear down any application profilers that are running, writing
             // results to disk.
@@ -2203,18 +2171,6 @@ pub(crate) fn app_callbacks(is_integration_test: bool) -> warpui::platform::AppC
                 },
                 ctx
             );
-
-            // If there's a pending autoupdate, apply that before showing the unsaved changes
-            // dialog. We apply the update first so that the dialog can force-terminate.
-            let applying_update = autoupdate::apply_pending_update(ctx, |ctx| {
-                // Once the deferred update is applied, re-terminate the app. This termination is
-                // cancellable so that we still show the unsaved changes dialog.
-                log::info!("Deferred autoupdate applied, terminating app");
-                ctx.terminate_app(TerminationMode::Cancellable, None);
-            });
-            if applying_update {
-                return ApproveTerminateResult::Cancel;
-            }
 
             let summary = UnsavedStateSummary::for_app(ctx);
             // Don't show dialog on integration test. Machine can't press buttons.
@@ -2363,8 +2319,6 @@ fn focus_running_window_and_show_native_modal(
 }
 
 fn on_close_app_cancelled(open_navigation_palette: bool, ctx: &mut AppContext) {
-    autoupdate::cancel_relaunch(ctx);
-
     send_telemetry_from_app_ctx!(
         TelemetryEvent::QuitModalCancel {
             nav_palette: open_navigation_palette,

@@ -295,7 +295,6 @@ use crate::auth::auth_manager::AuthManager;
 use crate::auth::auth_state::AuthState;
 use crate::auth::auth_view_modal::AuthViewVariant;
 use crate::auth::{AuthStateProvider, UserUid};
-use crate::autoupdate::{self, get_update_state, AutoupdateStage};
 use crate::banner::{
     Banner, BannerAction, BannerEvent, BannerState, BannerTextButton, BannerTextContent,
     DismissalType,
@@ -538,7 +537,6 @@ use crate::view_components::{DismissibleToast, ToastFlavor};
 use crate::workflows::workflow::Workflow;
 use crate::workflows::WorkflowSelectionSource;
 use crate::workspace::sync_inputs::SyncedInputState;
-use crate::workspace::view::cloud_agent_capacity_modal::CloudAgentCapacityModalVariant;
 use crate::workspace::{
     CommandSearchOptions, ForkAIConversationParams, ForkFromExchange,
     ForkedConversationDestination, OneTimeModalModel, ToastStack, WorkspaceAction,
@@ -1951,10 +1949,6 @@ pub enum Event {
     PluggableNotification {
         title: Option<String>,
         body: String,
-    },
-    /// Emitted when cloud mode runs should display the cloud-agent capacity/credits modal.
-    ShowCloudAgentCapacityModal {
-        variant: CloudAgentCapacityModalVariant,
     },
     FreeTierLimitCheckTriggered,
     /// Emitted when the StartAgent executor needs the workspace to create
@@ -12398,25 +12392,8 @@ impl TerminalView {
                 }
             }
             ModelEvent::Handler(_) => {}
-            ModelEvent::FinishUpdate(data) => {
-                let AutoupdateStage::UpdateReady {
-                    update_id: expected_update_id,
-                    ..
-                } = get_update_state(ctx)
-                else {
-                    log::warn!(
-                        "Got a FinishUpdate event without AutoupdateState being UpdateReady!"
-                    );
-                    return;
-                };
-                if expected_update_id == data.update_id {
-                    // Terminate this shell session so that it doesn't come
-                    // back when we restore sessions after the relaunch.
-                    self.shutdown_pty(ctx);
-                    autoupdate::initiate_relaunch_for_update(ctx);
-                } else {
-                    log::warn!("Got a FinishUpdate event with non-matching update id!");
-                }
+            ModelEvent::FinishUpdate(_) => {
+                // Autoupdate removed - no-op
             }
             ModelEvent::SelectedTextChanged => {
                 ctx.emit(Event::SelectedTextChanged);
@@ -25627,7 +25604,6 @@ impl TypedActionView for TerminalView {
             | IndexProjectSpeedbump
             | OpenViewMCPPane
             | OpenAddMCPPane
-            | OpenBillingAndUsagePane
             | OpenAddRulePane
             | OpenRulesPane
             | OpenEditSkillPane { .. }
@@ -26601,10 +26577,6 @@ impl TypedActionView for TerminalView {
                 ctx.emit(Event::OpenMCPSettingsPage {
                     page: Some(MCPServersSettingsPage::Edit { item_id: None }),
                 });
-            }
-            // Simplified: local version has no billing/usage pane
-            OpenBillingAndUsagePane => {
-                // No-op: billing and usage pane removed
             }
             OpenAddRulePane => {
                 ctx.emit(Event::OpenAddRulePane);

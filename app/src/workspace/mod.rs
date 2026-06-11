@@ -1,7 +1,6 @@
 mod action;
 mod active_session;
 pub(crate) mod auto_handoff;
-pub mod bonus_grant_notification_model;
 pub mod branch_selector;
 #[cfg(target_os = "macos")]
 mod cli_install;
@@ -96,9 +95,7 @@ pub fn init(app: &mut AppContext) {
     view::launch_modal::oz_launch::init(app);
     view::openwarp_launch_modal::init(app);
     view::orchestration_launch_modal::init(app);
-    view::cloud_agent_capacity_modal::init(app);
     view::codex_modal::init(app);
-    view::free_tier_limit_hit_modal::init(app);
     view::global_search::view::GlobalSearchView::init(app);
     view::right_panel::RightPanelView::init(app);
     header_toolbar_editor::init(app);
@@ -1456,13 +1453,7 @@ fn add_open_setting_pages_as_editable_binding(app: &mut AppContext) {
         )
         .with_group(bindings::BindingGroup::Settings.as_str())
         .with_context_predicate(id!("Workspace")),
-        EditableBinding::new(
-            "workspace:show_settings_referrals_page",
-            BindingDescription::new("Open Settings: Referrals"),
-            WorkspaceAction::ShowSettingsPage(SettingsSection::Referrals),
-        )
-        .with_group(bindings::BindingGroup::Settings.as_str())
-        .with_context_predicate(id!("Workspace")),
+        // Simplified: removed Referrals page binding
         EditableBinding::new(
             "workspace:show_settings_environments_page",
             BindingDescription::new("Open Settings: Environments"),
@@ -1492,14 +1483,9 @@ fn add_overflow_menu_items_as_editable_binding(app: &mut AppContext) {
     use warpui::keymap::macros::*;
 
     // Add the ability to open all overflow menu items to the command palette.
+    // Simplified: removed ShowReferralSettingsPage binding
     app.register_editable_bindings([
-        EditableBinding::new(
-            "workspace:show_invite_modal",
-            "Invite People...",
-            WorkspaceAction::ShowReferralSettingsPage,
-        )
-        .with_context_predicate(id!("Workspace"))
-        .with_custom_action(CustomAction::ReferAFriend),
+        // Simplified: removed invite modal binding
         EditableBinding::new(
             "workspace:link_to_slack",
             "Join our Slack community (opens external link)",

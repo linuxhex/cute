@@ -475,6 +475,7 @@ impl AIRequestUsageModel {
         }
     }
 
+    #[allow(dead_code)]
     pub fn bonus_grants(&self) -> &[BonusGrant] {
         &self.bonus_grants
     }
@@ -509,6 +510,7 @@ impl AIRequestUsageModel {
             .sum()
     }
 
+    #[allow(dead_code)]
     pub fn total_current_workspace_bonus_credits_remaining(&self, ctx: &AppContext) -> i32 {
         UserWorkspaces::as_ref(ctx)
             .current_workspace()

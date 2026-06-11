@@ -1479,10 +1479,6 @@ fn handle_terminal_view_event(
                     open_code_review: open_code_review.clone(),
                 });
             }
-            // Simplified: local version has no cloud agent capacity modal
-            Event::ShowCloudAgentCapacityModal { variant: _ } => {
-                // No-op for local version
-            }
             Event::FreeTierLimitCheckTriggered => {
                 ctx.emit(pane_group::Event::FreeTierLimitCheckTriggered);
             }

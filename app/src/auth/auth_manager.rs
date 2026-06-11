@@ -11,7 +11,6 @@ use url::Url;
 use user_persistence::PersistedUser;
 use uuid::Uuid;
 use warp_core::channel::ChannelState;
-use warp_core::features::FeatureFlag;
 use warp_graphql::mutations::create_anonymous_user::{
     AnonymousUserType, CreateAnonymousUserResult,
 };
@@ -26,7 +25,6 @@ use super::{AuthStateProvider, UserUid};
 use crate::ai::llms::LLMPreferences;
 use crate::ai::persisted_workspace::PersistedWorkspace;
 use crate::ai::AIRequestUsageModel;
-use crate::autoupdate::AutoupdateState;
 use crate::persistence::ModelEvent;
 use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::graphql::get_user_facing_error_message;
@@ -429,13 +427,6 @@ impl AuthManager {
                 ctx.update_model(&privacy_settings_handle, |privacy_settings, ctx| {
                     privacy_settings.fetch_or_update_settings(ctx);
                 });
-
-                // Now that the user is logged in, do the daily version check.
-                if FeatureFlag::Autoupdate.is_enabled() {
-                    AutoupdateState::handle(ctx).update(ctx, |autoupdate_state, ctx| {
-                        autoupdate_state.maybe_daily_check_for_update(ctx);
-                    });
-                }
 
                 let server_api = self.server_api.clone();
                 let user_id = self.auth_state.user_id().unwrap_or_default();

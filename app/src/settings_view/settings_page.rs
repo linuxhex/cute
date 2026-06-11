@@ -32,12 +32,10 @@ use super::code_page::CodeSettingsPageView;
 use super::environments_page::EnvironmentsPageView;
 use super::features_page::FeaturesPageView;
 use super::keybindings::KeybindingsView;
-use super::main_page::MainSettingsPageView;
 use super::mcp_servers_page::MCPServersSettingsPageView;
 use super::privacy_page::PrivacyPageView;
-use super::referrals_page::ReferralsPageView;
+// use super::referrals_page::ReferralsPageView; // Removed: referral feature
 use super::show_blocks_view::ShowBlocksView;
-use super::teams_page::TeamsPageView;
 use super::warp_drive_page::WarpDriveSettingsPageView;
 use super::warpify_page::WarpifyPageView;
 use super::SettingsSection;
@@ -97,18 +95,15 @@ pub trait SettingsPageMeta {
 /// It is required to allow for SettingsPage struct be put in the collection (ie. vector).
 #[derive(Clone)]
 pub enum SettingsPageViewHandle {
-    Main(ViewHandle<MainSettingsPageView>),
     Appearance(ViewHandle<AppearanceSettingsPageView>),
     Features(ViewHandle<FeaturesPageView>),
     SharedBlocks(ViewHandle<ShowBlocksView>),
     Keybindings(ViewHandle<KeybindingsView>),
     About(ViewHandle<AboutPageView>),
     Code(ViewHandle<CodeSettingsPageView>),
-    Teams(ViewHandle<TeamsPageView>),
     OzCloudAPIKeys(ViewHandle<super::platform_page::PlatformPageView>),
     Privacy(ViewHandle<PrivacyPageView>),
     Warpify(ViewHandle<WarpifyPageView>),
-    Referrals(ViewHandle<ReferralsPageView>),
     AI(ViewHandle<AISettingsPageView>),
     CloudEnvironments(ViewHandle<EnvironmentsPageView>),
     MCPServers(ViewHandle<MCPServersSettingsPageView>),
@@ -119,18 +114,15 @@ impl SettingsPageViewHandle {
     pub fn child_view(&self) -> Box<dyn Element> {
         use SettingsPageViewHandle::*;
         match self {
-            Main(view_handle) => ChildView::new(view_handle).finish(),
             Appearance(view_handle) => ChildView::new(view_handle).finish(),
             Features(view_handle) => ChildView::new(view_handle).finish(),
             SharedBlocks(view_handle) => ChildView::new(view_handle).finish(),
             Keybindings(view_handle) => ChildView::new(view_handle).finish(),
             About(view_handle) => ChildView::new(view_handle).finish(),
             Code(view_handle) => ChildView::new(view_handle).finish(),
-            Teams(view_handle) => ChildView::new(view_handle).finish(),
             OzCloudAPIKeys(view_handle) => ChildView::new(view_handle).finish(),
             Privacy(view_handle) => ChildView::new(view_handle).finish(),
             Warpify(view_handle) => ChildView::new(view_handle).finish(),
-            Referrals(view_handle) => ChildView::new(view_handle).finish(),
             AI(view_handle) => ChildView::new(view_handle).finish(),
             CloudEnvironments(view_handle) => ChildView::new(view_handle).finish(),
             MCPServers(view_handle) => ChildView::new(view_handle).finish(),

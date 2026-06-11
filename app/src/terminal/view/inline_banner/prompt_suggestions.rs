@@ -27,7 +27,6 @@ use crate::ai::blocklist::prompt::prompt_alert::{
 use crate::ai::blocklist::BlocklistAIInputModel;
 use crate::ai::predict::prompt_suggestions::ACCEPT_PROMPT_SUGGESTION_KEYBINDING;
 use crate::appearance::Appearance;
-use crate::server::ids::ServerId;
 use crate::server::telemetry::InteractionSource;
 use crate::settings::InputSettings;
 use crate::terminal::view::passive_suggestions::PromptSuggestionResolution;
@@ -311,9 +310,7 @@ fn get_tooltip_text_for_alert_state(alert_state: &PromptAlertState) -> Option<St
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PromptSuggestionsEvent {
     SignupAnonymousUser,
-    OpenBillingAndUsagePage,
     OpenPrivacyPage,
-    OpenBillingPortal { team_uid: ServerId },
 }
 
 pub struct PromptSuggestionsView {
@@ -352,14 +349,9 @@ impl PromptSuggestionsView {
             PromptAlertEvent::SignupAnonymousUser => {
                 ctx.emit(PromptSuggestionsEvent::SignupAnonymousUser);
             }
-            PromptAlertEvent::OpenBillingAndUsagePage => {
-                ctx.emit(PromptSuggestionsEvent::OpenBillingAndUsagePage);
-            }
             PromptAlertEvent::OpenPrivacyPage => {
                 ctx.emit(PromptSuggestionsEvent::OpenPrivacyPage);
             }
-            // Simplified: local version has no billing portal
-            PromptAlertEvent::OpenBillingPortal { team_uid: _ } => {}
         }
     }
 }
@@ -455,14 +447,9 @@ impl TypedActionView for PromptSuggestionsView {
             PromptSuggestionsEvent::SignupAnonymousUser => {
                 ctx.emit(PromptSuggestionsEvent::SignupAnonymousUser);
             }
-            PromptSuggestionsEvent::OpenBillingAndUsagePage => {
-                ctx.emit(PromptSuggestionsEvent::OpenBillingAndUsagePage);
-            }
             PromptSuggestionsEvent::OpenPrivacyPage => {
                 ctx.emit(PromptSuggestionsEvent::OpenPrivacyPage);
             }
-            // Simplified: local version has no billing portal
-            PromptSuggestionsEvent::OpenBillingPortal { team_uid: _ } => {}
         }
     }
 }

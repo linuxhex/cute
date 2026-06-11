@@ -6,7 +6,7 @@ pub mod integrations;
 pub mod managed_secrets;
 pub mod object;
 pub(crate) mod presigned_upload;
-pub mod referral;
+// pub mod referral; // Removed: referral feature
 pub mod team;
 pub mod workspace;
 
@@ -30,7 +30,7 @@ use instant::Instant;
 use object::ObjectClient;
 use parking_lot::{Mutex, RwLock};
 use prost::Message;
-use referral::ReferralsClient;
+// use referral::ReferralsClient; // Removed: referral feature
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use team::TeamClient;
@@ -60,7 +60,7 @@ use crate::server::iap::{IapManager, IapState};
 use crate::server::server_api::presigned_upload::HttpStatusError;
 use crate::server::telemetry::TelemetryApi;
 use crate::settings::PrivacySettingsSnapshot;
-use crate::{settings_view, ChannelState};
+use crate::ChannelState;
 
 pub const FETCH_CHANNEL_VERSIONS_TIMEOUT: std::time::Duration = Duration::from_secs(60);
 
@@ -1712,8 +1712,6 @@ impl ServerApiProvider {
         ServerExperiments::handle(ctx).update(ctx, |state, ctx| {
             state.apply_latest_state(experiments, ctx);
         });
-
-        settings_view::handle_experiment_change(ctx);
     }
 
     /// Constructs a new SeverApiProvider for tests.
@@ -1734,9 +1732,9 @@ impl ServerApiProvider {
         self.server_api.clone()
     }
 
-    pub fn get_referrals_client(&self) -> Arc<dyn ReferralsClient> {
-        self.server_api.clone()
-    }
+    // pub fn get_referrals_client(&self) -> Arc<dyn ReferralsClient> {
+    //     self.server_api.clone()
+    // } // Removed: referral feature
 
     pub fn get_block_client(&self) -> Arc<dyn BlockClient> {
         self.server_api.clone()

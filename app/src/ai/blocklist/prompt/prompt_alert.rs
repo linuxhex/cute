@@ -11,7 +11,6 @@ use crate::ai::blocklist::error_color;
 use crate::ai::AIRequestUsageModel;
 use crate::auth::AuthStateProvider;
 use crate::network::NetworkStatus;
-use crate::server::ids::ServerId;
 use crate::settings::PrivacySettings;
 use crate::settings_view::SettingsSection;
 use crate::ui_components::icons::Icon;
@@ -32,7 +31,6 @@ const DELINQUENT_DUE_TO_PAYMENT_ISSUE_PRIMARY_TEXT: &str = "Restricted due to pa
 const OUT_OF_REQUESTS_PRIMARY_TEXT: &str = "Out of credits";
 
 const ANONYMOUS_USER_REQUEST_LIMIT_ACTION_TEXT: &str = "Sign up for more AI credits";
-const DELINQUENT_DUE_TO_PAYMENT_ISSUE_ACTION_TEXT: &str = "Manage billing";
 const OVERAGES_TOGGLEABLE_BUT_NOT_ENABLED_ACTION_TEXT: &str = "Enable premium overages";
 const MONTHLY_OVERAGES_SPEND_LIMIT_REACHED_ACTION_TEXT: &str = "Increase monthly spend limit";
 // Simplified: local version has no upgrade
@@ -49,15 +47,12 @@ pub enum PromptAlertAction {
     SignUpClickedForAnonymousUser,
     OpenSettingsClicked,
     OpenPrivacySettingsClicked,
-    ManageBillingClicked { team_uid: ServerId },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PromptAlertEvent {
     SignupAnonymousUser,
-    OpenBillingAndUsagePage,
     OpenPrivacyPage,
-    OpenBillingPortal { team_uid: ServerId },
 }
 
 /// The alert state of the chip that appears to the right of certain parts of the prompt.
@@ -288,23 +283,10 @@ impl PromptAlertView {
                 ));
             }
             PromptAlertState::DelinquentDueToPaymentIssue => {
-                // Check if user is team admin with billing history
-                let has_billing_history = current_team
-                    .map(|team| team.has_billing_history)
-                    .unwrap_or_default();
-                if has_admin_permissions && has_billing_history {
-                    text_fragments.push(FormattedTextFragment::plain_text("  "));
-                    text_fragments.push(FormattedTextFragment::hyperlink_action(
-                        DELINQUENT_DUE_TO_PAYMENT_ISSUE_ACTION_TEXT,
-                        PromptAlertAction::ManageBillingClicked {
-                            team_uid: current_team.map(|team| team.uid).unwrap_or_default(),
-                        },
-                    ));
-                } else {
-                    text_fragments.push(FormattedTextFragment::plain_text(
-                        NON_ADMIN_CONTACT_ADMIN_TEXT,
-                    ));
-                }
+                // Simplified: local version has no billing management
+                text_fragments.push(FormattedTextFragment::plain_text(
+                    NON_ADMIN_CONTACT_ADMIN_TEXT,
+                ));
             }
             PromptAlertState::OveragesToggleableButNotEnabled => {
                 if has_admin_permissions {
@@ -458,8 +440,6 @@ impl TypedActionView for PromptAlertView {
             PromptAlertAction::OpenPrivacySettingsClicked => {
                 ctx.emit(PromptAlertEvent::OpenPrivacyPage);
             }
-            // Simplified: local version has no billing
-            PromptAlertAction::ManageBillingClicked { team_uid: _ } => {}
         }
     }
 }

@@ -55,7 +55,6 @@ use crate::server::ids::{ObjectUid, ServerId};
 use crate::settings::import::config::{ParsedTerminalSetting, SettingType};
 use crate::settings::import::model::TerminalType;
 use crate::settings::AgentModeCodingPermissionsType;
-use crate::settings_view::TeamsInviteOption;
 use crate::tab::TabTelemetryAction;
 use crate::terminal::block_list_viewport::InputMode;
 use crate::terminal::cli_agent_sessions::{CLIAgentInputEntrypoint, CLIAgentRichInputCloseReason};
@@ -1542,7 +1541,7 @@ pub enum TelemetryEvent {
     DeletedWorkflow,
     DeletedNotebook,
     ToggleApprovalsModal,
-    ChangedInviteViewOption(TeamsInviteOption),
+    ChangedInviteViewOption,
     SendEmailInvites,
     CommandCorrection {
         event: CommandCorrectionEvent,
@@ -4164,7 +4163,7 @@ impl TelemetryEvent {
             | TelemetryEvent::DeletedWorkflow
             | TelemetryEvent::DeletedNotebook
             | TelemetryEvent::ToggleApprovalsModal
-            | TelemetryEvent::ChangedInviteViewOption(_)
+            | TelemetryEvent::ChangedInviteViewOption
             | TelemetryEvent::SendEmailInvites
             | TelemetryEvent::ResourceCenterOpened
             | TelemetryEvent::ResourceCenterTipsCompleted
@@ -4946,7 +4945,7 @@ impl TelemetryEvent {
             | TelemetryEvent::DeletedWorkflow
             | TelemetryEvent::DeletedNotebook
             | TelemetryEvent::ToggleApprovalsModal
-            | TelemetryEvent::ChangedInviteViewOption(_)
+            | TelemetryEvent::ChangedInviteViewOption
             | TelemetryEvent::SendEmailInvites
             | TelemetryEvent::CommandCorrection { .. }
             | TelemetryEvent::SetLineHeight { .. }

@@ -27,6 +27,7 @@ use crate::server::server_api::team::TeamClient;
 use crate::server::server_api::ServerApiProvider;
 use crate::{report_error, report_if_error};
 
+#[allow(dead_code)]
 pub enum TeamUpdateManagerEvent {
     LeaveSuccess,
     LeaveError,
@@ -261,6 +262,7 @@ impl TeamUpdateManager {
         }
     }
 
+    #[allow(dead_code)]
     pub fn create_team(
         &mut self,
         team_name: String,
@@ -280,6 +282,7 @@ impl TeamUpdateManager {
         );
     }
 
+    #[allow(dead_code)]
     fn on_team_created(
         &mut self,
         create_team_response: Result<CreateTeamResponse>,
@@ -302,6 +305,7 @@ impl TeamUpdateManager {
         });
     }
 
+    #[allow(dead_code)]
     pub fn leave_team(
         &mut self,
         team_uid: ServerId,
@@ -329,6 +333,7 @@ impl TeamUpdateManager {
         }
     }
 
+    #[allow(dead_code)]
     fn on_team_left(
         &mut self,
         left_team_uid: ServerId,
@@ -384,6 +389,7 @@ impl TeamUpdateManager {
         }
     }
 
+    #[allow(dead_code)]
     pub fn rename_team(&mut self, new_name: String, ctx: &mut ModelContext<Self>) {
         let team_client = self.team_client.clone();
         let team_uid = UserWorkspaces::handle(ctx).read(ctx, |user_workspaces, _| {
@@ -397,6 +403,7 @@ impl TeamUpdateManager {
         }
     }
 
+    #[allow(dead_code)]
     fn on_team_renamed(
         &mut self,
         result: Result<WorkspacesMetadataWithPricing>,
