@@ -63,7 +63,7 @@ use crate::notebooks::notebook::NotebookView;
 use crate::pane_group::focus_state::PaneFocusHandle;
 use crate::pane_group::pane::get_started_view::GetStartedView;
 use crate::server::network_log_view::NetworkLogView;
-use crate::server::telemetry::SharingDialogSource;
+use crate::drive::sharing::dialog::SharingDialogSource;
 use crate::settings::PaneSettings;
 use crate::settings_view::environments_page::EnvironmentsPageView;
 use crate::settings_view::SettingsView;

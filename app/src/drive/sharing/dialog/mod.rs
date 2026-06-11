@@ -2887,9 +2887,11 @@ impl TypedActionView for SharingDialog {
             SharingDialogAction::SetLinkPermissions(access_level) => {
                 self.set_open_menu(OpenMenuState::None, ctx);
                 if let Some(ShareableObject::WarpDriveObject(id)) = self.target.as_ref() {
-                    UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
-                        update_manager.set_object_link_permissions(*id, *access_level, ctx);
-                    });
+                    if let Some(access_level) = access_level {
+                        UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
+                            update_manager.set_object_link_permissions(*id, access_level.into(), ctx);
+                        });
+                    }
                 } else if let Some(ShareableObject::Session { handle, .. }) = self.target.as_ref() {
                     if let Some(view) = handle.upgrade(ctx) {
                         let role = access_level.map(|access_level| access_level.into());
@@ -2905,14 +2907,16 @@ impl TypedActionView for SharingDialog {
                         .get_server_conversation_metadata(conversation_id)
                         .map(|m| ServerId::from_string_lossy(m.metadata.uid.uid()))
                     {
-                        UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
-                            update_manager.set_ai_conversation_link_permissions(
-                                server_id,
-                                *conversation_id,
-                                *access_level,
-                                ctx,
-                            );
-                        });
+                        if let Some(access_level) = access_level {
+                            UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
+                                update_manager.set_ai_conversation_link_permissions(
+                                    server_id,
+                                    *conversation_id,
+                                    access_level.into(),
+                                    ctx,
+                                );
+                            });
+                        }
                     } else {
                         log::warn!(
                             "AI conversation {:?} has no server_id for link permission update",

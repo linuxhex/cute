@@ -30,7 +30,7 @@ use crate::notebooks::manager::NotebookSource;
 use crate::notebooks::CloudNotebook;
 use crate::server::cloud_objects::update_manager::{InitiatedBy, UpdateManager};
 use crate::server::ids::{ClientId, SyncId};
-use crate::server::telemetry::SharingDialogSource;
+use crate::drive::sharing::dialog::SharingDialogSource;
 use crate::workflows::manager::WorkflowOpenSource;
 use crate::workflows::{CloudWorkflow, WorkflowViewMode};
 use crate::workspaces::user_workspaces::UserWorkspaces;

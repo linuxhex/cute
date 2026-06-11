@@ -29,7 +29,7 @@ use crate::pane_group::pane::{
     ToolbeltButton,
 };
 use crate::pane_group::{BackingView, Direction, PaneDragDropLocation, PaneId, TabBarHoverIndex};
-use crate::server::telemetry::SharingDialogSource;
+use crate::drive::sharing::dialog::SharingDialogSource;
 use crate::settings::CodeSettings;
 use crate::tab::tab_position_id;
 use crate::terminal::view::TerminalAction;
