@@ -3643,7 +3643,7 @@ impl DriveIndex {
         ctx: &mut ViewContext<Self>,
     ) {
         UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-            update_manager.resync_object(cloud_object_type_and_id, ctx);
+            update_manager.resync_object(*cloud_object_type_and_id, ctx);
         });
     }
 
@@ -4989,7 +4989,7 @@ impl TypedActionView for DriveIndex {
             DriveIndexAction::LeaveSharedObject {
                 cloud_object_type_and_id,
             } => {
-                self.leave_object(cloud_object_type_and_id, ctx);
+                self.leave_object(*cloud_object_type_and_id, ctx);
             }
             DriveIndexAction::CloseCloudObjectNamingDialog => {
                 self.cloud_object_naming_dialog.close(ctx);

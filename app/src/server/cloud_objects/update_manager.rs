@@ -1979,19 +1979,27 @@ impl UpdateManager {
     /// Create a scheduled ambient agent (stub for local version).
     pub fn create_scheduled_ambient_agent_online(
         &mut self,
-        _task_id: AmbientAgentTaskId,
+        _config: crate::ai::ambient_agents::scheduled::ScheduledAmbientAgent,
+        _client_id: ClientId,
+        _owner: Owner,
         _ctx: &mut ModelContext<Self>,
-    ) {
-        // Not supported in local version
+    ) -> oneshot::Receiver<ServerId> {
+        let (tx, rx) = oneshot::channel();
+        // Not supported in local version - return error
+        rx
     }
 
     /// Update a scheduled ambient agent (stub for local version).
     pub fn update_scheduled_ambient_agent_online(
         &mut self,
-        _task_id: AmbientAgentTaskId,
+        _config: crate::ai::ambient_agents::scheduled::ScheduledAmbientAgent,
+        _schedule_id: SyncId,
+        _revision: Option<Revision>,
         _ctx: &mut ModelContext<Self>,
-    ) {
-        // Not supported in local version
+    ) -> oneshot::Receiver<()> {
+        let (tx, rx) = oneshot::channel();
+        let _ = tx.send(());
+        rx
     }
 
     /// Move object to location (stub for local version).
@@ -2039,8 +2047,9 @@ impl UpdateManager {
     /// Add object guests (stub for local version).
     pub fn add_object_guests(
         &mut self,
-        _object_id: SyncId,
-        _guests: Vec<warp_graphql::object_permissions::ObjectGuest>,
+        _object_id: ServerId,
+        _guests: Vec<String>,
+        _access_level: warp_graphql::object_permissions::AccessLevel,
         _ctx: &mut ModelContext<Self>,
     ) -> oneshot::Receiver<()> {
         let (tx, rx) = oneshot::channel();
@@ -2051,8 +2060,9 @@ impl UpdateManager {
     /// Update object guests (stub for local version).
     pub fn update_object_guests(
         &mut self,
-        _object_id: SyncId,
-        _guests: Vec<warp_graphql::object_permissions::ObjectGuest>,
+        _object_id: ServerId,
+        _guests: Vec<String>,
+        _access_level: warp_graphql::object_permissions::AccessLevel,
         _ctx: &mut ModelContext<Self>,
     ) -> oneshot::Receiver<()> {
         let (tx, rx) = oneshot::channel();
@@ -2063,8 +2073,8 @@ impl UpdateManager {
     /// Remove object guest (stub for local version).
     pub fn remove_object_guest(
         &mut self,
-        _object_id: SyncId,
-        _guest_uid: String,
+        _object_id: ServerId,
+        _guest_identifier: crate::server::server_api::object::GuestIdentifier,
         _ctx: &mut ModelContext<Self>,
     ) -> oneshot::Receiver<()> {
         let (tx, rx) = oneshot::channel();
@@ -2075,8 +2085,10 @@ impl UpdateManager {
     /// Add AI conversation guests (stub for local version).
     pub fn add_ai_conversation_guests(
         &mut self,
-        _conversation_id: SyncId,
-        _guests: Vec<warp_graphql::object_permissions::ObjectGuest>,
+        _server_id: ServerId,
+        _conversation_id: crate::ai::agent::conversation::AIConversationId,
+        _guests: Vec<String>,
+        _access_level: warp_graphql::object_permissions::AccessLevel,
         _ctx: &mut ModelContext<Self>,
     ) -> oneshot::Receiver<()> {
         let (tx, rx) = oneshot::channel();
@@ -2087,8 +2099,10 @@ impl UpdateManager {
     /// Update AI conversation guests (stub for local version).
     pub fn update_ai_conversation_guests(
         &mut self,
-        _conversation_id: SyncId,
-        _guests: Vec<warp_graphql::object_permissions::ObjectGuest>,
+        _server_id: ServerId,
+        _conversation_id: crate::ai::agent::conversation::AIConversationId,
+        _guests: Vec<String>,
+        _access_level: warp_graphql::object_permissions::AccessLevel,
         _ctx: &mut ModelContext<Self>,
     ) -> oneshot::Receiver<()> {
         let (tx, rx) = oneshot::channel();
@@ -2099,8 +2113,9 @@ impl UpdateManager {
     /// Remove AI conversation guest (stub for local version).
     pub fn remove_ai_conversation_guest(
         &mut self,
-        _conversation_id: SyncId,
-        _guest_uid: String,
+        _server_id: ServerId,
+        _conversation_id: crate::ai::agent::conversation::AIConversationId,
+        _guest_identifier: crate::server::server_api::object::GuestIdentifier,
         _ctx: &mut ModelContext<Self>,
     ) -> oneshot::Receiver<()> {
         let (tx, rx) = oneshot::channel();
@@ -2111,7 +2126,7 @@ impl UpdateManager {
     /// Set object link permissions (stub for local version).
     pub fn set_object_link_permissions(
         &mut self,
-        _object_id: SyncId,
+        _object_id: ServerId,
         _permissions: warp_graphql::object_permissions::AccessLevel,
         _ctx: &mut ModelContext<Self>,
     ) -> oneshot::Receiver<()> {
@@ -2123,7 +2138,8 @@ impl UpdateManager {
     /// Set AI conversation link permissions (stub for local version).
     pub fn set_ai_conversation_link_permissions(
         &mut self,
-        _conversation_id: SyncId,
+        _server_id: ServerId,
+        _conversation_id: crate::ai::agent::conversation::AIConversationId,
         _permissions: warp_graphql::object_permissions::AccessLevel,
         _ctx: &mut ModelContext<Self>,
     ) -> oneshot::Receiver<()> {
@@ -2150,6 +2166,8 @@ impl UpdateManager {
     pub fn create_ambient_agent_environment_online(
         &mut self,
         _environment: CloudAmbientAgentEnvironmentModel,
+        _client_id: ClientId,
+        _owner: Owner,
         _ctx: &mut ModelContext<Self>,
     ) -> oneshot::Receiver<()> {
         let (tx, rx) = oneshot::channel();

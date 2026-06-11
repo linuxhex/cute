@@ -212,7 +212,12 @@ impl ScheduledAgentManager {
         let create_future = UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
             update_manager.create_scheduled_ambient_agent_online(config, client_id, owner, ctx)
         });
-        async move { create_future.await.map(SyncId::ServerId) }
+        async move {
+            create_future
+                .await
+                .map(SyncId::ServerId)
+                .map_err(|_| anyhow::anyhow!("Canceled"))
+        }
     }
 
     /// Helper method to fetch a schedule, modify its model, update it, and wait for completion.
