@@ -98,7 +98,7 @@ use crate::terminal::input::decorations::ParsedTokensSnapshot;
 use crate::terminal::model::rich_content::RichContentType;
 use crate::terminal::model::session::SessionId;
 use crate::terminal::{History, TerminalModel};
-use crate::{report_if_error, send_telemetry_from_ctx, PrivacySettings, TelemetryEvent};
+use crate::{report_if_error, PrivacySettings};
 
 /// Cutoff score for deciding an user input matches a history command entry.
 const HISTORY_ENTRY_MATCH_CUTOFF: f32 = 0.9;
@@ -870,22 +870,6 @@ impl BlocklistAIInputModel {
                             PrivacySettings::as_ref(ctx).is_telemetry_enabled,
                         )
                         .then_some(other_buffer_cloned);
-                        send_telemetry_from_ctx!(
-                            TelemetryEvent::AgentModeChangedInputType {
-                                input: input_buffer_text_for_telemetry,
-                                buffer_length,
-                                is_manually_changed: false,
-                                new_input_type,
-                                active_block_id: me
-                                    .model
-                                    .lock()
-                                    .block_list()
-                                    .active_block_id()
-                                    .clone(),
-                                is_udi_enabled,
-                            },
-                            ctx
-                        );
                     }
                 },
             )

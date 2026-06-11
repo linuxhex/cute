@@ -30,7 +30,7 @@ use crate::terminal::model::ObfuscateSecrets;
 use crate::terminal::session_settings::SessionSettings;
 use crate::terminal::SizeInfo;
 use crate::view_components::{Dropdown, DropdownItem};
-use crate::{report_if_error, send_telemetry_from_ctx, Appearance};
+use crate::{report_if_error, Appearance};
 
 const MODAL_WIDTH: f32 = 700.;
 const BORDER_WIDTH: f32 = 1.;
@@ -328,12 +328,6 @@ impl EditorModal {
                     let current_same_line_prompt_enabled =
                         session_settings.saved_prompt.same_line_prompt_enabled();
                     if self.same_line_prompt_enabled != current_same_line_prompt_enabled {
-                        send_telemetry_from_ctx!(
-                            TelemetryEvent::ToggleSameLinePrompt {
-                                enabled: self.same_line_prompt_enabled,
-                            },
-                            ctx
-                        );
                     }
 
                     // Updating the `Prompt` handles turning off PS1.
@@ -360,13 +354,6 @@ impl EditorModal {
                         .collect_vec(),
                 },
             };
-            send_telemetry_from_ctx!(
-                TelemetryEvent::PromptEdited {
-                    prompt: prompt_info,
-                    entrypoint: "prompt_editor".to_string()
-                },
-                ctx
-            );
         }
     }
 

@@ -2,7 +2,6 @@ use lsp::{HoverContents, LspServerLogLevel, MarkupKind};
 use markdown_parser::{FormattedText, FormattedTextFragment, FormattedTextLine};
 use num_traits::SaturatingSub;
 use string_offset::CharOffset;
-use warp_core::send_telemetry_from_ctx;
 use warp_core::ui::appearance::Appearance;
 use warp_core::ui::theme::color::internal_colors;
 use warp_core::ui::theme::WarpTheme;
@@ -359,14 +358,6 @@ impl LocalCodeEditorView {
                     let had_content = !segments.is_empty();
                     let had_diagnostics = !diagnostics.is_empty();
                     if let Some(server) = me.lsp_server.as_ref() {
-                        send_telemetry_from_ctx!(
-                            LspTelemetryEvent::HoverShown {
-                                server_type: server.as_ref(ctx).server_name(),
-                                had_content,
-                                had_diagnostics,
-                            },
-                            ctx
-                        );
                     }
 
                     let editor = me.editor().as_ref(ctx);

@@ -35,7 +35,6 @@ use crate::editor::{
     EditorOptions, EditorView, Event as EditorEvent, PropagateAndNoOpEscapeKey,
     PropagateAndNoOpNavigationKeys, PropagateHorizontalNavigationKeys, TextOptions,
 };
-use crate::send_telemetry_from_ctx;
 use crate::server::telemetry::TelemetryEvent;
 use crate::terminal::input::suggestions_mode_model::InputSuggestionsModeModel;
 use crate::ui_components::icons::Icon as TerminalIcon;
@@ -353,12 +352,6 @@ impl QueuedPromptsPanelView {
         });
         if let Some(origin) = origin {
             if !was_empty {
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::QueuedPromptEdited {
-                        origin: origin.into(),
-                    },
-                    ctx
-                );
             }
         }
         ctx.emit(QueuedPromptsPanelEvent::EditEnded);
@@ -406,12 +399,6 @@ impl TypedActionView for QueuedPromptsPanelView {
         match action {
             QueuedPromptsPanelAction::ToggleCollapsed => {
                 self.collapsed = !self.collapsed;
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::QueuedPromptPanelCollapseToggled {
-                        collapsed: self.collapsed,
-                    },
-                    ctx
-                );
                 ctx.notify();
             }
             QueuedPromptsPanelAction::StartEditingRow(query_id) => {
@@ -425,12 +412,6 @@ impl TypedActionView for QueuedPromptsPanelView {
                 let removed = QueuedQueryModel::handle(ctx)
                     .update(ctx, |model, ctx| model.remove_by_id(conv_id, query_id, ctx));
                 if let Some(removed) = removed {
-                    send_telemetry_from_ctx!(
-                        TelemetryEvent::QueuedPromptDeleted {
-                            origin: removed.origin().into(),
-                        },
-                        ctx
-                    );
                     ctx.emit(QueuedPromptsPanelEvent::RowDeleted {
                         text: removed.text().to_owned(),
                     });
@@ -490,14 +471,6 @@ impl TypedActionView for QueuedPromptsPanelView {
                     (from_index, to_index, origin)
                 {
                     if from_index != to_index {
-                        send_telemetry_from_ctx!(
-                            TelemetryEvent::QueuedPromptReordered {
-                                origin: origin.into(),
-                                from_index,
-                                to_index,
-                            },
-                            ctx
-                        );
                     }
                 }
                 ctx.notify();

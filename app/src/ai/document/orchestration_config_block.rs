@@ -9,7 +9,6 @@ use ai::agent::orchestration_config::OrchestrationConfigStatus;
 use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::vec2f;
 use warp_cli::agent::Harness;
-use warp_core::send_telemetry_from_ctx;
 use warp_core::ui::theme::WarpTheme;
 use warpui::elements::{
     ChildAnchor, ChildView, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Empty,
@@ -860,40 +859,8 @@ impl OrchestrationConfigBlockView {
         status: OrchestrationApprovalStatus,
         ctx: &mut ViewContext<Self>,
     ) {
-        send_telemetry_from_ctx!(
-            BlocklistOrchestrationTelemetryEvent::PlanConfigApprovalToggled(
-                PlanConfigApprovalToggledEvent {
-                    conversation_id: self.conversation_id,
-                    plan_id: (!self.plan_id.is_empty()).then(|| self.plan_id.clone()),
-                    status,
-                    execution_mode: OrchestrationExecutionModeKind::from_run_agents(
-                        &self.edit_state.execution_mode,
-                    ),
-                    harness: OrchestrationHarnessKind::from_str(&self.edit_state.harness_type),
-                    has_model: !self.edit_state.model_id.trim().is_empty(),
-                    has_environment: env_presence(&self.edit_state.execution_mode),
-                    has_worker_host: host_presence(&self.edit_state.execution_mode),
-                    has_auth_secret: self.edit_state.auth_secret_name().is_some(),
-                }
-            ),
-            ctx
-        );
     }
 
     fn emit_agent_proposed_config(&self, ctx: &mut ViewContext<Self>) {
-        send_telemetry_from_ctx!(
-            BlocklistOrchestrationTelemetryEvent::AgentProposedConfig(AgentProposedConfigEvent {
-                conversation_id: self.conversation_id,
-                plan_id: (!self.plan_id.is_empty()).then(|| self.plan_id.clone()),
-                harness: OrchestrationHarnessKind::from_str(&self.edit_state.harness_type),
-                execution_mode: OrchestrationExecutionModeKind::from_run_agents(
-                    &self.edit_state.execution_mode,
-                ),
-                has_model: !self.edit_state.model_id.trim().is_empty(),
-                has_environment: env_presence(&self.edit_state.execution_mode),
-                has_worker_host: host_presence(&self.edit_state.execution_mode),
-            }),
-            ctx
-        );
     }
 }

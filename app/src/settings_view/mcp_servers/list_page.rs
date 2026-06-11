@@ -7,7 +7,6 @@ use settings::ToggleableSetting as _;
 use strum::IntoEnumIterator;
 use uuid::Uuid;
 use warp_core::features::FeatureFlag;
-use warp_core::send_telemetry_from_ctx;
 use warp_core::ui::appearance::AppearanceEvent;
 use warp_core::ui::theme::color::internal_colors;
 use warp_core::ui::Icon;
@@ -719,10 +718,6 @@ impl MCPServersListPageView {
                             true => MCPTemplateInstallationSource::Shared,
                             false => MCPTemplateInstallationSource::Local,
                         };
-                        send_telemetry_from_ctx!(
-                            TelemetryEvent::MCPTemplateInstalled { source },
-                            ctx
-                        );
                     }
                 }
                 ServerCardItemId::TemplatableMCPInstallation(_) => {
@@ -970,12 +965,6 @@ impl MCPServersListPageView {
                     instructions_in_markdown: instructions,
                     origin: InstallOrigin::InApp,
                 });
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::MCPTemplateInstalled {
-                        source: MCPTemplateInstallationSource::Gallery
-                    },
-                    ctx
-                );
             }
             Err(e) => {
                 log::warn!("Could not install gallery item {gallery_uuid}: {e}");

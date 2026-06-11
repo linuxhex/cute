@@ -9,7 +9,6 @@ use super::{ActionExecution, AnyActionExecution, ExecuteActionInput, PreprocessA
 use crate::ai::agent::{AIAgentActionId, AIAgentActionType};
 use crate::ai::ambient_agents::AmbientAgentTaskId;
 use crate::ai::blocklist::BlocklistAIHistoryModel;
-use crate::send_telemetry_from_ctx;
 use crate::server::telemetry::TelemetryEvent;
 
 pub struct RequestComputerUseExecutor {
@@ -75,15 +74,6 @@ impl RequestComputerUseExecutor {
             .conversation(&conversation_id)
             .and_then(|c| c.server_conversation_token())
             .map(|t| t.as_str().to_string());
-        send_telemetry_from_ctx!(
-            TelemetryEvent::ComputerUseApproved {
-                client_conversation_id: conversation_id,
-                server_conversation_id,
-                is_autoexecuted,
-                ambient_agent_task_id: self.ambient_agent_task_id,
-            },
-            ctx
-        );
 
         let screenshot_params = request.screenshot_params;
         let mut actor = computer_use::create_actor();

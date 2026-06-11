@@ -19,7 +19,7 @@ use crate::util::file::external_editor::settings::{
 };
 use crate::util::file::external_editor::{EditorSettings, SUPPORTED_EDITORS};
 use crate::view_components::{Dropdown, DropdownItem};
-use crate::{report_if_error, send_telemetry_from_ctx};
+use crate::report_if_error;
 
 const TABBED_FILE_VIEWER_TOGGLE_HEADER: &str = "Group files into single editor pane";
 const TABBED_FILE_VIEWER_TOGGLE_DESCRIPTION: &str = "When this setting is on, any files opened in the same tab will be automatically grouped into a single editor pane.";
@@ -184,13 +184,6 @@ impl ExternalEditorView {
             report_if_error!(settings.open_file_editor.set_value(*editor, ctx));
         });
 
-        send_telemetry_from_ctx!(
-            TelemetryEvent::FeaturesPageAction {
-                action: "SetEditor".to_string(),
-                value: format!("{editor:?}")
-            },
-            ctx
-        );
     }
 
     fn set_code_panels_editor(&mut self, editor: &EditorChoice, ctx: &mut ViewContext<Self>) {
@@ -200,13 +193,6 @@ impl ExternalEditorView {
                 .set_value(*editor, ctx));
         });
 
-        send_telemetry_from_ctx!(
-            TelemetryEvent::FeaturesPageAction {
-                action: "SetCodePanelsEditor".to_string(),
-                value: format!("{editor:?}")
-            },
-            ctx
-        );
     }
 
     // Handles [`ExternalEditorAction::SetLayout`] by updating the external editor layout settings.
@@ -215,13 +201,6 @@ impl ExternalEditorView {
             report_if_error!(settings.open_file_layout.set_value(*layout, ctx));
         });
 
-        send_telemetry_from_ctx!(
-            TelemetryEvent::FeaturesPageAction {
-                action: "SetLayout".to_string(),
-                value: format!("{layout:?}")
-            },
-            ctx
-        );
     }
 
     /// Handles [`ExternalEditorAction::TogglePreferMarkdownViewer`]
@@ -233,13 +212,6 @@ impl ExternalEditorView {
             new_value.unwrap_or(PreferMarkdownViewer::default_value())
         });
 
-        send_telemetry_from_ctx!(
-            TelemetryEvent::FeaturesPageAction {
-                action: "TogglePreferMarkdownViewer".to_string(),
-                value: new_value.to_string()
-            },
-            ctx
-        );
     }
 
     /// Handles [`ExternalEditorAction::TogglePreferTabbedEditorView`] by updating the tabbed file viewer preference.
@@ -252,13 +224,6 @@ impl ExternalEditorView {
             new_value.unwrap_or(PreferTabbedEditorView::default_value())
         });
 
-        send_telemetry_from_ctx!(
-            TelemetryEvent::FeaturesPageAction {
-                action: "ToggleTabbedEditorView".to_string(),
-                value: new_value.to_string()
-            },
-            ctx
-        );
     }
 }
 

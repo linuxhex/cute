@@ -11,7 +11,7 @@ use crate::settings_view::features_page::render_group;
 use crate::terminal::session_settings::*;
 use crate::view_components::dropdown::TOP_MENU_BAR_HEIGHT;
 use crate::view_components::{Dropdown, DropdownItem};
-use crate::{report_if_error, send_telemetry_from_ctx};
+use crate::report_if_error;
 
 #[derive(Clone, Debug, PartialEq)]
 #[allow(clippy::enum_variant_names)]
@@ -204,12 +204,6 @@ impl TypedActionView for WorkingDirectoryView {
                     ));
                 });
 
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::InitialWorkingDirectoryConfigurationChanged {
-                        advanced_mode_enabled: mode.is_none()
-                    },
-                    ctx
-                );
 
                 // Redraw settings in case we switched in or out of advanced mode.
                 ctx.notify();

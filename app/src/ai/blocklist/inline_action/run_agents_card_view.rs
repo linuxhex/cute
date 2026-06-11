@@ -11,7 +11,6 @@ use ai::agent::action_result::{RunAgentsAgentOutcomeKind, RunAgentsResult};
 use ai::agent::orchestration_config::{OrchestrationConfig, OrchestrationConfigStatus};
 use ai::skills::SkillReference;
 use pathfinder_geometry::vector::vec2f;
-use warp_core::send_telemetry_from_ctx;
 use warpui::elements::{
     Border, ChildAnchor, ChildView, Container, CornerRadius, CrossAxisAlignment, Empty, Flex,
     MainAxisSize, OffsetPositioning, ParentAnchor, ParentElement, ParentOffsetBounds, Radius,
@@ -588,14 +587,6 @@ impl RunAgentsCardView {
             return;
         }
         self.entered_event_emitted = true;
-        send_telemetry_from_ctx!(
-            BlocklistOrchestrationTelemetryEvent::OrchestrationEntered(OrchestrationEnteredEvent {
-                conversation_id,
-                plan_id: (!self.state.plan_id.is_empty()).then(|| self.state.plan_id.clone()),
-                entry_source: OrchestrationEntrySource::RunAgentsCardShown,
-            }),
-            ctx
-        );
     }
 
     /// Emits `RunAgentsCardDecision` at most once per card instance.
@@ -628,25 +619,6 @@ impl RunAgentsCardView {
                 }
                 None => (false, None, Vec::new()),
             };
-        send_telemetry_from_ctx!(
-            BlocklistOrchestrationTelemetryEvent::RunAgentsCardDecision(
-                RunAgentsCardDecisionEvent {
-                    conversation_id,
-                    plan_id: (!self.state.plan_id.is_empty()).then(|| self.state.plan_id.clone()),
-                    decision,
-                    agent_count: self.state.agent_run_configs.len(),
-                    harness: OrchestrationHarnessKind::from_str(&self.state.orch.harness_type),
-                    execution_mode: OrchestrationExecutionModeKind::from_run_agents(
-                        &self.state.orch.execution_mode,
-                    ),
-                    modified_fields_from_tool_call,
-                    modified_fields_from_active_config,
-                    had_active_config,
-                    active_config_status,
-                }
-            ),
-            ctx
-        );
     }
 
     /// Auto-pops the create-key modal once per card per harness/mode

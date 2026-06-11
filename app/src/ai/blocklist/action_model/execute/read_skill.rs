@@ -5,7 +5,6 @@ use warpui::{Entity, ModelContext, SingletonEntity};
 use super::{ActionExecution, AnyActionExecution, ExecuteActionInput, PreprocessActionInput};
 use crate::ai::agent::{AIAgentActionType, ReadSkillRequest, ReadSkillResult};
 use crate::ai::skills::{SkillManager, SkillTelemetryEvent};
-use crate::send_telemetry_from_ctx;
 
 pub struct ReadSkillExecutor;
 
@@ -36,16 +35,6 @@ impl ReadSkillExecutor {
 
         match SkillManager::as_ref(ctx).active_skill_by_reference(skill_ref, ctx) {
             Some(skill) => {
-                send_telemetry_from_ctx!(
-                    SkillTelemetryEvent::Read {
-                        reference: skill_ref.clone(),
-                        name: Some(skill.name.clone()),
-                        scope: Some(skill.scope),
-                        provider: Some(skill.provider),
-                        error: false,
-                    },
-                    ctx
-                );
                 let content = FileContext::new(
                     skill.path.display_path(),
                     AnyFileContent::StringContent(skill.content.clone()),
@@ -55,16 +44,6 @@ impl ReadSkillExecutor {
                 ActionExecution::Sync(ReadSkillResult::Success { content }.into())
             }
             None => {
-                send_telemetry_from_ctx!(
-                    SkillTelemetryEvent::Read {
-                        reference: skill_ref.clone(),
-                        name: None,
-                        scope: None,
-                        provider: None,
-                        error: true,
-                    },
-                    ctx
-                );
                 ActionExecution::Sync(
                     ReadSkillResult::Error(format!("Skill not found: {:?}", skill_ref)).into(),
                 )

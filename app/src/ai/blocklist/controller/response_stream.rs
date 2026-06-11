@@ -13,7 +13,7 @@ use crate::ai::agent::conversation::AIConversationId;
 use crate::ai::agent::{AIIdentifiers, CancellationReason};
 use crate::network::NetworkStatus;
 use crate::server::server_api::ServerApiProvider;
-use crate::{report_error, send_telemetry_from_ctx};
+use crate::report_error;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ResponseStreamId(String);
@@ -128,15 +128,6 @@ impl ResponseStream {
         error: String,
         ctx: &mut ModelContext<Self>,
     ) {
-        send_telemetry_from_ctx!(
-            crate::TelemetryEvent::AgentModeError {
-                identifiers: self.ai_identifiers.clone(),
-                error,
-                is_user_visible: false,
-                will_attempt_to_resume: false,
-            },
-            ctx
-        );
     }
 
     fn retry(&mut self, ctx: &mut ModelContext<Self>) {
@@ -241,14 +232,6 @@ impl ResponseStream {
                                 // Emit retry success telemetry if this was a successful completion after retries
                                 if self.retry_count > 0 {
                                     if let Some(original_error) = &self.original_error {
-                                        send_telemetry_from_ctx!(
-                                            crate::TelemetryEvent::AgentModeRequestRetrySucceeded {
-                                                identifiers: self.ai_identifiers.clone(),
-                                                retry_count: self.retry_count,
-                                                original_error: original_error.clone(),
-                                            },
-                                            ctx
-                                        );
                                     }
                                 }
                             }

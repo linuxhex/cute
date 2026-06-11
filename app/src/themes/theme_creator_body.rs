@@ -199,7 +199,6 @@ impl ThemeCreatorBody {
                         image_extension,
                     )),
                     |path| {
-                        send_telemetry_from_ctx!(TelemetryEvent::CreateCustomTheme, ctx);
                         ctx.emit(ThemeCreatorBodyEvent::SetCustomTheme {
                             theme: ThemeKind::Custom(CustomTheme::new(theme_name, path)),
                         });

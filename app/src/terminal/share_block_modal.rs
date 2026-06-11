@@ -38,7 +38,6 @@ use crate::appearance::Appearance;
 use crate::editor::{
     EditOrigin, EditorView, Event as EditorEvent, SingleLineEditorOptions, TextOptions,
 };
-use crate::send_telemetry_from_ctx;
 use crate::server::block::{Block as ServerBlock, DisplaySetting};
 use crate::server::server_api::block::BlockClient;
 use crate::server::telemetry::TelemetryEvent;
@@ -350,15 +349,6 @@ impl ShareBlockModal {
 
         self.request_state = ShareRequestState::Pending(share_type);
 
-        send_telemetry_from_ctx!(
-            TelemetryEvent::GenerateBlockSharingLink {
-                share_type,
-                display_setting: display_setting.clone(),
-                show_prompt: self.show_prompt,
-                redact_secrets: self.obfuscate_secrets.is_visually_obfuscated(),
-            },
-            ctx
-        );
         let block_client = self.block_client.clone();
 
         let show_prompt = self.show_prompt;
@@ -493,10 +483,6 @@ impl ShareBlockModal {
 
     pub fn copy(&mut self, ctx: &mut ViewContext<Self>) {
         if let Some(link) = self.link() {
-            send_telemetry_from_ctx!(
-                TelemetryEvent::CopyBlockSharingLink(ShareBlockType::Permalink),
-                ctx
-            );
             ctx.clipboard().write(ClipboardContent::plain_text(link));
             ctx.emit(ShareBlockModalEvent::ShowToast {
                 message: "Link copied.".to_string(),
@@ -536,10 +522,6 @@ impl ShareBlockModal {
             log::warn!("Could not generate embed snippet");
             return;
         };
-        send_telemetry_from_ctx!(
-            TelemetryEvent::CopyBlockSharingLink(ShareBlockType::HtmlEmbed),
-            ctx
-        );
         ctx.clipboard()
             .write(ClipboardContent::plain_text(embed_snippet));
         ctx.emit(ShareBlockModalEvent::ShowToast {

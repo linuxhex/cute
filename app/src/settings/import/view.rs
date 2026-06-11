@@ -882,13 +882,6 @@ impl SettingsImportView {
                 .collect_vec()
         });
 
-        send_telemetry_from_ctx!(
-            TelemetryEvent::CompletedSettingsImport {
-                terminal_type: terminal_type_and_profile.into(),
-                imported_settings,
-            },
-            ctx
-        );
     }
 }
 
@@ -1097,12 +1090,6 @@ impl TypedActionView for SettingsImportView {
                 self.configs[*idx].expanded = true;
                 // Only send the telemetry event if the new selected item is different.
                 if old_selected_idx.is_none_or(|old_idx| old_idx != *idx) {
-                    send_telemetry_from_ctx!(
-                        TelemetryEvent::SettingsImportConfigFocused(
-                            self.configs[*idx].terminal_type_and_profile.into()
-                        ),
-                        ctx
-                    );
                 }
                 // The radio button state already updates, since each element is a child of a RadioButtonItem.
                 ctx.notify();
@@ -1128,7 +1115,6 @@ impl TypedActionView for SettingsImportView {
                 ) {
                     self.state = State::Completed { imported_idx: None }
                 }
-                send_telemetry_from_ctx!(TelemetryEvent::SettingsImportResetButtonClicked, ctx);
             }
         }
     }

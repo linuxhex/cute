@@ -1,4 +1,3 @@
-use warp_core::send_telemetry_from_ctx;
 use warpui::{Entity, ModelContext, ModelHandle};
 
 use crate::ai::blocklist::agent_view::{AgentViewController, AgentViewControllerEvent};
@@ -52,12 +51,6 @@ impl AgentShortcutViewModel {
         ctx.emit(AgentShortcutEvent::ToggledViewVisibility {
             is_visible: is_open,
         });
-        send_telemetry_from_ctx!(
-            TelemetryEvent::AgentShortcutsViewToggled {
-                is_visible: is_open,
-            },
-            ctx
-        );
     }
 }
 

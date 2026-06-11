@@ -16,7 +16,6 @@ use warpui::ViewContext;
 use super::{FileTreeIdentifier, FileTreeItem, FileTreeView};
 use crate::code::file_tree::view::{PendingEdit, PendingEditKind};
 use crate::code::file_tree::FileTreeEvent;
-use crate::send_telemetry_from_ctx;
 use crate::server::telemetry::TelemetryEvent;
 
 /// Custom ordering function for items in the file tree.
@@ -185,7 +184,6 @@ impl FileTreeView {
                             return;
                         }
 
-                        send_telemetry_from_ctx!(TelemetryEvent::FileTreeItemCreated, ctx);
 
                         FileTreeEntryState::File(metadata.clone())
                     } else {

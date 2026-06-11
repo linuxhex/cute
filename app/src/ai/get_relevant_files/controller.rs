@@ -20,7 +20,7 @@ use crate::ai::blocklist::SessionContext;
 use crate::ai::get_relevant_files::api::{FileContext as FileContextRequest, GetRelevantFiles};
 use crate::ai::outline::{OutlineStatus, RepoOutlines};
 use crate::server::server_api::{AIApiError, ServerApiProvider};
-use crate::{report_error, send_telemetry_from_ctx, TelemetryEvent};
+use crate::report_error;
 #[cfg_attr(not(target_family = "wasm"), path = "remote_search/native.rs")]
 #[cfg_attr(target_family = "wasm", path = "remote_search/wasm.rs")]
 mod remote_search;
@@ -155,13 +155,6 @@ impl GetRelevantFilesController {
                 else {
                     return;
                 };
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::FullEmbedCodebaseContextSearchFailed {
-                        action_id: action_id.clone(),
-                        error: error.to_string(),
-                    },
-                    ctx
-                );
 
                 self.handle_relevant_file_paths_result(
                     Err(anyhow!(error.to_owned())),
@@ -179,14 +172,6 @@ impl GetRelevantFilesController {
                 else {
                     return;
                 };
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::FullEmbedCodebaseContextSearchSuccess {
-                        action_id: action_id.clone(),
-                        total_search_duration: search_start.elapsed(),
-                        out_of_sync_delay: *out_of_sync_delay,
-                    },
-                    ctx
-                );
 
                 self.handle_relevant_file_paths_result(
                     Ok(fragments.clone()),

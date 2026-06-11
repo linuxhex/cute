@@ -14,7 +14,6 @@ use crate::server::telemetry::{
     RemoteCodebaseAutoIndexTrigger, RemoteCodebaseIndexStatusTelemetrySource,
 };
 use crate::workspaces::user_workspaces::{UserWorkspaces, UserWorkspacesEvent};
-use crate::{send_telemetry_from_ctx, TelemetryEvent};
 use ai::index::full_source_code_embedding::NodeHash;
 use remote_server::codebase_index_proto::{RemoteCodebaseIndexState, RemoteCodebaseIndexStatus};
 use warp_core::{HostId, SessionId};
@@ -944,21 +943,6 @@ fn emit_status_changed_telemetry(
     source: RemoteCodebaseIndexStatusTelemetrySource,
     ctx: &mut ModelContext<RemoteCodebaseIndexModel>,
 ) {
-    send_telemetry_from_ctx!(
-        TelemetryEvent::RemoteCodebaseIndexStatusChanged {
-            state: update.state,
-            previous_state: update.previous_state,
-            has_root_hash: update.has_root_hash,
-            has_failure_message: update.has_failure_message,
-            progress_completed: update.progress_completed,
-            progress_total: update.progress_total,
-            mutation_kind,
-            source,
-            remote_os: None,
-            remote_arch: None,
-        },
-        ctx
-    );
 }
 fn emit_auto_index_requested_telemetry(
     trigger: RemoteCodebaseAutoIndexTrigger,
@@ -969,15 +953,6 @@ fn emit_auto_index_requested_telemetry(
         return;
     }
 
-    send_telemetry_from_ctx!(
-        TelemetryEvent::RemoteCodebaseAutoIndexRequested {
-            trigger,
-            requested_count,
-            remote_os: None,
-            remote_arch: None,
-        },
-        ctx
-    );
 }
 #[cfg(test)]
 #[path = "codebase_index_model_tests.rs"]

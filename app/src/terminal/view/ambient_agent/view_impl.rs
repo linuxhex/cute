@@ -5,7 +5,6 @@ use std::rc::Rc;
 
 use warp_cli::agent::Harness;
 use warp_core::features::FeatureFlag;
-use warp_core::send_telemetry_from_ctx;
 use warp_core::ui::appearance::Appearance;
 use warp_terminal::model::BlockId;
 use warpui::elements::Align;
@@ -830,12 +829,6 @@ impl TerminalView {
             stack.push(terminal_manager, pushed_view, ctx);
         });
 
-        send_telemetry_from_ctx!(
-            CloudAgentTelemetryEvent::EnteredCloudMode {
-                entry_point: CloudModeEntryPoint::LocalSession
-            },
-            ctx
-        );
 
         Some((terminal_view, ambient_agent_view_model))
     }

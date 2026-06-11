@@ -23,7 +23,6 @@ use crate::ai::get_relevant_files::controller::{
 };
 use crate::features::FeatureFlag;
 use crate::terminal::model::session::active_session::ActiveSession;
-use crate::{send_telemetry_from_ctx, TelemetryEvent};
 
 pub struct SearchCodebaseExecutor {
     active_session: ModelHandle<ActiveSession>,
@@ -206,14 +205,6 @@ impl SearchCodebaseExecutor {
                 .filter(|path| !path.is_empty() && *path != ".")
                 .map(ToOwned::to_owned);
             let server_output_id = get_server_output_id(conversation_id, ctx);
-            send_telemetry_from_ctx!(
-                TelemetryEvent::SearchCodebaseRequested {
-                    action_id: id.clone(),
-                    server_output_id,
-                    is_cross_repo: requested_codebase_path.is_some(),
-                },
-                ctx
-            );
 
             let root_dir_for_search = self.root_repo_paths.get(id).cloned().or_else(|| {
                 self.get_relevant_files_controller
@@ -314,14 +305,6 @@ impl SearchCodebaseExecutor {
                 search_dir = current_working_directory;
             }
             let server_output_id = get_server_output_id(conversation_id, ctx);
-            send_telemetry_from_ctx!(
-                TelemetryEvent::SearchCodebaseRequested {
-                    action_id: id.clone(),
-                    server_output_id,
-                    is_cross_repo,
-                },
-                ctx
-            );
 
             let Some(root_dir_for_search) = self.root_repo_paths.get(id) else {
                 let action_id = id.clone();
@@ -334,10 +317,6 @@ impl SearchCodebaseExecutor {
                     } else {
                         "The codebase doesn't exist".to_string()
                     };
-                    send_telemetry_from_ctx!(
-                        TelemetryEvent::SearchCodebaseRepoUnavailable { action_id, error },
-                        ctx
-                    );
                 });
                 return ActionExecution::Sync(AIAgentActionResultType::SearchCodebase(SearchCodebaseResult::Failed {
                     message: "The search failed because the codebase is not available. Try another way to locate the relevant files.".to_owned(),

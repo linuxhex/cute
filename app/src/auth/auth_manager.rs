@@ -183,7 +183,6 @@ impl AuthManager {
                 ctx.emit(AuthManagerEvent::LoginOverrideDetected(auth_payload));
                 return;
             }
-            send_telemetry_from_ctx!(TelemetryEvent::AnonymousUserLinkedFromBrowser, ctx);
         }
 
         let _ = ctx.spawn(
@@ -467,10 +466,6 @@ impl AuthManager {
                     async { warp_isolation_platform::detect() },
                     |_, platform, ctx| {
                         if let Some(platform) = platform {
-                            send_telemetry_from_ctx!(
-                                TelemetryEvent::DetectedIsolationPlatform { platform },
-                                ctx
-                            );
                         }
                     },
                 );
@@ -546,7 +541,6 @@ impl AuthManager {
         let became_true = self.auth_state.set_needs_reauth(needs_reauth);
 
         if became_true {
-            send_telemetry_from_ctx!(TelemetryEvent::NeedsReauth, ctx);
             ctx.emit(AuthManagerEvent::NeedsReauth);
         }
     }
@@ -620,17 +614,12 @@ impl AuthManager {
         ctx: &mut ModelContext<Self>,
     ) {
         if self.auth_state.is_anonymous_or_logged_out() {
-            send_telemetry_from_ctx!(
-                TelemetryEvent::AnonymousUserAttemptLoginGatedFeature { feature },
-                ctx
-            );
             ctx.emit(AuthManagerEvent::AttemptedLoginGatedFeature { auth_view_variant });
         };
     }
 
     pub fn anonymous_user_hit_drive_object_limit(&self, ctx: &mut ModelContext<Self>) {
         if self.auth_state.is_anonymous_or_logged_out() {
-            send_telemetry_from_ctx!(TelemetryEvent::AnonymousUserHitCloudObjectLimit, ctx);
             ctx.emit(AuthManagerEvent::AttemptedLoginGatedFeature {
                 auth_view_variant: AuthViewVariant::HitDriveObjectLimitCloseable,
             });
@@ -652,10 +641,6 @@ impl AuthManager {
                     Ok(custom_token) => {
                         // Send synchronously since this is an important event in the sign up funnel and we
                         // don't want to lose events if the user quits before the event queue is flushed.
-                        send_telemetry_sync_from_ctx!(
-                            TelemetryEvent::InitiateAnonymousUserSignup { entrypoint },
-                            ctx
-                        );
                         let login_options_url = me.login_options_url(&custom_token);
                         if cfg!(target_family = "wasm") {
                             #[cfg(target_family = "wasm")]
