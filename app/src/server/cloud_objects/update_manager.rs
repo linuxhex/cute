@@ -81,6 +81,12 @@ pub enum ObjectOperation {
     Trash,
     Untrash,
     Delete { initiated_by: InitiatedBy },
+    MoveToFolder,
+    MoveToDrive,
+    Leave,
+    TakeEditAccess,
+    UpdatePermissions,
+    EmptyTrash,
 }
 
 #[derive(Debug)]
@@ -97,6 +103,8 @@ pub enum UpdateManagerEvent {
     ObjectOperationComplete {
         result: ObjectOperationResult,
     },
+    AmbientTaskUpdated,
+    MCPGalleryUpdated,
 }
 
 /// An enum for choosing the behavior of the fetch_single_cloud_object function.
@@ -1973,6 +1981,40 @@ impl UpdateManager {
                 metadata,
             }]);
         }
+    }
+
+    /// Create a scheduled ambient agent (stub for local version).
+    pub fn create_scheduled_ambient_agent_online(
+        &mut self,
+        _task_id: AmbientAgentTaskId,
+        _ctx: &mut ModelContext<Self>,
+    ) {
+        // Not supported in local version
+    }
+
+    /// Update a scheduled ambient agent (stub for local version).
+    pub fn update_scheduled_ambient_agent_online(
+        &mut self,
+        _task_id: AmbientAgentTaskId,
+        _ctx: &mut ModelContext<Self>,
+    ) {
+        // Not supported in local version
+    }
+
+    /// Move object to location (stub for local version).
+    pub fn move_object_to_location(
+        &mut self,
+        _object_to_move: crate::drive::CloudObjectTypeAndId,
+        _destination_folder_id: Option<ServerId>,
+        _space: Space,
+        _ctx: &mut ModelContext<Self>,
+    ) {
+        // Not supported in local version
+    }
+
+    /// Stop polling for updated objects (stub for local version).
+    pub fn stop_polling_for_updated_objects(&mut self) {
+        // Not supported in local version
     }
 
     /// Wait for an initial load to complete.
