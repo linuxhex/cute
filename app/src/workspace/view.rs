@@ -259,7 +259,7 @@ use crate::pane_group::FilePane;
 use crate::pane_group::{
     self, AIFactPane, AnyPaneContent, ChildAgentOrigin, CodeDiffPane, CodePane, CodeReviewPanelArg,
     Direction as PaneGroupDirection, Direction, EnvironmentManagementPane,
-    ExecutionProfileEditorPane, NetworkLogPane, NewTerminalOptions, PaneGroup, PaneId, PanesLayout,
+    ExecutionProfileEditorPane, NewTerminalOptions, PaneGroup, PaneId, PanesLayout,
     TabBarHoverIndex, TerminalPaneId,
 };
 use crate::persistence::ModelEvent;
@@ -289,7 +289,6 @@ use crate::server::cloud_objects::update_manager::{
     ObjectOperation, OperationSuccessType, UpdateManager, UpdateManagerEvent,
 };
 use crate::server::ids::{ObjectUid, ServerId, SyncId};
-use crate::server::network_log_pane_manager::NetworkLogPaneManager;
 use crate::server::server_api::ai::AIClient;
 use crate::server::server_api::auth::AuthClient;
 use crate::server::server_api::{ServerApi, ServerApiEvent, ServerApiProvider, ServerTime};
@@ -12706,9 +12705,6 @@ impl Workspace {
             SettingsViewEvent::CheckForUpdate => {
                 self.manual_check_for_update(ctx);
             }
-            SettingsViewEvent::LaunchNetworkLogging => {
-                self.open_network_log_pane(ctx);
-            }
             SettingsViewEvent::OpenWarpDrive => {
                 self.close_all_overlays(ctx);
                 self.open_or_toggle_warp_drive(
@@ -12811,43 +12807,10 @@ impl Workspace {
     }
 
     /// Opens the in-app network log pane as a right-split of the active pane
-    /// group. If a pane already exists for the current window, refreshes its
-    /// snapshot from the in-memory model and focuses it instead of opening
-    /// another one.
-    pub(crate) fn open_network_log_pane(&mut self, ctx: &mut ViewContext<Self>) {
-        let manager = NetworkLogPaneManager::handle(ctx);
-
-        if let Some(locator) = manager.as_ref(ctx).find_pane(ctx.window_id()) {
-            // Pane is already open: refresh its snapshot so any items
-            // captured since the last open are reflected, then focus it.
-            if let Some(tab) = self
-                .tabs
-                .iter()
-                .find(|tab| tab.pane_group.id() == locator.pane_group_id)
-            {
-                let pane_group = tab.pane_group.clone();
-                let network_log_view = pane_group.read(ctx, |pane_group, ctx| {
-                    pane_group
-                        .downcast_pane_by_id::<NetworkLogPane>(locator.pane_id)
-                        .map(|pane| pane.network_log_view(ctx))
-                });
-                if let Some(network_log_view) = network_log_view {
-                    network_log_view.update(ctx, |view, ctx| view.reload_snapshot(ctx));
-                }
-            }
-            self.focus_pane(locator, ctx);
-            return;
-        }
-
-        let pane = NetworkLogPane::new(ctx);
-        self.active_tab_pane_group().update(ctx, |pane_group, ctx| {
-            pane_group.add_pane_with_direction(
-                Direction::Right,
-                pane,
-                true, /* focus_new_pane */
-                ctx,
-            );
-        });
+    /// group. This feature has been removed - the function is kept as a stub
+    /// for UI compatibility.
+    pub(crate) fn open_network_log_pane(&mut self, _ctx: &mut ViewContext<Self>) {
+        // Network log feature has been removed. This stub exists for UI compatibility.
     }
 
     /// Opens the branch selector pane as a right-split of the active pane.

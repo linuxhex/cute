@@ -2,9 +2,8 @@ use cloud_objects::cloud_object::GenericStringObjectFormat;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
-use super::generic_string_model::{Serializer, StringModel};
+use super::generic_string_model::{SerializedModel, Serializer, StringModel};
 use crate::cloud_object::JsonObjectType;
-use crate::server::sync_queue::SerializedModel;
 
 /// A `JsonModel` is a string model that can be serialized to and deserialized from JSON.
 pub trait JsonModel: StringModel + Serialize + DeserializeOwned + 'static {

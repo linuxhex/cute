@@ -9,7 +9,7 @@ use std::path::PathBuf;
 #[cfg(feature = "local_fs")]
 use indexmap::IndexSet;
 #[cfg(feature = "local_fs")]
-use remote_server::manager::RemoteServerManager;
+use crate::remote_server::manager::RemoteServerManager;
 #[cfg(feature = "local_fs")]
 use repo_metadata::repositories::DetectedRepositories;
 #[cfg(feature = "local_fs")]

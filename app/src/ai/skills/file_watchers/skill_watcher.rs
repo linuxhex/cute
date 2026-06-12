@@ -8,7 +8,7 @@ use ai::skills::{
 };
 use async_channel::Sender;
 use futures::future::BoxFuture;
-use remote_server::proto::{
+use crate::remote_server::proto::{
     file_context_proto, FileContextProto, ReadFileContextFile, ReadFileContextRequest,
 };
 use repo_metadata::repositories::DetectedRepositories;

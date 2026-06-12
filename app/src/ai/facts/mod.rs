@@ -46,16 +46,12 @@ impl StringModel for AIFact {
         }
     }
 
-    fn update_object_queue_item(
+    fn _update_object_queue_item(
         &self,
-        revision_ts: Option<Revision>,
-        object: &Self::CloudObjectType,
-    ) -> QueueItem {
-        QueueItem::UpdateAIFact {
-            model: object.model().clone().into(),
-            id: object.id,
-            revision: revision_ts.or_else(|| object.metadata.revision.clone()),
-        }
+        _revision_ts: Option<Revision>,
+        _object: &Self::CloudObjectType,
+    ) {
+        // No-op for local version
     }
 
     fn uniqueness_key(&self) -> Option<GenericStringObjectUniqueKey> {

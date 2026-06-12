@@ -15,15 +15,11 @@ use async_channel::Sender;
 use futures::io::{AsyncBufReadExt, BufReader};
 use futures::StreamExt;
 use notify_debouncer_full::notify::{RecursiveMode, WatchFilter};
-use remote_server::client::RemoteServerClient;
-use remote_server::manager::RemoteServerManager;
 use repo_metadata::repositories::DetectedRepositories;
 use repo_metadata::repository::{RepositorySubscriber, SubscriberId};
 use repo_metadata::{CanonicalizedPath, Repository, RepositoryUpdate};
-use warp_core::HostId;
 use warp_util::content_version::ContentVersion;
 use warp_util::file::{FileId, FileLoadError, FileSaveError};
-use warp_util::standardized_path::StandardizedPath;
 use warpui::r#async::SpawnedFutureHandle;
 use warpui::{AppContext, Entity, ModelContext, ModelHandle, SingletonEntity};
 use watcher::{BulkFilesystemWatcher, BulkFilesystemWatcherEvent};
@@ -83,39 +79,26 @@ enum WatcherType {
 }
 
 /// Per-file backing store.
-/// Remote files dispatch through [`RemoteServerClient`] via [`RemoteServerManager`].
 enum FileBackend {
     Local(LocalFile),
-    Remote {
-        /// Identifies the remote host. The actual client is looked up from
-        /// [`RemoteServerManager`] at call time, which naturally handles
-        /// disconnect (lookup returns `Err`) without holding an `Arc` alive
-        /// per file.
-        host_id: HostId,
-        /// Platform-aware path on the remote host.
-        path: StandardizedPath,
-    },
 }
 
 impl FileBackend {
     fn as_local(&self) -> Option<&LocalFile> {
         match self {
             FileBackend::Local(f) => Some(f),
-            FileBackend::Remote { .. } => None,
         }
     }
 
     fn version(&self) -> Option<ContentVersion> {
         match self {
             FileBackend::Local(f) => f.version,
-            FileBackend::Remote { .. } => None,
         }
     }
 
     fn set_version(&mut self, version: ContentVersion) {
         match self {
             FileBackend::Local(f) => f.version = Some(version),
-            FileBackend::Remote { .. } => {}
         }
     }
 }
@@ -180,13 +163,8 @@ impl FileState {
         self.files.insert(file_id, FileBackend::Local(local_file));
     }
 
-    fn insert_remote(&mut self, file_id: FileId, host_id: HostId, path: StandardizedPath) {
-        self.files
-            .insert(file_id, FileBackend::Remote { host_id, path });
-    }
-
     /// Removes a file and returns the backend along with whether the local path
-    /// is still referenced (always `false` for remote files).
+    /// is still referenced.
     fn remove(&mut self, file_id: FileId) -> Option<(FileBackend, bool)> {
         let backend = self.files.remove(&file_id)?;
         let path_still_used = match &backend {
@@ -208,7 +186,6 @@ impl FileState {
                     false
                 }
             }
-            FileBackend::Remote { .. } => false,
         };
         Some((backend, path_still_used))
     }
@@ -234,7 +211,6 @@ impl FileState {
             .iter_mut()
             .filter_map(|(id, backend)| match backend {
                 FileBackend::Local(f) => Some((id, f)),
-                FileBackend::Remote { .. } => None,
             })
     }
 }
@@ -332,16 +308,6 @@ impl FileModel {
         self.file_state
             .get_local(file_id)
             .and_then(|x| x.path.clone())
-    }
-
-    /// Register a remote file path and return a `FileId`.
-    ///
-    /// The returned `FileId` can be used with `save()` and `delete()` which
-    /// will dispatch to the remote backend via [`RemoteServerClient`].
-    pub fn register_remote_file(&mut self, host_id: HostId, path: StandardizedPath) -> FileId {
-        let file_id = FileId::new();
-        self.file_state.insert_remote(file_id, host_id, path);
-        file_id
     }
 
     /// Register a file path and immediately return a FileId without loading the file.
@@ -729,34 +695,6 @@ impl FileModel {
                     },
                 );
             }
-            FileBackend::Remote { host_id, path } => {
-                let client = Self::resolve_remote_client(host_id, ctx)?;
-                let path = path.as_str().to_string();
-                let future = async move {
-                    client
-                        .write_file(path, content)
-                        .await
-                        .map_err(|e| e.to_string())
-                };
-                ctx.spawn(
-                    future,
-                    move |me, result: Result<(), String>, ctx| match result {
-                        Ok(()) => {
-                            me.set_version(file_id, version);
-                            ctx.emit(FileModelEvent::FileSaved {
-                                id: file_id,
-                                version,
-                            });
-                        }
-                        Err(err) => {
-                            ctx.emit(FileModelEvent::FailedToSave {
-                                id: file_id,
-                                error: Rc::new(FileSaveError::RemoteError(err)),
-                            });
-                        }
-                    },
-                );
-            }
         }
 
         Ok(())
@@ -880,46 +818,9 @@ impl FileModel {
                     },
                 );
             }
-            FileBackend::Remote { host_id, path } => {
-                let client = Self::resolve_remote_client(host_id, ctx)?;
-                let path = path.as_str().to_string();
-                let future =
-                    async move { client.delete_file(path).await.map_err(|e| e.to_string()) };
-                ctx.spawn(
-                    future,
-                    move |me, result: Result<(), String>, ctx| match result {
-                        Ok(()) => {
-                            me.set_version(file_id, version);
-                            ctx.emit(FileModelEvent::FileSaved {
-                                id: file_id,
-                                version,
-                            });
-                        }
-                        Err(err) => {
-                            ctx.emit(FileModelEvent::FailedToSave {
-                                id: file_id,
-                                error: Rc::new(FileSaveError::RemoteError(err)),
-                            });
-                        }
-                    },
-                );
-            }
         }
 
         Ok(())
-    }
-
-    /// Look up the `RemoteServerClient` for a given host at call time.
-    fn resolve_remote_client(
-        host_id: &HostId,
-        ctx: &AppContext,
-    ) -> Result<std::sync::Arc<RemoteServerClient>, FileSaveError> {
-        RemoteServerManager::as_ref(ctx)
-            .client_for_host(host_id)
-            .cloned()
-            .ok_or_else(|| {
-                FileSaveError::RemoteError(format!("Remote host {host_id} is not connected"))
-            })
     }
 
     pub fn set_version(&mut self, file_id: FileId, version: ContentVersion) {

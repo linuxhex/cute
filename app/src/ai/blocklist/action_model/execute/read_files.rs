@@ -113,7 +113,7 @@ impl ReadFilesExecutor {
         let remote_client = match &session_type {
             Some(SessionType::WarpifiedRemote {
                 host_id: Some(host_id),
-            }) => remote_server::manager::RemoteServerManager::as_ref(ctx)
+            }) => crate::remote_server::manager::RemoteServerManager::as_ref(ctx)
                 .client_for_host(host_id)
                 .cloned(),
             _ => None,
@@ -137,7 +137,7 @@ impl ReadFilesExecutor {
         if let Some(client) = remote_client {
             return ActionExecution::Async {
                 execute_future: Box::pin(async move {
-                    let request = remote_server::proto::ReadFileContextRequest {
+                    let request = crate::remote_server::proto::ReadFileContextRequest {
                         files: locations
                             .iter()
                             .map(|loc| {
@@ -146,12 +146,12 @@ impl ReadFilesExecutor {
                                     &shell,
                                     &current_working_directory,
                                 );
-                                remote_server::proto::ReadFileContextFile {
+                                crate::remote_server::proto::ReadFileContextFile {
                                     path: absolute_path,
                                     line_ranges: loc
                                         .lines
                                         .iter()
-                                        .map(|r| remote_server::proto::LineRange {
+                                        .map(|r| crate::remote_server::proto::LineRange {
                                             start: r.start as u32,
                                             end: r.end as u32,
                                         })
@@ -192,10 +192,10 @@ impl ReadFilesExecutor {
                         .into_iter()
                         .filter_map(|fc| {
                             let content = match fc.content? {
-                                remote_server::proto::file_context_proto::Content::TextContent(
+                                crate::remote_server::proto::file_context_proto::Content::TextContent(
                                     text,
                                 ) => crate::ai::agent::AnyFileContent::StringContent(text),
-                                remote_server::proto::file_context_proto::Content::BinaryContent(
+                                crate::remote_server::proto::file_context_proto::Content::BinaryContent(
                                     bytes,
                                 ) => crate::ai::agent::AnyFileContent::BinaryContent(bytes),
                             };

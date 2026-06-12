@@ -57,7 +57,7 @@ use warpui::{
     ViewHandle, WindowId,
 };
 
-use remote_server::manager::RemoteServerManager;
+use crate::remote_server::manager::RemoteServerManager;
 
 use crate::ai::persisted_workspace::{PersistedWorkspace, PersistedWorkspaceEvent};
 use crate::code::buffer_location::LocalOrRemotePath as BufferFileLocation;

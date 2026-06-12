@@ -15,7 +15,6 @@ use super::model::terminal_model::{
 };
 use super::model::tmux::commands::TmuxCommand;
 use crate::features::FeatureFlag;
-use crate::remote_server::manager::RemoteServerManager;
 use crate::server::telemetry::ImageProtocol;
 use crate::terminal::event::{
     AfterBlockCompletedEvent, BlockCompletedEvent, BlockMetadataReceivedEvent,
@@ -77,19 +76,9 @@ impl ModelEventDispatcher {
                 self.sessions.update(ctx, |sessions, ctx| {
                     sessions.register_pending_session(pending_session_info.as_ref(), ctx);
                 });
-                let is_legacy_ssh = matches!(
-                    pending_session_info.is_legacy_ssh_session,
-                    IsLegacySSHSession::Yes { .. }
-                );
-                if FeatureFlag::SshRemoteServer.is_enabled() && is_legacy_ssh {
-                    ModelEvent::SshInitShell {
-                        pending_session_info,
-                    }
-                } else {
-                    ModelEvent::Handler(AnsiHandlerEvent::InitShell {
-                        pending_session_info,
-                    })
-                }
+                ModelEvent::Handler(AnsiHandlerEvent::InitShell {
+                    pending_session_info,
+                })
             }
             Event::Handler(HandlerEvent::Bootstrapped(bootstrapped_event)) => {
                 let session_id = bootstrapped_event.session_info.session_id;
@@ -108,17 +97,6 @@ impl ModelEventDispatcher {
                     session_id,
                     is_subshell,
                 })
-            }
-            Event::RemoteServerReady { session_id } => {
-                log::info!("Remote server ready for session {session_id:?}");
-                return;
-            }
-            Event::RemoteServerFailed { session_id, error } => {
-                log::warn!(
-                    "Remote server setup failed for session {session_id:?}, falling back to \
-                     ControlMaster: {error}"
-                );
-                return;
             }
             Event::Handler(HandlerEvent::PromptStart) => {
                 self.last_start_prompt_marker = Some(PromptKind::Left);
@@ -295,17 +273,6 @@ impl ModelEventDispatcher {
     }
 
     /// Finalizes session initialization by calling `Sessions::initialize_bootstrapped_session`.
-    ///
-    /// For legacy SSH sessions with the `SshRemoteServer` flag, this also
-    /// sends the `SessionBootstrapped` notification to the remote server via
-    /// the manager.
-    ///
-    /// The `SessionBootstrapped` notification is sent **before** initializing
-    /// the session so the daemon creates the `LocalCommandExecutor` before any
-    /// subscriber (e.g. `TerminalView::handle_session_bootstrapped`) can queue
-    /// a `RunCommand` request. Without this ordering, a race exists where the
-    /// daemon receives `RunCommand` before the executor is ready, producing
-    /// "No executor for RunCommand, session was never initialized" errors.
     fn complete_bootstrapped_session(
         &mut self,
         event: BootstrappedEvent,
@@ -318,31 +285,6 @@ impl ModelEventDispatcher {
             rcfiles_duration_seconds,
         } = event;
 
-        let (is_legacy_ssh, session_id, shell_type_name, shell_path) = (
-            matches!(
-                session_info.is_legacy_ssh_session,
-                IsLegacySSHSession::Yes { .. }
-            ),
-            session_info.session_id,
-            session_info.shell.shell_type().name().to_owned(),
-            session_info.shell.shell_path().clone(),
-        );
-
-        // Send the SessionBootstrapped notification to the daemon BEFORE
-        // initializing the session. `initialize_bootstrapped_session` emits
-        // `SessionsEvent::SessionBootstrapped`, which causes subscribers to
-        // immediately queue `RunCommand` requests (e.g. `load_external_commands`).
-        // The daemon must have the executor ready before those requests arrive.
-        if FeatureFlag::SshRemoteServer.is_enabled() && is_legacy_ssh {
-            RemoteServerManager::handle(ctx).update(ctx, |mgr, _ctx| {
-                mgr.notify_session_bootstrapped(
-                    session_id,
-                    &shell_type_name,
-                    shell_path.as_deref(),
-                );
-            });
-        }
-
         self.sessions.update(ctx, |sessions, ctx| {
             sessions.initialize_bootstrapped_session(
                 *session_info,
@@ -352,15 +294,6 @@ impl ModelEventDispatcher {
                 ctx,
             );
         });
-    }
-
-    /// Emits an event so `TerminalView` can render the remote server block.
-    pub fn request_remote_server_block(
-        &mut self,
-        session_id: SessionId,
-        ctx: &mut ModelContext<Self>,
-    ) {
-        ctx.emit(ModelEvent::RemoteServerBlockRequested { session_id });
     }
 }
 
@@ -472,17 +405,6 @@ pub enum ModelEvent {
     PluggableNotification {
         title: Option<String>,
         body: String,
-    },
-    /// Emitted when an SSH session's `InitShell` is intercepted by the
-    /// `SshRemoteServer` feature flag. `RemoteServerController` subscribes to
-    /// this instead of `Handler(InitShell)` so `PtyController` never sees it.
-    SshInitShell {
-        pending_session_info: Box<SessionInfo>,
-    },
-    /// Emitted by `ModelEventDispatcher::request_remote_server_block`
-    /// when the remote-server binary is missing and the user must choose.
-    RemoteServerBlockRequested {
-        session_id: SessionId,
     },
     /// Emitted right before the remote shell for a session exits. Used to
     /// tear down per-session resources (e.g. the remote-server-proxy ssh

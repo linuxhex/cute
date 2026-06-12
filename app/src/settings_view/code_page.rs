@@ -13,7 +13,7 @@ use lsp::supported_servers::LSPServerType;
 use lsp::{LspManagerModel, LspManagerModelEvent, LspServerModel, LspState};
 use pathfinder_color::ColorU;
 #[cfg(not(target_family = "wasm"))]
-use remote_server::codebase_index_proto::{RemoteCodebaseIndexState, RemoteCodebaseIndexStatus};
+use crate::remote_server::codebase_index_proto::{RemoteCodebaseIndexState, RemoteCodebaseIndexStatus};
 use warp_core::features::FeatureFlag;
 use warp_core::report_if_error;
 use warp_core::settings::ToggleableSetting as _;
@@ -127,7 +127,7 @@ fn remote_codebase_index_limit_reached(status: &RemoteCodebaseIndexStatus) -> bo
 
 #[cfg(all(test, not(target_family = "wasm")))]
 mod tests {
-    use remote_server::codebase_index_proto::{
+    use crate::remote_server::codebase_index_proto::{
         RemoteCodebaseIndexState, RemoteCodebaseIndexStatus,
     };
 

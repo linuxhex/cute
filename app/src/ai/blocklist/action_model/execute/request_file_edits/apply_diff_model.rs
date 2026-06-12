@@ -51,7 +51,7 @@ impl ApplyDiffModel {
         let ai_identifiers = ai_identifiers.clone();
 
         let remote_client = session_context.host_id().and_then(|host_id| {
-            remote_server::manager::RemoteServerManager::as_ref(ctx)
+            crate::remote_server::manager::RemoteServerManager::as_ref(ctx)
                 .client_for_host(host_id)
                 .cloned()
         });
@@ -108,11 +108,11 @@ impl ApplyDiffModel {
 const MAX_DIFF_READ_BYTES: u32 = 10_000_000;
 
 async fn read_remote_file(
-    client: &remote_server::client::RemoteServerClient,
+    client: &crate::remote_server::client::RemoteServerClient,
     path: &str,
 ) -> FileReadResult {
-    let request = remote_server::proto::ReadFileContextRequest {
-        files: vec![remote_server::proto::ReadFileContextFile {
+    let request = crate::remote_server::proto::ReadFileContextRequest {
+        files: vec![crate::remote_server::proto::ReadFileContextFile {
             path: path.to_string(),
             line_ranges: vec![],
         }],
@@ -133,10 +133,10 @@ async fn read_remote_file(
                     ));
                 }
                 match fc.content {
-                    Some(remote_server::proto::file_context_proto::Content::TextContent(
+                    Some(crate::remote_server::proto::file_context_proto::Content::TextContent(
                         content,
                     )) => FileReadResult::Found(content),
-                    Some(remote_server::proto::file_context_proto::Content::BinaryContent(_)) => {
+                    Some(crate::remote_server::proto::file_context_proto::Content::BinaryContent(_)) => {
                         // apply-diff only works with text files
                         FileReadResult::ReadError("File is binary".to_string())
                     }

@@ -30,7 +30,7 @@ use warpui::{
 };
 
 #[cfg(not(target_family = "wasm"))]
-use remote_server::manager::RemoteServerManager;
+use crate::remote_server::manager::RemoteServerManager;
 
 use super::context_menu::{show_rich_editor_context_menu, ContextMenuAction, ContextMenuState};
 use super::editor::view::{EditorViewEvent, RichTextEditorConfig, RichTextEditorView};
@@ -572,13 +572,13 @@ impl FileNotebookView {
         });
 
         let host_id = remote_path.host_id.clone();
-        let manager = remote_server::manager::RemoteServerManager::handle(ctx);
+        let manager = crate::remote_server::manager::RemoteServerManager::handle(ctx);
 
         // Subscribe to host connect/disconnect events so the disconnection
         // banner appears/disappears when the remote session state changes.
         let watched_host_id = host_id.clone();
         ctx.subscribe_to_model(&manager, move |_me, _handle, event, ctx| {
-            use remote_server::manager::RemoteServerManagerEvent;
+            use crate::remote_server::manager::RemoteServerManagerEvent;
             match event {
                 RemoteServerManagerEvent::HostDisconnected { host_id }
                 | RemoteServerManagerEvent::HostConnected { host_id }
@@ -604,8 +604,8 @@ impl FileNotebookView {
             return;
         };
 
-        let request = remote_server::proto::ReadFileContextRequest {
-            files: vec![remote_server::proto::ReadFileContextFile {
+        let request = crate::remote_server::proto::ReadFileContextRequest {
+            files: vec![crate::remote_server::proto::ReadFileContextFile {
                 path: path_str,
                 line_ranges: vec![],
             }],
@@ -620,7 +620,7 @@ impl FileNotebookView {
                     if let Some(file_ctx) = response.file_contexts.first() {
                         let text = match &file_ctx.content {
                             Some(
-                                remote_server::proto::file_context_proto::Content::TextContent(
+                                crate::remote_server::proto::file_context_proto::Content::TextContent(
                                     text,
                                 ),
                             ) => text.as_str(),

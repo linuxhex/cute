@@ -23,7 +23,6 @@ pub(super) mod get_started_pane;
 pub(super) mod get_started_view;
 #[cfg(not(target_family = "wasm"))]
 pub(super) mod local_harness_launch;
-pub(super) mod network_log_pane;
 pub(super) mod notebook_pane;
 pub(super) mod settings_pane;
 pub(super) mod terminal_pane;
@@ -62,7 +61,6 @@ use crate::notebooks::file::FileNotebookView;
 use crate::notebooks::notebook::NotebookView;
 use crate::pane_group::focus_state::PaneFocusHandle;
 use crate::pane_group::pane::get_started_view::GetStartedView;
-use crate::server::network_log_view::NetworkLogView;
 use crate::drive::sharing::dialog::SharingDialogSource;
 use crate::settings::PaneSettings;
 use crate::settings_view::environments_page::EnvironmentsPageView;
@@ -149,7 +147,6 @@ pub(crate) enum IPaneType {
     AIDocument,
     ExecutionProfileEditor,
     GetStarted,
-    NetworkLog,
     Welcome,
     DeferredPlaceholder,
     BranchSelector,
@@ -174,7 +171,6 @@ impl Display for IPaneType {
             IPaneType::AIDocument => write!(f, "AI Document"),
             IPaneType::ExecutionProfileEditor => write!(f, "Execution Profile Editor"),
             IPaneType::GetStarted => write!(f, "GetStarted"),
-            IPaneType::NetworkLog => write!(f, "Network Log"),
             IPaneType::Welcome => write!(f, "Welcome"),
             IPaneType::DeferredPlaceholder => write!(f, "Placeholder"),
             IPaneType::BranchSelector => write!(f, "Branch Selector"),
@@ -271,11 +267,6 @@ impl PaneId {
 
     pub fn from_get_started_pane_ctx(ctx: &ViewContext<PaneView<GetStartedView>>) -> Self {
         Self::new_from_ctx(IPaneType::GetStarted, ctx)
-    }
-
-    /// Creates a [`PaneId`] from a [`ViewContext<PaneView<NetworkLogView>>`].
-    pub fn from_network_log_pane_ctx(ctx: &ViewContext<PaneView<NetworkLogView>>) -> Self {
-        Self::new_from_ctx(IPaneType::NetworkLog, ctx)
     }
 
     /// Creates a [`PaneId`] from a [`ViewContext<PaneView<BranchSelectorView>>`].
@@ -384,13 +375,6 @@ impl PaneId {
 
     pub fn from_welcome_pane_view(welcome_pane_view: &ViewHandle<PaneView<WelcomeView>>) -> Self {
         Self::new(IPaneType::Welcome, welcome_pane_view)
-    }
-
-    /// Creates a [`PaneId`] from a [`PaneView<NetworkLogView>`] entity ID.
-    pub fn from_network_log_pane_view(
-        network_log_pane_view: &ViewHandle<PaneView<NetworkLogView>>,
-    ) -> Self {
-        Self::new(IPaneType::NetworkLog, network_log_pane_view)
     }
 
     #[cfg_attr(not(feature = "local_fs"), allow(dead_code))]
@@ -504,9 +488,6 @@ impl PaneId {
             }
             IPaneType::GetStarted => {
                 ChildView::<PaneView<GetStartedView>>::with_id(self.0.pane_view_id).finish()
-            }
-            IPaneType::NetworkLog => {
-                ChildView::<PaneView<NetworkLogView>>::with_id(self.0.pane_view_id).finish()
             }
             IPaneType::Welcome => {
                 ChildView::<PaneView<WelcomeView>>::with_id(self.0.pane_view_id).finish()

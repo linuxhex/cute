@@ -136,20 +136,6 @@ pub trait CloudObject: Debug {
     /// the object's timestamps are sent to the server for comparison
     fn versions(&self, app: &AppContext) -> Option<UpdatedObjectInput>;
 
-    /// Returns an optional sync queue item of this object that would allow it to
-    /// created properly on the server. Returns None if it's already been created
-    /// server-side.
-    fn create_object_queue_item(
-        &self,
-        entrypoint: CloudObjectEventEntrypoint,
-        initiated_by: InitiatedBy,
-    ) -> Option<QueueItem>;
-
-    /// Returns a sync queue item of this object that would allow it to be updated
-    /// properly on the server.  Takes an optional revision_ts to set as the revision
-    /// in the sync queue item.
-    fn update_object_queue_item(&self, revision_ts: Option<Revision>) -> QueueItem;
-
     /// Returns whether this model type should render as a warp drive item.
     fn renders_in_warp_drive(&self) -> bool;
 
@@ -472,25 +458,6 @@ pub trait CloudModelType: Debug + Clone + Send + Sync {
     where
         Self: Sized;
 
-    /// Returns the sync queue item for creating this model on the server.
-    fn create_object_queue_item(
-        &self,
-        object: &Self::CloudObjectType,
-        entrypoint: CloudObjectEventEntrypoint,
-        initiated_by: InitiatedBy,
-    ) -> Option<QueueItem>;
-
-    /// Returns the sync queue item for updating this model on the server.
-    /// Takes an optional revision timestamp to set in the queue item.
-    fn update_object_queue_item(
-        &self,
-        revision_ts: Option<Revision>,
-        object: &Self::CloudObjectType,
-    ) -> QueueItem;
-
-    /// Returns a serialized model.
-    fn serialized(&self) -> SerializedModel;
-
     /// Sends a request to the server to create this model.
     async fn send_create_request(
         object_client: Arc<dyn ObjectClient>,
@@ -754,19 +721,6 @@ where
             }
             _ => None,
         }
-    }
-
-    fn create_object_queue_item(
-        &self,
-        entrypoint: CloudObjectEventEntrypoint,
-        initiated_by: InitiatedBy,
-    ) -> Option<QueueItem> {
-        self.model()
-            .create_object_queue_item(self, entrypoint, initiated_by)
-    }
-
-    fn update_object_queue_item(&self, revision_ts: Option<Revision>) -> QueueItem {
-        self.model().update_object_queue_item(revision_ts, self)
     }
 
     fn renders_in_warp_drive(&self) -> bool {

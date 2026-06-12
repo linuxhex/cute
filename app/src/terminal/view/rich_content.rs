@@ -19,8 +19,6 @@ use crate::terminal::ssh::warpify::SshWarpifyBlock;
 use crate::terminal::view::ambient_agent::AmbientAgentEntryBlock;
 use crate::terminal::view::block_onboarding::onboarding_agentic_suggestions_block::OnboardingAgenticSuggestionsBlock;
 use crate::terminal::view::init_environment::InitEnvironmentBlock;
-use crate::terminal::view::ssh_remote_server_choice_view::SshRemoteServerChoiceView;
-use crate::terminal::view::ssh_remote_server_failed_banner::SshRemoteServerFailedBanner;
 use crate::terminal::warpify::success_block::WarpifySuccessBlock;
 use crate::terminal::TerminalView;
 
@@ -251,12 +249,6 @@ pub enum RichContentMetadata {
     },
     SshErrorBlock {
         ssh_error_block_handle: ViewHandle<SshErrorBlock>,
-    },
-    SshRemoteServerChoiceBlock {
-        handle: ViewHandle<SshRemoteServerChoiceView>,
-    },
-    SshRemoteServerFailedBanner {
-        handle: ViewHandle<SshRemoteServerFailedBanner>,
     },
     WarpifySuccessBlock {
         bootstrap_success_block_handle: ViewHandle<WarpifySuccessBlock>,

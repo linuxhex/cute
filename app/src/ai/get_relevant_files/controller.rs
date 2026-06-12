@@ -175,7 +175,7 @@ impl GetRelevantFilesController {
 
                 self.handle_relevant_file_paths_result(
                     Ok(fragments.clone()),
-                    action_id.clone(),
+                    _action_id.clone(),
                     ctx,
                 );
             }

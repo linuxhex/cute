@@ -10,7 +10,7 @@ pub use warp_server_client::ids::GenericStringObjectId;
 
 use crate::appearance::Appearance;
 use crate::cloud_object::{
-    CloudModelType, CloudObject, CloudObjectEventEntrypoint, CreateCloudObjectResult,
+    CloudModelType, CloudObject, CreateCloudObjectResult,
     CreateObjectRequest, GenericCloudObject, GenericServerObject, GenericStringObjectFormat,
     GenericStringObjectUniqueKey, ObjectType, Revision, UpdateCloudObjectResult,
 };
@@ -20,7 +20,32 @@ use crate::persistence::ModelEvent;
 use crate::server::cloud_objects::update_manager::InitiatedBy;
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::server_api::object::ObjectClient;
-use crate::server::sync_queue::{QueueItem, SerializedModel};
+
+/// Serialized model data for generic string objects.
+#[derive(Clone, Debug, PartialEq, Default)]
+pub struct SerializedModel(String);
+
+impl SerializedModel {
+    pub fn new(data: String) -> Self {
+        Self(data)
+    }
+
+    pub fn model_as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl From<SerializedModel> for String {
+    fn from(model: SerializedModel) -> Self {
+        model.0
+    }
+}
+
+impl From<String> for SerializedModel {
+    fn from(s: String) -> Self {
+        Self(s)
+    }
+}
 
 /// A trait that generic string-based objects should implement.
 pub trait CloudStringObject: CloudObject + Send + Sync {
@@ -103,11 +128,13 @@ pub trait StringModel: Clone + Debug + PartialEq + Send + Sync + 'static {
     /// Returns a sync queue item of this object that would allow it to be updated
     /// properly on the server.  Takes an optional revision_ts to set as the revision
     /// in the sync queue item.
-    fn update_object_queue_item(
+    fn _update_object_queue_item(
         &self,
-        revision_ts: Option<Revision>,
-        object: &Self::CloudObjectType,
-    ) -> QueueItem;
+        _revision_ts: Option<Revision>,
+        _object: &Self::CloudObjectType,
+    ) {
+        // No-op for local version
+    }
 
     /// Returns whether this model type should clear on a unique key conflict.
     fn should_clear_on_unique_key_conflict(&self) -> bool {
@@ -221,46 +248,12 @@ where
         )
     }
 
-    fn create_object_queue_item(
-        &self,
-        object: &GenericCloudObject<GenericStringObjectId, Self>,
-        entrypoint: CloudObjectEventEntrypoint,
-        initiated_by: InitiatedBy,
-    ) -> Option<QueueItem> {
-        if let SyncId::ClientId(client_id) = object.id {
-            return Some(QueueItem::CreateObject {
-                object_type: self.object_type(),
-                owner: object.permissions.owner,
-                id: client_id,
-                title: None,
-                serialized_model: Some(object.model().serialized().into()),
-                initial_folder_id: object.metadata.folder_id,
-                entrypoint,
-                initiated_by,
-            });
-        }
-        None
-    }
-
-    fn update_object_queue_item(
-        &self,
-        revision_ts: Option<Revision>,
-        object: &GenericCloudObject<GenericStringObjectId, Self>,
-    ) -> QueueItem {
-        self.string_model
-            .update_object_queue_item(revision_ts, object)
-    }
-
     fn should_clear_on_unique_key_conflict(&self) -> bool {
         self.string_model.should_clear_on_unique_key_conflict()
     }
 
     fn should_update_after_server_conflict(&self) -> bool {
         true
-    }
-
-    fn serialized(&self) -> SerializedModel {
-        S::serialize(&self.string_model)
     }
 
     async fn send_create_request(

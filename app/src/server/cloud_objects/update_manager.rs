@@ -39,7 +39,6 @@ use crate::notebooks::{CloudNotebookModel, NotebookId};
 use crate::persistence::ModelEvent;
 use crate::server::ids::{ClientId, HashableId, HashedSqliteId, ObjectUid, ServerId, SyncId, ToServerId};
 use crate::server::server_api::object::ObjectClient;
-use crate::server::sync_queue::{CreationFailureReason, QueueItem, SyncQueue, SyncQueueEvent};
 use crate::workflows::workflow::Workflow;
 use crate::workflows::workflow_enum::{CloudWorkflowEnumModel, WorkflowEnum};
 use crate::workflows::{CloudWorkflowModel, WorkflowId};
@@ -143,13 +142,8 @@ impl UpdateManager {
     pub fn new(
         model_event_sender: Option<SyncSender<ModelEvent>>,
         object_client: Arc<dyn ObjectClient>,
-        ctx: &mut ModelContext<Self>,
+        _ctx: &mut ModelContext<Self>,
     ) -> Self {
-        let sync_queue = SyncQueue::handle(ctx);
-        ctx.subscribe_to_model(&sync_queue, |me, event, ctx| {
-            me.handle_model_event(event, ctx);
-        });
-
         Self {
             model_event_sender,
             object_client,
@@ -182,281 +176,6 @@ impl UpdateManager {
                     log::error!("Error saving to database: {e:?}");
                 }
             }
-        }
-    }
-
-    fn handle_model_event(&mut self, event: &SyncQueueEvent, ctx: &mut ModelContext<Self>) {
-        match event {
-            SyncQueueEvent::ObjectCreationSuccessful {
-                server_creation_info,
-                client_id,
-                revision_and_editor,
-                metadata_ts,
-                initiated_by,
-            } => {
-                let server_id = &server_creation_info.server_id_and_type.id;
-
-                // Update server ID in sqlite.
-                self.save_to_db([ModelEvent::UpdateObjectAfterServerCreation {
-                    client_id: client_id.sqlite_hash(),
-                    server_creation_info: server_creation_info.clone(),
-                }]);
-
-                // Update in-memory model.
-                CloudModel::handle(ctx).update(ctx, |cloud_model, ctx| {
-                    cloud_model.update_object_after_server_creation(
-                        *client_id,
-                        server_creation_info.clone(),
-                        ctx,
-                    );
-                    if let Some(object) = cloud_model.get_mut_by_uid(&server_id.uid()) {
-                        let is_no_longer_in_flight = {
-                            let status_if_no_reqs = CloudObjectSyncStatus::NoLocalChanges;
-                            object.decrement_in_flight_request_count(status_if_no_reqs)
-                        };
-
-                        if is_no_longer_in_flight {
-                            self.save_to_db([ModelEvent::MarkObjectAsSynced {
-                                hashed_sqlite_id: server_creation_info
-                                    .server_id_and_type
-                                    .sqlite_type_and_uid_hash(),
-                                revision_and_editor: revision_and_editor.clone(),
-                                metadata_ts: Some(*metadata_ts),
-                            }]);
-                        }
-
-                        ctx.notify();
-                    }
-
-                    cloud_model.set_latest_revision_and_editor(
-                        &server_id.uid(),
-                        revision_and_editor.clone(),
-                        ctx,
-                    );
-
-                    cloud_model.update_object_metadata_last_updated_ts(
-                        &server_id.uid(),
-                        *metadata_ts,
-                        ctx,
-                    );
-                });
-
-                // Delete the actions on the client ID.
-                ObjectActions::handle(ctx).update(ctx, |object_actions, ctx| {
-                    object_actions.delete_actions_for_object(&client_id.to_string(), ctx);
-                });
-                self.sync_actions_for_objects_to_sqlite(vec![&client_id.to_string()], ctx);
-
-                ctx.emit(UpdateManagerEvent::ObjectOperationComplete {
-                    result: ObjectOperationResult {
-                        success_type: OperationSuccessType::Success,
-                        operation: ObjectOperation::Create {
-                            initiated_by: *initiated_by,
-                        },
-                        client_id: Some(*client_id),
-                        server_id: Some(*server_id),
-                        num_objects: None,
-                    },
-                });
-            }
-            SyncQueueEvent::ObjectUpdateSuccessful {
-                server_id,
-                revision_and_editor,
-            } => {
-                CloudModel::handle(ctx).update(ctx, |cloud_model, ctx| {
-                    cloud_model.set_latest_revision_and_editor(
-                        &server_id.uid(),
-                        revision_and_editor.clone(),
-                        ctx,
-                    );
-                    cloud_model.check_and_maybe_clear_current_conflict(&server_id.uid(), ctx);
-
-                    if let Some(object) = cloud_model.get_mut_by_uid(&server_id.uid()) {
-                        let is_no_longer_in_flight = {
-                            object.decrement_in_flight_request_count(
-                                CloudObjectSyncStatus::NoLocalChanges,
-                            )
-                        };
-
-                        if is_no_longer_in_flight {
-                            self.save_to_db([ModelEvent::MarkObjectAsSynced {
-                                hashed_sqlite_id: server_id
-                                    .sqlite_type_and_uid_hash(object.object_type().into()),
-                                revision_and_editor: revision_and_editor.clone(),
-                                metadata_ts: None,
-                            }]);
-                        }
-
-                        ctx.notify();
-                    }
-                });
-
-                ctx.emit(UpdateManagerEvent::ObjectOperationComplete {
-                    result: ObjectOperationResult {
-                        success_type: OperationSuccessType::Success,
-                        operation: ObjectOperation::Update,
-                        client_id: None,
-                        server_id: Some(*server_id),
-                        num_objects: None,
-                    },
-                });
-            }
-            SyncQueueEvent::ObjectCreationFailure {
-                reason: CreationFailureReason::UniqueKeyConflict { id, initiated_by },
-            } => {
-                self.handle_failure_response(id, true, ctx);
-                ctx.emit(UpdateManagerEvent::ObjectOperationComplete {
-                    result: ObjectOperationResult {
-                        success_type: OperationSuccessType::Failure,
-                        operation: ObjectOperation::Create {
-                            initiated_by: *initiated_by,
-                        },
-                        client_id: ClientId::from_hash(id),
-                        server_id: None,
-                        num_objects: None,
-                    },
-                });
-            }
-            SyncQueueEvent::ObjectCreationFailure {
-                reason: CreationFailureReason::Other { id, initiated_by },
-            } => {
-                self.handle_failure_response(id, false, ctx);
-                ctx.emit(UpdateManagerEvent::ObjectOperationComplete {
-                    result: ObjectOperationResult {
-                        success_type: OperationSuccessType::Failure,
-                        operation: ObjectOperation::Create {
-                            initiated_by: *initiated_by,
-                        },
-                        client_id: ClientId::from_hash(id),
-                        server_id: None,
-                        num_objects: None,
-                    },
-                });
-            }
-            SyncQueueEvent::ObjectCreationFailure {
-                reason:
-                    CreationFailureReason::Denied {
-                        message,
-                        client_id,
-                        initiated_by,
-                    },
-            } => {
-                self.handle_creation_denied_response(client_id, ctx);
-                ctx.emit(UpdateManagerEvent::ObjectOperationComplete {
-                    result: ObjectOperationResult {
-                        success_type: OperationSuccessType::Denied(message.to_string()),
-                        operation: ObjectOperation::Create {
-                            initiated_by: *initiated_by,
-                        },
-                        client_id: Some(*client_id),
-                        server_id: None,
-                        num_objects: None,
-                    },
-                });
-            }
-            SyncQueueEvent::ObjectUpdateFailure { id } => {
-                self.handle_failure_response(&id.uid(), false, ctx);
-                match id {
-                    SyncId::ClientId(id) => ctx.emit(UpdateManagerEvent::ObjectOperationComplete {
-                        result: ObjectOperationResult {
-                            success_type: OperationSuccessType::Failure,
-                            operation: ObjectOperation::Update,
-                            client_id: Some(*id),
-                            server_id: None,
-                            num_objects: None,
-                        },
-                    }),
-                    SyncId::ServerId(id) => ctx.emit(UpdateManagerEvent::ObjectOperationComplete {
-                        result: ObjectOperationResult {
-                            success_type: OperationSuccessType::Failure,
-                            operation: ObjectOperation::Update,
-                            client_id: None,
-                            server_id: Some(*id),
-                            num_objects: None,
-                        },
-                    }),
-                }
-            }
-            SyncQueueEvent::ObjectUpdateRejected {
-                id,
-                object: conflicting_object,
-            } => {
-                self.handle_conflicting_object(conflicting_object, id, ctx);
-                ctx.emit(UpdateManagerEvent::ObjectOperationComplete {
-                    result: ObjectOperationResult {
-                        success_type: OperationSuccessType::Rejection,
-                        operation: ObjectOperation::Update,
-                        client_id: None,
-                        server_id: Some(ServerId::from_string_lossy(id)),
-                        num_objects: None,
-                    },
-                });
-            }
-            SyncQueueEvent::ObjectUpdateFeatureNotAvailable { id } => {
-                ctx.emit(UpdateManagerEvent::ObjectOperationComplete {
-                    result: ObjectOperationResult {
-                        success_type: OperationSuccessType::FeatureNotAvailable,
-                        operation: ObjectOperation::Update,
-                        client_id: None,
-                        server_id: Some(ServerId::from_string_lossy(id)),
-                        num_objects: None,
-                    },
-                });
-            }
-            SyncQueueEvent::ReportObjectActionFailed {
-                uid,
-                action_timestamp,
-            } => {
-                self.remove_pending_object_action(uid, action_timestamp, ctx);
-                self.sync_actions_for_objects_to_sqlite(vec![uid], ctx);
-            }
-            SyncQueueEvent::ReportObjectActionSucceeded {
-                uid,
-                action_timestamp,
-                action_history,
-            } => {
-                self.remove_pending_object_action(uid, action_timestamp, ctx);
-                self.maybe_overwrite_object_action_history(action_history, ctx);
-                self.sync_actions_for_objects_to_sqlite(vec![uid], ctx);
-            }
-        }
-    }
-
-    fn handle_creation_denied_response(&self, client_id: &ClientId, ctx: &mut ModelContext<Self>) {
-        let uid = client_id.to_string();
-
-        let in_personal_drive = CloudModel::handle(ctx).read(ctx, |cloud_model, ctx| {
-            cloud_model
-                .get_by_uid(&uid)
-                .is_none_or(|object| object.space(ctx) == Space::Personal)
-        });
-
-        if !in_personal_drive {
-            CloudModel::handle(ctx).update(ctx, |cloud_model, ctx| {
-                let personal_drive = UserWorkspaces::as_ref(ctx).personal_drive(ctx);
-                cloud_model.update_object_location(&uid, personal_drive, None, ctx);
-            });
-
-            let cloud_model = CloudModel::as_ref(ctx);
-            if let Some(cloud_object) = cloud_model.get_by_uid(&uid) {
-                self.save_to_db([cloud_object.upsert_event()]);
-            }
-
-            CloudModel::handle(ctx).update(ctx, |cloud_model, ctx| {
-                if let Some(object) = cloud_model.get_mut_by_uid(&uid) {
-                    let queue_item = object
-                        .create_object_queue_item(
-                            CloudObjectEventEntrypoint::default(),
-                            InitiatedBy::User,
-                        )
-                        .unwrap_or(object.update_object_queue_item(None));
-                    SyncQueue::handle(ctx).update(ctx, |sync_queue, ctx| {
-                        sync_queue.enqueue(queue_item, ctx);
-                    });
-                }
-            });
-        } else {
-            self.handle_failure_response(&uid, false, ctx);
         }
     }
 
@@ -1175,10 +894,10 @@ impl UpdateManager {
         model: M,
         owner: Owner,
         client_id: ClientId,
-        entrypoint: CloudObjectEventEntrypoint,
+        _entrypoint: CloudObjectEventEntrypoint,
         force_expand: bool,
         initial_folder_id: Option<SyncId>,
-        initiated_by: InitiatedBy,
+        _initiated_by: InitiatedBy,
         ctx: &mut ModelContext<Self>,
     ) where
         K: HashableId
@@ -1215,16 +934,6 @@ impl UpdateManager {
         if let Some(object) = cloud_model.get_object_of_type::<K, M>(&object_id) {
             self.save_to_db([object.upsert_event()]);
         }
-
-        SyncQueue::handle(ctx).update(ctx, |sync_queue, ctx| {
-            let cloud_model = CloudModel::as_ref(ctx);
-            if let Some(object) = cloud_model.get_object_of_type::<K, M>(&object_id) {
-                if let Some(queue_item) = object.create_object_queue_item(entrypoint, initiated_by)
-                {
-                    sync_queue.enqueue(queue_item, ctx);
-                }
-            };
-        });
     }
 
     /// Generic function for updating a cloud object with a new model.
@@ -1232,7 +941,7 @@ impl UpdateManager {
         &mut self,
         model: M,
         object_id: SyncId,
-        revision_ts: Option<Revision>,
+        _revision_ts: Option<Revision>,
         ctx: &mut ModelContext<Self>,
     ) where
         K: HashableId
@@ -1258,13 +967,6 @@ impl UpdateManager {
         if let Some(object) = cloud_model.get_object_of_type::<K, M>(&object_id) {
             self.save_to_db([object.upsert_event()]);
         };
-
-        SyncQueue::handle(ctx).update(ctx, |sync_queue, ctx| {
-            let cloud_model = CloudModel::as_ref(ctx);
-            if let Some(object) = cloud_model.get_object_of_type::<K, M>(&object_id) {
-                sync_queue.enqueue(object.update_object_queue_item(revision_ts), ctx);
-            };
-        });
     }
 
     pub fn record_object_action(
@@ -1288,18 +990,6 @@ impl UpdateManager {
         });
 
         self.save_to_db([ModelEvent::InsertObjectAction { object_action }]);
-
-        SyncQueue::handle(ctx).update(ctx, |sync_queue, ctx| {
-            sync_queue.enqueue(
-                QueueItem::RecordObjectAction {
-                    id_and_type,
-                    action_type,
-                    data,
-                    action_timestamp,
-                },
-                ctx,
-            );
-        });
     }
 
     fn remove_pending_object_action(

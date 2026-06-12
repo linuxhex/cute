@@ -8,7 +8,7 @@ use bimap::BiMap;
 use futures_util::stream::AbortHandle;
 use lsp::types::TextDocumentContentChangeEvent;
 use lsp::{LspManagerModel, LspServerLogLevel, LspServerModel};
-use remote_server::manager::RemoteServerManager;
+use crate::remote_server::manager::RemoteServerManager;
 use string_offset::{ByteOffset, CharOffset};
 use vec1::vec1;
 use warp_core::features::FeatureFlag;
@@ -67,7 +67,7 @@ struct PendingEditBatch {
     expected_server_version: u64,
     /// Accumulated `TextEdit`s — each edit's offsets reference the buffer state
     /// AFTER all previous edits in this batch have been applied.
-    edits: Vec<remote_server::proto::TextEdit>,
+    edits: Vec<crate::remote_server::proto::TextEdit>,
     /// The client version to send (updated on each append).
     latest_client_version: ContentVersion,
     /// Handle to cancel the debounce timer when a new edit arrives or the
@@ -82,7 +82,7 @@ impl PendingEditBatch {
     /// Note: `send_buffer_edit` uses best-effort `try_send` on an unbounded
     /// channel, so it can only fail if the connection is closed (in which
     /// case the subsequent `save_buffer` would also fail).
-    fn flush(self, client: &remote_server::client::RemoteServerClient, path: &str) {
+    fn flush(self, client: &crate::remote_server::client::RemoteServerClient, path: &str) {
         if let Some(timer) = &self.debounce_timer {
             timer.abort();
         }
@@ -336,7 +336,7 @@ impl GlobalBufferModel {
         // Subscribe to remote buffer updates from the RemoteServerManager.
         #[cfg(feature = "local_tty")]
         if FeatureFlag::SshRemoteServer.is_enabled() {
-            use remote_server::manager::{RemoteServerManager, RemoteServerManagerEvent};
+            use crate::remote_server::manager::{RemoteServerManager, RemoteServerManagerEvent};
             let mgr = RemoteServerManager::handle(_ctx);
             _ctx.subscribe_to_model(&mgr, |me, event, ctx| match event {
                 RemoteServerManagerEvent::BufferUpdated {
@@ -1698,7 +1698,7 @@ impl GlobalBufferModel {
                     let Some(buffer) = state.buffer.upgrade(ctx) else {
                         return;
                     };
-                    let edits: Vec<remote_server::proto::TextEdit> = delta
+                    let edits: Vec<crate::remote_server::proto::TextEdit> = delta
                         .precise_deltas
                         .iter()
                         .map(|d| {
@@ -1707,7 +1707,7 @@ impl GlobalBufferModel {
                                 .as_ref(ctx)
                                 .text_in_range(d.resolved_range.clone())
                                 .into_string();
-                            remote_server::proto::TextEdit {
+                            crate::remote_server::proto::TextEdit {
                                 start_offset: d.replaced_range.start.as_usize() as u64,
                                 end_offset: d.replaced_range.end.as_usize() as u64,
                                 text,
@@ -1804,7 +1804,7 @@ impl GlobalBufferModel {
     fn apply_open_buffer_response(
         &mut self,
         file_id: FileId,
-        result: Result<remote_server::proto::OpenBufferResponse, String>,
+        result: Result<crate::remote_server::proto::OpenBufferResponse, String>,
         ctx: &mut ModelContext<Self>,
     ) {
         let res = result.and_then(|res| {
@@ -1817,8 +1817,8 @@ impl GlobalBufferModel {
             })
         });
         match res {
-            Ok(remote_server::proto::open_buffer_response::Result::Success(
-                remote_server::proto::OpenBufferSuccess {
+            Ok(crate::remote_server::proto::open_buffer_response::Result::Success(
+                crate::remote_server::proto::OpenBufferSuccess {
                     content,
                     server_version,
                 },
@@ -1865,8 +1865,8 @@ impl GlobalBufferModel {
                     content_version: version,
                 });
             }
-            Ok(remote_server::proto::open_buffer_response::Result::Error(
-                remote_server::proto::FileOperationError { message: error },
+            Ok(crate::remote_server::proto::open_buffer_response::Result::Error(
+                crate::remote_server::proto::FileOperationError { message: error },
             ))
             | Err(error) => {
                 log::warn!("[remote-buffer] Failed to open remote buffer: {error}");
@@ -1912,7 +1912,7 @@ impl GlobalBufferModel {
     pub fn apply_client_edit(
         &mut self,
         file_id: FileId,
-        edits: &[super::super::remote_server::proto::TextEdit],
+        edits: &[crate::remote_server::proto::TextEdit],
         expected_server_version: ContentVersion,
         new_client_version: ContentVersion,
         ctx: &mut ModelContext<Self>,
@@ -2383,7 +2383,7 @@ impl GlobalBufferModel {
     fn push_edit_to_pending_batch(
         &mut self,
         file_id: FileId,
-        edits: Vec<remote_server::proto::TextEdit>,
+        edits: Vec<crate::remote_server::proto::TextEdit>,
         _ctx: &mut ModelContext<Self>,
     ) {
         let Some(state) = self.buffers.get_mut(&file_id) else {

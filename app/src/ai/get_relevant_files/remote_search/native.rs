@@ -5,7 +5,7 @@ use ::ai::index::full_source_code_embedding::{
 };
 use ::ai::index::locations::CodeContextLocation;
 use itertools::Itertools;
-use remote_server::proto::{
+use crate::remote_server::proto::{
     file_context_proto, FragmentMetadata as ProtoFragmentMetadata, LineRange, ReadFileContextFile,
     ReadFileContextRequest, ReadFileContextResponse,
 };
@@ -71,7 +71,7 @@ pub(super) fn send_request(
         .active_repo_availability(&session_context, requested_codebase_path.as_deref());
     match availability {
         RemoteCodebaseSearchAvailability::Ready(search_context) => {
-            let Some(client) = remote_server::manager::RemoteServerManager::as_ref(ctx)
+            let Some(client) = crate::remote_server::manager::RemoteServerManager::as_ref(ctx)
                 .client_for_host(&search_context.remote_path.host_id)
                 .cloned()
             else {
@@ -82,7 +82,7 @@ pub(super) fn send_request(
             };
             if search_context.is_stale {
                 let remote_path = search_context.remote_path.clone();
-                let sync_requested = remote_server::manager::RemoteServerManager::handle(ctx)
+                let sync_requested = crate::remote_server::manager::RemoteServerManager::handle(ctx)
                     .update(ctx, |manager, ctx| {
                         manager.trigger_codebase_incremental_sync(remote_path, ctx)
                     });
@@ -131,7 +131,7 @@ async fn execute_remote_codebase_search(
     query: String,
     partial_paths: Option<Vec<String>>,
     search_context: RemoteCodebaseSearchContext,
-    client: Arc<remote_server::client::RemoteServerClient>,
+    client: Arc<crate::remote_server::client::RemoteServerClient>,
     store_client: Arc<ServerApi>,
 ) -> Result<SearchCodebaseResult, anyhow::Error> {
     let root_hash = search_context.root_hash;
@@ -384,7 +384,7 @@ fn read_context_locations_request(
 // `remote_server` protocol/client crate should not depend on it just to return typed agent
 // file contexts.
 fn proto_file_context_to_file_context(
-    file_context: remote_server::proto::FileContextProto,
+    file_context: crate::remote_server::proto::FileContextProto,
 ) -> Option<FileContext> {
     let content = match file_context.content? {
         file_context_proto::Content::TextContent(text) => AnyFileContent::StringContent(text),

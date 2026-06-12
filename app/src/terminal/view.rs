@@ -10,6 +10,8 @@ pub mod init;
 pub mod inline_banner;
 pub mod load_ai_conversation;
 pub(crate) mod queued_prompts_panel;
+mod ssh_remote_server_choice_view;
+mod ssh_remote_server_failed_banner;
 #[cfg(test)]
 #[path = "view/queued_prompts_tests.rs"]
 mod queued_prompts_tests;
@@ -39,8 +41,6 @@ pub mod rich_content;
 mod shared_session;
 mod shell_terminated_banner;
 pub mod ssh_file_upload;
-pub(crate) mod ssh_remote_server_choice_view;
-pub(crate) mod ssh_remote_server_failed_banner;
 mod tab_metadata;
 #[cfg(any(test, feature = "integration_tests"))]
 mod testing;
@@ -121,6 +121,10 @@ use settings::{Setting, ToggleableSetting};
 use shared_session::cloud_conversation_continuation::CloudConversationContinuationUiState;
 use shared_session::{SharedSessionAdapter, Viewer};
 use ssh_file_upload::{FileUpload, FileUploadEvent};
+use ssh_remote_server_choice_view::{SshRemoteServerChoiceView, SshRemoteServerChoiceViewEvent};
+use ssh_remote_server_failed_banner::{
+    SshRemoteServerFailedBanner, SshRemoteServerFailedBannerEvent,
+};
 use sum_tree::SeekBias;
 use use_agent_footer::UseAgentToolbar;
 use uuid::Uuid;
@@ -488,12 +492,6 @@ pub use crate::terminal::view::rich_content::{
     RichContentMetadata,
 };
 use crate::terminal::view::ssh_file_upload::FileUploadId;
-use crate::terminal::view::ssh_remote_server_choice_view::{
-    SshRemoteServerChoiceView, SshRemoteServerChoiceViewEvent,
-};
-use crate::terminal::view::ssh_remote_server_failed_banner::{
-    SshRemoteServerFailedBanner, SshRemoteServerFailedBannerEvent,
-};
 use crate::terminal::view::telemetry::PromptSuggestionFallbackReason;
 use crate::terminal::view::zero_state_block::TerminalViewZeroStateBlock;
 use crate::terminal::warpify::render::render_subshell_separator;
@@ -4368,7 +4366,7 @@ impl TerminalView {
                                 .unwrap_or((None, None));
                             me.show_ssh_remote_server_failed_banner(
                                 *session_id,
-                                remote_server::transport::UserFacingError {
+                                crate::remote_server::transport::UserFacingError {
                                     body: "Failed to start SSH extension".into(),
                                     detail: if error.is_empty() {
                                         None
@@ -4427,7 +4425,7 @@ impl TerminalView {
                             me.show_ssh_remote_server_failed_banner(
                                 *session_id,
                                 error.user_facing_error(
-                                    remote_server::transport::SetupStage::InstallBinary,
+                                    crate::remote_server::transport::SetupStage::InstallBinary,
                                 ),
                                 ctx,
                             );
@@ -4453,7 +4451,7 @@ impl TerminalView {
                             me.show_ssh_remote_server_failed_banner(
                                 *session_id,
                                 error.user_facing_error(
-                                    remote_server::transport::SetupStage::CheckBinary,
+                                    crate::remote_server::transport::SetupStage::CheckBinary,
                                 ),
                                 ctx,
                             );
@@ -12394,7 +12392,7 @@ impl TerminalView {
     fn show_ssh_remote_server_failed_banner(
         &mut self,
         session_id: SessionId,
-        error: remote_server::transport::UserFacingError,
+        error: crate::remote_server::transport::UserFacingError,
         ctx: &mut ViewContext<Self>,
     ) {
         let already_present = self.rich_content_views.iter().any(|view| {

@@ -9,7 +9,7 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use remote_server::proto::UploadHandoffSnapshotResponse;
+use crate::remote_server::proto::UploadHandoffSnapshotResponse;
 use warp_util::standardized_path::StandardizedPath;
 use warpui::{ModelHandle, SingletonEntity, ViewContext};
 
@@ -52,7 +52,7 @@ pub(crate) enum SnapshotUploadTarget {
     },
     /// Delegate to the remote server daemon via `UploadHandoffSnapshot` RPC.
     Remote {
-        client: Arc<remote_server::client::RemoteServerClient>,
+        client: Arc<crate::remote_server::client::RemoteServerClient>,
     },
 }
 

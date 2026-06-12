@@ -60,7 +60,6 @@ mod profiling;
 mod projects;
 mod prompt;
 mod quit_warning;
-#[allow(dead_code)]
 mod remote_server;
 mod resource_limits;
 // #[allow(dead_code)]
@@ -151,8 +150,6 @@ use quit_warning::UnsavedStateSummary;
 use repo_metadata::{
     repositories::DetectedRepositories, watcher::DirectoryWatcher, RepoMetadataModel,
 };
-use server::network_log_pane_manager::NetworkLogPaneManager;
-use server::network_logging::NetworkLogModel;
 use server::telemetry::context_provider::AppTelemetryContextProvider;
 use server::voice_transcriber::ServerVoiceTranscriber;
 #[cfg(feature = "local_fs")]
@@ -207,9 +204,6 @@ pub use warp_core::errors::{report_error, report_if_error};
 use warp_core::execution_mode::{AppExecutionMode, ExecutionMode};
 // Re-export the debounce function to simplify imports.
 pub use warp_core::r#async::debounce;
-// Re-export the send_telemetry_from_ctx macro at the crate root level
-pub use warp_core::send_telemetry_from_app_ctx;
-pub use warp_core::send_telemetry_from_ctx;
 use warp_core::user_preferences::GetUserPreferences as _;
 // Re-export the safe logging macros at the crate root level for backwards compatibility
 pub use warp_core::{safe_debug, safe_error, safe_info, safe_warn};
@@ -262,6 +256,7 @@ use crate::notebooks::manager::NotebookManager;
 use crate::notebooks::CloudNotebook;
 use crate::notification::NotificationContext;
 use crate::palette::PaletteMode;
+use crate::server::telemetry::PaletteSource;
 use crate::persistence::model::AgentConversationData;
 use crate::persistence::PersistenceWriter;
 use crate::projects::ProjectManagementModel;
@@ -270,13 +265,9 @@ use crate::root_view::{
 };
 use crate::server::cloud_objects::listener::Listener;
 use crate::server::cloud_objects::update_manager::UpdateManager;
+use crate::server::sync_queue::SyncQueue;
 #[cfg(not(target_family = "wasm"))]
 use crate::server::iap::IapManager;
-use crate::server::sync_queue::{QueueItem, SyncQueue};
-pub use crate::server::telemetry::{
-    AgentModeEntrypoint, AgentModeEntrypointSelectionType, TelemetryEvent,
-};
-use crate::server::telemetry::{AppStartupInfo, PaletteSource, TelemetryCollector};
 use crate::session_management::{RunningSessionSummary, SessionNavigationData};
 use crate::settings::cloud_preferences_syncer::initialize_cloud_preferences_syncer;
 use crate::settings::manager::SettingsManager;
@@ -322,26 +313,6 @@ fn determine_agent_source(
         LaunchMode::App { .. } | LaunchMode::Test { .. } => {
             Some(crate::ai::ambient_agents::AgentSource::CloudMode)
         }
-        // RemoteServerProxy and RemoteServerDaemon are headless server
-        // processes that don't use the agent subsystem.
-        LaunchMode::RemoteServerProxy | LaunchMode::RemoteServerDaemon { .. } => None,
-    }
-}
-
-#[cfg(feature = "local_fs")]
-fn daemon_codebase_index_snapshot_storage(launch_mode: &LaunchMode) -> Option<SnapshotStorage> {
-    match launch_mode {
-        LaunchMode::RemoteServerDaemon { identity_key } => {
-            let data_dir = remote_server::setup::remote_server_daemon_data_dir(identity_key);
-            let snapshot_dir = PathBuf::from(tilde(&data_dir).into_owned())
-                .join("cache")
-                .join("codebase_index_snapshots");
-            SnapshotStorage::from_dir(snapshot_dir)
-        }
-        LaunchMode::App { .. }
-        | LaunchMode::CommandLine { .. }
-        | LaunchMode::RemoteServerProxy
-        | LaunchMode::Test { .. } => None,
     }
 }
 
@@ -371,28 +342,15 @@ pub enum LaunchMode {
         driver: Box<Option<TestDriver>>,
         is_integration_test: bool,
     },
-
-    /// Remote server proxy — bridges SSH stdio to the daemon's Unix socket.
-    /// This is a short-lived process that runs for the lifetime of an SSH session.
-    RemoteServerProxy,
-
-    /// Remote server daemon — long-lived headless process serving remote
-    /// connections via a Unix domain socket.
-    RemoteServerDaemon {
-        /// Stable identity key used to partition the daemon's socket/PID
-        /// directory on the remote host.
-        identity_key: String,
-    },
 }
 
 impl LaunchMode {
     fn args(&self) -> Cow<'_, warp_cli::AppArgs> {
         match self {
             LaunchMode::App { args, .. } => Cow::Borrowed(args),
-            LaunchMode::CommandLine { .. }
-            | LaunchMode::Test { .. }
-            | LaunchMode::RemoteServerProxy
-            | LaunchMode::RemoteServerDaemon { .. } => Cow::Owned(warp_cli::AppArgs::default()),
+            LaunchMode::CommandLine { .. } | LaunchMode::Test { .. } => {
+                Cow::Owned(warp_cli::AppArgs::default())
+            }
         }
     }
 
@@ -403,20 +361,14 @@ impl LaunchMode {
                 is_integration_test,
                 ..
             } => *is_integration_test,
-            LaunchMode::App { .. }
-            | LaunchMode::CommandLine { .. }
-            | LaunchMode::RemoteServerProxy
-            | LaunchMode::RemoteServerDaemon { .. } => false,
+            LaunchMode::App { .. } | LaunchMode::CommandLine { .. } => false,
         }
     }
 
     fn take_test_driver(&mut self) -> Option<TestDriver> {
         match self {
             LaunchMode::Test { driver, .. } => driver.take(),
-            LaunchMode::App { .. }
-            | LaunchMode::CommandLine { .. }
-            | LaunchMode::RemoteServerProxy
-            | LaunchMode::RemoteServerDaemon { .. } => None,
+            LaunchMode::App { .. } | LaunchMode::CommandLine { .. } => None,
         }
     }
 
@@ -433,20 +385,13 @@ impl LaunchMode {
             LaunchMode::App { .. } => ExecutionMode::App,
             LaunchMode::CommandLine { .. } => ExecutionMode::Sdk,
             LaunchMode::Test { .. } => ExecutionMode::App,
-            // RemoteServerProxy is a thin byte bridge; Sdk is the closest match.
-            LaunchMode::RemoteServerProxy => ExecutionMode::Sdk,
-            // RemoteServerDaemon gets its own mode for distinct Sentry tagging.
-            LaunchMode::RemoteServerDaemon { .. } => ExecutionMode::RemoteServerDaemon,
         }
     }
 
     fn is_sandboxed(&self) -> bool {
         match self {
             LaunchMode::CommandLine { is_sandboxed, .. } => *is_sandboxed,
-            LaunchMode::App { .. }
-            | LaunchMode::Test { .. }
-            | LaunchMode::RemoteServerProxy
-            | LaunchMode::RemoteServerDaemon { .. } => false,
+            LaunchMode::App { .. } | LaunchMode::Test { .. } => false,
         }
     }
 
@@ -457,7 +402,6 @@ impl LaunchMode {
                 CliCommand::Agent(AgentCommand::Run(args)) => !args.gui,
                 _ => true,
             },
-            LaunchMode::RemoteServerProxy | LaunchMode::RemoteServerDaemon { .. } => true,
             LaunchMode::App { .. } | LaunchMode::Test { .. } => false,
         }
     }
@@ -468,11 +412,7 @@ impl LaunchMode {
             LaunchMode::CommandLine { command, .. } => {
                 matches!(command, CliCommand::Agent(AgentCommand::Run { .. }))
             }
-            LaunchMode::RemoteServerDaemon { .. } => {
-                FeatureFlag::RemoteCodebaseIndexing.is_enabled()
-            }
             LaunchMode::App { .. } | LaunchMode::Test { .. } => true,
-            LaunchMode::RemoteServerProxy => false,
         }
     }
 
@@ -481,10 +421,7 @@ impl LaunchMode {
     pub(crate) fn crash_recovery_enabled(&self) -> bool {
         match self {
             LaunchMode::App { .. } => true,
-            LaunchMode::CommandLine { .. }
-            | LaunchMode::Test { .. }
-            | LaunchMode::RemoteServerProxy
-            | LaunchMode::RemoteServerDaemon { .. } => false,
+            LaunchMode::CommandLine { .. } | LaunchMode::Test { .. } => false,
         }
     }
 
@@ -492,22 +429,14 @@ impl LaunchMode {
     #[cfg_attr(not(feature = "crash_reporting"), allow(dead_code))]
     pub(crate) fn needs_crash_reporting(&self) -> bool {
         match self {
-            LaunchMode::App { .. }
-            | LaunchMode::CommandLine { .. }
-            | LaunchMode::Test { .. }
-            | LaunchMode::RemoteServerDaemon { .. }
-            | LaunchMode::RemoteServerProxy => true,
+            LaunchMode::App { .. } | LaunchMode::CommandLine { .. } | LaunchMode::Test { .. } => true,
         }
     }
 
     /// Whether profiling and tracing should be initialized.
     pub(crate) fn needs_profiling(&self) -> bool {
         match self {
-            LaunchMode::App { .. }
-            | LaunchMode::CommandLine { .. }
-            | LaunchMode::Test { .. }
-            | LaunchMode::RemoteServerDaemon { .. }
-            | LaunchMode::RemoteServerProxy => true,
+            LaunchMode::App { .. } | LaunchMode::CommandLine { .. } | LaunchMode::Test { .. } => true,
         }
     }
 
@@ -521,9 +450,6 @@ impl LaunchMode {
                     Some(LogDestination::File)
                 }
             }
-            // Proxy must log to stderr because stdout is the protocol channel.
-            LaunchMode::RemoteServerProxy => Some(LogDestination::Stderr),
-            LaunchMode::RemoteServerDaemon { .. } => Some(LogDestination::File),
             LaunchMode::App { .. } | LaunchMode::Test { .. } => None,
         }
     }
@@ -638,25 +564,6 @@ pub fn run() -> Result<()> {
                 }
             }
             #[cfg(not(target_family = "wasm"))]
-            warp_cli::Command::Worker(warp_cli::WorkerCommand::RemoteServerProxy(args)) => {
-                // Proxy is a thin byte bridge (stdin/stdout ↔ Unix socket).
-                // It only needs logging to stderr since stdout is the protocol
-                // channel. No crash reporting, no initialize_app.
-                let launch_mode = LaunchMode::RemoteServerProxy;
-                warp_logging::init(warp_logging::LogConfig {
-                    is_cli: true,
-                    log_destination: launch_mode.log_destination(),
-                    ..Default::default()
-                })?;
-                return crate::remote_server::run_proxy(args.identity_key.clone());
-            }
-            #[cfg(not(target_family = "wasm"))]
-            warp_cli::Command::Worker(warp_cli::WorkerCommand::RemoteServerDaemon(args)) => {
-                // Daemon handles its own full initialization (including
-                // initialize_app and crash reporting) inside run_daemon_app.
-                return crate::remote_server::run_daemon(args.identity_key.clone());
-            }
-            #[cfg(not(target_family = "wasm"))]
             warp_cli::Command::Worker(warp_cli::WorkerCommand::RipgrepSearch {
                 parent,
                 ignore_case,
@@ -715,7 +622,9 @@ pub fn run() -> Result<()> {
             }
             #[cfg(not(target_family = "wasm"))]
             warp_cli::Command::PrintTelemetryEvents => {
-                return TelemetryEvent::print_telemetry_events_json();
+                // Telemetry has been disabled
+                println!("Telemetry has been disabled in this build.");
+                return Ok(());
             }
         }
     }
@@ -1110,11 +1019,6 @@ pub(crate) fn initialize_app(
 
     let agent_source = determine_agent_source(launch_mode);
 
-    // NetworkLogModel must be registered before ServerApiProvider so that
-    // `network_logging::init` (invoked from within `ServerApiProvider::new`)
-    // can reach it via `NetworkLogModel::handle(ctx)` when forwarding items
-    // captured by the HTTP client hooks.
-    ctx.add_singleton_model(|_ctx| NetworkLogModel::default());
 
     // Create a shared IAP state for staging builds. The same `Arc<IapState>`
     // is handed to both `ServerApi` (for sync reads on the request path) and
@@ -1154,17 +1058,7 @@ pub(crate) fn initialize_app(
 
     // If any part of sqlite initialization fails, we just don't do session restoration (i.e.
     // feature degradation).
-    let persistence_scope = match launch_mode {
-        LaunchMode::RemoteServerDaemon { identity_key } => {
-            persistence::PersistenceScope::RemoteServerDaemon {
-                identity_key: identity_key.clone(),
-            }
-        }
-        LaunchMode::App { .. }
-        | LaunchMode::CommandLine { .. }
-        | LaunchMode::RemoteServerProxy
-        | LaunchMode::Test { .. } => persistence::PersistenceScope::App,
-    };
+    let persistence_scope = persistence::PersistenceScope::App;
     let (sqlite_data, writer_handles) = persistence::initialize(ctx, persistence_scope);
     timer.mark_interval_end("SQLITE_INITIALIZED");
 
@@ -1259,29 +1153,6 @@ pub(crate) fn initialize_app(
             )
         });
 
-    if matches!(launch_mode, LaunchMode::RemoteServerDaemon { .. }) {
-        let codebase_index_count = persisted_workspaces.len();
-        log::debug!(
-            "[Remote codebase indexing] Restored daemon codebase index metadata: metadata_count={codebase_index_count}"
-        );
-        cloud_objects = Default::default();
-        cached_workspaces = Default::default();
-        current_workspace_uid = None;
-        app_state = None;
-        command_history = Default::default();
-        restored_user_profiles = Default::default();
-        time_of_next_force_object_refresh = None;
-        object_actions = Default::default();
-        ai_queries = Default::default();
-        workspace_language_servers = Default::default();
-        multi_agent_conversations = Default::default();
-        persisted_projects = Default::default();
-        persisted_project_rules = Default::default();
-        persisted_ignored_suggestions = Default::default();
-        persisted_mcp_server_installations = Default::default();
-        mcp_servers_to_restore = Default::default();
-    }
-
     ctx.add_singleton_model(|ctx| AIRequestUsageModel::new(ai_client, ctx));
 
     ctx.add_singleton_model(|ctx| {
@@ -1329,7 +1200,6 @@ pub(crate) fn initialize_app(
     ctx.add_singleton_model(|_| SettingsPaneManager::new());
     ctx.add_singleton_model(|_| AIFactManager::new());
     ctx.add_singleton_model(|_| ExecutionProfileEditorManager::default());
-    ctx.add_singleton_model(|_| NetworkLogPaneManager::default());
     ctx.add_singleton_model(|_| pricing::PricingInfoModel::new());
     ctx.add_singleton_model(|ctx| {
         // Not using the *Provider types isn't ideal, but it's worth it for the ability to move managed secrets to a separate crate.
@@ -1360,12 +1230,6 @@ pub(crate) fn initialize_app(
     });
 
     ctx.add_singleton_model(|_ctx| SyncedInputState::new());
-
-    ctx.add_singleton_model(remote_server::manager::RemoteServerManager::new);
-    #[cfg(not(target_family = "wasm"))]
-    ctx.add_singleton_model(remote_server::codebase_index_model::RemoteCodebaseIndexModel::new);
-    #[cfg(not(target_family = "wasm"))]
-    remote_server::wire_auth_token_rotation(ctx);
 
     log::info!(
         "Starting warp with channel state {} and version {:?}",
@@ -1413,20 +1277,12 @@ pub(crate) fn initialize_app(
         }
 
         // Set the first frame callback to record the app's startup time.
-        // This is only sent for logged-in users so that new users don't skew performance metrics.
         let is_screen_reader_enabled = ctx.is_screen_reader_enabled();
-        let from_relaunch = launch_mode.args().finish_update;
+        let _from_relaunch = launch_mode.args().finish_update;
         ctx.on_first_frame_drawn(move |ctx| {
-            let timing_data = IntervalTimer::handle(ctx).update(ctx, |timer, _| {
+            let _timing_data = IntervalTimer::handle(ctx).update(ctx, |timer, _| {
                 timer.mark_interval_end("FIRST_FRAME_DRAWN");
                 timer.compute_stats()
-            });
-            let event = TelemetryEvent::AppStartup(AppStartupInfo {
-                is_session_restoration_on: user_defaults_on_startup.should_restore_session,
-                is_screen_reader_enabled,
-                from_relaunch,
-                is_crash_reporting_enabled,
-                timing_data,
             });
 
             GPUState::handle(ctx).update(ctx, |gpu_state, ctx| {
@@ -1480,40 +1336,14 @@ pub(crate) fn initialize_app(
             });
         }
 
-        let emit_incremental_updates = matches!(launch_mode, LaunchMode::RemoteServerDaemon { .. });
         ctx.add_singleton_model(|ctx| {
-            let model = if emit_incremental_updates {
-                RepoMetadataModel::new_with_incremental_updates(ctx)
-            } else {
-                RepoMetadataModel::new(ctx)
-            };
+            let model = RepoMetadataModel::new(ctx);
             model.register_ignored_path_interests(
                 ::ai::skills::SKILL_PROVIDER_DEFINITIONS
                     .iter()
                     .map(|provider| provider.skills_path.clone()),
                 ctx,
             );
-
-            // Subscribe to RemoteServerManager push events so that remote repo
-            // metadata snapshots and incremental updates populate the remote
-            // sub-model and trigger RepoMetadataEvent emissions.
-            {
-                use remote_server::manager::{RemoteServerManager, RemoteServerManagerEvent};
-                let mgr = RemoteServerManager::handle(ctx);
-                ctx.subscribe_to_model(&mgr, |me, event, ctx| match event {
-                    RemoteServerManagerEvent::RepoMetadataSnapshot { host_id, update } => {
-                        me.insert_remote_snapshot(host_id.clone(), update, ctx);
-                    }
-                    RemoteServerManagerEvent::RepoMetadataUpdated { host_id, update }
-                    | RemoteServerManagerEvent::RepoMetadataDirectoryLoaded { host_id, update } => {
-                        me.apply_remote_incremental_update(host_id, update, ctx);
-                    }
-                    RemoteServerManagerEvent::HostDisconnected { host_id } => {
-                        me.remove_remote_repositories_for_host(host_id, ctx);
-                    }
-                    _ => {}
-                });
-            }
 
             model
         });
@@ -1532,13 +1362,7 @@ pub(crate) fn initialize_app(
 
     ctx.add_singleton_model(CustomSecretRegexUpdater::new);
 
-    // Register the `TelemetryCollection` singleton model.
-    let server_api_clone = server_api.clone();
-    ctx.add_singleton_model(|ctx| {
-        let telemetry_collector = TelemetryCollector::new(server_api_clone);
-        telemetry_collector.initialize_telemetry_collection(ctx);
-        telemetry_collector
-    });
+    // Telemetry has been disabled - skip telemetry collector initialization
     timer.mark_interval_end("INITIALIZE_TELEMETRY_COLLECTION");
 
     // Register initial keybindings prior to creating menus
@@ -1627,16 +1451,6 @@ pub(crate) fn initialize_app(
         .cloned()
         .collect::<Vec<_>>();
 
-    let mut all_queue_items = Vec::new();
-    let objects_with_pending_changes = cloud_objects
-        .iter()
-        .filter(|object| object.metadata().has_pending_content_changes())
-        .cloned()
-        .collect::<Vec<_>>();
-    all_queue_items.extend(QueueItem::from_cached_objects(
-        objects_with_pending_changes.into_iter(),
-    ));
-
     let cloud_model = ctx.add_singleton_model(|_ctx| {
         CloudModel::new(
             persistence_writer.sender(),
@@ -1656,13 +1470,8 @@ pub(crate) fn initialize_app(
         })
         .collect::<Vec<_>>();
 
-    all_queue_items.extend(QueueItem::from_unsynced_actions(
-        unsynced_actions.into_iter(),
-    ));
-
     ctx.add_singleton_model(|ctx| {
         SyncQueue::new(
-            all_queue_items,
             server_api_provider.as_ref(ctx).get_cloud_objects_client(),
             ctx,
         )
@@ -1905,8 +1714,7 @@ pub(crate) fn initialize_app(
 
     ctx.add_singleton_model(|ctx| {
         let should_restore_indices = launch_mode.supports_indexing()
-            && (matches!(launch_mode, LaunchMode::RemoteServerDaemon { .. })
-                || UserWorkspaces::as_ref(ctx).is_codebase_context_enabled(ctx));
+            && UserWorkspaces::as_ref(ctx).is_codebase_context_enabled(ctx);
         let indices_to_restore = if should_restore_indices {
             persisted_workspaces.clone()
         } else {
@@ -1922,14 +1730,6 @@ pub(crate) fn initialize_app(
             server_api_provider.as_ref(ctx).get(),
             launch_mode.supports_indexing(),
         );
-        #[cfg(feature = "local_fs")]
-        if let Some(snapshot_storage) = daemon_codebase_index_snapshot_storage(launch_mode) {
-            return CodebaseIndexManager::new_with_snapshot_storage(
-                codebase_index_config,
-                Some(snapshot_storage),
-                ctx,
-            );
-        }
 
         CodebaseIndexManager::new_with_config(codebase_index_config, ctx)
     });
@@ -2058,9 +1858,7 @@ pub(crate) fn app_callbacks(is_integration_test: bool) -> warpui::platform::AppC
                 auth_state.user_id().map(|uid| uid.as_string()),
                 auth_state.anonymous_id(),
             );
-            TelemetryCollector::handle(ctx).update(ctx, |telemetry_collector, ctx| {
-                telemetry_collector.flush_telemetry_events_for_shutdown(ctx);
-            });
+            // Telemetry has been disabled - skip telemetry flush
 
             // Shutdown all LSP servers gracefully before app termination
             lsp::LspManagerModel::handle(ctx).update(ctx, |manager, ctx| {
@@ -2448,23 +2246,6 @@ fn launch(ctx: &mut warpui::AppContext, app_state: Option<AppState>, launch_mode
                     }
                 }
             }
-        }
-        // Proxy should never reach launch() — it's a thin byte bridge.
-        LaunchMode::RemoteServerProxy => {
-            log::error!("Proxy mode should not use the launch() path");
-            std::process::exit(1);
-        }
-        // Daemon: bind the Unix socket and register the ServerModel.
-        // initialize_app already set up everything else including crash
-        // reporting.
-        #[cfg(unix)]
-        LaunchMode::RemoteServerDaemon { identity_key } => {
-            remote_server::unix::launch_daemon(&identity_key, ctx);
-        }
-        #[cfg(not(unix))]
-        LaunchMode::RemoteServerDaemon { .. } => {
-            log::error!("RemoteServerDaemon is not supported on this platform");
-            std::process::exit(1);
         }
     }
 }

@@ -154,16 +154,12 @@ impl StringModel for AIExecutionProfile {
         }
     }
 
-    fn update_object_queue_item(
+    fn _update_object_queue_item(
         &self,
-        revision_ts: Option<Revision>,
-        object: &Self::CloudObjectType,
-    ) -> QueueItem {
-        QueueItem::UpdateAIExecutionProfile {
-            model: object.model().clone().into(),
-            id: object.id,
-            revision: revision_ts.or_else(|| object.metadata.revision.clone()),
-        }
+        _revision_ts: Option<Revision>,
+        _object: &Self::CloudObjectType,
+    ) {
+        // No-op for local version
     }
 
     fn should_clear_on_unique_key_conflict(&self) -> bool {

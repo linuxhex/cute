@@ -2168,7 +2168,7 @@ impl FileTreeView {
             .finish();
 
         // If this is a directory, wrap it in a DropTarget to accept file drops
-        let _is_directory = matches!(item, FileTreeItem::DirectoryHeader { .. });
+        let is_directory = matches!(item, FileTreeItem::DirectoryHeader { .. });
         let id_for_drop_target = id.clone();
 
         let element: Box<dyn Element> = if is_directory {

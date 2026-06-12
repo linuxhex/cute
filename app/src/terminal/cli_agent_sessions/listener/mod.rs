@@ -48,6 +48,7 @@ pub fn is_agent_supported(agent: &CLIAgent) -> bool {
             | CLIAgent::Gemini
             | CLIAgent::Auggie
             | CLIAgent::Pi
+            | CLIAgent::Qoder
     )
 }
 
@@ -63,7 +64,8 @@ fn create_handler(agent: &CLIAgent) -> Option<Box<dyn CLIAgentSessionHandler>> {
         | CLIAgent::OpenCode
         | CLIAgent::Gemini
         | CLIAgent::Auggie
-        | CLIAgent::Pi => Some(Box::new(DefaultSessionListener)),
+        | CLIAgent::Pi
+        | CLIAgent::Qoder => Some(Box::new(DefaultSessionListener)),
         CLIAgent::Codex => Some(Box::new(CodexSessionHandler)),
         CLIAgent::Hermes
         | CLIAgent::Amp
@@ -72,7 +74,6 @@ fn create_handler(agent: &CLIAgent) -> Option<Box<dyn CLIAgentSessionHandler>> {
         | CLIAgent::CursorCli
         | CLIAgent::Goose
         | CLIAgent::Vibe
-        | CLIAgent::Qoder
         | CLIAgent::Unknown => None,
     }
 }

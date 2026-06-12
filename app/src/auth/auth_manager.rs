@@ -33,7 +33,7 @@ use crate::server::server_api::auth::{
     UserAuthenticationError,
 };
 use crate::server::server_api::ServerApi;
-use crate::server::telemetry::{AnonymousUserSignupEntrypoint, TelemetryEvent};
+use crate::server::telemetry::AnonymousUserSignupEntrypoint;
 use crate::settings::cloud_preferences_syncer::CloudPreferencesSyncer;
 use crate::settings::initializer::SettingsInitializer;
 use crate::settings::PrivacySettings;
@@ -427,34 +427,8 @@ impl AuthManager {
                 let _ = ctx.spawn(
                     // Synchronously add the identify and login event to the telemetry event queue and
                     // then flush the queue to ensure the events get to Rudderstack. We need to do this
-                    // one-off because the login event happens only once for the user and we don't want
-                    // to drop the event if the user quits the app before the next flush of the queue.
-                    // TODO(alokedesai): Investigate a more robust way of handling events
-                    // that don't get flushed to Rudderstack outside of this event specifically.
+                    // Telemetry has been disabled - just notify login
                     async move {
-                        warpui::telemetry::record_identify_user_event(
-                            user_id.as_string(),
-                            anonymous_id.clone(),
-                            warpui::time::get_current_time(),
-                        );
-                        warpui::telemetry::record_event(
-                            Some(user_id.as_string()),
-                            anonymous_id,
-                            TelemetryEvent::Login.name().into(),
-                            TelemetryEvent::Login.payload(),
-                            TelemetryEvent::Login.contains_ugc(),
-                            warpui::time::get_current_time(),
-                        );
-
-                        // Note that this snapshot might get overwritten to disabled after the server fetch.
-                        // However, it is still fine to flush to Rudderstack here as the login event is low-risk
-                        // and it is better to err on the side of over-reporting than under-reporting.
-                        if let Err(e) = server_api
-                            .flush_telemetry_events(privacy_settings_snapshot)
-                            .await
-                        {
-                            log::info!("Failed to flush events from Telemetry queue: {e}");
-                        }
                         server_api.notify_login().await;
                     },
                     |_, _, _| {},

@@ -171,6 +171,7 @@ pub enum FeatureFlag {
     WorkflowAliases,
 
     SshDragAndDrop,
+    SshRemoteServer,
     DragTabsToWindows,
 
     /// Enables the overflow menu on AI blocks.
@@ -557,6 +558,9 @@ pub enum FeatureFlag {
     /// Enables cloud mode functionality for ambient agents.
     CloudMode,
 
+    /// Enables v2 of the cloud mode setup flow.
+    CloudModeSetupV2,
+
     /// Enables starting cloud mode from a local session.
     CloudModeFromLocalSession,
 
@@ -837,19 +841,11 @@ pub enum FeatureFlag {
     /// space is not rendered while the agent is running.
     TrimTrailingBlankLines,
 
-    /// Gates the new SSH remote server flow that installs and connects to a
-    /// persistent binary on the remote machine instead of using ControlMaster
-    /// for command execution.
-    SshRemoteServer,
-
-    /// Redux of the setup/initial user query UI for cloud mode.
-    CloudModeSetupV2,
+    CloudModeInputV2,
 
     /// Enables summary mode in vertical tabs, showing condensed tab summaries
     /// instead of individual pane rows.
     VerticalTabsSummaryMode,
-
-    CloudModeInputV2,
 
     /// Gates the user-configurable context window slider in AI settings and
     /// the execution profile editor. When disabled, the slider is hidden and
@@ -946,8 +942,6 @@ pub const DOGFOOD_FLAGS: &[FeatureFlag] = &[
     FeatureFlag::RememberFastForwardState,
     FeatureFlag::GeminiNotifications,
     FeatureFlag::LocalDockerSandbox,
-    #[cfg(not(windows))]
-    FeatureFlag::SshRemoteServer,
     FeatureFlag::DragTabsToWindows,
     FeatureFlag::RemoteCodebaseIndexing,
     FeatureFlag::GroupedTabs,
@@ -969,9 +963,6 @@ pub const RELEASE_FLAGS: &[FeatureFlag] = &[
     // Marked text is currently only supported on MacOS.
     #[cfg(target_os = "macos")]
     FeatureFlag::ImeMarkedText,
-    // Remote server binary is not yet supported on Windows.
-    #[cfg(not(windows))]
-    FeatureFlag::SshRemoteServer,
 ];
 
 /// Flags that we want to allow to switch at runtime (assuming RuntimeFeatureFlags is set)
