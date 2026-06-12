@@ -157,10 +157,10 @@ impl DiffApplicationError {
 pub(crate) async fn apply_edits<F, Fut>(
     edits: Vec<FileEdit>,
     session_context: &SessionContext,
-    ai_identifiers: &AIIdentifiers,
-    background_executor: Arc<Background>,
-    auth_state: Arc<AuthState>,
-    passive_diff: bool,
+    _ai_identifiers: &AIIdentifiers,
+    _background_executor: Arc<Background>,
+    _auth_state: Arc<AuthState>,
+    _passive_diff: bool,
     read_file: F,
 ) -> Result<Vec<AIRequestedCodeDiff>, Vec1<DiffApplicationError>>
 where
@@ -176,7 +176,7 @@ where
 
     for error in result.errors.iter() {
         match error {
-            DiffApplicationError::UnmatchedDiffs { match_failures, .. } => {
+            DiffApplicationError::UnmatchedDiffs { match_failures: _match_failures, .. } => {
             }
             DiffApplicationError::MissingFile { .. }
             | DiffApplicationError::ReadFailed { .. }

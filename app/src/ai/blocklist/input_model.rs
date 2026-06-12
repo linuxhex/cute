@@ -772,7 +772,7 @@ impl BlocklistAIInputModel {
         let other_buffer_cloned = buffer_cloned.clone();
         let current_input_type = self.input_type();
 
-        let is_udi_enabled = InputSettings::as_ref(ctx).is_universal_developer_input_enabled(ctx);
+        let _is_udi_enabled = InputSettings::as_ref(ctx).is_universal_developer_input_enabled(ctx);
 
         // Determine if the input is a follow-up to an AI block.
         let is_agent_follow_up = {
@@ -864,8 +864,8 @@ impl BlocklistAIInputModel {
                         ctx,
                     );
                     if current_input_type != new_input_type {
-                        let buffer_length = other_buffer_cloned.len();
-                        let input_buffer_text_for_telemetry = should_collect_ai_ugc_telemetry(
+                        let _buffer_length = other_buffer_cloned.len();
+                        let _input_buffer_text_for_telemetry = should_collect_ai_ugc_telemetry(
                             ctx,
                             PrivacySettings::as_ref(ctx).is_telemetry_enabled,
                         )

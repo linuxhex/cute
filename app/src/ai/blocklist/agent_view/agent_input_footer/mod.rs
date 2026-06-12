@@ -1219,7 +1219,7 @@ impl AgentInputFooter {
         error_label: &str,
         success_toast: &str,
         operation_kind: PluginChipTelemetryKind,
-        operation: F,
+        _operation: F,
         ctx: &mut ViewContext<Self>,
     ) -> bool
     where
@@ -2404,7 +2404,7 @@ impl TypedActionView for AgentInputFooter {
                 }
             }
             AgentInputFooterAction::InsertFilePath(path) => {
-                if let Some(agent) = self.cli_agent(ctx) {
+                if let Some(_agent) = self.cli_agent(ctx) {
                 }
                 let path_with_space = format!("{path} ");
                 if self.has_active_cli_agent_input_session(ctx) {
@@ -2449,7 +2449,7 @@ impl TypedActionView for AgentInputFooter {
             AgentInputFooterAction::InstallPlugin => {
                 #[cfg(not(target_family = "wasm"))]
                 {
-                    if let Some(agent) = self.cli_agent(ctx) {
+                    if let Some(_agent) = self.cli_agent(ctx) {
                     }
                     if !self.handle_install_plugin(ctx) {
                         self.record_plugin_auto_failure_and_notify(ctx);
@@ -2459,7 +2459,7 @@ impl TypedActionView for AgentInputFooter {
             AgentInputFooterAction::UpdatePlugin => {
                 #[cfg(not(target_family = "wasm"))]
                 {
-                    if let Some(agent) = self.cli_agent(ctx) {
+                    if let Some(_agent) = self.cli_agent(ctx) {
                     }
                     if !self.handle_update_plugin(ctx) {
                         self.record_plugin_auto_failure_and_notify(ctx);
@@ -2487,8 +2487,8 @@ impl TypedActionView for AgentInputFooter {
             AgentInputFooterAction::DismissPluginChip => {
                 let chip_kind = self.plugin_chip_kind(ctx);
                 let is_update = matches!(chip_kind, Some(PluginChipKind::Update));
-                if let Some(agent) = self.cli_agent(ctx) {
-                    if let Some(kind) = chip_kind {
+                if let Some(_agent) = self.cli_agent(ctx) {
+                    if let Some(_kind) = chip_kind {
                     }
                 }
                 let session = CLIAgentSessionsModel::as_ref(ctx)

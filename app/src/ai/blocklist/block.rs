@@ -1707,18 +1707,18 @@ impl AIBlock {
             self.time_to_last_token = Some(latency);
         }
 
-        let was_autodetected_ai_query = self.model.was_autodetected_ai_query(ctx);
-        let client_exchange_id = self.client_ids.client_exchange_id.to_string();
-        let conversation_id = self.client_ids.conversation_id;
-        let time_to_first_token_ms = self
+        let _was_autodetected_ai_query = self.model.was_autodetected_ai_query(ctx);
+        let _client_exchange_id = self.client_ids.client_exchange_id.to_string();
+        let _conversation_id = self.client_ids.conversation_id;
+        let _time_to_first_token_ms = self
             .time_to_first_token
             .get()
             .map(|duration| duration.num_milliseconds() as u128);
-        let time_to_last_token_ms = self
+        let _time_to_last_token_ms = self
             .time_to_last_token
             .map(|duration| duration.num_milliseconds() as u128);
         let status = self.model.status(ctx);
-        let is_udi_enabled = InputSettings::as_ref(ctx).is_universal_developer_input_enabled(ctx);
+        let _is_udi_enabled = InputSettings::as_ref(ctx).is_universal_developer_input_enabled(ctx);
 
         match status {
             AIBlockOutputStatus::Pending => {
@@ -1731,7 +1731,7 @@ impl AIBlock {
             }
             AIBlockOutputStatus::Complete { output } => {
                 let output = output.get();
-                let server_output_id = self.model.server_output_id(ctx);
+                let _server_output_id = self.model.server_output_id(ctx);
                 self.handle_updated_output(&output, ctx);
                 self.handle_complete_output(&output, ctx);
             }
@@ -1743,10 +1743,10 @@ impl AIBlock {
                 self.spawn_link_detection(ctx);
                 self.finish(FinishReason::Cancelled, ctx);
 
-                let server_output_id = self.model.server_output_id(ctx);
+                let _server_output_id = self.model.server_output_id(ctx);
             }
             AIBlockOutputStatus::Failed { error, .. } => {
-                let server_output_id = self.model.server_output_id(ctx);
+                let _server_output_id = self.model.server_output_id(ctx);
                 self.maybe_create_aws_bedrock_credentials_error_view(&error, ctx);
                 // There are no actions to be taken in this block, it is finished.
                 self.finish(FinishReason::Error, ctx);
@@ -4197,11 +4197,11 @@ impl AIBlock {
             return;
         };
 
-        let raw_count = comments.len();
+        let _raw_count = comments.len();
         let pending = convert_insert_review_comments(comments);
-        let converted_count = pending.len();
+        let _converted_count = pending.len();
         let flattened = attach_pending_imported_comments(pending, &repo_location);
-        let thread_count = flattened.len();
+        let _thread_count = flattened.len();
 
         if !self.model.is_restored() {
         }
@@ -5787,12 +5787,12 @@ impl TypedActionView for AIBlock {
             }
             AIBlockAction::OpenCitation(citation) => {
                 ctx.emit(AIBlockEvent::OpenCitation(citation.clone()));
-                let server_output_id = self
+                let _server_output_id = self
                     .model
                     .status(ctx)
                     .output_to_render()
                     .and_then(|output| output.get().server_output_id.clone());
-                if let Some(citation) = citation.for_telemetry(ctx) {
+                if let Some(_citation) = citation.for_telemetry(ctx) {
                 }
             }
             AIBlockAction::OpenAIFactCollection => {
@@ -6048,7 +6048,9 @@ impl TypedActionView for AIBlock {
 
                 // Sends a telemetry event when a skill is opened from an 'open skill' button
                 if let CodeSource::Skill {
-                    reference, origin, ..
+                    reference: _reference,
+                    origin: _origin,
+                    ..
                 } = source
                 {
                 }

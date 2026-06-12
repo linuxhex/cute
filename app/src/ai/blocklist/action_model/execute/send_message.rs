@@ -181,7 +181,7 @@ impl SendMessageToAgentExecutor {
                 async move {
                     send_agent_message_with_timeout(server_api, ai_client, task_id, request).await
                 },
-                move |result, ctx| match result {
+                move |result, _ctx| match result {
                     Ok(response) => {
                         let message_id =
                             response.message_ids.into_iter().next().unwrap_or_default();

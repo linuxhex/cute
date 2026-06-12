@@ -270,7 +270,7 @@ impl AuthView {
             });
         } else {
             AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
-                auth_manager.create_anonymous_user(None, ctx)
+                auth_manager.create_anonymous_user(ctx)
             });
         }
     }

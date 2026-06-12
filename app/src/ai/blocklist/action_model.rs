@@ -1109,7 +1109,7 @@ impl BlocklistAIActionModel {
             pending_action.action,
             AIAgentActionType::RequestComputerUse(_)
         ) {
-            let server_conversation_id = BlocklistAIHistoryModel::as_ref(ctx)
+            let _server_conversation_id = BlocklistAIHistoryModel::as_ref(ctx)
                 .conversation(&conversation_id)
                 .and_then(|c| c.server_conversation_token())
                 .map(|t| t.as_str().to_string());

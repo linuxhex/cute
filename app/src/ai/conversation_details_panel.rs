@@ -855,12 +855,12 @@ impl ConversationDetailsPanel {
                 // Send telemetry based on panel mode
                 match &self.data.mode {
                     PanelMode::Conversation {
-                        ai_conversation_id: Some(conversation_id),
+                        ai_conversation_id: Some(_conversation_id),
                         ..
                     } => {
                     }
                     PanelMode::Task {
-                        task_id: Some(task_id),
+                        task_id: Some(_task_id),
                         ..
                     } => {
                     }
@@ -893,12 +893,12 @@ impl ConversationDetailsPanel {
             AgentDetailsButtonEvent::CopyLink { link } => {
                 match &self.data.mode {
                     PanelMode::Conversation {
-                        ai_conversation_id: Some(conversation_id),
+                        ai_conversation_id: Some(_conversation_id),
                         ..
                     } => {
                     }
                     PanelMode::Task {
-                        task_id: Some(task_id),
+                        task_id: Some(_task_id),
                         ..
                     } => {
                     }

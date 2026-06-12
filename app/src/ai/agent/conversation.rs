@@ -2112,7 +2112,7 @@ impl AIConversation {
             exchange_id: initial_exchange_id,
             ..
         } = added_exchanges.first();
-        let identifiers = AIIdentifiers {
+        let _identifiers = AIIdentifiers {
             server_output_id: None,
             server_conversation_id: self.server_conversation_token.clone().map(Into::into),
             client_conversation_id: Some(self.id),
@@ -2120,7 +2120,7 @@ impl AIConversation {
             model_id: None,
         };
 
-        let will_attempt_to_resume = matches!(
+        let _will_attempt_to_resume = matches!(
             &error,
             RenderableAIError::Other {
                 will_attempt_resume: true,

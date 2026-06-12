@@ -68,8 +68,8 @@ impl RequestComputerUseExecutor {
         };
 
         // If we're executing, that implies that computer use has been approved.
-        let is_autoexecuted = self.autoexecuted_actions.remove(&action.id);
-        let server_conversation_id = BlocklistAIHistoryModel::as_ref(ctx)
+        let _is_autoexecuted = self.autoexecuted_actions.remove(&action.id);
+        let _server_conversation_id = BlocklistAIHistoryModel::as_ref(ctx)
             .conversation(&conversation_id)
             .and_then(|c| c.server_conversation_token())
             .map(|t| t.as_str().to_string());

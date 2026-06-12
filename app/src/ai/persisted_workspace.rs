@@ -1112,7 +1112,7 @@ impl PersistedWorkspace {
 
         for server in servers {
             let workspace_root_display = workspace_root_display.clone();
-            let server_type_name = server.as_ref(ctx).server_name();
+            let _server_type_name = server.as_ref(ctx).server_name();
             ctx.subscribe_to_model(&server, move |_me, event, ctx| match event {
                 LspEvent::Started => {
                 }
@@ -1253,7 +1253,7 @@ impl PersistedWorkspace {
 
 fn send_active_indexed_repos_changed_telemetry<T: Entity>(ctx: &mut ModelContext<T>) {
     let total = CodebaseIndexManager::as_ref(ctx).num_active_indices();
-    let hit_max = AIRequestUsageModel::as_ref(ctx).hit_codebase_index_limit(total);
+    let _hit_max = AIRequestUsageModel::as_ref(ctx).hit_codebase_index_limit(total);
 }
 
 #[cfg_attr(not(feature = "local_fs"), allow(dead_code))]

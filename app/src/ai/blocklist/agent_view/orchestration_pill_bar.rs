@@ -821,13 +821,13 @@ impl OrchestrationPillBar {
 
     fn emit_pill_bar_interaction_with_outcome(
         &self,
-        action: PillBarActionKind,
-        pill_kind: PillBarPillKind,
-        target_conversation_id: AIConversationId,
-        switch_outcome: Option<PillSwitchOutcome>,
+        _action: PillBarActionKind,
+        _pill_kind: PillBarPillKind,
+        _target_conversation_id: AIConversationId,
+        _switch_outcome: Option<PillSwitchOutcome>,
         ctx: &mut ViewContext<Self>,
     ) {
-        let Some((source_conversation_id, total_pills, total_pinned)) =
+        let Some((_source_conversation_id, _total_pills, _total_pinned)) =
             self.pill_bar_telemetry_context(ctx)
         else {
             return;

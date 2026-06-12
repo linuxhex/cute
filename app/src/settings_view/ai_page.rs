@@ -2858,7 +2858,7 @@ impl TypedActionView for AISettingsPageView {
                 match AISettings::handle(ctx).update(ctx, |settings, ctx| {
                     settings.is_any_ai_enabled.toggle_and_save_value(ctx)
                 }) {
-                    Ok(new_value) => {
+                    Ok(_new_value) => {
                     }
                     Err(e) => {
                         log::warn!("Failed to set value for Global AI setting: {e:?}");
@@ -2872,7 +2872,7 @@ impl TypedActionView for AISettingsPageView {
                         .is_active_ai_enabled_internal
                         .toggle_and_save_value(ctx)
                 }) {
-                    Ok(new_value) => {
+                    Ok(_new_value) => {
                     }
                     Err(e) => {
                         log::warn!("Failed to set value for Active AI setting: {e:?}");
@@ -2886,7 +2886,7 @@ impl TypedActionView for AISettingsPageView {
                         .intelligent_autosuggestions_enabled_internal
                         .toggle_and_save_value(ctx)
                 }) {
-                    Ok(new_value) => {
+                    Ok(_new_value) => {
                     }
                     Err(e) => {
                         log::warn!("Failed to set value for Next Command setting: {e:?}");
@@ -2903,7 +2903,7 @@ impl TypedActionView for AISettingsPageView {
                         .prompt_suggestions_enabled_internal
                         .toggle_and_save_value(ctx)
                 }) {
-                    Ok(new_value) => {
+                    Ok(_new_value) => {
                     }
                     Err(e) => {
                         log::warn!("Failed to set value for Prompt Suggestions setting: {e:?}");
@@ -2917,7 +2917,7 @@ impl TypedActionView for AISettingsPageView {
                         .code_suggestions_enabled_internal
                         .toggle_and_save_value(ctx)
                 }) {
-                    Ok(new_value) => {
+                    Ok(_new_value) => {
                     }
                     Err(e) => {
                         log::warn!("Failed to set value for Code Suggestions setting: {e:?}");
@@ -2931,7 +2931,7 @@ impl TypedActionView for AISettingsPageView {
                         .natural_language_autosuggestions_enabled_internal
                         .toggle_and_save_value(ctx)
                 }) {
-                    Ok(new_value) => {
+                    Ok(_new_value) => {
                     }
                     Err(e) => {
                         log::warn!(
@@ -2966,7 +2966,7 @@ impl TypedActionView for AISettingsPageView {
                         .git_operations_autogen_enabled_internal
                         .toggle_and_save_value(ctx)
                 }) {
-                    Ok(new_value) => {
+                    Ok(_new_value) => {
                     }
                     Err(e) => {
                         log::warn!("Failed to set value for Git Operations Autogen setting: {e:?}");
@@ -2980,7 +2980,7 @@ impl TypedActionView for AISettingsPageView {
                         .ai_autodetection_enabled_internal
                         .toggle_and_save_value(ctx)
                 }) {
-                    Ok(new_value) => {
+                    Ok(_new_value) => {
                     }
                     Err(e) => {
                         log::warn!("Failed to set value for Input Auto-detection: {e:?}");
@@ -3007,7 +3007,7 @@ impl TypedActionView for AISettingsPageView {
                         .should_render_cli_agent_footer
                         .toggle_and_save_value(ctx)
                 }) {
-                    Ok(new_value) => {
+                    Ok(_new_value) => {
                     }
                     Err(e) => {
                         log::warn!("Failed to set value for CLI Agent Footer setting: {e:?}");
@@ -3043,7 +3043,7 @@ impl TypedActionView for AISettingsPageView {
                         .should_render_use_agent_footer_for_user_commands
                         .toggle_and_save_value(ctx)
                 }) {
-                    Ok(new_value) => {
+                    Ok(_new_value) => {
                     }
                     Err(e) => {
                         log::warn!("Failed to set value for Use Agent Footer setting: {e:?}");
@@ -3055,7 +3055,7 @@ impl TypedActionView for AISettingsPageView {
                 match CodeSettings::handle(ctx).update(ctx, |settings, ctx| {
                     settings.codebase_context_enabled.toggle_and_save_value(ctx)
                 }) {
-                    Ok(new_value) => {
+                    Ok(_new_value) => {
                     }
                     Err(e) => {
                         log::warn!("Failed to set value for Codebase Context: {e:?}");
@@ -3069,7 +3069,7 @@ impl TypedActionView for AISettingsPageView {
                         .voice_input_enabled_internal
                         .toggle_and_save_value(ctx)
                 }) {
-                    Ok(new_value) => {
+                    Ok(_new_value) => {
                     }
                     Err(e) => {
                         log::warn!("Failed to set value for Voice Input: {e:?}");

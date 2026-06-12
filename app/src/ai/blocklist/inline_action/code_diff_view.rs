@@ -646,7 +646,7 @@ impl CodeDiffView {
                 }
                 me.user_edited_file_contents = true;
 
-                let Some(output_id) = me.server_output_id() else {
+                let Some(_output_id) = me.server_output_id() else {
                     return;
                 };
 
@@ -2079,7 +2079,7 @@ impl CodeDiffView {
                 .update(ctx, |v, ctx| v.navigate_previous_diff_hunk(ctx)),
         };
 
-        if let Some(output_id) = self.server_output_id() {
+        if let Some(_output_id) = self.server_output_id() {
         }
     }
 
@@ -2108,7 +2108,7 @@ impl CodeDiffView {
         });
         ctx.notify();
 
-        if let Some(output_id) = self.server_output_id() {
+        if let Some(_output_id) = self.server_output_id() {
         }
     }
 
@@ -2215,10 +2215,10 @@ impl CodeDiffView {
     /// Consolidates the common telemetry logic for reject operations.
     fn send_telemetry_for_edit_resolution(
         &self,
-        response: RequestedEditResolution,
+        _response: RequestedEditResolution,
         ctx: &mut ViewContext<Self>,
     ) {
-        let (lines_added, lines_removed) = self.pending_diffs_line_counts(ctx);
+        let (_lines_added, _lines_removed) = self.pending_diffs_line_counts(ctx);
     }
 
     /// We are processing unified diff and saving files concurrently. That's why
@@ -2287,10 +2287,10 @@ impl CodeDiffView {
 
                 let mut updated_files = Vec::new();
                 let mut deleted_files = Vec::new();
-                let mut edited_file_count = 0;
-                let mut correction_count = 0;
-                let mut edited_correction_count = 0;
-                let mut unedited_correction_count = 0;
+                let mut _edited_file_count = 0;
+                let mut _correction_count = 0;
+                let mut _edited_correction_count = 0;
+                let mut _unedited_correction_count = 0;
 
                 for diff in self.pending_diffs.iter() {
                     let Some(path) = diff.diff_view.as_ref(ctx).file_path() else {
@@ -2327,14 +2327,14 @@ impl CodeDiffView {
                             });
 
                         if was_edited {
-                            edited_file_count += 1;
+                            _edited_file_count += 1;
                         }
                         if has_malformed_terminal_signal {
-                            correction_count += 1;
+                            _correction_count += 1;
                             if was_edited {
-                                edited_correction_count += 1;
+                                _edited_correction_count += 1;
                             } else {
-                                unedited_correction_count += 1;
+                                _unedited_correction_count += 1;
                             }
                         }
                         updated_files.push((
@@ -2351,7 +2351,7 @@ impl CodeDiffView {
                         ));
                     }
                 }
-                if correction_count > 0 {
+                if _correction_count > 0 {
                 }
 
                 // Extract accepted file contents from editor buffers so the
@@ -2735,7 +2735,7 @@ impl TypedActionView for CodeDiffView {
                     self.selected_tab = *idx;
                     ctx.notify();
 
-                    if let Some(output_id) = self.server_output_id() {
+                    if let Some(_output_id) = self.server_output_id() {
                     }
                 }
             }
@@ -2764,7 +2764,7 @@ impl TypedActionView for CodeDiffView {
                 });
                 ctx.notify();
 
-                if let Ok(checked) = checked {
+                if let Ok(_checked) = checked {
                 }
             }
             CodeDiffViewAction::OpenSettings => {

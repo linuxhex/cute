@@ -636,11 +636,11 @@ impl TypedActionView for CloudSetupGuideView {
 
     fn handle_action(&mut self, action: &Self::Action, ctx: &mut ViewContext<Self>) {
         match action {
-            CloudSetupGuideAction::CopyCode { code, step } => {
+            CloudSetupGuideAction::CopyCode { code, step: _step } => {
                 ctx.clipboard()
                     .write(ClipboardContent::plain_text(code.clone()));
             }
-            CloudSetupGuideAction::RunWorkflow { workflow, step } => {
+            CloudSetupGuideAction::RunWorkflow { workflow, step: _step } => {
                 ctx.emit(CloudSetupGuideEvent::OpenNewTabAndInsertWorkflow(
                     (**workflow).clone(),
                 ));

@@ -503,7 +503,7 @@ impl AIExecutionProfilesModel {
             ctx,
         );
 
-        if let Some(model_id) = &llm_id {
+        if let Some(_model_id) = &llm_id {
         }
     }
 
@@ -525,7 +525,7 @@ impl AIExecutionProfilesModel {
             ctx,
         );
 
-        if let Some(model_id) = &model_id {
+        if let Some(_model_id) = &model_id {
         }
     }
 
@@ -547,7 +547,7 @@ impl AIExecutionProfilesModel {
             ctx,
         );
 
-        if let Some(model_id) = &model_id {
+        if let Some(_model_id) = &model_id {
         }
     }
 
@@ -569,7 +569,7 @@ impl AIExecutionProfilesModel {
             ctx,
         );
 
-        if let Some(model_id) = &model_id {
+        if let Some(_model_id) = &model_id {
         }
     }
 
@@ -599,7 +599,7 @@ impl AIExecutionProfilesModel {
                 return;
             };
             let llm_preferences = LLMPreferences::as_ref(ctx);
-            let model_info = profile
+            let _model_info = profile
                 .data()
                 .base_model
                 .as_ref()

@@ -12,7 +12,6 @@ pub mod get_discoverable_teams;
 pub mod get_feature_model_choices;
 pub mod get_integrations_using_environment;
 pub mod get_oauth_connect_tx_status;
-pub mod get_referral_info;
 pub mod get_relevant_fragments;
 pub mod get_request_limit_info;
 pub mod get_scheduled_agent_history;

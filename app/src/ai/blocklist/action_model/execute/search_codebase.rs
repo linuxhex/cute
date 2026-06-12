@@ -204,7 +204,7 @@ impl SearchCodebaseExecutor {
                 .as_deref()
                 .filter(|path| !path.is_empty() && *path != ".")
                 .map(ToOwned::to_owned);
-            let server_output_id = get_server_output_id(conversation_id, ctx);
+            let _server_output_id = get_server_output_id(conversation_id, ctx);
 
             let root_dir_for_search = self.root_repo_paths.get(id).cloned().or_else(|| {
                 self.get_relevant_files_controller
@@ -304,15 +304,15 @@ impl SearchCodebaseExecutor {
                 is_cross_repo = false;
                 search_dir = current_working_directory;
             }
-            let server_output_id = get_server_output_id(conversation_id, ctx);
+            let _server_output_id = get_server_output_id(conversation_id, ctx);
 
             let Some(root_dir_for_search) = self.root_repo_paths.get(id) else {
-                let action_id = id.clone();
+                let _action_id = id.clone();
 
                 // Check if directory exists on background thread since its a sys call; no need to block
                 // main thread since its just for telemetry.
                 let _ = ctx.spawn(async move { search_dir.exists() }, |_, exists, ctx| {
-                    let error = if exists {
+                    let _error = if exists {
                         "The codebase isn't indexed".to_string()
                     } else {
                         "The codebase doesn't exist".to_string()

@@ -464,7 +464,7 @@ impl AuthManager {
                 ctx.spawn(
                     async { warp_isolation_platform::detect() },
                     |_, platform, ctx| {
-                        if let Some(platform) = platform {
+                        if let Some(_platform) = platform {
                         }
                     },
                 );
@@ -546,7 +546,6 @@ impl AuthManager {
 
     pub fn create_anonymous_user(
         &self,
-        referral_code: Option<String>,
         ctx: &mut ModelContext<Self>,
     ) {
         let anonymous_user_type = AnonymousUserType::NativeClientAnonymousUserFeatureGated;
@@ -555,7 +554,7 @@ impl AuthManager {
         let _ = ctx.spawn(
             async move {
                 auth_client
-                    .create_anonymous_user(referral_code, anonymous_user_type)
+                    .create_anonymous_user(anonymous_user_type)
                     .await
             },
             Self::on_create_anonymous_user,
@@ -608,7 +607,7 @@ impl AuthManager {
 
     pub fn attempt_login_gated_feature(
         &self,
-        feature: LoginGatedFeature,
+        _feature: LoginGatedFeature,
         auth_view_variant: AuthViewVariant,
         ctx: &mut ModelContext<Self>,
     ) {
@@ -627,7 +626,7 @@ impl AuthManager {
 
     pub fn initiate_anonymous_user_linking(
         &self,
-        entrypoint: AnonymousUserSignupEntrypoint,
+        _entrypoint: AnonymousUserSignupEntrypoint,
         ctx: &mut ModelContext<Self>,
     ) {
         let auth_client = self.auth_client.clone();

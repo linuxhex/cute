@@ -14526,7 +14526,7 @@ impl TypedActionView for Input {
                 }
             }
             InputAction::ToggleInputAutoDetection => {
-                if let Ok(new_value) =
+                if let Ok(_new_value) =
                     AISettings::handle(ctx).update(ctx, |ai_settings, model_ctx| {
                         ai_settings
                             .ai_autodetection_enabled_internal

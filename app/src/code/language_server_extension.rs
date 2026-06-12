@@ -354,9 +354,9 @@ impl LocalCodeEditorView {
                 if segments.is_empty() && diagnostics.is_empty() {
                     me.lsp_hover_state.clear();
                 } else {
-                    let had_content = !segments.is_empty();
-                    let had_diagnostics = !diagnostics.is_empty();
-                    if let Some(server) = me.lsp_server.as_ref() {
+                    let _had_content = !segments.is_empty();
+                    let _had_diagnostics = !diagnostics.is_empty();
+                    if let Some(_server) = me.lsp_server.as_ref() {
                     }
 
                     let editor = me.editor().as_ref(ctx);

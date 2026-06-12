@@ -125,8 +125,8 @@ impl ResponseStream {
     /// Helper function to emit AgentModeError telemetry for error that is retryable (not user visible).
     fn emit_retryable_agent_mode_error_telemetry(
         &self,
-        error: String,
-        ctx: &mut ModelContext<Self>,
+        _error: String,
+        _ctx: &mut ModelContext<Self>,
     ) {
     }
 
@@ -231,7 +231,7 @@ impl ResponseStream {
                             ) {
                                 // Emit retry success telemetry if this was a successful completion after retries
                                 if self.retry_count > 0 {
-                                    if let Some(original_error) = &self.original_error {
+                                    if let Some(_original_error) = &self.original_error {
                                     }
                                 }
                             }

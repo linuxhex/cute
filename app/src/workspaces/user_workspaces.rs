@@ -113,7 +113,11 @@ pub struct WorkspacesMetadataWithPricing {
     pub pricing_info: Option<warp_graphql::billing::PricingInfo>,
 }
 
-// CreateTeamResponse removed - team creation not supported in local version
+// Simplified: team creation not supported, but keep struct for compatibility
+pub struct CreateTeamResponse {
+    pub workspace: Workspace,
+    pub team: Team,
+}
 
 impl UserWorkspaces {
     #[cfg(test)]
@@ -534,6 +538,17 @@ impl UserWorkspaces {
         !self.workspaces.is_empty()
     }
 
+    // Simplified: team_created not supported, but keep stub for compatibility
+    pub fn team_created(
+        &mut self,
+        create_team_response: &CreateTeamResponse,
+        ctx: &mut ModelContext<Self>,
+    ) {
+        self.workspaces.push(create_team_response.workspace.clone());
+        self.set_current_workspace_uid(create_team_response.workspace.uid, ctx);
+        self.notify_and_emit_teams_changed(ctx);
+    }
+
     pub fn update_workspaces(&mut self, workspaces: Vec<Workspace>, ctx: &mut ModelContext<Self>) {
         // Check if sunsetted_to_build_ts changed for any workspace
         let sunsetted_to_build_changed = self.has_sunsetted_to_build_data_changed(&workspaces);
@@ -627,8 +642,6 @@ impl UserWorkspaces {
             }
         }
     }
-
-    // team_created removed - team creation not supported in local version
 
     pub fn remove_user_from_team(
         &mut self,

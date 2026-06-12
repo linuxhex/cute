@@ -846,7 +846,7 @@ impl TemplatableMCPServerManager {
 
         // Extract values from mode before moving it into the closure.
         let should_persist = mode.should_persist_running_state_to_sqlite();
-        let should_send_telemetry = mode.should_send_telemetry();
+        let _should_send_telemetry = mode.should_send_telemetry();
         let is_reconnect = mode.is_reconnect();
 
         self.change_server_state(installation_uuid, MCPServerState::Starting, ctx);
@@ -1415,7 +1415,7 @@ impl TemplatableMCPServerManager {
                 ctx,
             );
             match result {
-                Ok(result) => {
+                Ok(_result) => {
                 }
                 Err(e) => log::error!("{e}"),
             }

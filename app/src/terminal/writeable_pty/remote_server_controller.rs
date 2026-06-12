@@ -399,7 +399,7 @@ impl<T: EventLoopSender> RemoteServerController<T> {
             .duration_since(setup_start)
             .as_millis()
             .min(u64::MAX as u128) as u64;
-        let (remote_os, remote_arch) = self
+        let (_remote_os, _remote_arch) = self
             .remote_platform
             .as_ref()
             .map(|p| {
@@ -409,7 +409,7 @@ impl<T: EventLoopSender> RemoteServerController<T> {
                 )
             })
             .unwrap_or((None, None));
-        let remote_libc = self
+        let _remote_libc = self
             .preinstall_check
             .as_ref()
             .map(|check| describe_libc(&check.libc));
@@ -595,7 +595,7 @@ fn send_unsupported_telemetry<T: EventLoopSender>(
     detected_libc: Option<&RemoteLibc>,
     ctx: &mut ModelContext<RemoteServerController<T>>,
 ) {
-    let (remote_os, remote_arch) = remote_platform
+    let (_remote_os, _remote_arch) = remote_platform
         .map(|p| {
             (
                 Some(p.os.as_str().to_owned()),

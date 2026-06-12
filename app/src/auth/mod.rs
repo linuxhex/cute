@@ -167,7 +167,7 @@ pub fn maybe_log_out(app: &mut AppContext) {
             ));
         }
 
-        button_data.push(ModalButton::for_app("Cancel", move |ctx| {
+        button_data.push(ModalButton::for_app("Cancel", move |_ctx| {
         }));
 
         let alert_data = AlertDialogWithCallbacks::for_app(

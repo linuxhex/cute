@@ -40,7 +40,6 @@ pub mod remove_user_from_team;
 pub mod rename_team;
 pub mod request_bonus;
 pub mod reset_invite_links;
-pub mod send_referral_invite_emails;
 pub mod send_team_invite_email;
 pub mod set_is_invite_link_enabled;
 pub mod set_object_link_permissions;

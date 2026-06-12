@@ -853,11 +853,11 @@ impl TypedActionView for OrchestrationConfigBlockView {
 impl OrchestrationConfigBlockView {
     fn emit_plan_config_approval_toggled(
         &self,
-        status: OrchestrationApprovalStatus,
-        ctx: &mut ViewContext<Self>,
+        _status: OrchestrationApprovalStatus,
+        _ctx: &mut ViewContext<Self>,
     ) {
     }
 
-    fn emit_agent_proposed_config(&self, ctx: &mut ViewContext<Self>) {
+    fn emit_agent_proposed_config(&self, _ctx: &mut ViewContext<Self>) {
     }
 }

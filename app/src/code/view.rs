@@ -1029,7 +1029,7 @@ impl CodeView {
             if let Some(routing) = terminal_view.update(ctx, |tv, ctx| {
                 tv.try_send_text_to_cli_agent_or_rich_input(prompt, ctx)
             }) {
-                let destination = match routing {
+                let _destination = match routing {
                     CliAgentRouting::RichInput => CodeContextDestination::RichInput,
                     CliAgentRouting::Pty => CodeContextDestination::Pty,
                 };

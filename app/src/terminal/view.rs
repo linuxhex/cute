@@ -4329,7 +4329,7 @@ impl TerminalView {
                                 session_id: *session_id,
                             },
                         );
-                        let (remote_os, remote_arch) = RemoteServerManager::handle(ctx)
+                        let (_remote_os, _remote_arch) = RemoteServerManager::handle(ctx)
                             .as_ref(ctx)
                             .platform_for_session(*session_id)
                             .map(|p| {
@@ -4356,7 +4356,7 @@ impl TerminalView {
                         );
 
                         if !is_cancelled {
-                            let (remote_os, remote_arch) = RemoteServerManager::handle(ctx)
+                            let (_remote_os, _remote_arch) = RemoteServerManager::handle(ctx)
                                 .as_ref(ctx)
                                 .platform_for_session(*session_id)
                                 .map(|p| {
@@ -4386,7 +4386,7 @@ impl TerminalView {
                         was_reconnect_attempt,
                         ..
                     } => {
-                        let (remote_os, remote_arch) = RemoteServerManager::handle(ctx)
+                        let (_remote_os, _remote_arch) = RemoteServerManager::handle(ctx)
                             .as_ref(ctx)
                             .platform_for_session(*session_id)
                             .map(|p| {
@@ -4410,9 +4410,9 @@ impl TerminalView {
                     RemoteServerManagerEvent::BinaryInstallComplete {
                         session_id,
                         result,
-                        install_source,
+                        install_source: _install_source,
                     } => {
-                        let (remote_os, remote_arch) = RemoteServerManager::handle(ctx)
+                        let (_remote_os, _remote_arch) = RemoteServerManager::handle(ctx)
                             .as_ref(ctx)
                             .platform_for_session(*session_id)
                             .map(|p| {
@@ -4439,7 +4439,7 @@ impl TerminalView {
                         remote_platform,
                         ..
                     } => {
-                        let (remote_os, remote_arch) = remote_platform
+                        let (_remote_os, _remote_arch) = remote_platform
                             .as_ref()
                             .map(|p| {
                                 (
@@ -4461,10 +4461,10 @@ impl TerminalView {
                     }
                     RemoteServerManagerEvent::ClientRequestFailed {
                         session_id,
-                        operation,
-                        error_kind,
+                        operation: _operation,
+                        error_kind: _error_kind,
                     } => {
-                        let (remote_os, remote_arch) = RemoteServerManager::handle(ctx)
+                        let (_remote_os, _remote_arch) = RemoteServerManager::handle(ctx)
                             .as_ref(ctx)
                             .platform_for_session(*session_id)
                             .map(|p| {
@@ -4476,7 +4476,7 @@ impl TerminalView {
                             .unwrap_or((None, None));
                     }
                     RemoteServerManagerEvent::ServerMessageDecodingError { session_id } => {
-                        let (remote_os, remote_arch) = RemoteServerManager::handle(ctx)
+                        let (_remote_os, _remote_arch) = RemoteServerManager::handle(ctx)
                             .as_ref(ctx)
                             .platform_for_session(*session_id)
                             .map(|p| {
@@ -4507,10 +4507,10 @@ impl TerminalView {
                     }
                     RemoteServerManagerEvent::SessionReconnected {
                         session_id,
-                        attempt,
+                        attempt: _attempt,
                         ..
                     } => {
-                        let (remote_os, remote_arch) = RemoteServerManager::handle(ctx)
+                        let (_remote_os, _remote_arch) = RemoteServerManager::handle(ctx)
                             .as_ref(ctx)
                             .platform_for_session(*session_id)
                             .map(|p| {
