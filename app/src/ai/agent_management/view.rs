@@ -50,7 +50,6 @@ use crate::ai::agent_management::cloud_setup_guide_view::{
 use crate::ai::agent_management::details_action_buttons::{
     ActionButtonsConfig, AgentDetailsButtonEvent, ConversationActionButtonsRow,
 };
-use crate::ai::agent_management::telemetry::{FilterType, OpenedFrom};
 use crate::server::telemetry::AgentModeEntrypoint;
 use crate::ai::ambient_agents::{cancel_task_with_toast, AgentSource};
 use crate::ai::artifacts::{Artifact, ArtifactButtonsRow, ArtifactButtonsRowEvent};

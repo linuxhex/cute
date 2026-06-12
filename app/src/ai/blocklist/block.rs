@@ -160,9 +160,7 @@ use crate::editor::InteractionState;
 use crate::notebooks::editor::model::FileLinkResolutionContext;
 use crate::notebooks::editor::view::{EditorViewEvent, RichTextEditorView};
 use crate::server::ids::SyncId;
-use crate::server::telemetry::{
-    AgentModeRewindEntrypoint, TelemetryEvent,
-};
+use crate::server::telemetry::AgentModeRewindEntrypoint;
 use crate::settings::{
     AISettings, AISettingsChangedEvent, AgentModeCodingPermissionsType, FontSettings,
     InputModeSettings, InputModeSettingsChangedEvent, InputSettings,

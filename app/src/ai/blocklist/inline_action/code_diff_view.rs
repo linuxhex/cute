@@ -78,7 +78,6 @@ use crate::menu::{Event as MenuEvent, Menu, MenuItemFields, MenuVariant};
 use crate::pane_group::focus_state::PaneFocusHandle;
 use crate::pane_group::pane::{view, PaneId};
 use crate::pane_group::{BackingView, PaneEvent};
-use crate::server::telemetry::AgentModeCodeFileNavigationSource;
 use crate::settings::AISettings;
 use crate::terminal::input::SET_INPUT_MODE_AGENT_ACTION_NAME;
 use crate::terminal::ShellLaunchData;

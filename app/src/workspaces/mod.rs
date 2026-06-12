@@ -7,4 +7,3 @@ pub mod workspace;
 
 // Re-export types that were previously in team.rs for backward compatibility
 pub use workspace::{DiscoverableTeam, MembershipRole, Team, TeamMember};
-pub use team_tester::{TeamTesterStatus, TeamTesterStatusEvent};
