@@ -192,7 +192,7 @@ use crate::ai::predict::prompt_suggestions::{
     has_pending_code_or_unit_test_prompt_suggestion,
     is_accept_prompt_suggestion_bound_to_ctrl_enter,
 };
-use crate::ai::skills::{SkillManager, SkillOpenOrigin, SkillTelemetryEvent};
+use crate::ai::skills::SkillManager;
 use crate::ai::AIRequestUsageModel;
 use crate::ai_assistant::execution_context::WarpAiExecutionContext;
 use crate::appearance::{Appearance, AppearanceEvent};
@@ -249,9 +249,8 @@ use crate::server::server_api::ai::AttachmentInput;
 use crate::server::server_api::ServerApi;
 use crate::server::telemetry::{
     AICommandSearchEntrypoint, AgentModeAutoDetectionFalsePositivePayload,
-    AgentModeAutoDetectionSettingOrigin, AnonymousUserSignupEntrypoint, CommandXRayTrigger,
-    EnvVarTelemetryMetadata, PaletteSource, SlashCommandAcceptedDetails, SlashMenuSource,
-    TelemetryEvent, WorkflowTelemetryMetadata,
+    AnonymousUserSignupEntrypoint, CommandXRayTrigger,
+    EnvVarTelemetryMetadata, PaletteSource,
 };
 use crate::session_management::SessionNavigationPromptElements;
 use crate::settings::{

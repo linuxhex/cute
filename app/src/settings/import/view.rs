@@ -29,7 +29,7 @@ use crate::ui_components::blended_colors;
 use crate::user_config::{self, WarpConfig};
 use crate::window_settings::WindowSettings;
 use crate::{
-    report_if_error, send_telemetry_from_ctx, GlobalResourceHandlesProvider, TelemetryEvent,
+    report_if_error, GlobalResourceHandlesProvider,
 };
 
 // UI does not scale, so we set a fixed size for all text.

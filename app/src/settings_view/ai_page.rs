@@ -132,10 +132,6 @@ use crate::ai::{AIRequestUsageModel, AIRequestUsageModelEvent};
 use crate::appearance::Appearance;
 use crate::editor::{EditorView, Event as EditorEvent, TextOptions};
 use crate::menu::{MenuItem, MenuItemFields};
-use crate::server::telemetry::{
-    AgentModeAutoDetectionSettingOrigin, AutonomySettingToggleSource,
-    ToggleCodeSuggestionsSettingSource,
-};
 use crate::settings::{AISettings, VoiceInputToggleKey};
 use crate::ui_components::blended_colors;
 use crate::ui_components::icons::Icon;
@@ -144,7 +140,7 @@ use crate::view_components::dropdown::DropdownAction;
 use crate::view_components::{Dropdown, DropdownItem};
 use crate::workspaces::workspace::AdminEnablementSetting;
 use crate::{
-    report_error, report_if_error, send_telemetry_from_ctx, TelemetryEvent, UserWorkspaces,
+    report_error, report_if_error, UserWorkspaces,
 };
 
 const CONTENT_FONT_SIZE: f32 = 12.;

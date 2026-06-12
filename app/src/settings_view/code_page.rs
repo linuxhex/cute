@@ -53,7 +53,6 @@ use crate::ai::persisted_workspace::{
 };
 use crate::appearance::Appearance;
 use crate::code::buffer_location::LocalOrRemotePath;
-use crate::code::lsp_telemetry::{LspControlActionType, LspEnablementSource, LspTelemetryEvent};
 #[cfg(not(target_family = "wasm"))]
 use crate::remote_server::codebase_index_model::{
     RemoteCodebaseIndexModel, RemoteCodebaseIndexModelEvent, RemoteCodebaseIndexSettingsEntry,
