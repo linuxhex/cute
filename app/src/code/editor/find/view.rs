@@ -28,7 +28,7 @@ use crate::editor::{
     SingleLineEditorOptions, TextOptions,
 };
 use crate::features::FeatureFlag;
-use crate::server::telemetry::{FindOption, TelemetryEvent};
+use crate::server::telemetry::FindOption;
 use crate::settings::AppEditorSettings;
 use crate::themes::theme::Fill;
 use crate::ui_components::blended_colors;

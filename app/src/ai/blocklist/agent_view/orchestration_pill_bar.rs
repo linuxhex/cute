@@ -53,8 +53,7 @@ use crate::ai::blocklist::orchestration_topology::{
     aggregated_orchestrator_status, descendant_conversation_ids_in_spawn_order,
 };
 use crate::ai::blocklist::telemetry::{
-    BlocklistOrchestrationTelemetryEvent, PillBarActionKind, PillBarInteractionEvent,
-    PillBarPillKind, PillSwitchOutcome,
+    PillBarActionKind, PillBarPillKind, PillSwitchOutcome,
 };
 use crate::ai::blocklist::{BlocklistAIHistoryEvent, BlocklistAIHistoryModel};
 use crate::ai::harness_display;

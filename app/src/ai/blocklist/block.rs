@@ -143,7 +143,6 @@ use crate::ai::get_relevant_files::controller::{
 };
 #[cfg(feature = "local_fs")]
 use crate::ai::skills::SkillOpenOrigin;
-use crate::ai::skills::{SkillManager, SkillTelemetryEvent};
 use crate::ai::{AIRequestUsageModel, AIRequestUsageModelEvent};
 use crate::auth::AuthStateProvider;
 use crate::cloud_object::model::generic_string_model::GenericStringObjectId;
@@ -162,7 +161,7 @@ use crate::notebooks::editor::model::FileLinkResolutionContext;
 use crate::notebooks::editor::view::{EditorViewEvent, RichTextEditorView};
 use crate::server::ids::SyncId;
 use crate::server::telemetry::{
-    AgentModeRewindEntrypoint, AutonomySettingToggleSource, TelemetryEvent,
+    AgentModeRewindEntrypoint, TelemetryEvent,
 };
 use crate::settings::{
     AISettings, AISettingsChangedEvent, AgentModeCodingPermissionsType, FontSettings,

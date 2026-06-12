@@ -33,7 +33,7 @@ use crate::editor::{
 };
 use crate::modal::MODAL_CORNER_RADIUS;
 use crate::network::NetworkStatus;
-use crate::server::telemetry::{AnonymousUserSignupEntrypoint, LoginEventSource, TelemetryEvent};
+use crate::server::telemetry::{AnonymousUserSignupEntrypoint, LoginEventSource};
 use crate::settings::{AISettings, PrivacySettings};
 use crate::themes::theme::Fill as ThemeFill;
 use crate::util::color::{darken, lighten};

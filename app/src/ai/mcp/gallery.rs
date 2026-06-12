@@ -5,7 +5,7 @@ use uuid::Uuid;
 use warpui::{Entity, ModelContext, SingletonEntity};
 
 use crate::ai::mcp::templatable::{
-    GalleryData, JsonTemplate, TemplatableMCPServer, TemplateVariable,
+    GalleryData, JsonTemplate, TemplatableMCPServer,
 };
 use crate::server::cloud_objects::update_manager::{UpdateManager, UpdateManagerEvent};
 use crate::server::datetime_ext::DateTimeExt;

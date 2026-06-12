@@ -45,10 +45,7 @@ use crate::ai::blocklist::inline_action::requested_action::{
     render_requested_action_row_for_text, CTRL_C_KEYSTROKE, ENTER_KEYSTROKE,
 };
 use crate::ai::blocklist::telemetry::{
-    orchestration_modified_field, BlocklistOrchestrationTelemetryEvent,
-    OrchestrationApprovalStatus, OrchestrationEnteredEvent, OrchestrationEntrySource,
-    OrchestrationExecutionModeKind, OrchestrationHarnessKind, RunAgentsCardDecision,
-    RunAgentsCardDecisionEvent,
+    orchestration_modified_field, OrchestrationApprovalStatus, RunAgentsCardDecision,
 };
 use crate::ai::connected_self_hosted_workers::{
     ConnectedSelfHostedWorkersEvent, ConnectedSelfHostedWorkersModel,
