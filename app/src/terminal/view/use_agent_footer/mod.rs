@@ -138,6 +138,7 @@ fn rich_input_submit_strategy(agent: CLIAgent) -> RichInputSubmitStrategy {
         | CLIAgent::Goose
         | CLIAgent::Hermes
         | CLIAgent::Vibe
+        | CLIAgent::Qoder
         | CLIAgent::Unknown => RichInputSubmitStrategy::Inline,
     }
 }
