@@ -78,7 +78,7 @@ use crate::settings::{
     AIAutoDetectionEnabled, AICommandDenylist, AISettingsChangedEvent,
     AgentModeCodingPermissionsType, AgentModeCommandExecutionDenylist,
     AgentModeCommandExecutionPredicate, AgentModeQuerySuggestionsEnabled, AwsBedrockAutoLogin,
-    AwsBedrockCredentialsEnabled, CanUseWarpCreditsForFallback, CodeSettings,
+    AwsBedrockCredentialsEnabled, CodeSettings,
     CodebaseContextEnabled, FileBasedMcpEnabled, GitOperationsAutogenEnabled,
     IncludeAgentCommandsInHistory, InputSettings, IntelligentAutosuggestionsEnabled, MemoryEnabled,
     NLDInTerminalEnabled, NaturalLanguageAutosuggestionsEnabled, RuleSuggestionsEnabled,
@@ -492,20 +492,6 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
     );
     ToggleSettingActionPair::add_toggle_setting_action_pairs_as_bindings(
         vec![
-            ToggleSettingActionPair::new(
-                "Warp credit fallback",
-                builder(SettingsAction::AI(
-                    AISettingsPageAction::ToggleCanUseWarpCreditsForFallback,
-                )),
-                &(context.clone() & id!(flags::IS_ANY_AI_ENABLED)),
-                flags::WARP_CREDIT_FALLBACK_FLAG,
-            )
-            .with_group(bindings::BindingGroup::WarpAi)
-            .is_supported_on_current_platform(
-                UserWorkspaces::as_ref(app).is_byo_api_key_enabled(app)
-                    || (FeatureFlag::CustomInferenceEndpoints.is_enabled()
-                        && UserWorkspaces::as_ref(app).is_custom_inference_enabled(app)),
-            ),
             ToggleSettingActionPair::new(
                 "auto show or hide Rich Input based on agent status",
                 builder(SettingsAction::AI(
@@ -2772,7 +2758,6 @@ pub enum AISettingsPageAction {
     ToggleCLIAgentToolbar,
     ToggleUseAgentToolbar,
     ToggleVoiceInput,
-    ToggleCanUseWarpCreditsForFallback,
     HyperlinkClick(HyperlinkUrl),
     ToggleCodebaseContext,
     ToggleShowInputHintText,
@@ -3090,14 +3075,6 @@ impl TypedActionView for AISettingsPageView {
                         log::warn!("Failed to set value for Voice Input: {e:?}");
                     }
                 }
-                ctx.notify();
-            }
-            AISettingsPageAction::ToggleCanUseWarpCreditsForFallback => {
-                AISettings::handle(ctx).update(ctx, |settings, ctx| {
-                    report_if_error!(settings
-                        .can_use_warp_credits_for_fallback
-                        .toggle_and_save_value(ctx));
-                });
                 ctx.notify();
             }
             AISettingsPageAction::HyperlinkClick(hyperlink) => {
@@ -6886,7 +6863,6 @@ struct ApiKeysWidget {
     anthropic_api_key_editor: ViewHandle<EditorView>,
     google_api_key_editor: ViewHandle<EditorView>,
 
-    can_use_warp_credits_for_fallback: SwitchStateHandle,
     #[allow(dead_code)]
     upgrade_highlight_index: HighlightedHyperlink,
 
@@ -6999,7 +6975,6 @@ impl ApiKeysWidget {
             anthropic_api_key_editor,
             google_api_key_editor,
 
-            can_use_warp_credits_for_fallback: Default::default(),
             upgrade_highlight_index: Default::default(),
 
             custom_inference_info_tooltip: Default::default(),
@@ -7249,35 +7224,6 @@ impl ApiKeysWidget {
         }
         list.finish()
     }
-
-    fn render_warp_credit_fallback_toggle(
-        &self,
-        view: &AISettingsPageView,
-        app: &AppContext,
-    ) -> Box<dyn Element> {
-        let ai_settings = AISettings::as_ref(app);
-
-        let toggle = render_ai_setting_toggle::<CanUseWarpCreditsForFallback>(
-            "Warp credit fallback",
-            AISettingsPageAction::ToggleCanUseWarpCreditsForFallback,
-            *ai_settings.can_use_warp_credits_for_fallback,
-            ai_settings.is_any_ai_enabled(app),
-            self.can_use_warp_credits_for_fallback.clone(),
-            &view.local_only_icon_tooltip_states,
-            app,
-        );
-
-        let description = render_ai_setting_description(
-            "When enabled, agent requests may be routed to one of Warp's provided models in the event of an error. Warp will prioritize using your API keys over your Warp credits.",
-            ai_settings.is_any_ai_enabled(app),
-            app,
-        );
-
-        Flex::column()
-            .with_child(toggle)
-            .with_child(description)
-            .finish()
-    }
 }
 
 impl SettingsWidget for ApiKeysWidget {
@@ -7387,14 +7333,7 @@ impl SettingsWidget for ApiKeysWidget {
             }
         }
 
-        // Warp credit fallback toggle (shown when BYO or custom inference is enabled)
-        if is_byo_enabled || show_custom_inference {
-            column.add_child(
-                Container::new(self.render_warp_credit_fallback_toggle(view, app))
-                    .with_margin_top(16.)
-                    .finish(),
-            );
-        }
+        // Simplified: local version has no warp credit fallback toggle
 
         // Simplified: local version has no upgrade CTA for BYOK
         // No upgrade links for local version

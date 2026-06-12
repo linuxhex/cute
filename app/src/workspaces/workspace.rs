@@ -4,10 +4,6 @@ use std::path::PathBuf;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use warp_graphql::billing::ServiceAgreement;
-pub use warp_graphql::billing::{
-    AiCreditsUsageAndCostSubjectType, AiCreditsUsageAndCostType, AiCreditsUsageBucket,
-    AiCreditsUsageSource,
-};
 
 use crate::ai::execution_profiles::{
     ActionPermission, ComputerUsePermission, WriteToPtyPermission,
@@ -69,7 +65,6 @@ pub struct Team {
     pub organization_settings: WorkspaceSettings,
     /// If the team is eligible for discovery, then show toggle for setting discoverability to the team's admin
     pub is_eligible_for_discovery: bool,
-    pub has_billing_history: bool,
 }
 
 impl Team {
@@ -91,7 +86,6 @@ impl Team {
             stripe_customer_id: Default::default(),
             organization_settings: workspace_settings.unwrap_or_default(),
             is_eligible_for_discovery: false,
-            has_billing_history: false,
         }
     }
 
@@ -156,8 +150,6 @@ pub struct Workspace {
     pub teams: Vec<Team>,
     pub billing_metadata: BillingMetadata,
     pub bonus_grants_purchased_this_month: BonusGrantsPurchased,
-    pub billing_cycle_usage: Option<BillingCycleUsageData>,
-    pub has_billing_history: bool,
     pub settings: WorkspaceSettings,
     pub invite_code: Option<WorkspaceInviteCode>,
     pub invite_link_domain_restrictions: Vec<InviteLinkDomainRestriction>,
@@ -185,8 +177,6 @@ impl Workspace {
             teams: teams.unwrap_or_default(),
             billing_metadata,
             bonus_grants_purchased_this_month: Default::default(),
-            billing_cycle_usage: None,
-            has_billing_history: false,
             settings: Default::default(), // TODO: persistence wrapper instead of default
             invite_code: Default::default(),
             invite_link_domain_restrictions: Default::default(),
@@ -593,52 +583,7 @@ pub struct AiOverages {
     pub current_period_end: chrono::DateTime<chrono::Utc>,
 }
 
-/// A single redacted usage entry from `Workspace.billingCycleUsageHistory`.
-///
-/// The shape of this entry depends on the viewer's resolved `UsageVisibility`:
-/// * `OwnOnly` viewers receive only their own entries with real `cost_type` /
-///   `usage_bucket` / `usage_source` values.
-/// * `TeamAggregate` viewers receive exactly one synthetic `TEAM` row per cycle
-///   carrying `Aggregate` sentinels for all three categorical fields.
-/// * `PerUserTotals` viewers receive one row per user / service account per
-///   cycle, also with `Aggregate` sentinels on the categorical fields.
-/// * `FullBreakdown` viewers receive every real row, one per
-///   `(subject, cost_type, bucket, source)` tuple. Categorical fields always
-///   carry real values — the server does **not** synthesize an aggregate team
-///   total at this granularity. Compute team-wide sums client-side if needed.
-#[derive(Clone, Debug)]
-pub struct BillingCycleUsageEntry {
-    pub subject_type: AiCreditsUsageAndCostSubjectType,
-    pub subject_uid: Option<String>,
-    pub subject_display_name: Option<String>,
-    pub cost_type: AiCreditsUsageAndCostType,
-    pub usage_bucket: AiCreditsUsageBucket,
-    pub usage_source: AiCreditsUsageSource,
-    pub credits_used: i32,
-    pub cost_cents: i32,
-}
-
-/// Per-cycle bucket of redacted usage entries with explicit period bounds.
-/// `period_end` is exclusive (e.g. a summary covering May 2026 has
-/// `period_end = 2026-06-01T00:00:00Z`).
-#[derive(Clone, Debug)]
-pub struct BillingCycleUsageSummary {
-    pub period_start: chrono::DateTime<chrono::Utc>,
-    pub period_end: chrono::DateTime<chrono::Utc>,
-    pub entries: Vec<BillingCycleUsageEntry>,
-}
-
-/// The full per-cycle usage history for a workspace, as redacted by the
-/// server's `USAGE_VISIBILITY` policy. `current_period_start` /
-/// `current_period_end` mark the cycle that's currently active; older
-/// summaries cover prior cycles and the number of them retained is governed
-/// by the policy's `max_prior_cycles`.
-#[derive(Clone, Debug)]
-pub struct BillingCycleUsageData {
-    pub current_period_start: chrono::DateTime<chrono::Utc>,
-    pub current_period_end: chrono::DateTime<chrono::Utc>,
-    pub summaries: Vec<BillingCycleUsageSummary>,
-}
+// Simplified: removed BillingCycleUsageEntry, BillingCycleUsageSummary, BillingCycleUsageData
 
 impl BillingMetadata {
     /// Returns whether the current tier has a usage-based pricing policy that can be toggled.
@@ -880,12 +825,6 @@ pub struct SecretRedactionSettings {
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct UsageBasedPricingSettings {
-    pub enabled: bool,
-    pub max_monthly_spend_cents: Option<u32>,
-}
-
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct AddonCreditsSettings {
     pub auto_reload_enabled: bool,
     pub max_monthly_spend_cents: Option<i32>,
@@ -914,7 +853,6 @@ pub struct WorkspaceSettings {
     pub ai_autonomy_settings: AiAutonomySettings,
     pub is_invite_link_enabled: bool,
     pub is_discoverable: bool,
-    pub usage_based_pricing_settings: UsageBasedPricingSettings,
     pub addon_credits_settings: AddonCreditsSettings,
     pub codebase_context_settings: CodebaseContextSettings,
     pub sandboxed_agent_settings: Option<SandboxedAgentSettings>,

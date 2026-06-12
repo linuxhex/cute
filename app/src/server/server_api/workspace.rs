@@ -15,7 +15,6 @@ use warp_graphql::mutations::stripe_billing_portal::{
 use warp_graphql::mutations::update_workspace_settings::{
     AddonCreditsSettingsInput, UpdateWorkspaceSettings, UpdateWorkspaceSettingsInput,
     UpdateWorkspaceSettingsResult, UpdateWorkspaceSettingsVariables,
-    UsageBasedPricingSettingsInput,
 };
 use warp_graphql::queries::get_ai_overages_for_workspace::{
     GetAiOveragesForWorkspace, GetAiOveragesForWorkspaceVariables, UserResult,
@@ -33,13 +32,6 @@ use crate::workspaces::workspace::AiOverages;
 #[cfg_attr(target_family = "wasm", async_trait(?Send))]
 pub trait WorkspaceClient: 'static + Send + Sync {
     async fn generate_stripe_billing_portal_link(&self, team_uid: ServerId) -> Result<String>;
-
-    async fn update_usage_based_pricing_settings(
-        &self,
-        team_uid: ServerId,
-        usage_based_pricing_enabled: bool,
-        max_monthly_spend_cents: Option<u32>,
-    ) -> Result<WorkspacesMetadataResponse>;
 
     async fn refresh_ai_overages(&self) -> Result<AiOverages>;
 
@@ -77,48 +69,6 @@ impl WorkspaceClient for ServerApi {
                 Err(anyhow!(get_user_facing_error_message(error)))
             }
             StripeBillingPortalResult::Unknown => Err(anyhow!("Unknown error")),
-        }
-    }
-
-    async fn update_usage_based_pricing_settings(
-        &self,
-        team_uid: ServerId,
-        usage_based_pricing_enabled: bool,
-        max_monthly_spend_cents: Option<u32>,
-    ) -> Result<WorkspacesMetadataResponse> {
-        if let Some(cents) = max_monthly_spend_cents {
-            if cents > i32::MAX as u32 {
-                return Err(anyhow!(
-                    "Maximum monthly spend cannot exceed {} cents",
-                    i32::MAX
-                ));
-            }
-        }
-
-        let variables = UpdateWorkspaceSettingsVariables {
-            input: UpdateWorkspaceSettingsInput {
-                workspace_uid: team_uid.to_string(),
-                set_usage_based_pricing_settings: Some(UsageBasedPricingSettingsInput {
-                    enabled: Some(usage_based_pricing_enabled),
-                    max_monthly_spend_cents: max_monthly_spend_cents.map(|cents| cents as i32),
-                }),
-                set_addon_credits_settings: None,
-            },
-            request_context: get_request_context(),
-        };
-        let operation = UpdateWorkspaceSettings::build(variables);
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.update_workspace_settings {
-            UpdateWorkspaceSettingsResult::UpdateWorkspaceSettingsOutput(_) => {
-                TeamClient::workspaces_metadata(self)
-                    .await
-                    .map(|w| w.metadata)
-            }
-            UpdateWorkspaceSettingsResult::UserFacingError(error) => {
-                Err(anyhow!(get_user_facing_error_message(error)))
-            }
-            UpdateWorkspaceSettingsResult::Unknown => Err(anyhow!("Unknown error")),
         }
     }
 

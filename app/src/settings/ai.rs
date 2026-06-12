@@ -1078,18 +1078,6 @@ define_settings_group!(AISettings, settings: [
         description: "Whether the \"What's new\" section is shown in the agent view.",
     }
 
-    // Whether or not the user has enabled fallback to Warp credits for user-provided models.
-    can_use_warp_credits_for_fallback: CanUseWarpCreditsForFallback {
-        type: bool,
-        default: false,
-        supported_platforms: SupportedPlatforms::ALL,
-        sync_to_cloud: SyncToCloud::Globally(RespectUserSyncSetting::Yes),
-        private: false,
-        storage_key: "CanUseWarpCreditsWithByok",
-        toml_path: "cloud_platform.third_party_api_keys.can_use_warp_credits_with_byok",
-        description: "Whether Warp credits can be used as a fallback for user-provided models.",
-    }
-
     should_render_use_agent_footer_for_user_commands: ShouldRenderUseAgentToolbarForUserCommands {
         type: bool,
         default: true,

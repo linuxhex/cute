@@ -4,7 +4,7 @@ use anyhow::{anyhow, bail, Result};
 use regex::Regex;
 use warp_graphql::billing::{
     AiAutonomyPolicy as GqlAiAutonomyPolicy, AmbientAgentsPolicy as GqlAmbientAgentsPolicy,
-    BillingCycleUsageHistory as GqlBillingCycleUsageHistory, BillingMetadata as GqlBillingMetadata,
+    BillingMetadata as GqlBillingMetadata,
     BonusGrant as GqlBonusGrant, ByoApiKeyPolicy as GqlByoApiKeyPolicy,
     CodebaseContextPolicy as GqlCodebaseContextPolicy, CustomerType as GqlCustomerType,
     DelinquencyStatus as GqlDelinquencyStatus,
@@ -43,8 +43,7 @@ use warp_graphql::workspace::{
 use super::user_workspaces::WorkspacesMetadataResponse;
 use super::workspace::{
     AIAutonomyPolicy, AddonCreditsSettings, AdminEnablementSetting, AiAutonomySettings,
-    AiPermissionsSettings, AmbientAgentsPolicy, BillingCycleUsageData, BillingCycleUsageEntry,
-    BillingCycleUsageSummary, BillingMetadata, CloudConversationStorageSettings,
+    AiPermissionsSettings, AmbientAgentsPolicy, BillingMetadata, CloudConversationStorageSettings,
     CodebaseContextSettings, CustomerType, DelinquencyStatus, DiscoverableTeam, EmailInvite,
     EnterpriseSecretRegex, HostEnablementSetting, InstanceShape, InviteLinkDomainRestriction,
     LinkSharingSettings, LlmSettings, MaxPriorCycles, MembershipRole, SandboxedAgentSettings,
@@ -68,7 +67,7 @@ use crate::settings::AgentModeCommandExecutionPredicate;
 use crate::workspaces::workspace::{
     AiOverages, BonusGrantsPurchased, ByoApiKeyPolicy, CodebaseContextPolicy,
     EnterpriseCreditsAutoReloadPolicy, EnterprisePayAsYouGoPolicy, MultiAdminPolicy,
-    PurchaseAddOnCreditsPolicy, UsageBasedPricingSettings,
+    PurchaseAddOnCreditsPolicy,
 };
 use crate::{report_error};
 
@@ -475,35 +474,6 @@ impl From<GqlUsageVisibilityPolicy> for UsageVisibilityPolicy {
     }
 }
 
-fn convert_billing_cycle_usage(history: GqlBillingCycleUsageHistory) -> BillingCycleUsageData {
-    BillingCycleUsageData {
-        current_period_start: history.current_period_start.utc(),
-        current_period_end: history.current_period_end.utc(),
-        summaries: history
-            .summaries
-            .into_iter()
-            .map(|summary| BillingCycleUsageSummary {
-                period_start: summary.period_start.utc(),
-                period_end: summary.period_end.utc(),
-                entries: summary
-                    .entries
-                    .into_iter()
-                    .map(|entry| BillingCycleUsageEntry {
-                        subject_type: entry.subject_type,
-                        subject_uid: entry.subject_uid,
-                        subject_display_name: entry.subject_display_name,
-                        cost_type: entry.cost_type,
-                        usage_bucket: entry.usage_bucket,
-                        usage_source: entry.usage_source,
-                        credits_used: entry.credits_used,
-                        cost_cents: entry.cost_cents,
-                    })
-                    .collect(),
-            })
-            .collect(),
-    }
-}
-
 impl From<GqlTier> for Tier {
     fn from(gql_tier: GqlTier) -> Tier {
         Self {
@@ -863,23 +833,6 @@ impl From<GqlWorkspaceSettings> for WorkspaceSettings {
                     .computer_use_setting
                     .and_then(convert_gql_computer_use_autonomy_value_to_computer_use_permission),
             },
-            usage_based_pricing_settings: UsageBasedPricingSettings {
-                enabled: gql_workspace_settings.usage_based_pricing_settings.enabled,
-                max_monthly_spend_cents: gql_workspace_settings
-                    .usage_based_pricing_settings
-                    .max_monthly_spend_cents
-                    .and_then(|cents| {
-                        if cents < 0 {
-                            report_error!(anyhow!(
-                                "Usage-based pricing has a negative max monthly spend of {} cents",
-                                cents
-                            ));
-                            None
-                        } else {
-                            Some(cents as u32)
-                        }
-                    }),
-            },
             addon_credits_settings: gql_workspace_settings.addon_credits_settings.into(),
             codebase_context_settings: CodebaseContextSettings {
                 setting: gql_workspace_settings
@@ -949,7 +902,6 @@ impl Team {
                 .map(|id| id.clone().into_inner()),
             organization_settings: gql_workspace.settings.clone().into(),
             is_eligible_for_discovery: gql_workspace.is_eligible_for_discovery,
-            has_billing_history: gql_workspace.has_billing_history,
         }
     }
 }
@@ -978,10 +930,6 @@ impl From<GqlWorkspace> for Workspace {
                     cents_spent: info.current_month_spend_cents,
                 })
                 .unwrap_or_default(),
-            billing_cycle_usage: gql_workspace
-                .billing_cycle_usage_history
-                .map(convert_billing_cycle_usage),
-            has_billing_history: gql_workspace.has_billing_history,
             settings: gql_workspace.settings.clone().into(),
             invite_code: gql_workspace
                 .invite_code

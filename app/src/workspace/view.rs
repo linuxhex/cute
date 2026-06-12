@@ -21393,9 +21393,6 @@ impl Workspace {
         if *ai_settings.file_based_mcp_enabled.value() {
             context.set.insert(flags::FILE_BASED_MCP_FLAG);
         }
-        if *ai_settings.can_use_warp_credits_for_fallback.value() {
-            context.set.insert(flags::WARP_CREDIT_FALLBACK_FLAG);
-        }
         if *session_settings.show_model_selectors_in_prompt.value() {
             context
                 .set

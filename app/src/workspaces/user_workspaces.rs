@@ -33,7 +33,7 @@ use crate::workspaces::workspace::{
     AIAutonomyPolicy, BillingMetadata, WorkspaceMember, WorkspaceSettings,
 };
 use crate::workspaces::workspace::{
-    AiAutonomySettings, AiOverages, SandboxedAgentSettings, UsageBasedPricingSettings,
+    AiAutonomySettings, AiOverages, SandboxedAgentSettings,
 };
 
 // Simplified: local version has no upgrade
@@ -113,10 +113,7 @@ pub struct WorkspacesMetadataWithPricing {
     pub pricing_info: Option<warp_graphql::billing::PricingInfo>,
 }
 
-pub struct CreateTeamResponse {
-    pub workspace: Workspace,
-    pub team: Team,
-}
+// CreateTeamResponse removed - team creation not supported in local version
 
 impl UserWorkspaces {
     #[cfg(test)]
@@ -631,15 +628,7 @@ impl UserWorkspaces {
         }
     }
 
-    pub fn team_created(
-        &mut self,
-        create_team_response: &CreateTeamResponse,
-        ctx: &mut ModelContext<Self>,
-    ) {
-        self.workspaces.push(create_team_response.workspace.clone());
-        self.set_current_workspace_uid(create_team_response.workspace.uid, ctx);
-        self.notify_and_emit_teams_changed(ctx);
-    }
+    // team_created removed - team creation not supported in local version
 
     pub fn remove_user_from_team(
         &mut self,
@@ -1037,28 +1026,6 @@ impl UserWorkspaces {
         );
     }
 
-    pub fn update_usage_based_pricing_settings(
-        &mut self,
-        team_uid: ServerId,
-        usage_based_pricing_enabled: bool,
-        max_monthly_spend_cents: Option<u32>,
-        ctx: &mut ModelContext<Self>,
-    ) {
-        let workspace_client = self.workspace_client.clone();
-        let _ = ctx.spawn(
-            async move {
-                workspace_client
-                    .update_usage_based_pricing_settings(
-                        team_uid,
-                        usage_based_pricing_enabled,
-                        max_monthly_spend_cents,
-                    )
-                    .await
-            },
-            Self::on_update_workspace_metadata,
-        );
-    }
-
     fn on_update_workspace_metadata(
         &mut self,
         result: Result<WorkspacesMetadataResponse>,
@@ -1157,12 +1124,6 @@ impl UserWorkspaces {
     #[allow(dead_code)]
     fn on_refresh_ai_overages(&mut self, _result: Result<AiOverages>, _ctx: &mut ModelContext<Self>) {
         // No-op for local version
-    }
-
-    pub fn usage_based_pricing_settings(&self) -> UsageBasedPricingSettings {
-        self.current_workspace()
-            .map(|workspace| workspace.settings.usage_based_pricing_settings.clone())
-            .unwrap_or_default()
     }
 
     pub fn is_telemetry_force_enabled(&self) -> bool {
@@ -1333,7 +1294,6 @@ impl UserWorkspaces {
                 invite_link_domain_restrictions: vec![],
                 stripe_customer_id: None,
                 is_eligible_for_discovery: false,
-                has_billing_history: false,
             }],
             members: vec![WorkspaceMember {
                 uid: owner_uid,
@@ -1348,8 +1308,6 @@ impl UserWorkspaces {
             }],
             billing_metadata: BillingMetadata::default(),
             bonus_grants_purchased_this_month: Default::default(),
-            billing_cycle_usage: None,
-            has_billing_history: false,
             settings: workspace_settings,
             invite_code: None,
             invite_link_domain_restrictions: vec![],
