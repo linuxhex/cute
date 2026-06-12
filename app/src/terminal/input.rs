@@ -250,7 +250,7 @@ use crate::server::server_api::ServerApi;
 use crate::server::telemetry::{
     AICommandSearchEntrypoint, AgentModeAutoDetectionFalsePositivePayload,
     AnonymousUserSignupEntrypoint, CommandXRayTrigger,
-    EnvVarTelemetryMetadata, PaletteSource,
+    EnvVarTelemetryMetadata, PaletteSource, TelemetryEvent,
 };
 use crate::session_management::SessionNavigationPromptElements;
 use crate::settings::{

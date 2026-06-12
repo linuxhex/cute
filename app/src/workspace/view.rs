@@ -104,7 +104,6 @@ use warpui::{
     UpdateModel, UpdateView, View, ViewAsRef, ViewContext, ViewHandle, WeakViewHandle, WindowId,
 };
 
-use self::vertical_tabs::telemetry::{VerticalTabsDisplayOption, VerticalTabsTelemetryEvent};
 use self::vertical_tabs::{
     render_detail_sidecar, render_settings_popup, VerticalTabsPanelState,
     VERTICAL_TABS_SETTINGS_BUTTON_POSITION_ID,
@@ -162,7 +161,6 @@ use crate::ai::agent_management::view::{AgentManagementView, AgentManagementView
 use crate::ai::agent_management::AgentManagementEvent;
 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
 use crate::ai::ambient_agents::telemetry::HandoffEntryPoint;
-use crate::ai::ambient_agents::telemetry::{CloudAgentTelemetryEvent, CloudModeEntryPoint};
 use crate::ai::ambient_agents::AmbientAgentTaskId;
 use crate::ai::blocklist::agent_view::agent_input_footer::editor::AgentToolbarEditorMode;
 use crate::ai::blocklist::agent_view::editor::{AgentToolbarEditorEvent, AgentToolbarEditorModal};
@@ -296,10 +294,8 @@ use crate::server::server_api::ai::AIClient;
 use crate::server::server_api::auth::AuthClient;
 use crate::server::server_api::{ServerApi, ServerApiEvent, ServerApiProvider, ServerTime};
 use crate::server::telemetry::{
-    AddTabWithShellSource, AnonymousUserSignupEntrypoint, CloseTarget, EnvVarTelemetryMetadata,
-    FileTreeSource, KnowledgePaneEntrypoint, LaunchConfigUiLocation,
-    MCPServerCollectionPaneEntrypoint, NotificationsTurnedOnSource, OpenedWarpAISource,
-    PaletteSource, TabRenameEvent, WarpDriveSource,
+    AddTabWithShellSource, AnonymousUserSignupEntrypoint,
+    LaunchConfigUiLocation, PaletteSource,
 };
 use crate::drive::sharing::dialog::SharingDialogSource;
 use crate::session_management::{SessionNavigationData, SessionSource, TabNavigationData};
@@ -330,9 +326,6 @@ use crate::tab_configs::remove_confirmation_dialog::{
     RemoveTabConfigConfirmationDialog, RemoveTabConfigConfirmationEvent,
 };
 use crate::tab_configs::session_config_modal::{SessionConfigModal, SessionConfigModalEvent};
-use crate::tab_configs::telemetry::{
-    ExistingTabConfigOpenMode, GuidedModalSessionType, TabConfigsTelemetryEvent,
-};
 #[cfg(feature = "local_fs")]
 use crate::tab_configs::telemetry::WorktreeBranchNamingMode;
 use crate::tab_configs::{

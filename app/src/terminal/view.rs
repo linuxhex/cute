@@ -353,11 +353,11 @@ use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::ids::{ObjectUid, SyncId};
 use crate::server::server_api::ServerApi;
 use crate::server::telemetry::{
-    self, AgentModeAttachContextMethod, AgentModeEntrypoint, AgentModeRewindEntrypoint,
-    AnonymousUserSignupEntrypoint, BlockLatencyInfo, BootstrappingInfo,
-    CommandCorrectionAcceptedType, CommandCorrectionEvent, InteractionSource, LinkOpenMethod,
-    NotificationAgentVariant, NotificationsTurnedOnSource, PaletteSource, PromptSuggestionViewType,
-    SaveAsWorkflowModalSource, SecretInteraction, SlowBootstrapInfo,
+    self, AgentModeRewindEntrypoint,
+    AnonymousUserSignupEntrypoint, BlockLatencyInfo,
+    InteractionSource, LinkOpenMethod,
+    NotificationAgentVariant, PaletteSource, PromptSuggestionViewType,
+    SaveAsWorkflowModalSource,
     TelemetryEvent, ToggleBlockFilterSource, WorkflowTelemetryMetadata,
 };
 use crate::drive::sharing::dialog::SharingDialogSource;
@@ -12233,7 +12233,7 @@ impl TerminalView {
                 // ssh can exit cleanly instead of hanging.
                 #[cfg(not(target_family = "wasm"))]
                 if FeatureFlag::SshRemoteServer.is_enabled() {
-                    use crate::remote_server::manager::{RemoteServerManager, RemoteServerManagerEvent};
+                    use crate::remote_server::manager::RemoteServerManager;
                     RemoteServerManager::handle(ctx).update(
                         ctx,
                         |mgr: &mut RemoteServerManager, ctx| {
@@ -24694,8 +24694,6 @@ impl TerminalView {
         cli_agent: Option<crate::server::telemetry::CLIAgentType>,
         ctx: &mut ViewContext<Self>,
     ) {
-        use crate::server::telemetry::{FileTreeSource, TelemetryEvent};
-
         self.toggle_left_panel_file_tree(false, ctx);
     }
 }

@@ -4,7 +4,6 @@ use serde::{Serialize, Serializer};
 use warpui::platform::Cursor;
 use warpui::ViewContext;
 
-use crate::server::telemetry::{LinkOpenMethod, TelemetryEvent};
 use crate::terminal::model::grid::grid_handler::Link;
 use crate::terminal::model::index::Point;
 use crate::terminal::model::terminal_model::{WithinBlock, WithinModel};

@@ -33,7 +33,6 @@ use crate::pane_group::working_directories::WorkingDirectory;
 use crate::pane_group::{
     PaneGroup, WorkingDirectoriesEvent, WorkingDirectoriesModel, {self},
 };
-use crate::server::telemetry::{FileTreeSource, WarpDriveSource};
 use crate::settings_view::keybindings::{KeybindingChangedEvent, KeybindingChangedNotifier};
 use crate::terminal::resizable_data::{ModalType, ResizableData};
 use crate::ui_components::buttons::{icon_button, icon_button_with_color};

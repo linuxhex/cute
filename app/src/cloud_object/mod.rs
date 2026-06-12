@@ -980,7 +980,7 @@ pub use cloud_object_client::{
     ObjectDeleteResult, ObjectMetadataUpdateResult,
 };
 pub use cloud_object_models::{
-    ServerAIExecutionProfile, ServerAIFact, ServerAmbientAgentEnvironment, ServerCloudAgentConfig,
+    ServerAIExecutionProfile, ServerAIFact, ServerAmbientAgentEnvironment,
     ServerCloudObject, ServerEnvVarCollection, ServerFolder, ServerMCPServer, ServerNotebook,
     ServerPreference, ServerScheduledAmbientAgent, ServerTemplatableMCPServer, ServerWorkflow,
     ServerWorkflowEnum, TryFromGql,

@@ -33,7 +33,7 @@ use crate::server::server_api::auth::{
     UserAuthenticationError,
 };
 use crate::server::server_api::ServerApi;
-use crate::server::telemetry::AnonymousUserSignupEntrypoint;
+use crate::server::telemetry::{AnonymousUserSignupEntrypoint, TelemetryEvent};
 use crate::settings::cloud_preferences_syncer::CloudPreferencesSyncer;
 use crate::settings::initializer::SettingsInitializer;
 use crate::settings::PrivacySettings;

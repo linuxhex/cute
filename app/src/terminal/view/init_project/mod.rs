@@ -30,11 +30,6 @@ use crate::ai::blocklist::inline_action::inline_action_header::HeaderConfig;
 use crate::ai::blocklist::inline_action::requested_action::RenderableAction;
 use crate::ai::persisted_workspace::PersistedWorkspace;
 use crate::appearance::Appearance;
-use crate::code::lsp_telemetry::{LspEnablementSource, LspTelemetryEvent};
-use crate::server::telemetry::{
-    AgentModeSetupCodebaseContextActionType, AgentModeSetupCreateEnvironmentActionType,
-    AgentModeSetupProjectScopedRulesActionType,
-};
 use crate::ui_components::icons::Icon;
 use crate::view_components::DismissibleToast;
 use crate::workspace::ToastStack;

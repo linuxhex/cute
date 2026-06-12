@@ -31,7 +31,7 @@ use crate::cloud_object::model::view::{CloudViewModel, Editor, EditorState};
 use crate::cloud_object::{
     CloudModelType, CloudObject, CloudObjectEventEntrypoint, CloudObjectSyncStatus,
     GenericCloudObject, GenericStringObjectFormat, JsonObjectType, ObjectIdType, ObjectType, Owner,
-    Revision, RevisionAndLastEditor, Space,
+    Revision, RevisionAndLastEditor, ServerCloudObject, ServerMetadata, Space,
 };
 use crate::drive::folders::CloudFolderModel;
 use crate::env_vars::{CloudEnvVarCollectionModel, EnvVarCollection};
