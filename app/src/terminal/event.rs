@@ -346,6 +346,7 @@ pub enum RemoteServerSetupState {
     Checking,
     Installing {
         version: String,
+        progress_percent: f32,
     },
     Updating,
     Initializing,
@@ -355,6 +356,12 @@ pub enum RemoteServerSetupState {
     Unsupported {
         reason: String,
     },
+}
+
+impl RemoteServerSetupState {
+    pub fn is_in_progress(&self) -> bool {
+        matches!(self, Self::Checking | Self::Installing { .. } | Self::Updating | Self::Initializing)
+    }
 }
 
 impl ExecutedExecutorCommandEvent {

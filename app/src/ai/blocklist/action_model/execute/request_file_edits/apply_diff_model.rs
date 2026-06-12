@@ -114,6 +114,7 @@ async fn read_remote_file(
     let request = crate::remote_server::proto::ReadFileContextRequest {
         files: vec![crate::remote_server::proto::ReadFileContextFile {
             path: path.to_string(),
+            line_range: None,
             line_ranges: vec![],
         }],
         max_file_bytes: Some(MAX_DIFF_READ_BYTES),

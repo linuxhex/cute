@@ -268,6 +268,12 @@ pub enum RichContentMetadata {
         pending_user_query_block_handle: ViewHandle<PendingUserQueryBlock>,
     },
     HarnessSessionHeader,
+    SshRemoteServerFailedBanner {
+        handle: ViewHandle<SshErrorBlock>,
+    },
+    SshRemoteServerChoiceBlock {
+        handle: ViewHandle<SshWarpifyBlock>,
+    },
 }
 
 impl TerminalView {

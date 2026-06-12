@@ -316,6 +316,7 @@ fn read_full_fragment_files_request(
                     .insert(path.clone())
                     .then_some(ReadFileContextFile {
                         path,
+                        line_range: None,
                         line_ranges: vec![],
                     })
             })
@@ -360,10 +361,12 @@ fn read_context_locations_request(
             .map(|location| match location {
                 CodeContextLocation::WholeFile(path) => ReadFileContextFile {
                     path: path.to_string_lossy().to_string(),
+                    line_range: None,
                     line_ranges: vec![],
                 },
                 CodeContextLocation::Fragment(fragment) => ReadFileContextFile {
                     path: fragment.path.to_string_lossy().to_string(),
+                    line_range: None,
                     line_ranges: fragment
                         .line_ranges
                         .iter()

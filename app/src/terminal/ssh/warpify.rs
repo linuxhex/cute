@@ -15,6 +15,7 @@ use crate::terminal::shell::ShellType;
 use crate::terminal::warpify;
 use crate::terminal::warpify::render::SSH_DOCS_URL;
 use crate::ui_components::icons::Icon as UiIcon;
+use warp_core::session_id::SessionId;
 
 #[derive(Debug, Clone)]
 pub enum SshWarpifyBlockEvent {
@@ -56,6 +57,11 @@ impl SshWarpifyBlock {
     pub fn focus(&self, ctx: &mut ViewContext<Self>) {
         ctx.focus_self();
         ctx.notify();
+    }
+
+    /// Stub method for remote_server removal.
+    pub fn session_id(&self) -> Option<SessionId> {
+        None
     }
 }
 

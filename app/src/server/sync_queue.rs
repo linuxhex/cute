@@ -163,6 +163,10 @@ impl SyncQueue {
     pub fn clear(&mut self) {
         // No-op for local version
     }
+
+    pub fn is_dequeueing(&self) -> bool {
+        false
+    }
 }
 
 impl warpui::Entity for SyncQueue {

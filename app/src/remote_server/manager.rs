@@ -138,4 +138,23 @@ impl RemoteServerManager {
     pub fn platform_for_session(&self, _session_id: SessionId) -> Option<&RemotePlatform> {
         None
     }
+
+    /// Stub: always returns false.
+    pub fn is_session_potentially_active(&self, _session_id: SessionId) -> bool {
+        false
+    }
+
+    /// Stub: no-op.
+    pub fn navigate_to_directory(
+        &self,
+        _session_id: SessionId,
+        _path: String,
+        _ctx: &mut ModelContext<Self>,
+    ) {
+    }
+
+    /// Stub: returns None.
+    pub fn host_label(&self, _host_id: &HostId) -> Option<String> {
+        None
+    }
 }

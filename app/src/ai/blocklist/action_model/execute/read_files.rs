@@ -148,6 +148,7 @@ impl ReadFilesExecutor {
                                 );
                                 crate::remote_server::proto::ReadFileContextFile {
                                     path: absolute_path,
+                                    line_range: None,
                                     line_ranges: loc
                                         .lines
                                         .iter()

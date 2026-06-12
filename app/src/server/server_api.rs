@@ -627,6 +627,91 @@ impl ServerApi {
             .collect())
     }
 
+    /// Returns ambient agent headers for a specific task ID.
+    async fn ambient_agent_headers_for_task(
+        &self,
+        task_id: &AmbientAgentTaskId,
+    ) -> Result<Vec<(&'static str, String)>> {
+        let mut headers = self.ambient_agent_headers().await?;
+        headers.retain(|(name, _)| *name != CLOUD_AGENT_ID_HEADER);
+        headers.push((CLOUD_AGENT_ID_HEADER, task_id.to_string()));
+        Ok(headers)
+    }
+
+    /// Sends a POST request to a public API endpoint for a specific task.
+    async fn post_public_api_response_for_task<B>(
+        &self,
+        task_id: &AmbientAgentTaskId,
+        path: &str,
+        body: &B,
+    ) -> Result<http_client::Response>
+    where
+        B: Serialize,
+    {
+        let auth_token = self
+            .get_or_refresh_access_token()
+            .await
+            .context("Failed to get access token for API request")?;
+
+        let url = format!("{}/api/v1/{}", ChannelState::server_root_url(), path);
+
+        let mut request = self.client.post(&url).json(body);
+        if let Some(token) = auth_token.as_bearer_token() {
+            request = request.bearer_auth(token);
+        }
+
+        for (name, value) in self.ambient_agent_headers_for_task(task_id).await? {
+            request = request.header(name, value);
+        }
+
+        let response = request
+            .send()
+            .await
+            .with_context(|| format!("Failed to send API request to {url}"))?;
+
+        if response.status().is_success() {
+            Ok(response)
+        } else {
+            self.check_for_iap_challenge(&response);
+            Err(Self::error_from_response(response).await)
+        }
+    }
+
+    /// Sends a GET request to a public API endpoint for a specific task.
+    async fn get_public_api_response_for_task(
+        &self,
+        task_id: &AmbientAgentTaskId,
+        path: &str,
+    ) -> Result<http_client::Response> {
+        let auth_token = self
+            .get_or_refresh_access_token()
+            .await
+            .context("Failed to get access token for API request")?;
+
+        let url = format!("{}/api/v1/{}", ChannelState::server_root_url(), path);
+
+        let mut request = self.client.get(&url);
+        if let Some(token) = auth_token.as_bearer_token() {
+            request = request.bearer_auth(token);
+        }
+
+        for (name, value) in self.ambient_agent_headers_for_task(task_id).await? {
+            request = request.header(name, value);
+        }
+
+        let response = request
+            .send()
+            .await
+            .with_context(|| format!("Failed to send API request to {url}"))?;
+
+        if response.status().is_success() {
+            Ok(response)
+        } else {
+            self.check_for_iap_challenge(&response);
+            Err(Self::error_from_response(response).await)
+        }
+    }
+
     async fn ambient_agent_headers_for_task(
         &self,
         task_id: &AmbientAgentTaskId,

@@ -20,6 +20,7 @@ use crate::terminal::warpify;
 use crate::terminal::warpify::render::{apply_spacing_styles, build_description_row};
 use crate::terminal::warpify::settings::WarpifySettings;
 use crate::ui_components::icons::Icon as UiIcon;
+use warp_core::session_id::SessionId;
 
 const TMUX_NOT_INSTALLED_ERROR: &str =
     "tmux is not installed on the remote machine. Please install tmux and try again.";
@@ -149,6 +150,11 @@ impl SshErrorBlock {
     pub fn focus(&self, ctx: &mut ViewContext<Self>) {
         ctx.focus_self();
         ctx.notify();
+    }
+
+    /// Stub method for remote_server removal.
+    pub fn session_id(&self) -> Option<SessionId> {
+        None
     }
 
     fn should_show_report_to_warp_button(&self) -> bool {

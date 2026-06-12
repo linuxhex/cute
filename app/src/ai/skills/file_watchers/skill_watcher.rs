@@ -1084,6 +1084,7 @@ fn remote_skill_read_request(skill_paths: &[LocalOrRemotePath]) -> ReadFileConte
             .filter_map(|path| match path {
                 LocalOrRemotePath::Remote(remote) => Some(ReadFileContextFile {
                     path: remote.path.as_str().to_string(),
+                    line_range: None,
                     line_ranges: Vec::new(),
                 }),
                 LocalOrRemotePath::Local(_) => None,

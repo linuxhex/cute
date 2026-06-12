@@ -23,6 +23,12 @@ impl Entity for RemoteCodebaseIndexModel {
 
 impl SingletonEntity for RemoteCodebaseIndexModel {}
 
+impl RemoteCodebaseIndexModel {
+    pub fn entries_for_settings(&self) -> Vec<RemoteCodebaseIndexSettingsEntry> {
+        Vec::new()
+    }
+}
+
 /// Stub RemoteCodebaseIndex.
 pub struct RemoteCodebaseIndex {
     pub repo_path: PathBuf,
@@ -48,17 +54,29 @@ pub struct RemoteCodebaseIndexStatus {
 }
 
 /// Stub RemoteCodebaseSearchAvailability.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub enum RemoteCodebaseSearchAvailability {
-    #[default]
-    Unavailable,
-    Available,
+    Unavailable { remote_path: RemotePath, message: String },
+    Ready(RemoteCodebaseSearchContext),
+    NotIndexed { remote_path: RemotePath },
+    Indexing { remote_path: RemotePath },
+    NoConnectedHost,
+    NoActiveRepo,
+}
+
+impl Default for RemoteCodebaseSearchAvailability {
+    fn default() -> Self {
+        Self::NoConnectedHost
+    }
 }
 
 /// Stub RemoteCodebaseSearchContext.
 #[derive(Clone, Debug, Default)]
 pub struct RemoteCodebaseSearchContext {
     pub availability: RemoteCodebaseSearchAvailability,
+    pub root_hash: Vec<u8>,
+    pub remote_path: RemotePath,
+    pub is_stale: bool,
 }
 
 /// Stub RemoteCodebaseIndexSettingsEntry.
@@ -66,4 +84,5 @@ pub struct RemoteCodebaseSearchContext {
 pub struct RemoteCodebaseIndexSettingsEntry {
     pub repo_path: String,
     pub state: RemoteCodebaseIndexState,
+    pub remote_path: Option<warp_util::remote_path::RemotePath>,
 }
