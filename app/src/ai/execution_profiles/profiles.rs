@@ -1396,17 +1396,6 @@ impl AIExecutionProfilesModel {
         }
     }
 
-    // We don't want stale client ids in our map. We won't be able to find the backing cloud object when
-    // an edit occurs.
-    pub fn replace_client_id_with_server_id(&mut self, server_id: SyncId, client_id: SyncId) {
-        for (_, sync_id) in self.profile_id_to_sync_id.iter_mut() {
-            if *sync_id == client_id {
-                *sync_id = server_id;
-                log::info!("Updated profile id mapping after creating a new execution profile");
-            }
-        }
-    }
-
     /// Replaces the given profile's data with CLI defaults for the given sandboxed state.
     /// Use in tests to simulate the profile configuration used by the sandboxed CLI agent.
     #[cfg(test)]
