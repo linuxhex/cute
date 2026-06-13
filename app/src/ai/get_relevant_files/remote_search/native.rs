@@ -76,46 +76,12 @@ pub(super) fn send_request(
                     message: "Remote codebase search is unavailable because the remote path is not set.".to_string(),
                 });
             };
-            let Some(client) = crate::remote_server::manager::RemoteServerManager::as_ref(ctx)
-                .client_for_host(&remote_path.host_id)
-                .cloned()
-            else {
-                return RemoteSearchRequest::Ready(SearchCodebaseResult::Failed {
-                    reason: SearchCodebaseFailureReason::ClientError,
-                    message: "Remote codebase search is unavailable because the remote server is not connected.".to_string(),
-                });
-            };
-            if search_context.is_stale {
-                let remote_path = search_context.remote_path.clone().unwrap();
-                let sync_requested = crate::remote_server::manager::RemoteServerManager::handle(ctx)
-                    .update(ctx, |manager, ctx| {
-                        manager.trigger_codebase_incremental_sync(remote_path, ctx)
-                    });
-                if !sync_requested {
-                    log::warn!(
-                        "Remote codebase search is using a stale index because incremental sync could not be requested"
-                    );
-                }
-            }
-            let store_client = ServerApiProvider::as_ref(ctx).get();
-            let abort_handle = ctx
-                .spawn(
-                    async move {
-                        execute_remote_codebase_search(
-                            query,
-                            partial_paths,
-                            *search_context,
-                            client,
-                            store_client,
-                        )
-                        .await
-                    },
-                    move |me, result, ctx| {
-                        me.handle_remote_search_result(result, action_id, ctx);
-                    },
-                )
-                .abort_handle();
-            RemoteSearchRequest::Pending(abort_handle)
+            // RemoteServerManager has been removed; remote codebase search is unavailable.
+            let _ = remote_path;
+            return RemoteSearchRequest::Ready(SearchCodebaseResult::Failed {
+                reason: SearchCodebaseFailureReason::ClientError,
+                message: "Remote codebase search is unavailable because the remote server module has been removed.".to_string(),
+            });
         }
         availability @ RemoteCodebaseSearchAvailability::NotIndexed { .. } => {
             RemoteSearchRequest::Ready(remote_availability_failure(availability))

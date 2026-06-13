@@ -8,7 +8,6 @@ use bimap::BiMap;
 use futures_util::stream::AbortHandle;
 use lsp::types::TextDocumentContentChangeEvent;
 use lsp::{LspManagerModel, LspServerLogLevel, LspServerModel};
-use crate::remote_server::manager::RemoteServerManager;
 use string_offset::{ByteOffset, CharOffset};
 use vec1::vec1;
 use warp_core::features::FeatureFlag;
@@ -22,7 +21,6 @@ use warp_util::file::{FileId, FileLoadError, FileSaveError};
 use warp_util::host_id::HostId;
 use warp_util::remote_path::RemotePath;
 use warp_util::standardized_path::StandardizedPath;
-use warpui::r#async::Timer;
 use warpui::{Entity, ModelContext, ModelHandle, SingletonEntity, WeakModelHandle};
 
 use super::buffer_location::{LocalOrRemotePath, SyncClock};
@@ -773,41 +771,11 @@ impl GlobalBufferModel {
                 ..
             } = &mut state.source
             {
-                let host_id = remote_path.host_id.clone();
-                let path = remote_path.path.as_str().to_string();
-                let manager = RemoteServerManager::handle(ctx);
-                let Some(client) = manager.as_ref(ctx).client_for_host(&host_id).cloned() else {
-                    safe_error!(
-                        safe: ("[remote-buffer] No remote server client at buffer save time"),
-                        full: ("[remote-buffer] No remote server client for save: host={host_id:?}")
-                    );
-                    return Err(FileSaveError::RemoteError(
-                        "No remote server client available".to_string(),
-                    ));
-                };
-
-                // Flush any pending edit batch so the server has the latest
-                // content before persisting to disk.
-                if let Some(batch) = pending_batch.take() {
-                    batch.flush(&client, &path);
-                }
-
-                ctx.spawn(
-                    async move { client.save_buffer(path).await.map_err(|e| format!("{e}")) },
-                    move |_me, result, ctx| match result {
-                        Ok(()) => {
-                            ctx.emit(GlobalBufferModelEvent::FileSaved { file_id });
-                        }
-                        Err(error) => {
-                            log::warn!("Remote save failed: {error}");
-                            ctx.emit(GlobalBufferModelEvent::FailedToSave {
-                                file_id,
-                                error: Rc::new(FileSaveError::RemoteError(error)),
-                            });
-                        }
-                    },
-                );
-                return Ok(());
+                // RemoteServerManager has been removed; remote buffers cannot be saved.
+                let _ = (remote_path, pending_batch);
+                return Err(FileSaveError::RemoteError(
+                    "Remote server functionality has been removed".to_string(),
+                ));
             }
         }
 
@@ -1629,91 +1597,8 @@ impl GlobalBufferModel {
         let path_str = remote_path.path.as_str().to_string();
         let host_id = remote_path.host_id.clone();
 
-        // Subscribe to buffer content changes so edits are sent back to the daemon.
-        let client_for_sub = {
-            let manager = RemoteServerManager::handle(ctx);
-            manager.as_ref(ctx).client_for_host(&host_id).cloned()
-        };
-        log::debug!(
-            "[remote-buffer] Setting up edit subscription: path={path_str} has_client={}",
-            client_for_sub.is_some()
-        );
-        if let Some(client) = &client_for_sub {
-            let client = client.clone();
-            let path_for_edit = path_str.clone();
-            ctx.subscribe_to_model(&buffer, move |me, event, ctx| {
-                use warp_editor::content::buffer::BufferEvent;
-                if let BufferEvent::ContentChanged { delta, origin, .. } = event {
-                    // Skip server-originated changes to prevent echo loop.
-                    // Server pushes applied via insert_at_char_offset_ranges
-                    // emit ContentChanged with SystemEdit origin.
-                    if !origin.from_user() {
-                        return;
-                    }
-
-                    // Build incremental edits from the ContentChanged delta.
-                    // Each PreciseDelta carries the replaced range (old buffer
-                    // coordinates) and the resolved range (new buffer coordinates)
-                    // from which we can read the replacement text.
-                    let Some(state) = me.buffers.get(&file_id) else {
-                        return;
-                    };
-                    let Some(buffer) = state.buffer.upgrade(ctx) else {
-                        return;
-                    };
-                    let edits: Vec<crate::remote_server::proto::TextEdit> = delta
-                        .precise_deltas
-                        .iter()
-                        .map(|d| {
-                            // Wire offsets are 1-indexed (matching CharOffset).
-                            let text = buffer
-                                .as_ref(ctx)
-                                .text_in_range(d.resolved_range.clone())
-                                .into_string();
-                            crate::remote_server::proto::TextEdit {
-                                start_offset: d.replaced_range.start.as_usize() as u64,
-                                end_offset: d.replaced_range.end.as_usize() as u64,
-                                new_text: text.clone(),
-                                text,
-                            }
-                        })
-                        .collect();
-
-                    me.push_edit_to_pending_batch(file_id, edits, ctx);
-
-                    // Schedule (or reschedule) the debounce timer.
-                    // Uses the same Timer::after + abort_handle pattern as
-                    // LanguageServerShutdownManager::schedule_next_scan.
-                    let client_for_flush = client.clone();
-                    let path_for_flush = path_for_edit.clone();
-                    let handle = ctx.spawn(
-                        async {
-                            Timer::after(REMOTE_EDIT_DEBOUNCE).await;
-                        },
-                        move |me, _, _ctx| {
-                            let Some(state) = me.buffers.get_mut(&file_id) else {
-                                return;
-                            };
-                            let BufferSource::Remote { pending_batch, .. } = &mut state.source
-                            else {
-                                return;
-                            };
-                            if let Some(batch) = pending_batch.take() {
-                                batch.flush(&client_for_flush, &path_for_flush);
-                            }
-                        },
-                    );
-                    // Re-borrow after ctx.spawn since the closure captured `me`.
-                    if let Some(state) = me.buffers.get_mut(&file_id) {
-                        if let BufferSource::Remote { pending_batch, .. } = &mut state.source {
-                            if let Some(batch) = pending_batch.as_mut() {
-                                batch.debounce_timer = Some(handle.abort_handle());
-                            }
-                        }
-                    }
-                }
-            });
-        }
+        // RemoteServerManager has been removed; remote buffer edit subscription is disabled.
+        let _ = (path_str, host_id);
 
         // Store state with sync_clock = None (set to Some on OpenBufferResponse).
         self.location_to_id.insert(location, file_id);
@@ -1731,31 +1616,11 @@ impl GlobalBufferModel {
             },
         );
 
-        // Look up the client on the main thread, then send OpenBuffer asynchronously.
-        let Some(client) = client_for_sub else {
-            safe_error!(
-                safe: ("[remote-buffer] No remote server client at buffer open time"),
-                full: ("[remote-buffer] No remote server client for host {host_id:?}")
-            );
-            ctx.emit(GlobalBufferModelEvent::FailedToLoad {
-                file_id,
-                error: Rc::new(FileLoadError::DoesNotExist),
-            });
-            return BufferState::new(file_id, buffer);
-        };
-
-        log::debug!("[remote-buffer] Sending OpenBuffer for path={path_str} host={host_id:?}");
-        ctx.spawn(
-            async move {
-                client
-                    .open_buffer(&path_str, false)
-                    .await
-                    .map_err(|e| format!("{e}"))
-            },
-            move |me, result, ctx| {
-                me.apply_open_buffer_response(file_id, result, ctx);
-            },
-        );
+        // RemoteServerManager has been removed; emit FailedToLoad for remote buffers.
+        ctx.emit(GlobalBufferModelEvent::FailedToLoad {
+            file_id,
+            error: Rc::new(FileLoadError::DoesNotExist),
+        });
 
         BufferState::new(file_id, buffer)
     }
@@ -2155,31 +2020,12 @@ impl GlobalBufferModel {
             return;
         };
 
-        let path_str = remote_path.path.as_str().to_string();
-        let host_id = remote_path.host_id.clone();
-
-        let manager = RemoteServerManager::handle(ctx);
-        let Some(client) = manager.as_ref(ctx).client_for_host(&host_id).cloned() else {
-            log::warn!("[remote-buffer] reopen: no client for host {host_id:?}");
-            ctx.emit(GlobalBufferModelEvent::FailedToLoad {
-                file_id,
-                error: Rc::new(FileLoadError::DoesNotExist),
-            });
-            return;
-        };
-
-        log::debug!("[remote-buffer] Re-opening buffer with force_reload: path={path_str}");
-        ctx.spawn(
-            async move {
-                client
-                    .open_buffer(&path_str, true)
-                    .await
-                    .map_err(|e| format!("{e}"))
-            },
-            move |me, result, ctx| {
-                me.apply_open_buffer_response(file_id, result, ctx);
-            },
-        );
+        let _ = remote_path;
+        // RemoteServerManager has been removed; cannot reopen remote buffer.
+        ctx.emit(GlobalBufferModelEvent::FailedToLoad {
+            file_id,
+            error: Rc::new(FileLoadError::DoesNotExist),
+        });
     }
 
     /// Handle an incoming `BufferConflictDetected` push from the remote server.

@@ -57,7 +57,6 @@ use warpui::{
     ViewHandle, WindowId,
 };
 
-use crate::remote_server::manager::RemoteServerManager;
 
 use crate::ai::persisted_workspace::{PersistedWorkspace, PersistedWorkspaceEvent};
 use crate::code::buffer_location::LocalOrRemotePath as BufferFileLocation;
@@ -1575,16 +1574,10 @@ impl LocalCodeEditorView {
     }
 
     /// Returns `true` when this editor is backed by a remote file whose
-    /// host no longer has any connected session. Derived on-the-fly from
-    /// `RemoteServerManager` so it is always in sync with actual
-    /// connection state.
-    pub fn is_remote_disconnected(&self, app: &AppContext) -> bool {
-        let Some(BufferFileLocation::Remote(remote_path)) = self.file_location() else {
-            return false;
-        };
-        RemoteServerManager::as_ref(app)
-            .client_for_host(&remote_path.host_id)
-            .is_none()
+    /// host no longer has any connected session. Always returns `false`
+    /// since RemoteServerManager has been removed.
+    pub fn is_remote_disconnected(&self, _app: &AppContext) -> bool {
+        false
     }
 
     /// Save the file to the local file system (or remotely via the remote server).

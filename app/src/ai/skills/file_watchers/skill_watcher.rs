@@ -26,7 +26,6 @@ use super::utils::{
     is_home_skill_directory, is_skill_file, read_local_project_skills_from_filesystem,
     read_skills_from_directories, read_skills_from_files,
 };
-use crate::remote_server::manager::RemoteServerManager;
 use crate::cute_managed_paths_watcher::{
     cute_managed_skill_dirs, filter_repository_update_by_prefix, CuteManagedPathsWatcher,
     CuteManagedPathsWatcherEvent,
@@ -1056,24 +1055,15 @@ impl SkillWatcher {
 
 fn read_project_skill_contents(
     skill_paths: Vec<LocalOrRemotePath>,
-    ctx: &AppContext,
+    _ctx: &AppContext,
 ) -> Option<ProjectSkillContentsFuture> {
     match skill_paths.first()? {
         LocalOrRemotePath::Local(_) => Some(Box::pin(async move {
             Ok(read_local_project_skill_contents(skill_paths))
         })),
-        LocalOrRemotePath::Remote(remote) => {
-            let client = RemoteServerManager::as_ref(ctx)
-                .client_for_host(&remote.host_id)?
-                .clone();
-            Some(Box::pin(async move {
-                let request = remote_skill_read_request(&skill_paths);
-                let response = client.read_file_context(request).await?;
-                Ok(read_remote_project_skill_contents(
-                    skill_paths,
-                    response.file_contexts,
-                ))
-            }))
+        LocalOrRemotePath::Remote(_) => {
+            // RemoteServerManager has been removed; remote skill contents are unavailable.
+            None
         }
     }
 }
