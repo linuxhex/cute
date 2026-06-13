@@ -8,9 +8,6 @@ use strum_macros::{EnumDiscriminants, EnumIter};
 
 // Stub types for compatibility
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
-pub struct TelemetrySpace;
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub struct LaunchConfigUiLocation;
 
 impl LaunchConfigUiLocation {
@@ -232,38 +229,12 @@ pub struct WorkflowTelemetryMetadata {
     pub enum_ids: Option<Vec<String>>,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
-pub struct MCPServerTelemetryMetadata;
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
-pub struct MCPTemplateCreationSource;
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
-pub struct MCPServerTelemetryTransportType;
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
-pub struct BootstrappingInfo;
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
-pub struct SlowBootstrapInfo;
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
-pub struct AppStartupInfo;
-
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct CloudObjectTelemetryMetadata {
     pub team_uid: Option<String>,
     pub space: Option<String>,
     pub object_uid: Option<String>,
     pub object_type: Option<String>,
-}
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
-pub struct TelemetryCloudObjectType;
-
-impl TelemetryCloudObjectType {
-    pub const PromptTemplate: Self = Self;
-    pub const Workflow: Self = Self;
 }
 
 // Additional stub types
@@ -299,11 +270,6 @@ impl LinkOpenMethod {
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub struct NotificationAgentVariant;
-
-impl NotificationAgentVariant {
-    pub const CLIAgent: Self = Self;
-    pub const Oz: Self = Self;
-}
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub struct PromptSuggestionViewType;
@@ -521,8 +487,4 @@ pub mod context_provider {
 
 pub fn telemetry_context() -> serde_json::Value {
     serde_json::json!({})
-}
-
-pub fn clear_event_queue() {
-    // No-op
 }

@@ -911,11 +911,6 @@ impl WorkflowView {
         CloudViewModel::as_ref(app).access_level(&self.workflow_id.uid(), app)
     }
 
-    /// Whether or not the current user is allowed to edit this workflow.
-    fn editability(&self, app: &AppContext) -> ContentEditability {
-        CloudViewModel::as_ref(app).object_editability(&self.workflow_id.uid(), app)
-    }
-
     pub fn pane_configuration(&self) -> &ModelHandle<PaneConfiguration> {
         match &self.container_configuration {
             ContainerConfiguration::Pane(pane_config) => pane_config,

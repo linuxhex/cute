@@ -43,22 +43,6 @@ use crate::ui_components::blended_colors;
 use crate::workspace::WorkspaceAction;
 use crate::BlocklistAIHistoryModel;
 
-/// True when the mode is remote and `environment_id` is non-empty.
-fn env_presence(execution_mode: &RunAgentsExecutionMode) -> bool {
-    matches!(
-        execution_mode,
-        RunAgentsExecutionMode::Remote { environment_id, .. } if !environment_id.is_empty()
-    )
-}
-
-/// True when the mode is remote and `worker_host` is non-empty.
-fn host_presence(execution_mode: &RunAgentsExecutionMode) -> bool {
-    matches!(
-        execution_mode,
-        RunAgentsExecutionMode::Remote { worker_host, .. } if !worker_host.is_empty()
-    )
-}
-
 /// Renders a pill-shaped toggle switch (36×18) matching the Figma mock.
 fn render_pill_toggle(is_on: bool, theme: &WarpTheme) -> Box<dyn Element> {
     let thumb_size = 14.;

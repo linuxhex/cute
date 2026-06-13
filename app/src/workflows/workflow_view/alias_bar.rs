@@ -25,7 +25,6 @@ use crate::editor::{
     SingleLineEditorOptions, TextOptions, ValidInputType,
 };
 use crate::server::ids::SyncId;
-use crate::server::telemetry::TelemetrySpace;
 use crate::ui_components::buttons::icon_button;
 use crate::ui_components::icons::Icon;
 use crate::workflows::aliases::{WorkflowAlias, WorkflowAliases};
@@ -122,11 +121,6 @@ impl AliasBar {
             workflow_id,
             deleted_aliases: Default::default(),
         }
-    }
-
-    /// The current workflow's space for telemetry events.
-    fn workflow_space(&self, _app: &AppContext) -> Option<TelemetrySpace> {
-        None
     }
 
     fn mark_dirty(&mut self, is_dirty: bool, ctx: &mut ViewContext<Self>) {

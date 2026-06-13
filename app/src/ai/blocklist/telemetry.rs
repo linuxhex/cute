@@ -83,16 +83,6 @@ pub(crate) enum OrchestrationExecutionModeKind {
     Remote,
 }
 
-impl OrchestrationExecutionModeKind {
-    pub(crate) fn from_run_agents(mode: &ai::agent::action::RunAgentsExecutionMode) -> Self {
-        if mode.is_remote() {
-            Self::Remote
-        } else {
-            Self::Local
-        }
-    }
-}
-
 /// Closed-set bucket for the run-wide harness selection. Anything
 /// unrecognized collapses to `Unknown` to keep the analytics column
 /// low-cardinality.
@@ -105,19 +95,6 @@ pub(crate) enum OrchestrationHarnessKind {
     OpenCode,
     Gemini,
     Unknown,
-}
-
-impl OrchestrationHarnessKind {
-    pub(crate) fn from_str(harness_type: &str) -> Self {
-        match harness_type {
-            "oz" | "" => Self::Oz,
-            "claude" | "claude-code" | "claude_code" => Self::ClaudeCode,
-            "codex" => Self::Codex,
-            "opencode" | "open-code" | "open_code" => Self::OpenCode,
-            "gemini" => Self::Gemini,
-            _ => Self::Unknown,
-        }
-    }
 }
 
 /// Stable names for run-wide config fields that can diverge between

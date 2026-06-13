@@ -2,7 +2,6 @@
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
-use std::time::Duration;
 
 use bimap::BiMap;
 use futures_util::stream::AbortHandle;
@@ -53,69 +52,6 @@ struct PendingDiffParse {
     abort_handle: AbortHandle,
 }
 
-/// How long to wait after the last keystroke before sending a batched
-/// `BufferEdit` to the remote server. Long enough to coalesce rapid
-/// keystrokes, short enough for the remote view to feel responsive.
-const REMOTE_EDIT_DEBOUNCE: Duration = Duration::from_millis(200);
-
-/// Accumulates incremental edits for a single remote buffer during a
-/// debounce window before sending them as a single `BufferEdit` message.
-struct PendingEditBatch {
-    /// The server version known when the first edit in this batch was captured.
-    expected_server_version: u64,
-    /// Accumulated `TextEdit`s — each edit's offsets reference the buffer state
-    /// AFTER all previous edits in this batch have been applied.
-    edits: Vec<crate::remote_server::proto::TextEdit>,
-    /// The client version to send (updated on each append).
-    latest_client_version: ContentVersion,
-    /// Handle to cancel the debounce timer when a new edit arrives or the
-    /// batch is flushed/discarded.
-    debounce_timer: Option<AbortHandle>,
-}
-
-impl PendingEditBatch {
-    /// Flush this batch: send accumulated edits as a single `BufferEdit`
-    /// to the remote server and cancel the debounce timer.
-    ///
-    /// Note: `send_buffer_edit` uses best-effort `try_send` on an unbounded
-    /// channel, so it can only fail if the connection is closed (in which
-    /// case the subsequent `save_buffer` would also fail).
-    fn flush(self, client: &crate::remote_server::client::RemoteServerClient, path: &str) {
-        if let Some(timer) = &self.debounce_timer {
-            timer.abort();
-        }
-        if self.edits.is_empty() {
-            return;
-        }
-        log::debug!(
-            "[remote-buffer] Flushing batched BufferEdit: path={path} \
-             expected_sv={} new_cv={} edit_count={}",
-            self.expected_server_version,
-            self.latest_client_version.as_u64(),
-            self.edits.len()
-        );
-        client.send_buffer_edit(
-            path.to_string(),
-            self.expected_server_version,
-            self.latest_client_version.as_u64(),
-            self.edits,
-        );
-    }
-
-    /// Discard this batch without sending, cancelling the debounce timer.
-    fn discard(self) {
-        if let Some(timer) = &self.debounce_timer {
-            timer.abort();
-            log::debug!(
-                "[remote-buffer] Discarded pending batch: \
-                 expected_sv={} edit_count={}",
-                self.expected_server_version,
-                self.edits.len()
-            );
-        }
-    }
-}
-
 /// Describes the backing store for a buffer's content.
 enum BufferSource {
     /// Backed by the local filesystem (existing behavior).
@@ -130,8 +66,6 @@ enum BufferSource {
         remote_path: RemotePath,
         /// `None` while waiting for the `OpenBufferResponse`; `Some` once loaded.
         sync_clock: Option<SyncClock>,
-        /// Pending batched edits awaiting the debounce timer. `None` when idle.
-        pending_batch: Option<PendingEditBatch>,
     },
     /// Local file managed by the remote-server daemon.
     /// Owns the SyncClock for version tracking. Connection tracking
@@ -767,12 +701,11 @@ impl GlobalBufferModel {
         if let Some(state) = self.buffers.get_mut(&file_id) {
             if let BufferSource::Remote {
                 remote_path,
-                pending_batch,
                 ..
             } = &mut state.source
             {
                 // RemoteServerManager has been removed; remote buffers cannot be saved.
-                let _ = (remote_path, pending_batch);
+                let _ = remote_path;
                 return Err(FileSaveError::RemoteError(
                     "Remote server functionality has been removed".to_string(),
                 ));
@@ -1611,7 +1544,6 @@ impl GlobalBufferModel {
                 source: BufferSource::Remote {
                     remote_path,
                     sync_clock: None,
-                    pending_batch: None,
                 },
             },
         );
@@ -1663,16 +1595,10 @@ impl GlobalBufferModel {
                 };
                 if let BufferSource::Remote {
                     sync_clock,
-                    pending_batch,
                     ..
                 } = &mut state.source
                 {
                     *sync_clock = Some(SyncClock::from_wire(server_version, 0));
-                    // Discard any pending batch — the server just sent us fresh
-                    // content, so any in-flight edits are stale.
-                    if let Some(batch) = pending_batch.take() {
-                        batch.discard();
-                    }
                 }
                 let Some(buffer) = state.buffer.upgrade(ctx) else {
                     safe_error!(
@@ -2032,8 +1958,7 @@ impl GlobalBufferModel {
     ///
     /// The server detected that the file changed on disk while the client
     /// had unsaved edits. Emits `RemoteBufferConflict` so the UI shows
-    /// the conflict resolution banner. Discards any pending edit batch
-    /// since conflict resolution will re-sync content.
+    /// the conflict resolution banner.
     #[cfg_attr(not(feature = "local_tty"), allow(dead_code))]
     pub(crate) fn handle_buffer_conflict_detected(
         &mut self,
@@ -2050,15 +1975,6 @@ impl GlobalBufferModel {
             );
             return;
         };
-
-        // Discard any pending batch — conflict resolution handles re-sync.
-        if let Some(state) = self.buffers.get_mut(&file_id) {
-            if let BufferSource::Remote { pending_batch, .. } = &mut state.source {
-                if let Some(batch) = pending_batch.take() {
-                    batch.discard();
-                }
-            }
-        }
 
         ctx.emit(GlobalBufferModelEvent::RemoteBufferConflict { file_id });
     }
@@ -2098,7 +2014,6 @@ impl GlobalBufferModel {
 
         let BufferSource::Remote {
             sync_clock,
-            pending_batch,
             ..
         } = &mut state.source
         else {
@@ -2161,65 +2076,13 @@ impl GlobalBufferModel {
                 );
                 return;
             }
-            // Conflict — local edits diverged from server. Discard any
-            // pending edit batch since conflict resolution will re-sync.
-            if let Some(batch) = pending_batch.take() {
-                batch.discard();
-            }
+            // Conflict — local edits diverged from server.
             log::info!(
                 "[remote-buffer] CONFLICT for {path}: push expected C={expected_client_version}, \
                  but local C={:?}. Emitting RemoteBufferConflict.",
                 sync_clock.client_version
             );
             ctx.emit(GlobalBufferModelEvent::RemoteBufferConflict { file_id });
-        }
-    }
-}
-
-impl GlobalBufferModel {
-    /// Accumulate edits into the pending batch for a remote buffer.
-    ///
-    /// Bumps `sync_clock.client_version` immediately so conflict detection
-    /// sees the true current C even before the batch is flushed. If no batch
-    /// exists yet, creates one capturing the current `server_version` as
-    /// `expected_server_version`. Cancels any existing debounce timer —
-    /// the caller is responsible for scheduling a new one.
-    fn push_edit_to_pending_batch(
-        &mut self,
-        file_id: FileId,
-        edits: Vec<crate::remote_server::proto::TextEdit>,
-        _ctx: &mut ModelContext<Self>,
-    ) {
-        let Some(state) = self.buffers.get_mut(&file_id) else {
-            return;
-        };
-        let BufferSource::Remote {
-            sync_clock,
-            pending_batch,
-            ..
-        } = &mut state.source
-        else {
-            return;
-        };
-        let Some(sync_clock) = sync_clock.as_mut() else {
-            return;
-        };
-
-        let new_cv = ContentVersion::new();
-        sync_clock.client_version = new_cv;
-
-        let batch = pending_batch.get_or_insert_with(|| PendingEditBatch {
-            expected_server_version: sync_clock.server_version.as_u64(),
-            edits: Vec::new(),
-            latest_client_version: new_cv,
-            debounce_timer: None,
-        });
-        batch.edits.extend(edits);
-        batch.latest_client_version = new_cv;
-
-        // Cancel existing debounce timer — caller will schedule a new one.
-        if let Some(timer) = batch.debounce_timer.take() {
-            timer.abort();
         }
     }
 }
