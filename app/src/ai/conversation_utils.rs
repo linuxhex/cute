@@ -17,22 +17,7 @@ pub fn delete_conversation(
     BlocklistAIHistoryModel::handle(ctx).update(ctx, |history, model_ctx| {
         history.delete_conversation(conversation_id, terminal_view_id, model_ctx);
 
-        if let Some(token) = server_conversation_token {
-            if false {
-                // Delete the conversation from the cloud.
-                let server_api = server_api.clone();
-                model_ctx.spawn(
-                    async move {
-                        if let Err(e) = server_api.delete_ai_conversation(token.clone()).await {
-                            log::error!("Failed to delete conversation from cloud: {e:?}");
-                        } else {
-                            log::info!("Successfully deleted conversation from cloud: {token}");
-                        }
-                    },
-                    |_, _, _| {},
-                );
-            }
-        } else {
+        if server_conversation_token.is_none() {
             log::info!(
                 "No server conversation token found for conversation to delete: {conversation_id}"
             );
@@ -68,20 +53,6 @@ pub fn remove_conversation(
 
     BlocklistAIHistoryModel::handle(ctx).update(ctx, |history, model_ctx| {
         history.remove_conversation(conversation_id, terminal_view_id, model_ctx);
-
-        if let (Some(token), Some(server_api)) = (server_conversation_token, server_api) {
-            if false {
-                // Delete the conversation from the cloud.
-                model_ctx.spawn(
-                    async move {
-                        if let Err(e) = server_api.delete_ai_conversation(token).await {
-                            log::warn!("Failed to delete conversation from cloud during remove_conversation: {e:?}");
-                        }
-                    },
-                    |_, _, _| {},
-                );
-            }
-        }
     });
 }
 
