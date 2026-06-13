@@ -468,11 +468,6 @@ impl UserWorkspaces {
         let mut spaces = Vec::new();
         spaces.extend(self.team_spaces().iter());
 
-        if false
-            && CloudModel::as_ref(ctx).has_directly_shared_objects(self, ctx)
-        {
-            spaces.push(Space::Shared);
-        }
         spaces.push(Space::Personal);
 
         spaces
@@ -502,9 +497,7 @@ impl UserWorkspaces {
     pub fn owner_to_space(&self, owner: Owner, ctx: &AppContext) -> Space {
         match owner {
             Owner::User { user_uid } => {
-                if !false {
-                    return Space::Personal;
-                }
+                return Space::Personal;
 
                 let current_user = AuthStateProvider::as_ref(ctx).get().user_id();
                 if Some(user_uid) == current_user {
@@ -514,9 +507,7 @@ impl UserWorkspaces {
                 }
             }
             Owner::Team { team_uid } => {
-                if !false
-                    || self.team_from_uid_across_all_workspaces(team_uid).is_some()
-                {
+                if self.team_from_uid_across_all_workspaces(team_uid).is_some() {
                     Space::Team { team_uid }
                 } else {
                     Space::Shared

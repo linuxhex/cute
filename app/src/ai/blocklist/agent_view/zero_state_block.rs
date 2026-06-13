@@ -182,14 +182,6 @@ impl AgentViewZeroStateBlock {
                     && model.as_ref(ctx).is_local_to_cloud_handoff()
                 {
                     me.should_hide = true;
-                } else if false {
-                    if matches!(
-                        event,
-                        AmbientAgentViewModelEvent::DispatchedAgent
-                            | AmbientAgentViewModelEvent::Cancelled
-                    ) {
-                        me.should_hide = true;
-                    }
                 } else if model.as_ref(ctx).should_show_status_footer() {
                     me.should_hide = true;
                 }

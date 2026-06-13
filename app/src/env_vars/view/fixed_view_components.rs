@@ -99,7 +99,7 @@ impl EnvVarCollectionView {
                 .with_main_axis_size(MainAxisSize::Max)
                 .with_cross_axis_alignment(CrossAxisAlignment::Center);
 
-            if !false || access_level.can_trash() {
+            if access_level.can_trash() {
                 let ui_builder = appearance.ui_builder().clone();
                 action_row.add_child(
                     Align::new(
@@ -171,7 +171,7 @@ impl EnvVarCollectionView {
             .finish(),
         );
 
-        if !false || editability.can_edit() {
+        if editability.can_edit() {
             variables_section_row.add_child(
                 Shrinkable::new(
                     1.,

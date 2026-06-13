@@ -1998,9 +1998,7 @@ impl AISettingsPageView {
             None => {
                 // Full page: all widgets (legacy behavior)
                 widgets.push(Box::new(GlobalAIWidget::default()));
-                if !false {
-                    widgets.push(Box::new(UsageWidget::default()));
-                }
+                widgets.push(Box::new(UsageWidget::default()));
                 if ai_settings
                     .intelligent_autosuggestions_enabled_internal
                     .is_supported_on_current_platform()
@@ -2089,9 +2087,7 @@ impl AISettingsPageView {
                 }
             }
             Some(AISubpage::Profiles) => {
-                if !false {
-                    widgets.push(Box::new(UsageWidget::default()));
-                }
+                widgets.push(Box::new(UsageWidget::default()));
                 widgets.push(Box::new(AgentsWidget::default()));
             }
             Some(AISubpage::Knowledge) => {

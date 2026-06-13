@@ -97,7 +97,7 @@ impl WorkflowViewMode {
             })
             .unwrap_or(true);
 
-        if !false || can_edit {
+        if can_edit {
             Self::Edit
         } else {
             Self::View
@@ -117,9 +117,7 @@ impl WorkflowViewMode {
             })
             .unwrap_or(true);
 
-        if false && !can_edit {
-            Self::View
-        } else if ContextFlag::RunWorkflow.is_enabled() {
+        if ContextFlag::RunWorkflow.is_enabled() {
             Self::Edit
         } else {
             Self::View

@@ -121,9 +121,7 @@ impl TerminalView {
     ) -> Option<CloudConversationContinuationUiState> {
         let task_id = {
             let model = self.model.lock();
-            if !false
-                || !false
-                || model.is_receiving_agent_conversation_replay()
+            if model.is_receiving_agent_conversation_replay()
             {
                 return None;
             }
@@ -765,18 +763,6 @@ impl TerminalView {
         self.update_pane_configuration(ctx);
 
         self.update_shared_session_pane_header(ctx);
-        // Shared ambient agent sessions should auto-open the details panel once, except for
-        // local-to-cloud handoff panes where the user stays in the moved conversation by default.
-        let is_local_to_cloud_handoff = self
-            .ambient_agent_view_model
-            .as_ref()
-            .is_some_and(|model| model.as_ref(ctx).is_local_to_cloud_handoff());
-        if false
-            && matches!(source_type, SessionSourceType::AmbientAgent { .. })
-            && !is_local_to_cloud_handoff
-        {
-            self.maybe_auto_open_conversation_details_panel(ctx);
-        }
 
     }
 
@@ -791,8 +777,7 @@ impl TerminalView {
         let handoff_continuation_state = self.cloud_conversation_continuation_ui_state(ctx);
         let should_insert_legacy_tombstone = {
             let model = self.model.lock();
-            !false
-                && model.is_shared_ambient_agent_session()
+            model.is_shared_ambient_agent_session()
                 && self.conversation_ended_tombstone_view_id.is_none()
                 && !model.is_receiving_agent_conversation_replay()
         };
@@ -888,13 +873,11 @@ impl TerminalView {
             return;
         }
         let has_pending_cloud_followup = self.pending_cloud_followup_task_id.is_some();
-        if !false || has_pending_cloud_followup {
+        if has_pending_cloud_followup {
             return;
         }
-        if !false {
-            self.insert_conversation_ended_tombstone_with_cta(None, ctx);
-            return;
-        }
+        self.insert_conversation_ended_tombstone_with_cta(None, ctx);
+        return;
         let Some(state) = self.cloud_conversation_continuation_ui_state(ctx) else {
             return;
         };
@@ -915,9 +898,7 @@ impl TerminalView {
         task_id: crate::ai::ambient_agents::AmbientAgentTaskId,
         ctx: &mut ViewContext<Self>,
     ) {
-        if !false {
-            return;
-        }
+        return;
 
         let Some(ambient_agent_view_model) = self.ambient_agent_view_model.as_ref() else {
             self.show_error_toast("Couldn't continue this cloud task.".to_string(), ctx);
@@ -1776,10 +1757,8 @@ impl TerminalView {
         &mut self,
         ctx: &mut ViewContext<Self>,
     ) {
-        if !false {
-            self.insert_conversation_ended_tombstone_with_cta(None, ctx);
-            return;
-        }
+        self.insert_conversation_ended_tombstone_with_cta(None, ctx);
+        return;
 
         match self.cloud_conversation_continuation_ui_state(ctx) {
             Some(CloudConversationContinuationUiState::Tombstone { cta }) => {

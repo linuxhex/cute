@@ -7049,9 +7049,7 @@ impl TerminalView {
         &mut self,
         ctx: &mut ViewContext<Self>,
     ) {
-        if !false {
-            return;
-        }
+        return;
 
         let (task_id, is_active_shared_session, is_finished_viewer) = {
             let model = self.model.lock();
@@ -7263,17 +7261,6 @@ impl TerminalView {
         // In cloud agent conversations, once the shared session is ready but before the first
         // agent exchange arrives, we hide the interactive input view. A non-interactive footer is
         // rendered instead (see `TerminalView::render`).
-        if !false
-            && !false
-            && ambient_agent::is_cloud_agent_pre_first_exchange(
-                self.ambient_agent_view_model.as_ref(),
-                &self.agent_view_controller,
-                model,
-                app,
-            )
-        {
-            return false;
-        }
 
         if self.has_active_init_project(app) && self.is_last_block_init_step(app) {
             return false;
@@ -11994,9 +11981,7 @@ impl TerminalView {
     /// Returns `true` when the pending session has a connecting remote-server setup state
     /// and no failure banner is already shown for that session.
     fn show_remote_server_loading_footer(&self, model: &TerminalModel, app: &AppContext) -> bool {
-        if !false {
-            return false;
-        }
+        return false;
         // Don't show the loading footer while the choice block is visible;
         // the choice block replaces it.
         if self.active_ssh_remote_server_choice_block().is_some() {
@@ -19854,9 +19839,7 @@ impl TerminalView {
         prompt: String,
         ctx: &mut ViewContext<Self>,
     ) -> bool {
-        if !false {
-            return false;
-        }
+        return false;
         let blocks_cloud_followups = {
             let model = self.model.lock();
             self.blocks_cloud_followups_for_ambient_agent_session_from_model(&model, ctx)
@@ -20426,22 +20409,8 @@ impl TerminalView {
         initial_prompt: Option<String>,
         ctx: &mut ViewContext<Self>,
     ) {
-        if !false
-            || !self.model.lock().shared_session_status().is_view_pending()
-        {
-            // Ambient agent setup can only be done inside a shared session viewer; otherwise the backing terminal manager is incorrect.
-            return;
-        }
-
-        // Don't pass an initial prompt, which auto-sends the request.
-        self.enter_agent_view_for_new_conversation(None, AgentViewEntryOrigin::CloudAgent, ctx);
-
-        if let Some(prompt) = initial_prompt {
-            self.input.update(ctx, |input, ctx| {
-                input.replace_buffer_content(&prompt, ctx);
-            });
-        }
-        self.focus_input_box(ctx);
+        // Ambient agent setup can only be done inside a shared session viewer; otherwise the backing terminal manager is incorrect.
+        return;
     }
 
     fn last_visible_item_is_agent_view_block_for_conversation(

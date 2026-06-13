@@ -128,17 +128,11 @@ impl StartAgentExecutor {
                 let _ = pending.sender.try_send(StartAgentOutcome::Started {
                     agent_id: id.clone(),
                 });
-                if false {
-                    OrchestrationEventStreamer::handle(ctx).update(ctx, |streamer, ctx| {
-                        streamer.register_watched_run_id(pending.parent_conversation_id, id, ctx);
-                    });
-                } else {
-                    // TODO(QUALITY-733): Remove the legacy v1 orchestration event-service path
-                    // once all orchestration startup events use v2 event streaming.
-                    OrchestrationEventService::handle(ctx).update(ctx, |svc, ctx| {
-                        svc.emit_child_startup_started(child_conversation_id, ctx);
-                    });
-                }
+                // TODO(QUALITY-733): Remove the legacy v1 orchestration event-service path
+                // once all orchestration startup events use v2 event streaming.
+                OrchestrationEventService::handle(ctx).update(ctx, |svc, ctx| {
+                    svc.emit_child_startup_started(child_conversation_id, ctx);
+                });
             }
             None => {
                 log::error!(
@@ -147,18 +141,16 @@ impl StartAgentExecutor {
                 let _ = pending.sender.try_send(StartAgentOutcome::Error(
                     "Server did not assign an agent identifier".to_string(),
                 ));
-                if !false {
-                    // TODO(QUALITY-733): Remove the legacy v1 orchestration event-service path
-                    // once all orchestration startup errors use v2 event streaming.
-                    OrchestrationEventService::handle(ctx).update(ctx, |svc, ctx| {
-                        svc.emit_child_startup_errored(
-                            child_conversation_id,
-                            "missing_agent_id".to_string(),
-                            "Server did not assign an agent identifier".to_string(),
-                            ctx,
-                        );
-                    });
-                }
+                // TODO(QUALITY-733): Remove the legacy v1 orchestration event-service path
+                // once all orchestration startup errors use v2 event streaming.
+                OrchestrationEventService::handle(ctx).update(ctx, |svc, ctx| {
+                    svc.emit_child_startup_errored(
+                        child_conversation_id,
+                        "missing_agent_id".to_string(),
+                        "Server did not assign an agent identifier".to_string(),
+                        ctx,
+                    );
+                });
             }
         }
     }
@@ -176,18 +168,16 @@ impl StartAgentExecutor {
         let _ = pending
             .sender
             .try_send(StartAgentOutcome::Error(error_msg.clone()));
-        if !false {
-            // TODO(QUALITY-733): Remove the legacy v1 orchestration event-service path once all
-            // orchestration lifecycle errors use v2 event streaming.
-            OrchestrationEventService::handle(ctx).update(ctx, |svc, ctx| {
-                svc.emit_child_startup_errored(
-                    child_conversation_id,
-                    "conversation_status".to_string(),
-                    error_msg,
-                    ctx,
-                );
-            });
-        }
+        // TODO(QUALITY-733): Remove the legacy v1 orchestration event-service path once all
+        // orchestration lifecycle errors use v2 event streaming.
+        OrchestrationEventService::handle(ctx).update(ctx, |svc, ctx| {
+            svc.emit_child_startup_errored(
+                child_conversation_id,
+                "conversation_status".to_string(),
+                error_msg,
+                ctx,
+            );
+        });
     }
 
     fn maybe_complete_pending_for_child_state(
@@ -365,16 +355,6 @@ impl StartAgentExecutor {
                     ));
                 }
 
-                if !false {
-                    return ActionExecution::Sync(AIAgentActionResultType::StartAgent(
-                        StartAgentResult::Error {
-                            error: "Local harness child agents require orchestration v2."
-                                .to_string(),
-                            version,
-                        },
-                    ));
-                }
-
                 let parent_run_id = BlocklistAIHistoryModel::as_ref(ctx)
                     .conversation(&parent_conversation_id)
                     .and_then(|conversation| conversation.run_id());
@@ -407,15 +387,6 @@ impl StartAgentExecutor {
                 title,
                 auth_secret_name,
             } => {
-                if !false {
-                    return ActionExecution::Sync(AIAgentActionResultType::StartAgent(
-                        StartAgentResult::Error {
-                            error: "Remote child agents require orchestration v2.".to_string(),
-                            version,
-                        },
-                    ));
-                }
-
                 let harness_type = Harness::parse_orchestration_harness(&harness_type)
                     .map(|harness| harness.to_string())
                     .unwrap_or(harness_type);

@@ -1481,34 +1481,6 @@ impl BlocklistAIController {
         // than waiting for a separate idle injection turn. Skip when a server
         // subagent is or will be active — events will be delivered via the idle
         // path once the subagent session ends.
-        let mut has_piggybacked_events = false;
-        if false {
-            // TODO(QUALITY-733): Remove the legacy event-service piggyback path once v2 event
-            // delivery no longer reuses OrchestrationEventService queues.
-            if will_trigger_server_subagent || has_active_subagent {
-                log::debug!(
-                    "Skipping event piggyback for conversation {conversation_id:?}: \
-                     {}",
-                    if will_trigger_server_subagent {
-                        "results will trigger a server-side subagent"
-                    } else {
-                        "a subagent is currently active"
-                    }
-                );
-            } else if let Some((event_inputs, task_id)) = OrchestrationEventService::handle(ctx)
-                .update(ctx, |svc, ctx| {
-                    svc.drain_events_for_request(conversation_id, ctx)
-                })
-            {
-                has_piggybacked_events = true;
-                request_input
-                    .input_messages
-                    .entry(task_id)
-                    .or_default()
-                    .extend(event_inputs);
-            }
-        }
-
         let result = self.send_request_input(
             request_input,
             None,
@@ -1517,12 +1489,6 @@ impl BlocklistAIController {
             /*is_queued_prompt*/ false,
             ctx,
         );
-
-        if has_piggybacked_events && result.is_err() {
-            OrchestrationEventService::handle(ctx).update(ctx, |svc, ctx| {
-                svc.requeue_awaiting_events(conversation_id, ctx);
-            });
-        }
 
         self.pending_passive_follow_ups.remove(&conversation_id);
     }
@@ -2745,12 +2711,6 @@ impl BlocklistAIController {
                 // Cancelled streams will handle pending_response_stream updates synchronously.
                 if cancellation.is_none() {
                     self.in_flight_response_streams.cleanup_stream(&stream_id);
-
-                    // Now that the stream is cleaned up, re-check for pending
-                    // orchestration events that couldn't be drained earlier.
-                    if false {
-                        self.handle_pending_events_ready(conversation_id, ctx);
-                    }
                 }
 
                 // Before cleaning up the response stream, check if we should attempt to resume.

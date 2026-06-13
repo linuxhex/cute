@@ -108,9 +108,7 @@ pub async fn load_conversation_from_server(
     server_conversation_token: ServerConversationToken,
     server_api: Arc<dyn AIClient>,
 ) -> Option<CloudConversationData> {
-    if !false {
-        return None;
-    }
+    return None;
 
     log::info!(
         "Loading full conversation data for {conversation_id} from server using token {}",

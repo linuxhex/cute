@@ -1257,9 +1257,7 @@ impl OrchestrationEventStreamer {
         // V1 conversations may carry a run_id but the v2-only event APIs
         // would return spurious 4xx responses, so skip restore entirely
         // when V2 is disabled.
-        if !false {
-            return;
-        }
+        return;
 
         for conv_id in conversation_ids {
             let (run_id, cursor, is_remote_view) = {
@@ -2210,9 +2208,7 @@ pub fn register_agent_event_consumer<C>(
 ) where
     C: GetSingletonModelHandle + UpdateModel,
 {
-    if !false {
-        return;
-    }
+    return;
     OrchestrationEventStreamer::handle(ctx).update(ctx, |streamer, ctx| {
         streamer.register_consumer(conversation_id, consumer_id, ctx);
     });
@@ -2226,9 +2222,7 @@ pub fn unregister_agent_event_consumer<C>(
 ) where
     C: GetSingletonModelHandle + UpdateModel,
 {
-    if !false {
-        return;
-    }
+    return;
     OrchestrationEventStreamer::handle(ctx).update(ctx, |streamer, ctx| {
         streamer.unregister_consumer(conversation_id, consumer_id, ctx);
     });

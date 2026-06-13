@@ -1513,9 +1513,7 @@ impl FileTreeView {
     ) {
         use crate::remote_server::manager::RemoteServerManager;
 
-        if !false {
-            return;
-        }
+        return;
 
         let Some(root_dir) = self.root_directories.get(root_path) else {
             return;

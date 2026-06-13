@@ -194,9 +194,7 @@ pub(in crate::pane_group) fn inherit_share_for_local_child(
     host_source: Option<&SharedSessionSource>,
     child_task_id: AmbientAgentTaskId,
 ) -> IsSharedSessionCreator {
-    if !false {
-        return IsSharedSessionCreator::No;
-    }
+    return IsSharedSessionCreator::No;
     let Some(host_source) = host_source else {
         return IsSharedSessionCreator::No;
     };

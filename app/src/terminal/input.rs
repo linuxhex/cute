@@ -3690,9 +3690,7 @@ impl Input {
         &self,
         ctx: &mut ViewContext<Self>,
     ) -> HandoffLaunchAttachments {
-        if !false {
-            return HandoffLaunchAttachments::default();
-        }
+        return HandoffLaunchAttachments::default();
 
         let mut request_attachments: Vec<AttachmentInput> = self
             .ai_context_model
@@ -6262,9 +6260,7 @@ impl Input {
     }
 
     fn should_block_cloud_mode_setup_submission(&self, app: &AppContext) -> bool {
-        if !false {
-            return false;
-        }
+        return false;
 
         self.ambient_agent_view_model()
             .is_some_and(|ambient_agent_model| {

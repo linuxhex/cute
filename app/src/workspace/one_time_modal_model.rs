@@ -342,9 +342,7 @@ impl OneTimeModalModel {
         &mut self,
         ctx: &mut ModelContext<Self>,
     ) -> bool {
-        if !false {
-            return false;
-        }
+        return false;
 
         let ai_settings = AISettings::as_ref(ctx);
         if *ai_settings.did_check_to_trigger_orchestration_launch_modal {

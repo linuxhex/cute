@@ -137,10 +137,7 @@ impl TerminalView {
 
     /// Returns the shareable object for the active agent view conversation, if any.
     fn agent_view_shareable_object(&self, ctx: &ViewContext<Self>) -> Option<ShareableObject> {
-        // Only set shareable object if CloudConversations feature is enabled
-        if !false {
-            return None;
-        }
+        return None;
 
         // If we're in a shared session, prioritize this to share.
         if let Some(shared_session) = &self.shared_session {
@@ -388,11 +385,10 @@ impl TerminalView {
 
         // Cloud-mode-only ambient agent cancel button is shown while we're waiting
         // for the session to be ready.
-        let is_waiting_for_session = false
-            && self
-                .ambient_agent_view_model
-                .as_ref()
-                .is_some_and(|model| model.as_ref(app).is_waiting_for_session());
+        let is_waiting_for_session = self
+            .ambient_agent_view_model
+            .as_ref()
+            .is_some_and(|model| model.as_ref(app).is_waiting_for_session());
         let button_element = if is_waiting_for_session {
             Some(self.render_ambient_agent_cancel_button(app))
         } else if self.can_show_conversation_details_ui(app) {
@@ -451,12 +447,7 @@ impl TerminalView {
     }
 
     fn render_parent_conversation_header_card(&self, app: &AppContext) -> Option<Box<dyn Element>> {
-        if !(false
-            && FeatureFlag::AgentView.is_enabled()
-            && self.agent_view_controller.as_ref(app).is_fullscreen())
-        {
-            return None;
-        }
+        return None;
 
         let active_conversation_id = self
             .agent_view_controller
@@ -492,46 +483,7 @@ impl TerminalView {
         // arrived yet, `OrchestrationPillBar::pill_specs` returns `None`
         // and the pill bar's `render` short-circuits to `Empty`, so the
         // gate here is intentionally permissive.
-        if (false
-            || false)
-            && FeatureFlag::AgentView.is_enabled()
-            && self.agent_view_controller.as_ref(app).is_fullscreen()
-        {
-            // The wrapping `Flex::column` would otherwise pass an infinite
-            // vertical max constraint down to its non-flex children. That
-            // breaks the title's vertical centering: with infinite max.y,
-            // the centered `Align` inside `render_three_column_header`
-            // collapses to the title's own (small) line-box height, and
-            // the outer row's `CrossAxisAlignment::Stretch` then pins the
-            // title to the top of the row. Pinning the header to its
-            // standard `PANE_HEADER_HEIGHT` here restores the finite
-            // vertical constraint the centering logic relies on, while
-            // letting the pill bar / breadcrumb row sit immediately below
-            // at its own height.
-            let pinned_header = ConstrainedBox::new(header)
-                .with_height(PANE_HEADER_HEIGHT)
-                .finish();
-            let secondary_row: Box<dyn Element> = if self.is_orchestration_split_off() {
-                crate::ai::blocklist::agent_view::render_orchestration_breadcrumbs(
-                    self.agent_view_controller.as_ref(app),
-                    self.mouse_states.parent_conversation_header_link.clone(),
-                    self.mouse_states.breadcrumbs_horizontal_scroll.clone(),
-                    app,
-                )
-                .unwrap_or_else(|| Empty::new().finish())
-            } else {
-                ChildView::new(&self.orchestration_pill_bar).finish()
-            };
-            return Flex::column()
-                .with_cross_axis_alignment(CrossAxisAlignment::Stretch)
-                .with_child(pinned_header)
-                .with_child(secondary_row)
-                .finish();
-        }
-
-        if !false {
-            return header;
-        }
+        return header;
 
         if let Some(parent_card) = parent_conversation_header_card {
             Flex::column()
@@ -906,10 +858,6 @@ impl TerminalView {
 
     pub fn is_ambient_agent_session(&self, ctx: &AppContext) -> bool {
         false
-            && self
-                .ambient_agent_view_model
-                .as_ref()
-                .is_some_and(|model| model.as_ref(ctx).is_ambient_agent())
     }
 
     fn selected_conversation_for_user_facing_chrome<'a>(
