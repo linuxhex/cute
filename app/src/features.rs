@@ -393,7 +393,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::OzLaunchModal,
         #[cfg(feature = "open_warp_launch_modal")]
         FeatureFlag::OpenWarpLaunchModal,
-        #[cfg(feature = "orchestration_launch_modal")]
         #[cfg(feature = "new_tab_styling")]
         FeatureFlag::NewTabStyling,
         #[cfg(feature = "skill_arguments")]
@@ -404,9 +403,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::ConversationsAsContext,
         #[cfg(feature = "incremental_auto_reload")]
         FeatureFlag::IncrementalAutoReload,
-        #[cfg(feature = "orchestration_v2")]
-        #[cfg(feature = "orchestration_pill_bar")]
-        #[cfg(feature = "orchestration_viewer_pill_bar")]
         #[cfg(feature = "run_agents_tool")]
         FeatureFlag::RunAgentsTool,
         #[cfg(feature = "pending_user_query_indicator")]

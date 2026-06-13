@@ -2932,9 +2932,7 @@ impl View for WorkflowView {
             .finish(),
         );
 
-        let editability = if false {
-            self.editability(app)
-        } else {
+        let editability = {
             ContentEditability::Editable
         };
         let mode_toggleable = match (ContextFlag::RunWorkflow.is_enabled(), editability) {
