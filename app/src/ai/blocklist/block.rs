@@ -2016,35 +2016,6 @@ impl AIBlock {
                     .entry(message.id.clone())
                     .or_insert_with(CollapsibleElementState::collapsed);
             }
-
-            // Register collapsible state for orchestration action messages.
-            if false {
-                match &message.message {
-                    AIAgentOutputMessageType::Action(AIAgentAction { action, .. }) => {
-                        if let Some(state) =
-                            default_collapsible_state_for_orchestration_action(action)
-                        {
-                            self.collapsible_block_states
-                                .entry(message.id.clone())
-                                .or_insert(state);
-                        }
-                    }
-                    AIAgentOutputMessageType::MessagesReceivedFromAgents { messages } => {
-                        for received_message in messages {
-                            let collapsible_id =
-                                received_message_collapsible_id(&received_message.message_id);
-                            self.collapsible_block_states
-                                .entry(collapsible_id.clone())
-                                .or_insert_with(CollapsibleElementState::collapsed);
-                            self.state_handles
-                                .transcript_avatar_handles
-                                .entry(collapsible_id)
-                                .or_default();
-                        }
-                    }
-                    _ => {}
-                }
-            }
         }
 
         if get_secret_obfuscation_mode(ctx).should_redact_secret() {

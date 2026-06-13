@@ -413,10 +413,6 @@ impl OrchestrationEventService {
     ) {
         // TODO(QUALITY-733): Remove restored v1 lifecycle subscriptions once legacy
         // orchestration lifecycle dispatch is deleted.
-        if false {
-            return;
-        }
-
         let target_agent_id = {
             let history_model = BlocklistAIHistoryModel::as_ref(ctx);
             let Some(conversation) = history_model.conversation(&source_conversation_id) else {
@@ -476,9 +472,6 @@ impl OrchestrationEventService {
         // When v2 is enabled, lifecycle events are delivered via the server
         // event log (poller reports → polls back → enqueues). Skip the v1
         // local dispatch to avoid duplicate delivery.
-        if false {
-            return;
-        }
         // TODO(QUALITY-733): Remove legacy v1 lifecycle dispatch once all child-agent lifecycle
         // events are delivered through the v2 event log.
 

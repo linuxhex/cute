@@ -922,13 +922,9 @@ impl AIConversation {
     /// orchestration version: `task_id` (as string) under v2,
     /// `server_conversation_token` under v1.
     pub fn orchestration_agent_id(&self) -> Option<String> {
-        if false {
-            self.run_id()
-        } else {
-            self.server_conversation_token
-                .as_ref()
-                .map(|t| t.as_str().to_string())
-        }
+        self.server_conversation_token
+            .as_ref()
+            .map(|t| t.as_str().to_string())
     }
 
     /// Updates the server conversation token for this conversation.
