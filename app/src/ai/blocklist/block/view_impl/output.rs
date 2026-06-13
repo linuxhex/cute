@@ -740,68 +740,6 @@ pub(super) fn render(props: Props, app: &AppContext) -> Box<dyn Element> {
                                 .add_child(render_request_computer_use(props, id, request, app));
                         }
                         AIAgentOutputMessageType::Action(AIAgentAction {
-                            action:
-                                AIAgentActionType::StartAgent {
-                                    version: _,
-                                    name,
-                                    prompt,
-                                    execution_mode,
-                                    lifecycle_subscription: _,
-                                },
-                            id,
-                            ..
-                        }) if FeatureFlag::OrchestrationV2.is_enabled() => {
-                            should_render_footer = false;
-                            should_render_suggestions = false;
-                            output_items.add_child(orchestration::render_start_agent(
-                                props,
-                                id,
-                                name,
-                                prompt,
-                                execution_mode,
-                                &output_message.id,
-                                app,
-                            ));
-                        }
-                        AIAgentOutputMessageType::Action(AIAgentAction {
-                            action: AIAgentActionType::RunAgents(_req),
-                            id,
-                            ..
-                        }) if FeatureFlag::RunAgentsTool.is_enabled() => {
-                            // Embed the per-action `RunAgentsCardView`
-                            // via `ChildView`. The view renders a
-                            // "Configuring agents..." placeholder while
-                            // streaming, then transitions to the full
-                            // confirmation card once complete.
-                            should_render_footer = false;
-                            should_render_suggestions = false;
-                            if let Some(card_view) = props.run_agents_card_views.get(id) {
-                                output_items.add_child(ChildView::new(card_view).finish());
-                            }
-                        }
-                        AIAgentOutputMessageType::Action(AIAgentAction {
-                            action:
-                                AIAgentActionType::SendMessageToAgent {
-                                    addresses,
-                                    subject,
-                                    message,
-                                },
-                            id,
-                            ..
-                        }) if FeatureFlag::OrchestrationV2.is_enabled() => {
-                            should_render_footer = false;
-                            should_render_suggestions = false;
-                            output_items.add_child(orchestration::render_send_message(
-                                props,
-                                id,
-                                addresses,
-                                subject,
-                                message,
-                                &output_message.id,
-                                app,
-                            ));
-                        }
-                        AIAgentOutputMessageType::Action(AIAgentAction {
                             action: AIAgentActionType::InsertCodeReviewComments { repo_path, .. },
                             id,
                             ..
@@ -874,15 +812,6 @@ pub(super) fn render(props: Props, app: &AppContext) -> Box<dyn Element> {
                                     output_message.id
                                 );
                             }
-                        }
-                        AIAgentOutputMessageType::MessagesReceivedFromAgents { messages }
-                            if FeatureFlag::OrchestrationV2.is_enabled() =>
-                        {
-                            output_items.add_child(
-                                orchestration::render_messages_received_from_agents(
-                                    messages, props, app,
-                                ),
-                            );
                         }
                         AIAgentOutputMessageType::DebugOutput { text } => {
                             if ChannelState::enable_debug_features() {

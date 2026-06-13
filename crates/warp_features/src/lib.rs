@@ -126,7 +126,6 @@ pub enum FeatureFlag {
     AgentPredict,
 
     /// Enables receiving shared Warp Drive objects.
-    SharedWithMe,
 
     /// Enables workflows for use with Agent Mode.
     AgentModeWorkflows,
@@ -171,7 +170,6 @@ pub enum FeatureFlag {
     WorkflowAliases,
 
     SshDragAndDrop,
-    SshRemoteServer,
     DragTabsToWindows,
 
     /// Enables the overflow menu on AI blocks.
@@ -253,7 +251,6 @@ pub enum FeatureFlag {
     FullSourceCodeEmbedding,
 
     /// Enables codebase indexing inside remote server daemon processes.
-    RemoteCodebaseIndexing,
 
     /// If enabled, command palette searches will use Tantivy search instead of the default fuzzy search.
     UseTantivySearch,
@@ -285,7 +282,6 @@ pub enum FeatureFlag {
     /// Enables reading images with the `read_files` tool.
     ReadImageFiles,
 
-    UsageBasedPricing,
 
     /// Enables cross-repo codebase context.
     CrossRepoContext,
@@ -556,13 +552,10 @@ pub enum FeatureFlag {
     InlineRepoMenu,
 
     /// Enables cloud mode functionality for ambient agents.
-    CloudMode,
 
     /// Enables v2 of the cloud mode setup flow.
-    CloudModeSetupV2,
 
     /// Enables starting cloud mode from a local session.
-    CloudModeFromLocalSession,
 
     /// Enables host selection in cloud mode.
     CloudModeHostSelector,
@@ -653,7 +646,6 @@ pub enum FeatureFlag {
     AmbientAgentsImageUpload,
 
     /// Enables image attachment support for cloud mode conversations.
-    CloudModeImageContext,
 
     /// Enables loading and returning bundled skills in the SkillManager.
     BundledSkills,
@@ -666,7 +658,6 @@ pub enum FeatureFlag {
     OpenWarpLaunchModal,
 
     /// Enables the orchestration launch modal announcing multi-agent orchestration features.
-    OrchestrationLaunchModal,
 
     /// Updated tab styling (background colors, border, close button positioning, margins).
     NewTabStyling,
@@ -699,7 +690,6 @@ pub enum FeatureFlag {
     /// When enabled, messages and events are stored in Postgres and the client
     /// opens a persistent SSE connection to the server to receive events in
     /// real time.
-    OrchestrationV2,
 
     /// Re-enables local Claude Code and Codex child harnesses in orchestration
     /// flows while the default behavior temporarily keeps them disabled.
@@ -717,14 +707,12 @@ pub enum FeatureFlag {
     /// Renders a horizontal pill bar in the agent view pane header showing the
     /// orchestrator agent and all of its child agents, with click-to-switch
     /// behavior between siblings.
-    OrchestrationPillBar,
 
     /// Enables the orchestration pill bar in shared session viewers (web and
     /// native). When enabled, viewing a shared session that used orchestration
     /// shows a pill bar above the agent view header with the orchestrator and
     /// each child agent. Clicking a child pill joins the child's shared session
     /// and switches the view to its transcript.
-    OrchestrationViewerPillBar,
 
     /// Replaces `OrchestrationViewerModel`'s REST polling loop with an SSE-driven
     /// `ancestor_run_id` stream consumed via `OrchestrationEventStreamer`'s new
@@ -841,7 +829,6 @@ pub enum FeatureFlag {
     /// space is not rendered while the agent is running.
     TrimTrailingBlankLines,
 
-    CloudModeInputV2,
 
     /// Enables summary mode in vertical tabs, showing condensed tab summaries
     /// instead of individual pane rows.
@@ -878,7 +865,6 @@ pub enum FeatureFlag {
     HarnessSessionHeader,
 
     /// Enables the code review view for remote sessions.
-    RemoteCodeReview,
 
     /// Gates the Grouped Tabs feature.
     GroupedTabs,
@@ -943,7 +929,6 @@ pub const DOGFOOD_FLAGS: &[FeatureFlag] = &[
     FeatureFlag::GeminiNotifications,
     FeatureFlag::LocalDockerSandbox,
     FeatureFlag::DragTabsToWindows,
-    FeatureFlag::RemoteCodebaseIndexing,
     FeatureFlag::GroupedTabs,
     FeatureFlag::AsyncFind,
     FeatureFlag::OrchestrationViewerStreamer,
@@ -1042,7 +1027,6 @@ impl FeatureFlag {
             MarkdownTables => Some("Enables rendering and interaction support for markdown tables in notebooks."),
             SettingsFile => Some("Enables configuring Warp via a user-editable `settings.toml` file, with hot reload and error reporting for invalid values."),
             GitOperationsInCodeReview => Some("Enables commit, push, and create-PR actions directly from the code review panel."),
-            OrchestrationV2 => Some("Enables orchestration of teams of agents with dedicated UI, lifecycle events and inter-agent messaging."),
             _ => None,
         }
     }
