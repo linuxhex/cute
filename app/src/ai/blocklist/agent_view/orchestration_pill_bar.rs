@@ -18,7 +18,7 @@ use warp_core::ui::theme::color::internal_colors;
 use warp_core::ui::theme::{Fill, WarpTheme};
 use warpui::elements::new_scrollable::{NewScrollable, ScrollableAppearance, SingleAxisConfig};
 use warpui::elements::{
-    Align, AnchorPair, ChildAnchor, ChildView, ClippedScrollStateHandle, ConstrainedBox, Container,
+    Align, AnchorPair, ChildAnchor, ChildView, ConstrainedBox, Container,
     CornerRadius, CrossAxisAlignment, Element, Empty, Fill as ElementFill, Flex, Hoverable,
     MainAxisAlignment, MainAxisSize, MouseStateHandle, OffsetPositioning, OffsetType, ParentAnchor,
     ParentElement, ParentOffsetBounds, PositionedElementOffsetBounds, PositioningAxis, Radius,
@@ -31,7 +31,7 @@ use warpui::text_layout::{
     ClipConfig, ClipDirection, ClipStyle, StyleAndFont, TextStyle, DEFAULT_TOP_BOTTOM_RATIO,
 };
 use warpui::{
-    AppContext, Entity, EntityId, ModelHandle, SingletonEntity, TypedActionView, View, ViewContext,
+    AppContext, Entity, ModelHandle, SingletonEntity, TypedActionView, View, ViewContext,
     ViewHandle,
 };
 
@@ -2202,198 +2202,6 @@ fn render_avatar_disc(
         .with_child(disc)
         .with_child(glyph_centered)
         .finish()
-}
-
-/// Pre-computed data for a single breadcrumb in the orchestration breadcrumb row.
-struct CrumbSpec {
-    conversation_id: AIConversationId,
-    label: String,
-    avatar_color: ColorU,
-    avatar_glyph: AvatarGlyph,
-    /// `true` for the trailing crumb (the conversation currently being
-    /// viewed). The trailing crumb is rendered with a brighter text color
-    /// and is non-interactive.
-    is_active: bool,
-}
-
-const CRUMB_HEIGHT: f32 = 24.;
-const CRUMB_RADIUS: f32 = 4.;
-const CRUMB_HORIZONTAL_PADDING: f32 = 6.;
-
-/// Renders a `[Parent Avatar] [Parent Title] > [Child Avatar] [Child Name]`
-/// breadcrumb row when the active conversation is a child agent under an
-/// orchestrator that has been split off into another pane/tab. Returns
-/// `None` for same-pane child views — those render the pill bar with the
-/// active child highlighted instead.
-///
-/// We render this manually rather than going through
-/// `crate::ui_components::breadcrumb::render_breadcrumbs` because we need a
-/// chevron separator (per the Figma) and per-crumb avatars, neither of which
-/// the shared helper supports today.
-///
-/// `parent_crumb_mouse_state` must be a `MouseStateHandle` owned by the caller
-/// (e.g. on a TerminalView field) so hover and click events persist across
-/// renders. Inline `MouseStateHandle::default()` would zero state every frame
-/// and silently break clicks (per the WarpUI mouse-state guidance).
-pub fn render_orchestration_breadcrumbs(
-    _agent_view_controller: &AgentViewController,
-    _parent_crumb_mouse_state: MouseStateHandle,
-    _horizontal_scroll_state: ClippedScrollStateHandle,
-    _app: &AppContext,
-) -> Option<Box<dyn Element>> {
-    None
-}
-
-fn render_crumb(
-    spec: CrumbSpec,
-    mouse_state: Option<MouseStateHandle>,
-    self_terminal_view_id: EntityId,
-    theme: &WarpTheme,
-    appearance: &Appearance,
-) -> Box<dyn Element> {
-    let conversation_id = spec.conversation_id;
-    let is_active = spec.is_active;
-    let label = spec.label;
-    let avatar_color = spec.avatar_color;
-    let avatar_glyph = spec.avatar_glyph;
-
-    // Active (trailing) crumb: bright text, no hover/click. Use the same
-    // height + padding as the interactive crumb so the row is uniform.
-    if is_active {
-        let inner = build_crumb_inner(
-            label,
-            avatar_color,
-            avatar_glyph,
-            true,  /* is_active */
-            false, /* is_hovered */
-            theme,
-            appearance,
-        );
-        return ConstrainedBox::new(inner)
-            .with_height(CRUMB_HEIGHT)
-            .finish();
-    }
-
-    // Interactive (parent) crumb: hover highlight + click handler. The
-    // `Hoverable::new` build closure is `FnOnce`, so `label` can move into
-    // the closure by value instead of cloning on every build.
-    let mouse_state = mouse_state.unwrap_or_default();
-    Hoverable::new(mouse_state, move |hover_state| {
-        let inner = build_crumb_inner(
-            label,
-            avatar_color,
-            avatar_glyph,
-            false, /* is_active */
-            hover_state.is_hovered() || hover_state.is_clicked(),
-            theme,
-            appearance,
-        );
-        ConstrainedBox::new(inner)
-            .with_height(CRUMB_HEIGHT)
-            .finish()
-    })
-    .with_cursor(Cursor::PointingHand)
-    .on_click(move |ctx, app, _| {
-        // Focus the pane that already hosts the parent conversation
-        // rather than switching this (split-off child) pane to it.
-        //
-        // Pick the focus path based on where the parent's canonical
-        // owner pane lives, mirroring the orchestration pill bar's
-        // "Focus pane" handler:
-        //   * Same pane group as us (sibling pane in this tab) —
-        //     dispatch `TerminalAction::RevealChildAgent`, which the
-        //     pane group handles by walking visible terminal panes and
-        //     focusing the one whose active conversation matches.
-        //     Going through the workspace's `focus_pane` from a
-        //     different `ViewContext` doesn't reliably move focus when
-        //     the destination is in the same pane group.
-        //   * Different pane group (other tab / window) — dispatch
-        //     `WorkspaceAction::FocusTerminalViewInWorkspace`, which
-        //     walks all tabs/windows and activates the containing tab
-        //     as needed.
-        //   * No canonical owner anywhere — fall back to
-        //     `SwitchAgentViewToConversation` so the breadcrumb stays
-        //     useful even after the orchestrator pane has been closed
-        //     and the parent conversation only persists in history.
-        if let Some(owner_view_id) =
-            BlocklistAIHistoryModel::as_ref(app).terminal_view_id_for_conversation(&conversation_id)
-        {
-            let self_pane_group_id =
-                pane_group_id_containing_terminal_view(self_terminal_view_id, app);
-            let owner_pane_group_id = pane_group_id_containing_terminal_view(owner_view_id, app);
-            if owner_pane_group_id.is_some() && owner_pane_group_id == self_pane_group_id {
-                ctx.dispatch_typed_action(
-                    PaneHeaderAction::<TerminalAction, TerminalAction>::CustomAction(
-                        TerminalAction::RevealChildAgent { conversation_id },
-                    ),
-                );
-                return;
-            }
-            ctx.dispatch_typed_action(WorkspaceAction::FocusTerminalViewInWorkspace {
-                terminal_view_id: owner_view_id,
-            });
-            return;
-        }
-        ctx.dispatch_typed_action(
-            PaneHeaderAction::<TerminalAction, TerminalAction>::CustomAction(
-                TerminalAction::SwitchAgentViewToConversation { conversation_id },
-            ),
-        );
-    })
-    .finish()
-}
-
-/// Builds the inner content (background + padding + avatar + label row) for a
-/// single crumb. Shared between active (non-interactive) and interactive paths
-/// so both render at the same height with consistent padding.
-fn build_crumb_inner(
-    label: String,
-    avatar_color: ColorU,
-    avatar_glyph: AvatarGlyph,
-    is_active: bool,
-    is_hovered: bool,
-    theme: &WarpTheme,
-    appearance: &Appearance,
-) -> Box<dyn Element> {
-    let text_color = if is_active || is_hovered {
-        internal_colors::text_main(theme, theme.background())
-    } else {
-        internal_colors::text_sub(theme, theme.background())
-    };
-
-    let label_text = Text::new(
-        label,
-        appearance.ui_font_family(),
-        appearance.monospace_font_size(),
-    )
-    .with_color(text_color)
-    .soft_wrap(false)
-    .with_clip(ClipConfig::ellipsis())
-    .finish();
-
-    let avatar = render_avatar_disc(avatar_color, avatar_glyph, AVATAR_SIZE, theme, appearance);
-
-    let row = Flex::row()
-        .with_main_axis_alignment(MainAxisAlignment::Center)
-        .with_cross_axis_alignment(CrossAxisAlignment::Center)
-        .with_main_axis_size(MainAxisSize::Min)
-        .with_spacing(6.)
-        .with_child(avatar)
-        .with_child(
-            ConstrainedBox::new(label_text)
-                .with_max_width(220.)
-                .finish(),
-        )
-        .finish();
-
-    let mut container = Container::new(row)
-        .with_padding_left(CRUMB_HORIZONTAL_PADDING)
-        .with_padding_right(CRUMB_HORIZONTAL_PADDING)
-        .with_corner_radius(CornerRadius::with_all(Radius::Pixels(CRUMB_RADIUS)));
-    if is_hovered && !is_active {
-        container = container.with_background_color(internal_colors::neutral_2(theme));
-    }
-    container.finish()
 }
 
 #[cfg(test)]

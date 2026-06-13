@@ -1,114 +1,16 @@
-#[cfg(not(target_family = "wasm"))]
-use std::time::Duration;
-
-#[cfg(not(target_family = "wasm"))]
-use anyhow::anyhow;
 use futures::future::BoxFuture;
-#[cfg(not(target_family = "wasm"))]
-use futures::future::Either;
 use futures::FutureExt;
-#[cfg(not(target_family = "wasm"))]
-use warpui::r#async::Timer;
-use warpui::{AppContext, Entity, ModelContext, SingletonEntity};
+use warpui::{Entity, ModelContext, SingletonEntity};
 
 use super::{ActionExecution, AnyActionExecution, ExecuteActionInput, PreprocessActionInput};
-use crate::ai::agent::conversation::AIConversationId;
 use crate::ai::agent::{
     AIAgentAction, AIAgentActionResultType, AIAgentActionType, SendMessageToAgentResult,
 };
 use crate::ai::ambient_agents::AmbientAgentTaskId;
-use crate::ai::blocklist::history_model::BlocklistAIHistoryModel;
 use crate::ai::blocklist::orchestration_events::{OrchestrationEventService, SendMessageResult};
-use crate::server::server_api::ai::{SendAgentMessageRequest, SendAgentMessageResponse};
-
-#[cfg(not(target_family = "wasm"))]
-const SEND_AGENT_MESSAGE_TIMEOUT: Duration = Duration::from_secs(15);
 
 pub struct SendMessageToAgentExecutor {
     ambient_agent_task_id: Option<AmbientAgentTaskId>,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum SendMessageTaskResolution {
-    ConversationTask,
-    AmbientTaskFallback,
-    NoTaskContext,
-}
-
-fn sender_run_id_and_task_id_for_send(
-    conversation_id: AIConversationId,
-    ambient_agent_task_id: Option<AmbientAgentTaskId>,
-    ctx: &AppContext,
-) -> (
-    String,
-    Option<AmbientAgentTaskId>,
-    SendMessageTaskResolution,
-) {
-    let conversation = BlocklistAIHistoryModel::as_ref(ctx).conversation(&conversation_id);
-    let conversation_task_id = conversation.and_then(|conversation| conversation.task_id());
-    let (task_id, task_resolution) = match (conversation_task_id, ambient_agent_task_id) {
-        (Some(task_id), _) => (Some(task_id), SendMessageTaskResolution::ConversationTask),
-        (None, Some(task_id)) => (
-            Some(task_id),
-            SendMessageTaskResolution::AmbientTaskFallback,
-        ),
-        (None, None) => (None, SendMessageTaskResolution::NoTaskContext),
-    };
-    let sender_run_id = conversation
-        .and_then(|conversation| conversation.run_id())
-        .or_else(|| task_id.map(|task_id| task_id.to_string()))
-        .unwrap_or_default();
-    (sender_run_id, task_id, task_resolution)
-}
-
-#[cfg(not(target_family = "wasm"))]
-async fn send_agent_message_with_timeout(
-    server_api: std::sync::Arc<crate::server::server_api::ServerApi>,
-    ai_client: std::sync::Arc<dyn crate::server::server_api::ai::AIClient>,
-    task_id: Option<AmbientAgentTaskId>,
-    request: SendAgentMessageRequest,
-) -> anyhow::Result<SendAgentMessageResponse, anyhow::Error> {
-    let task_id_for_timeout = task_id.map(|task_id| task_id.to_string());
-    let send_message = async move {
-        match task_id {
-            Some(task_id) => {
-                server_api
-                    .send_agent_message_for_task(&task_id, request)
-                    .await
-            }
-            None => ai_client.send_agent_message(request).await,
-        }
-    };
-    let timeout = Timer::after(SEND_AGENT_MESSAGE_TIMEOUT);
-    futures::pin_mut!(send_message);
-    futures::pin_mut!(timeout);
-
-    match futures::future::select(send_message, timeout).await {
-        Either::Left((result, _)) => result,
-        Either::Right(_) => Err(anyhow!(
-            "Timed out sending orchestration message{}",
-            task_id_for_timeout
-                .map(|task_id| format!(" for task {task_id}"))
-                .unwrap_or_default()
-        )),
-    }
-}
-
-#[cfg(target_family = "wasm")]
-async fn send_agent_message_with_timeout(
-    server_api: std::sync::Arc<crate::server::server_api::ServerApi>,
-    ai_client: std::sync::Arc<dyn crate::server::server_api::ai::AIClient>,
-    task_id: Option<AmbientAgentTaskId>,
-    request: SendAgentMessageRequest,
-) -> anyhow::Result<SendAgentMessageResponse, anyhow::Error> {
-    match task_id {
-        Some(task_id) => {
-            server_api
-                .send_agent_message_for_task(&task_id, request)
-                .await
-        }
-        None => ai_client.send_agent_message(request).await,
-    }
 }
 
 impl SendMessageToAgentExecutor {
