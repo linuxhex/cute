@@ -146,14 +146,7 @@ impl ActionButtonTheme for SelectorChipTheme {
     }
 
     fn font_properties(&self) -> Option<warpui::fonts::Properties> {
-        if false {
-            Some(warpui::fonts::Properties {
-                weight: warpui::fonts::Weight::Semibold,
-                ..Default::default()
-            })
-        } else {
-            None
-        }
+        None
     }
 }
 

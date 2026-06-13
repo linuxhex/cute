@@ -688,35 +688,6 @@ impl SettingsWidget for SSHWidget {
             },
         );
 
-        if false {
-            let label_color_override = if !enable_ssh_warpification {
-                Some(appearance.theme().disabled_ui_text_color())
-            } else {
-                None
-            };
-            add_setting(
-                &mut column,
-                &WarpifySettings::as_ref(app).ssh_extension_install_mode,
-                move || {
-                    Container::new(render_dropdown_item(
-                        appearance,
-                        "Install SSH extension",
-                        Some(SSH_EXTENSION_INSTALL_MODE_DESCRIPTION),
-                        None,
-                        LocalOnlyIconState::for_setting(
-                            SshExtensionInstallModeSetting::storage_key(),
-                            SshExtensionInstallModeSetting::sync_to_cloud(),
-                            &mut self.local_only_icon_tooltip_states.borrow_mut(),
-                            app,
-                        ),
-                        label_color_override,
-                        &view.ssh_extension_install_mode_dropdown,
-                    ))
-                    .with_padding_bottom(HEADER_PADDING)
-                    .finish()
-                },
-            );
-        }
 
         // Only show the tmux warpification toggle if the user has explicitly changed
         // the setting. We are gradually deprecating tmux warpification, so new users
