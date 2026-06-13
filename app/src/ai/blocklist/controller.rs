@@ -34,10 +34,8 @@ use super::agent_view::{AgentViewController, AgentViewControllerEvent, AgentView
 use super::context_model::BlocklistAIContextModel;
 use super::history_model::BlocklistAIHistoryModel;
 use super::input_model::InputConfig;
-use super::orchestration_event_streamer::{
-    OrchestrationEventStreamer, OrchestrationEventStreamerEvent,
-};
-use super::orchestration_events::{OrchestrationEventService, OrchestrationEventServiceEvent};
+use super::orchestration_event_streamer::OrchestrationEventStreamer;
+use super::orchestration_events::OrchestrationEventService;
 use super::{BlocklistAIInputModel, InputType, ResponseStreamId};
 use crate::ai::agent::api::{self, ServerConversationToken};
 use crate::ai::agent::conversation::{AIConversation, AIConversationId, ConversationStatus};

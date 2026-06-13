@@ -12,14 +12,12 @@ use super::items::WarpDriveItem;
 use super::CloudObjectTypeAndId;
 use crate::appearance::Appearance;
 use crate::cloud_object::{
-    CloudModelType, CloudObjectEventEntrypoint, CloudObjectUpsertParams, CreateCloudObjectResult,
+    CloudModelType, CloudObjectUpsertParams, CreateCloudObjectResult,
     CreateObjectRequest, GenericServerObject, ObjectType, Revision, Space, UpdateCloudObjectResult,
 };
 use crate::persistence::ModelEvent;
-use crate::server::cloud_objects::update_manager::InitiatedBy;
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::server_api::object::ObjectClient;
-use crate::server::sync_queue::{QueueItem, SerializedModel};
 
 #[cfg_attr(not(target_family = "wasm"), async_trait)]
 #[cfg_attr(target_family = "wasm", async_trait(?Send))]

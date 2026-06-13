@@ -17,7 +17,7 @@ use crate::ui_components::icons::Icon;
 use crate::util::bindings::{
     keybinding_name_to_display_string, trigger_to_keystroke, CustomAction,
 };
-use crate::{AppContext, CloudModel, FeatureFlag};
+use crate::{AppContext, CloudModel};
 
 const PANE_MENU_WIDTH: f32 = 200.;
 

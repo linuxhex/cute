@@ -443,8 +443,8 @@ impl TerminalView {
 
         let model = self.model.lock();
         let active_block = model.block_list().active_block();
-        let conversation_id = active_block.ai_conversation_id();
-        let block_id = active_block.id().clone();
+        let _conversation_id = active_block.ai_conversation_id();
+        let _block_id = active_block.id().clone();
     }
 
     /// Tags the agent "out". See docs on `tag_in_agent_for_user_long_running_command` for
@@ -484,8 +484,8 @@ impl TerminalView {
 
         let model = self.model.lock();
         let active_block = model.block_list().active_block();
-        let conversation_id = active_block.ai_conversation_id();
-        let block_id = active_block.id().clone();
+        let _conversation_id = active_block.ai_conversation_id();
+        let _block_id = active_block.id().clone();
     }
 
     pub(super) fn maybe_show_use_agent_footer_in_blocklist(&mut self, ctx: &mut ViewContext<Self>) {
@@ -507,7 +507,7 @@ impl TerminalView {
 
         // Send telemetry when showing CLI agent footer
         if let Some(session) = CLIAgentSessionsModel::as_ref(ctx).session(self.view_id) {
-            let cli_agent_type: CLIAgentType = session.agent.into();
+            let _cli_agent_type: CLIAgentType = session.agent.into();
         }
 
         self.insert_rich_content(
@@ -549,7 +549,7 @@ impl TerminalView {
     fn close_cli_agent_rich_input_impl(
         &mut self,
         should_auto_toggle_input: bool,
-        reason: CLIAgentRichInputCloseReason,
+        _reason: CLIAgentRichInputCloseReason,
         ctx: &mut ViewContext<Self>,
     ) {
         if !self.has_active_cli_agent_input_session(ctx) {
@@ -568,7 +568,7 @@ impl TerminalView {
         let cli_agent_type: Option<CLIAgentType> = CLIAgentSessionsModel::as_ref(ctx)
             .session(self.view_id)
             .map(|s| s.agent.into());
-        if let Some(cli_agent) = cli_agent_type {
+        if let Some(_cli_agent) = cli_agent_type {
         }
 
         self.redetermine_terminal_focus(ctx);
@@ -615,11 +615,11 @@ impl TerminalView {
             return;
         }
 
-        let prompt_length = text.chars().count();
+        let _prompt_length = text.chars().count();
         let cli_agent: Option<CLIAgentType> = CLIAgentSessionsModel::as_ref(ctx)
             .session(self.view_id)
             .map(|s| s.agent.into());
-        if let Some(cli_agent) = cli_agent {
+        if let Some(_cli_agent) = cli_agent {
         }
 
         // Clear any saved draft so submitted text isn't restored on the next open.
@@ -967,7 +967,7 @@ impl TerminalView {
 
         // The Ctrl-G binding and footer button are both gated on an active CLI
         // agent session, so the session should always exist here.
-        let Some(cli_agent) = CLIAgentSessionsModel::as_ref(ctx)
+        let Some(_cli_agent) = CLIAgentSessionsModel::as_ref(ctx)
             .session(self.view_id)
             .map(|session| session.agent)
         else {

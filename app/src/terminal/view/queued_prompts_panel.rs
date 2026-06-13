@@ -349,7 +349,7 @@ impl QueuedPromptsPanelView {
         QueuedQueryModel::handle(ctx).update(ctx, |model, ctx| {
             model.commit_edit(conv_id, new_text, ctx);
         });
-        if let Some(origin) = origin {
+        if let Some(_origin) = origin {
             if !was_empty {
             }
         }
@@ -466,7 +466,7 @@ impl TypedActionView for QueuedPromptsPanelView {
                 let queue = model_ref.queue(conv_id);
                 let to_index = queue.iter().position(|q| q.id() == source_id);
                 let origin = to_index.map(|idx| queue[idx].origin());
-                if let (Some(from_index), Some(to_index), Some(origin)) =
+                if let (Some(from_index), Some(to_index), Some(_origin)) =
                     (from_index, to_index, origin)
                 {
                     if from_index != to_index {

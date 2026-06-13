@@ -3091,7 +3091,7 @@ impl TypedActionView for AISettingsPageView {
                     .show_agent_tips
                     .toggle_and_save_value(ctx)
                 {
-                    Ok(new_value) => {
+                    Ok(_new_value) => {
                     }
                     Err(e) => {
                         log::warn!("Failed to set value for Show Agent Tips setting: {e:?}");

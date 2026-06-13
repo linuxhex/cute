@@ -2302,7 +2302,7 @@ impl AgentDriver {
                         let telemetry_harness = harness_name.clone();
                         let telemetry_pattern = error.pattern.clone();
                         let _ = foreground
-                            .spawn(move |_, ctx| {
+                            .spawn(move |_, _ctx| {
                                 let _event =
                                     ThirdPartyHarnessTelemetryEvent::RuntimeErrorDetected {
                                         harness: telemetry_harness,

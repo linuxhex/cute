@@ -307,7 +307,7 @@ impl Input {
                     log::warn!("Tried to execute workflow for id {id:?} but it does not exist");
                     return;
                 };
-                let is_in_agent_view = FeatureFlag::AgentView.is_enabled()
+                let _is_in_agent_view = FeatureFlag::AgentView.is_enabled()
                     && self.agent_view_controller.as_ref(ctx).is_fullscreen();
 
                 self.show_workflows_info_box_on_workflow_selection(
@@ -1116,7 +1116,7 @@ impl Input {
             });
         }
 
-        let is_in_agent_view = FeatureFlag::AgentView.is_enabled()
+        let _is_in_agent_view = FeatureFlag::AgentView.is_enabled()
             && self.agent_view_controller.as_ref(ctx).is_active();
         true
     }

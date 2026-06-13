@@ -28,7 +28,6 @@ use crate::server::cloud_objects::update_manager::{
 };
 use crate::server::ids::{ClientId, SyncId};
 use crate::server::server_api::ServerApiProvider;
-use crate::server::sync_queue::QueueItem;
 
 impl StringModel for ScheduledAmbientAgent {
     type CloudObjectType = CloudScheduledAmbientAgent;

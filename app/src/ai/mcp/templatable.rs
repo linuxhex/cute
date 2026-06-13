@@ -12,7 +12,6 @@ use crate::cloud_object::{
 };
 use crate::drive::items::WarpDriveItem;
 use crate::server::ids::SyncId;
-use crate::server::sync_queue::QueueItem;
 
 const UNIQUENESS_KEY_PREFIX: &str = "templatable_mcp_server";
 

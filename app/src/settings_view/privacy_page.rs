@@ -7,8 +7,6 @@ use std::time::Duration;
 use pathfinder_geometry::vector::vec2f;
 use regex::Regex;
 use settings::Setting as _;
-use warp_core::context_flag::ContextFlag;
-use warp_core::features::FeatureFlag;
 use warp_core::ui::theme::color::internal_colors;
 use warp_core::ui::theme::WarpTheme;
 use warpui::elements::{

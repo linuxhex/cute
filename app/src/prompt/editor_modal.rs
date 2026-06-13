@@ -342,7 +342,7 @@ impl EditorModal {
                 }
             }
 
-            let prompt_info = match self.prompt_type {
+            let _prompt_info = match self.prompt_type {
                 PromptType::PS1 => PromptChoice::PS1,
                 PromptType::WarpDefault => PromptChoice::Default,
                 PromptType::Warp => PromptChoice::Custom,

@@ -311,7 +311,7 @@ impl SearchCodebaseExecutor {
 
                 // Check if directory exists on background thread since its a sys call; no need to block
                 // main thread since its just for telemetry.
-                let _ = ctx.spawn(async move { search_dir.exists() }, |_, exists, ctx| {
+                let _ = ctx.spawn(async move { search_dir.exists() }, |_, exists, _ctx| {
                     let _error = if exists {
                         "The codebase isn't indexed".to_string()
                     } else {

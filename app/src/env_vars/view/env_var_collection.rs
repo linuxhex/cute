@@ -1,5 +1,4 @@
 use pathfinder_geometry::vector::{vec2f, Vector2F};
-use warp_core::features::FeatureFlag;
 use warpui::clipboard::ClipboardContent;
 use warpui::elements::{
     Align, AnchorPair, ChildAnchor, Clipped, ClippedScrollStateHandle, ClippedScrollable,

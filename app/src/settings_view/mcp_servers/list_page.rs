@@ -714,7 +714,7 @@ impl MCPServersListPageView {
                             instructions_in_markdown: None,
                             origin: InstallOrigin::InApp,
                         });
-                        let source: MCPTemplateInstallationSource = match is_shared {
+                        let _source: MCPTemplateInstallationSource = match is_shared {
                             true => MCPTemplateInstallationSource::Shared,
                             false => MCPTemplateInstallationSource::Local,
                         };

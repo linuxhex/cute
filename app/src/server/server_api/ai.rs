@@ -15,7 +15,6 @@ use itertools::Itertools;
 use mockall::automock;
 use prost::Message;
 use warp_core::channel::ChannelState;
-use warp_core::features::FeatureFlag;
 use warp_core::report_error;
 use warp_graphql::ai::{AgentTaskState, PlatformErrorCode};
 use warp_graphql::client::Operation;

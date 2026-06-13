@@ -10,7 +10,6 @@ use crate::drive::items::ai_fact::WarpDriveAIFact;
 use crate::drive::items::WarpDriveItem;
 use crate::drive::CloudObjectTypeAndId;
 use crate::server::ids::SyncId;
-use crate::server::sync_queue::QueueItem;
 
 pub mod manager;
 pub mod view;

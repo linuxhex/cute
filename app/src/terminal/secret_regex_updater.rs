@@ -42,12 +42,12 @@ impl CustomSecretRegexUpdater {
 
         // Also update the telemetry-side secret regex, which is independent of
         // the user's safe-mode setting and always includes the default patterns.
-        let enterprise_secrets = privacy_settings
+        let _enterprise_secrets = privacy_settings
             .enterprise_secret_regex_list
             .iter()
             .map(CustomSecretRegex::pattern);
 
-        let user_secrets = privacy_settings
+        let _user_secrets = privacy_settings
             .user_secret_regex_list
             .iter()
             .map(CustomSecretRegex::pattern);

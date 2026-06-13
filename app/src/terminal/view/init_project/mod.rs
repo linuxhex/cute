@@ -1075,7 +1075,7 @@ impl TypedActionView for InitStepBlock {
                 }
 
                 // Send telemetry for each enabled server
-                for server_type in enabled_servers.iter().chain(servers_to_install.iter()) {
+                for _server_type in enabled_servers.iter().chain(servers_to_install.iter()) {
                 }
 
                 // Spawn installation tasks for uninstalled servers
@@ -1135,7 +1135,7 @@ impl TypedActionView for InitStepBlock {
                 });
             }
             InitProjectBlockAction::LinkFromExisting(path) => {
-                let file_name = path
+                let _file_name = path
                     .file_name()
                     .and_then(|name| name.to_str())
                     .unwrap_or("")

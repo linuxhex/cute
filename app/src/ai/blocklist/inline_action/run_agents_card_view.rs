@@ -578,7 +578,7 @@ impl RunAgentsCardView {
     fn emit_orchestration_entered_once(
         &mut self,
         _conversation_id: AIConversationId,
-        ctx: &mut ViewContext<Self>,
+        _ctx: &mut ViewContext<Self>,
     ) {
         if self.entered_event_emitted {
             return;

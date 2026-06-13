@@ -24,7 +24,6 @@ use crate::persistence::model::MCPEnvironmentVariables;
 #[cfg(not(target_family = "wasm"))]
 use crate::server::datetime_ext::DateTimeExt;
 use crate::server::ids::SyncId;
-use crate::server::sync_queue::QueueItem;
 
 pub mod manager;
 pub mod templatable_manager;

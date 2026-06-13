@@ -1218,7 +1218,7 @@ impl AgentInputFooter {
         progress_toast: &str,
         error_label: &str,
         success_toast: &str,
-        operation_kind: PluginChipTelemetryKind,
+        _operation_kind: PluginChipTelemetryKind,
         operation: F,
         ctx: &mut ViewContext<Self>,
     ) -> bool

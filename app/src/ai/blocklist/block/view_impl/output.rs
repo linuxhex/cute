@@ -49,7 +49,7 @@ use super::common::{
 use super::imported_comments::render_imported_comments;
 use super::todos::{render_completed_todo_items, render_todos};
 use super::{
-    add_highlights_to_rich_text, orchestration, render_autonomy_checkbox_setting_speedbump_footer,
+    add_highlights_to_rich_text, render_autonomy_checkbox_setting_speedbump_footer,
     render_citation_chips, WithContentItemSpacing, CONTENT_HORIZONTAL_PADDING,
     CONTENT_ITEM_VERTICAL_MARGIN,
 };

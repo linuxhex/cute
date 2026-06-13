@@ -338,7 +338,7 @@ impl GlobalBufferModel {
         if false {
             use crate::remote_server::manager::{RemoteServerManager, RemoteServerManagerEvent};
             let mgr = RemoteServerManager::handle(_ctx);
-            _ctx.subscribe_to_model(&mgr, |me, event, ctx| match event {
+            _ctx.subscribe_to_model(&mgr, |_me, event, _ctx| match event {
                 RemoteServerManagerEvent::BufferUpdated {
                     session_id: _,
                     path,

@@ -1914,10 +1914,10 @@ impl Workspace {
         ctx: &mut ViewContext<Self>,
     ) {
         match event {
-            SuggestedRuleModalEvent::AddNewRule { rule } => {
+            SuggestedRuleModalEvent::AddNewRule { rule: _ } => {
                 self.current_workspace_state.is_suggested_rule_modal_open = false;
             }
-            SuggestedRuleModalEvent::OpenRuleForEditing { rule } => {
+            SuggestedRuleModalEvent::OpenRuleForEditing { rule: _ } => {
                 self.current_workspace_state.is_suggested_rule_modal_open = false;
                 self.open_ai_fact_collection_pane(Some(Direction::Right), None, ctx);
             }
@@ -3012,7 +3012,7 @@ impl Workspace {
 
         // Show the Warp AI warm welcome iff the user hasn't dismissed it nor interacted with Warp AI before.
         // Also, avoid showing it in integration tests to prevent interaction with other tests.
-        let mut should_show_ai_assistant_warm_welcome: bool = !FeatureFlag::AgentMode.is_enabled()
+        let should_show_ai_assistant_warm_welcome: bool = !FeatureFlag::AgentMode.is_enabled()
             && AISettings::as_ref(ctx).is_any_ai_enabled(ctx)
             && !matches!(ChannelState::channel(), Channel::Integration)
             && ctx
@@ -6321,7 +6321,7 @@ impl Workspace {
         ctx: &mut ViewContext<Self>,
     ) {
         if tab_config.params.is_empty() {
-            let is_worktree_config = tab_config.is_worktree();
+            let _is_worktree_config = tab_config.is_worktree();
             let worktree_branch_name = self.maybe_generate_worktree_name(&tab_config);
             let param_values = tab_config.default_param_values();
             self.open_tab_config_with_params(
@@ -6574,7 +6574,7 @@ impl Workspace {
             return;
         }
 
-        let mut menu_items = vec![];
+        let menu_items = vec![];
 
         ctx.update_view(&self.tab_bar_overflow_menu, |context_menu, view_ctx| {
             context_menu.set_items(menu_items, view_ctx);
@@ -9079,7 +9079,7 @@ impl Workspace {
 
         match toml::from_str::<crate::tab_configs::TabConfig>(&toml_content) {
             Ok(tab_config) => {
-                let naming_mode = if worktree_branch_name.is_some() {
+                let _naming_mode = if worktree_branch_name.is_some() {
                     WorktreeBranchNamingMode::Manual
                 } else {
                     WorktreeBranchNamingMode::Auto
@@ -10474,7 +10474,7 @@ impl Workspace {
     fn add_tab_with_shell(
         &mut self,
         shell: AvailableShell,
-        source: AddTabWithShellSource,
+        _source: AddTabWithShellSource,
         ctx: &mut ViewContext<Self>,
     ) {
         self.add_new_session_tab_with_default_mode(
@@ -14914,7 +14914,7 @@ impl Workspace {
             return;
         }
 
-        let has_existing_conversation = source_conversation.as_ref().is_some_and(|c| !c.is_empty());
+        let _has_existing_conversation = source_conversation.as_ref().is_some_and(|c| !c.is_empty());
 
 
         let Some(source_conversation) =
@@ -18440,7 +18440,7 @@ impl Workspace {
 
     fn open_prompt_editor(
         &mut self,
-        open_source: PromptEditorOpenSource,
+        _open_source: PromptEditorOpenSource,
         ctx: &mut ViewContext<Self>,
     ) {
         // Try to get a prompt preview from an active session. Otherwise, read it from the settings
@@ -22587,14 +22587,14 @@ impl TypedActionView for Workspace {
                 ctx.open_file_path(path);
             }
             NewTabInAgentMode {
-                entrypoint,
+                entrypoint: _,
                 zero_state_prompt_suggestion_type,
             } => {
 
                 self.add_terminal_tab_in_ai_mode(*zero_state_prompt_suggestion_type, ctx);
             }
             NewPaneInAgentMode {
-                entrypoint,
+                entrypoint: _,
                 zero_state_prompt_suggestion_type,
             } => {
 

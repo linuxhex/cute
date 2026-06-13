@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use futures::future::BoxFuture;
 use futures::FutureExt;
 use warp_cli::agent::Harness;
-use warp_core::features::FeatureFlag;
 use warpui::{Entity, ModelContext, SingletonEntity};
 
 use super::{ActionExecution, AnyActionExecution, ExecuteActionInput, PreprocessActionInput};

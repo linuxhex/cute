@@ -1262,7 +1262,7 @@ impl UserWorkspaces {
     }
 
     /// Updates whether or not session sharing is enabled based on the current team's tier policy.
-    fn update_session_sharing_enablement(&self, ctx: &AppContext) {
+    fn update_session_sharing_enablement(&self, _ctx: &AppContext) {
         if cfg!(any(test, feature = "integration_tests")) {
             return;
         }

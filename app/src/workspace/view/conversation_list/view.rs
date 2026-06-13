@@ -553,11 +553,11 @@ impl ConversationListView {
         self.focus_query_editor(ctx);
     }
 
-    fn send_open_telemetry(id: &AgentConversationEntryId, ctx: &mut ViewContext<Self>) {
+    fn send_open_telemetry(id: &AgentConversationEntryId, _ctx: &mut ViewContext<Self>) {
         match id {
-            AgentConversationEntryId::Conversation(conversation_id) => {
+            AgentConversationEntryId::Conversation(_conversation_id) => {
             }
-            AgentConversationEntryId::AmbientRun(task_id) => {
+            AgentConversationEntryId::AmbientRun(_task_id) => {
             }
         }
     }

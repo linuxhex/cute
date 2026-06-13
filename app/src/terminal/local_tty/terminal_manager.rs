@@ -577,8 +577,8 @@ impl TerminalManager {
                         }
                     }
                     AgentViewControllerEvent::ExitedAgentView {
-                        origin,
-                        final_exchange_count,
+                        origin: _,
+                        final_exchange_count: _,
                         ..
                     } => {
                         if conversation_remote_update_guard.should_broadcast() {
@@ -2588,8 +2588,8 @@ pub fn get_shell_starter(
 
 fn get_shell_starter_internal(
     shell_starter_source: ShellStarterSource,
-    background_executor: Arc<Background>,
-    auth_state: &AuthState,
+    _background_executor: Arc<Background>,
+    _auth_state: &AuthState,
 ) -> ShellStarter {
     match shell_starter_source {
         ShellStarterSource::Override(shell_starter) => shell_starter,
@@ -2600,7 +2600,7 @@ fn get_shell_starter_internal(
             unsupported_shell,
             starter,
         } => {
-            if let Some(unsupported_shell) = unsupported_shell {
+            if let Some(_unsupported_shell) = unsupported_shell {
             }
 
             ShellStarter::Direct(starter)

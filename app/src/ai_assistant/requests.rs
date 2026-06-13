@@ -227,7 +227,7 @@ impl Requests {
                             model.current_transcript_summarized |= transcript_summarized;
 
 
-                            let req_latency = end_time.signed_duration_since(start_time).num_milliseconds();
+                            let _req_latency = end_time.signed_duration_since(start_time).num_milliseconds();
                         }
                         Ok(GenerateDialogueResult::Failure { request_limit_info }) if request_limit_info.limit <= request_limit_info.num_requests_used_since_refresh => {
                             cache_request_limit_info(request_limit_info, ctx);

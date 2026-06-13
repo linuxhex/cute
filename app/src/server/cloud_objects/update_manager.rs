@@ -1670,7 +1670,7 @@ impl UpdateManager {
         _owner: Owner,
         _ctx: &mut ModelContext<Self>,
     ) -> oneshot::Receiver<ServerId> {
-        let (tx, rx) = oneshot::channel();
+        let (_tx, rx) = oneshot::channel();
         // Not supported in local version - return error
         rx
     }

@@ -125,8 +125,6 @@ pub mod themes;
 use ::ai::index::full_source_code_embedding::manager::{
     CodebaseIndexManager, CodebaseIndexManagerConfig,
 };
-#[cfg(feature = "local_fs")]
-use ::ai::index::full_source_code_embedding::SnapshotStorage;
 use ::ai::index::full_source_code_embedding::SyncTask;
 use ::ai::index::DEFAULT_SYNC_REQUESTS_PER_MIN;
 use ::ai::project_context::model::ProjectContextModel;
@@ -176,8 +174,6 @@ pub mod workspace;
 use std::borrow::Cow;
 use std::collections::HashSet;
 use std::ops::Deref;
-#[cfg(feature = "local_fs")]
-use std::path::PathBuf;
 use std::sync::Arc;
 
 use ::settings::{Setting, ToggleableSetting};
@@ -194,8 +190,6 @@ pub use persistence::testing as sqlite_testing;
 pub use plugin::{run_plugin_host, PLUGIN_HOST_FLAG};
 use server::server_api::ServerApiProvider;
 use settings::{ExtraMetaKeys, PrivacySettings};
-#[cfg(feature = "local_fs")]
-use shellexpand::tilde;
 use terminal::input;
 use terminal::session_settings::SessionSettings;
 use url::Url;
@@ -1091,23 +1085,23 @@ pub(crate) fn initialize_app(
     });
 
     let (
-        mut cloud_objects,
-        mut cached_workspaces,
-        mut current_workspace_uid,
-        mut app_state,
-        mut command_history,
-        mut restored_user_profiles,
-        mut time_of_next_force_object_refresh,
-        mut object_actions,
-        mut ai_queries,
+        cloud_objects,
+        cached_workspaces,
+        current_workspace_uid,
+        app_state,
+        command_history,
+        restored_user_profiles,
+        time_of_next_force_object_refresh,
+        object_actions,
+        ai_queries,
         persisted_workspaces,
-        mut workspace_language_servers,
-        mut multi_agent_conversations,
-        mut persisted_projects,
-        mut persisted_project_rules,
-        mut persisted_ignored_suggestions,
-        mut persisted_mcp_server_installations,
-        mut mcp_servers_to_restore,
+        workspace_language_servers,
+        multi_agent_conversations,
+        persisted_projects,
+        persisted_project_rules,
+        persisted_ignored_suggestions,
+        persisted_mcp_server_installations,
+        mcp_servers_to_restore,
     ) = sqlite_data
         .map(|sqlite_data| {
             (
@@ -1179,7 +1173,7 @@ pub(crate) fn initialize_app(
         if #[cfg(feature = "crash_reporting")] {
             let is_crash_reporting_enabled = crash_reporting::init(ctx);
         } else {
-            let is_crash_reporting_enabled = false;
+            let _is_crash_reporting_enabled = false;
         }
     }
     // Send buffered pre-init errors to Sentry now that the client is ready.
@@ -1275,7 +1269,7 @@ pub(crate) fn initialize_app(
         }
 
         // Set the first frame callback to record the app's startup time.
-        let is_screen_reader_enabled = ctx.is_screen_reader_enabled();
+        let _is_screen_reader_enabled = ctx.is_screen_reader_enabled();
         let _from_relaunch = launch_mode.args().finish_update;
         ctx.on_first_frame_drawn(move |ctx| {
             let _timing_data = IntervalTimer::handle(ctx).update(ctx, |timer, _| {
@@ -1457,7 +1451,7 @@ pub(crate) fn initialize_app(
         )
     });
 
-    let unsynced_actions: Vec<(CloudObjectTypeAndId, ObjectAction)> = object_actions
+    let _unsynced_actions: Vec<(CloudObjectTypeAndId, ObjectAction)> = object_actions
         .iter()
         .filter(|action| action.is_pending())
         .filter_map(|action| {

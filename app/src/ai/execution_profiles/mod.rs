@@ -12,7 +12,6 @@ use crate::cloud_object::model::json_model::JsonModel;
 use crate::cloud_object::{
     GenericStringObjectFormat, GenericStringObjectUniqueKey, JsonObjectType, Revision, UniquePer,
 };
-use crate::server::sync_queue::QueueItem;
 use crate::settings::AISettings;
 use crate::workspaces::user_workspaces::UserWorkspaces;
 

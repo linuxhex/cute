@@ -577,7 +577,7 @@ impl WelcomePalette {
             .active_query_filter(ctx)
             .map(|f| f.display_name())
             .unwrap_or("none");
-        let event = if let Some(result_type) = accepted_action_type {
+        let _event = if let Some(result_type) = accepted_action_type {
             TelemetryEvent::PaletteSearchResultAccepted {
                 result_type,
                 filter,

@@ -19,7 +19,6 @@ use std::collections::HashMap;
 use std::time::Duration;
 
 use session_sharing_protocol::common::SessionId;
-use warp_core::features::FeatureFlag;
 use warpui::r#async::{SpawnedFutureHandle, Timer};
 use warpui::{Entity, EntityId, ModelContext, SingletonEntity, WeakViewHandle};
 

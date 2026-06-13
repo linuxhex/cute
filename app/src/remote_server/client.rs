@@ -1,7 +1,6 @@
 //! Stub for RemoteServerClient after remote_server removal.
 
 use std::path::PathBuf;
-use std::sync::Arc;
 
 use crate::remote_server::proto::{
     ReadFileContextRequest, ReadFileContextResponse, UploadHandoffSnapshotResponse,

@@ -175,7 +175,7 @@ impl PtySpawner {
         #[cfg(windows)] event_loop_tx: super::mio_channel::Sender<
             crate::terminal::writeable_pty::Message,
         >,
-        ctx: &mut AppContext,
+        _ctx: &mut AppContext,
     ) -> Result<(PtySpawnResult, Box<dyn PtyHandle>)> {
         #[cfg(not(unix))]
         let is_fallback = false;
@@ -195,7 +195,7 @@ impl PtySpawner {
             }
         }
 
-        let mode = if is_fallback {
+        let _mode = if is_fallback {
             PtySpawnMode::FallbackToDirect
         } else {
             PtySpawnMode::Direct

@@ -67,7 +67,6 @@ use warp_completer::parsers::simple::command_at_cursor_position;
 use warp_completer::parsers::LiteCommand;
 use warp_completer::signatures::CommandRegistry;
 use warp_completer::util::parse_current_commands_and_tokens;
-use warp_core::context_flag::ContextFlag;
 use warp_core::r#async::debounce;
 use warp_core::ui::theme::color::internal_colors;
 use warp_core::ui::theme::AnsiColorIdentifier;
@@ -201,7 +200,7 @@ use crate::cloud_object::model::actions::ObjectActionType;
 use crate::cloud_object::model::generic_string_model::StringModel;
 use crate::cloud_object::model::persistence::CloudModel;
 use crate::cloud_object::model::view::CloudViewModel;
-use crate::cloud_object::{CloudObject, CloudObjectLookup as _, Space};
+use crate::cloud_object::{CloudObject, CloudObjectLookup as _};
 #[cfg(feature = "local_fs")]
 use crate::code::editor_management::CodeSource;
 use crate::code_review::diff_state::DiffMode;
@@ -4230,9 +4229,9 @@ impl Input {
             });
 
             // Emit telemetry for @ menu opened
-            let is_udi_enabled =
+            let _is_udi_enabled =
                 InputSettings::as_ref(ctx).is_universal_developer_input_enabled(ctx);
-            let current_input_mode = self.ai_input_model.as_ref(ctx).input_type();
+            let _current_input_mode = self.ai_input_model.as_ref(ctx).input_type();
 
         } else if self.suggestions_mode_model.as_ref(ctx).is_ai_context_menu() {
             self.close_ai_context_menu(ctx);
@@ -4274,7 +4273,7 @@ impl Input {
             self.close_slash_commands_menu(ctx);
         } else {
             self.system_insert("/", ctx);
-            let is_in_agent_view = FeatureFlag::AgentView.is_enabled()
+            let _is_in_agent_view = FeatureFlag::AgentView.is_enabled()
                 && self.agent_view_controller.as_ref(ctx).is_fullscreen();
         }
     }
@@ -4286,7 +4285,7 @@ impl Input {
     ) {
         match event {
             InlineConversationMenuEvent::NavigateToConversation { item_id } => {
-                let is_in_agent_view = FeatureFlag::AgentView.is_enabled()
+                let _is_in_agent_view = FeatureFlag::AgentView.is_enabled()
                     && self.agent_view_controller.as_ref(ctx).is_fullscreen();
 
                 if self
@@ -4682,7 +4681,7 @@ impl Input {
         self.suggestions_mode_model.update(ctx, |model, ctx| {
             model.set_mode(InputSuggestionsMode::ConversationMenu, ctx);
         });
-        let is_in_agent_view = FeatureFlag::AgentView.is_enabled()
+        let _is_in_agent_view = FeatureFlag::AgentView.is_enabled()
             && self.agent_view_controller.as_ref(ctx).is_fullscreen();
         ctx.notify();
     }
@@ -4740,7 +4739,7 @@ impl Input {
                     destination,
                 });
 
-                let is_in_agent_view = FeatureFlag::AgentView.is_enabled()
+                let _is_in_agent_view = FeatureFlag::AgentView.is_enabled()
                     && self.agent_view_controller.as_ref(ctx).is_active();
 
                 self.suggestions_mode_model.update(ctx, |model, ctx| {
@@ -5030,7 +5029,7 @@ impl Input {
                     exchange_id: *exchange_id,
                 });
 
-                let is_in_agent_view = FeatureFlag::AgentView.is_enabled()
+                let _is_in_agent_view = FeatureFlag::AgentView.is_enabled()
                     && self.agent_view_controller.as_ref(ctx).is_active();
 
                 self.suggestions_mode_model.update(ctx, |model, ctx| {
@@ -5435,7 +5434,7 @@ impl Input {
     pub fn insert_zero_state_prompt_suggestion(
         &mut self,
         suggestion_type: ZeroStatePromptSuggestionType,
-        triggered_from: ZeroStatePromptSuggestionTriggeredFrom,
+        _triggered_from: ZeroStatePromptSuggestionTriggeredFrom,
         ctx: &mut ViewContext<Self>,
     ) {
         if !AIRequestUsageModel::as_ref(ctx).has_any_ai_remaining(ctx) {
@@ -6691,11 +6690,11 @@ impl Input {
             // until the user executes a command.
             if !command.is_empty() {
                 if let Some(ZeroStateSuggestionInfo {
-                    request,
+                    request: _,
                     response,
                     is_from_ai,
-                    history_based_autosuggestion_state,
-                    request_duration_ms,
+                    history_based_autosuggestion_state: _,
+                    request_duration_ms: _,
                 }) = zerostate_next_command_suggestion_info
                 {
                     self.last_intelligent_autosuggestion_result =
@@ -6705,7 +6704,7 @@ impl Input {
                             predicted_command: response.most_likely_action.clone(),
                         });
 
-                    let should_collect_ugc = should_collect_ai_ugc_telemetry(
+                    let _should_collect_ugc = should_collect_ai_ugc_telemetry(
                         ctx,
                         PrivacySettings::as_ref(ctx).is_telemetry_enabled,
                     );
@@ -7346,9 +7345,9 @@ impl Input {
 
                 // The ID may be `None` if the user is *clearing* environment variables.
                 if let Some(env_vars_id) = env_vars {
-                    let env_vars_object =
+                    let _env_vars_object =
                         CloudModel::as_ref(ctx).get_env_var_collection(env_vars_id);
-                    let telemetry_metadata = EnvVarTelemetryMetadata {
+                    let _telemetry_metadata = EnvVarTelemetryMetadata {
                         object_id: env_vars_id.into_server().map(Into::into),
                         team_uid: None,
                         space: None,
@@ -7574,7 +7573,7 @@ impl Input {
         match event {
             InputSuggestionsEvent::ConfirmSuggestion {
                 suggestion,
-                match_type,
+                match_type: _,
             } => {
                 if !self.confirm_suggestion(suggestion, ctx) {
                     return;
@@ -7584,7 +7583,7 @@ impl Input {
             }
             InputSuggestionsEvent::ConfirmAndExecuteSuggestion {
                 suggestion,
-                match_type,
+                match_type: _,
             } => {
                 if !self.confirm_and_execute_suggestion(suggestion, ctx) {
                     return;
@@ -8271,7 +8270,7 @@ impl Input {
 
     // TODO - Implement PageUp functionality for input suggestions menu
     fn editor_page_up(&mut self, ctx: &mut ViewContext<Self>) {
-        let event = self.editor.read(ctx, |editor, ctx| {
+        let _event = self.editor.read(ctx, |editor, ctx| {
             TelemetryEvent::PageUpDownInEditorPressed {
                 is_empty_editor: editor.is_empty(ctx),
                 is_down: false,
@@ -8398,17 +8397,17 @@ impl Input {
         ctx: &mut ViewContext<Self>,
     ) {
         let input_buffer_text = self.buffer_text(ctx);
-        let buffer_length = input_buffer_text.len();
-        let input =
+        let _buffer_length = input_buffer_text.len();
+        let _input =
             should_collect_ai_ugc_telemetry(ctx, PrivacySettings::as_ref(ctx).is_telemetry_enabled)
                 .then_some(input_buffer_text);
-        let is_udi_enabled = InputSettings::as_ref(ctx).is_universal_developer_input_enabled(ctx);
+        let _is_udi_enabled = InputSettings::as_ref(ctx).is_universal_developer_input_enabled(ctx);
 
         let ai_input_model = self.ai_input_model.as_ref(ctx);
         if matches!(new_input_type, InputType::Shell) && !ai_input_model.is_input_type_locked() {
             let current_input_text = self.buffer_text(ctx);
             if !current_input_text.is_empty() {
-                let event_payload = if ChannelState::channel().is_dogfood() {
+                let _event_payload = if ChannelState::channel().is_dogfood() {
                     AgentModeAutoDetectionFalsePositivePayload::InternalDogfoodUsers {
                         input_text: current_input_text,
                     }
@@ -8591,7 +8590,7 @@ impl Input {
 
     // TODO - Implement PageDown functionality for input suggestions menu
     fn editor_page_down(&mut self, ctx: &mut ViewContext<Self>) {
-        let event = self.editor.read(ctx, |editor, ctx| {
+        let _event = self.editor.read(ctx, |editor, ctx| {
             TelemetryEvent::PageUpDownInEditorPressed {
                 is_empty_editor: editor.is_empty(ctx),
                 is_down: true,
@@ -9882,8 +9881,8 @@ impl Input {
                 }
             }
             EditorEvent::AutosuggestionAccepted {
-                insertion_length,
-                buffer_char_length,
+                insertion_length: _,
+                buffer_char_length: _,
                 autosuggestion_type,
             } => {
                 ctx.emit(Event::AutosuggestionAccepted);
@@ -12391,11 +12390,11 @@ impl Input {
         {
             // If we're submitting an AI query, we want to send telemetry for the input type.
             let input_model = self.ai_input_model.as_ref(ctx);
-            let input_type = input_model.input_type();
-            let is_locked = input_model.is_input_type_locked();
-            let input_type_decision_source = input_model.last_ai_autodetection_source();
-            let was_lock_set_with_empty_buffer = input_model.was_lock_set_with_empty_buffer();
-            let block_id = self.model.lock().active_block_id().clone();
+            let _input_type = input_model.input_type();
+            let _is_locked = input_model.is_input_type_locked();
+            let _input_type_decision_source = input_model.last_ai_autodetection_source();
+            let _was_lock_set_with_empty_buffer = input_model.was_lock_set_with_empty_buffer();
+            let _block_id = self.model.lock().active_block_id().clone();
 
             // Check if we're configuring an ambient agent and spawn it instead of submitting a regular AI query.
             if self
@@ -12502,11 +12501,11 @@ impl Input {
         } else {
             // If we're submitting a shell command, we want to send telemetry for the input type.
             let input_model = self.ai_input_model.as_ref(ctx);
-            let input_type = input_model.input_type();
-            let is_locked = input_model.is_input_type_locked();
-            let last_ai_autodetection_source = input_model.last_ai_autodetection_source();
-            let was_lock_set_with_empty_buffer = input_model.was_lock_set_with_empty_buffer();
-            let block_id = self.model.lock().active_block_id().clone();
+            let _input_type = input_model.input_type();
+            let _is_locked = input_model.is_input_type_locked();
+            let _last_ai_autodetection_source = input_model.last_ai_autodetection_source();
+            let _was_lock_set_with_empty_buffer = input_model.was_lock_set_with_empty_buffer();
+            let _block_id = self.model.lock().active_block_id().clone();
 
             if FeatureFlag::WorkflowAliases.is_enabled() {
                 let mut command_string = self.editor.as_ref(ctx).buffer_text(ctx);
@@ -14385,7 +14384,7 @@ impl Input {
 
         ctx.emit(Event::ShowCommandSearch(Default::default()));
 
-        let entrypoint = if buffer_starts_with_trigger {
+        let _entrypoint = if buffer_starts_with_trigger {
             AICommandSearchEntrypoint::ShortHandTrigger
         } else {
             AICommandSearchEntrypoint::Keybinding

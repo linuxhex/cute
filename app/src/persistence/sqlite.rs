@@ -90,7 +90,6 @@ use crate::code::editor_management::CodeSource;
 use crate::drive::folders::{CloudFolder, CloudFolderModel, FolderId};
 use crate::drive::OpenWarpDriveObjectSettings;
 use crate::env_vars::{CloudEnvVarCollection, CloudEnvVarCollectionModel};
-use crate::features::FeatureFlag;
 use crate::notebooks::{CloudNotebook, CloudNotebookModel, NotebookId};
 use crate::persistence::agent::read_agent_conversations;
 use crate::persistence::block_list::{get_all_restored_blocks, read_ai_queries};

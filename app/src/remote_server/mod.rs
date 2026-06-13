@@ -13,5 +13,3 @@ pub mod setup;
 pub mod transport;
 
 // Re-export commonly used types
-pub use warp_core::HostId;
-pub use warp_util::standardized_path::StandardizedPath;

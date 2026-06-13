@@ -14,7 +14,6 @@ use repo_metadata::file_tree_store::{
 use repo_metadata::local_model::IndexedRepoState;
 use repo_metadata::repositories::DetectedRepositories;
 use repo_metadata::{FileTreeEntry, RepoMetadataModel};
-use warp_core::features::FeatureFlag;
 use warp_core::ui::theme::color::internal_colors;
 use warp_core::ui::theme::Fill;
 use warp_core::HostId;

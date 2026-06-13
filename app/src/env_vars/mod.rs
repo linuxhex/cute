@@ -17,7 +17,6 @@ use crate::cloud_object::{
 use crate::drive::items::env_var_collection::WarpDriveEnvVarCollection;
 use crate::drive::items::WarpDriveItem;
 use crate::server::ids::SyncId;
-use crate::server::sync_queue::QueueItem;
 use crate::terminal::shell::ShellType;
 use crate::{Appearance, CloudObjectTypeAndId};
 

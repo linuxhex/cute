@@ -1,11 +1,10 @@
-pub use cloud_object_models::{AgentConfig, CloudAgentConfig, CloudAgentConfigModel};
+pub use cloud_object_models::{AgentConfig, CloudAgentConfig};
 
 use crate::cloud_object::model::generic_string_model::StringModel;
 use crate::cloud_object::model::json_model::JsonModel;
 use crate::cloud_object::{
     GenericStringObjectFormat, GenericStringObjectUniqueKey, JsonObjectType, Revision,
 };
-use crate::server::sync_queue::QueueItem;
 
 impl StringModel for AgentConfig {
     type CloudObjectType = CloudAgentConfig;

@@ -7,7 +7,6 @@ use futures::future::BoxFuture;
 #[cfg(not(target_family = "wasm"))]
 use futures::future::Either;
 use futures::FutureExt;
-use warp_core::features::FeatureFlag;
 #[cfg(not(target_family = "wasm"))]
 use warpui::r#async::Timer;
 use warpui::{AppContext, Entity, ModelContext, SingletonEntity};

@@ -57,7 +57,6 @@ use crate::editor::{
     EditOrigin, EditorView, Event as EditorEvent, InteractionState, PropagateAndNoOpNavigationKeys,
     SingleLineEditorOptions, TextColors, TextOptions,
 };
-use crate::features::FeatureFlag;
 use crate::menu::{MenuItem, MenuItemFields};
 use crate::network::{NetworkStatus, NetworkStatusEvent};
 use crate::notebooks::editor::model::NotebooksEditorModel;
@@ -70,7 +69,6 @@ use crate::server::cloud_objects::update_manager::{FetchSingleObjectOption, Upda
 use crate::server::ids::{ClientId, ServerId, SyncId};
 use crate::server::telemetry::{
     CloudObjectTelemetryMetadata, NotebookTelemetryMetadata,
-    TelemetryCloudObjectType,
 };
 use crate::drive::sharing::dialog::SharingDialogSource;
 use crate::settings::app_installation_detection::{
@@ -831,7 +829,7 @@ impl NotebookView {
 
         if self.send_edit_telemetry {
             let content = self.content(ctx);
-            let delta = content.len().abs_diff(self.last_content_length);
+            let _delta = content.len().abs_diff(self.last_content_length);
             self.last_content_length = content.len();
             self.send_edit_telemetry = false;
 
@@ -996,7 +994,7 @@ impl NotebookView {
     }
 
     /// The current notebook metadata for telemetry.
-    fn telemetry_metadata(&self, ctx: &ViewContext<Self>) -> NotebookTelemetryMetadata {
+    fn telemetry_metadata(&self, _ctx: &ViewContext<Self>) -> NotebookTelemetryMetadata {
         NotebookTelemetryMetadata::new()
     }
 
@@ -1015,7 +1013,7 @@ impl NotebookView {
     }
 
     /// Send a [`NotebookTelemetryAction`] telemetry event.
-    fn send_telemetry_action(&self, action: NotebookTelemetryAction, ctx: &mut ViewContext<Self>) {
+    fn send_telemetry_action(&self, _action: NotebookTelemetryAction, _ctx: &mut ViewContext<Self>) {
     }
 
     /// Puts the nodebook into edit mode and focuses the editor. The caller is responsible for

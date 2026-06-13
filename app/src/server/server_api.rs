@@ -35,7 +35,6 @@ use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use team::TeamClient;
 use url::Url;
-use warp_core::context_flag::ContextFlag;
 use warp_core::errors::{register_error, AnyhowErrorExt, ErrorExt};
 use warp_managed_secrets::client::ManagedSecretsClient;
 use warpui::r#async::BoxFuture;

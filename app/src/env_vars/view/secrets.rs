@@ -1,5 +1,4 @@
 use pathfinder_geometry::vector::vec2f;
-use warp_core::features::FeatureFlag;
 use warp_core::ui::appearance::Appearance;
 use warpui::elements::{
     ChildAnchor, ChildView, Clipped, ConstrainedBox, Container, Empty, Fill, MainAxisAlignment,

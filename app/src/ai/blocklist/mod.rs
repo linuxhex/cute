@@ -34,7 +34,7 @@ pub(super) mod view_util;
 #[cfg_attr(target_family = "wasm", allow(unused_imports))]
 pub(crate) use action_model::{
     apply_edits, read_local_file_context, BlocklistAIActionEvent, BlocklistAIActionModel,
-    FileReadResult, ReadFileContextResult, RequestFileEditsFormatKind, ShellCommandExecutor,
+    FileReadResult, RequestFileEditsFormatKind, ShellCommandExecutor,
     ShellCommandExecutorEvent, StartAgentExecutor, StartAgentExecutorEvent, StartAgentRequest,
     StartAgentRequestId,
 };
@@ -66,7 +66,7 @@ pub(crate) use passive_suggestions::{
     LegacyPassiveSuggestionsEvent, LegacyPassiveSuggestionsModel, MaaPassiveSuggestionsEvent,
     MaaPassiveSuggestionsModel, PassiveSuggestionsModels,
 };
-pub use permissions::{BlocklistAIPermissions, CommandExecutionPermissionAllowedReason};
+pub use permissions::BlocklistAIPermissions;
 #[cfg_attr(target_family = "wasm", allow(unused))]
 pub(crate) use persistence::PersistedAIInputType;
 pub(crate) use persistence::{PersistedAIInput, SerializedBlockListItem};

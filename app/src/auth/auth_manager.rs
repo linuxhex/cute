@@ -415,15 +415,15 @@ impl AuthManager {
 
                 // Fetch the user's privacy settings from the server if any or update the server settings.
                 let privacy_settings_handle = PrivacySettings::handle(ctx);
-                let privacy_settings_snapshot =
+                let _privacy_settings_snapshot =
                     privacy_settings_handle.as_ref(ctx).get_snapshot(ctx);
                 ctx.update_model(&privacy_settings_handle, |privacy_settings, ctx| {
                     privacy_settings.fetch_or_update_settings(ctx);
                 });
 
                 let server_api = self.server_api.clone();
-                let user_id = self.auth_state.user_id().unwrap_or_default();
-                let anonymous_id = self.auth_state.anonymous_id();
+                let _user_id = self.auth_state.user_id().unwrap_or_default();
+                let _anonymous_id = self.auth_state.anonymous_id();
                 let _ = ctx.spawn(
                     // Synchronously add the identify and login event to the telemetry event queue and
                     // then flush the queue to ensure the events get to Rudderstack. We need to do this
@@ -437,7 +437,7 @@ impl AuthManager {
                 // Once the user is authenticated, attempt to report the sandbox that Warp is running in, if any.
                 ctx.spawn(
                     async { warp_isolation_platform::detect() },
-                    |_, platform, ctx| {
+                    |_, platform, _ctx| {
                         if let Some(_platform) = platform {
                         }
                     },

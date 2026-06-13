@@ -4,7 +4,6 @@ use std::sync::Arc;
 use anyhow::{anyhow, bail, Context as _, Result};
 use async_trait::async_trait;
 use firebase::{FetchAccessTokenResponse, FirebaseError};
-use futures::FutureExt;
 use instant::Duration;
 #[cfg(test)]
 use mockall::{automock, predicate::*};

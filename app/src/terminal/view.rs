@@ -4373,7 +4373,7 @@ impl TerminalView {
                     }
                     RemoteServerManagerEvent::SessionDisconnected {
                         session_id,
-                        exit_status,
+                        exit_status: _,
                         was_reconnect_attempt,
                         ..
                     } => {
@@ -5158,9 +5158,9 @@ impl TerminalView {
                 );
             }
             LegacyPassiveSuggestionsEvent::PassiveCodeDiffRequestStarted {
-                prompt_suggestion_id,
-                code_exchange_id,
-                block_id,
+                prompt_suggestion_id: _,
+                code_exchange_id: _,
+                block_id: _,
             } => {
             }
             LegacyPassiveSuggestionsEvent::PassiveCodeDiffFailed { reason } => {
@@ -6917,7 +6917,7 @@ impl TerminalView {
                     },
                 );
 
-                if let Some(metadata) = workflow_telem_metadata {
+                if let Some(_metadata) = workflow_telem_metadata {
                 }
                 ctx.notify();
             }
@@ -8813,7 +8813,7 @@ impl TerminalView {
     fn trigger_subshell_bootstrap(
         &mut self,
         shell_type: Option<ShellType>,
-        triggered_by_rc_file_snippet: bool,
+        _triggered_by_rc_file_snippet: bool,
         ctx: &mut ViewContext<Self>,
     ) {
         self.dismiss_warpify_banner(&RememberForWarpification::DoNotRememberSubshellCommand, ctx);
@@ -9374,7 +9374,7 @@ impl TerminalView {
         title: &str,
         lowercase_title: &str,
         warpify_keybinding: Option<Keystroke>,
-        telemetry_event: TelemetryEvent,
+        _telemetry_event: TelemetryEvent,
         ctx: &mut ViewContext<Self>,
     ) {
         if FeatureFlag::WarpifyFooter.is_enabled() {
@@ -9579,7 +9579,7 @@ impl TerminalView {
         resolution: PromptSuggestionResolution,
         ctx: &mut ViewContext<Self>,
     ) -> bool {
-        let interaction_source = match resolution {
+        let _interaction_source = match resolution {
             PromptSuggestionResolution::Accept { interaction_source } => interaction_source,
             PromptSuggestionResolution::Reject { ctrl_c } => {
                 // ctrl-c shouldn't clear prompt suggestions, but all other rejections should.
@@ -9604,10 +9604,10 @@ impl TerminalView {
             return false;
         }
 
-        let view = self.prompt_suggestion_view_type(ctx);
+        let _view = self.prompt_suggestion_view_type(ctx);
         let suggestion = &banner_state.prompt_suggestion;
         let prompt = suggestion.prompt.clone();
-        let suggestion_id = suggestion.id.clone();
+        let _suggestion_id = suggestion.id.clone();
         let is_static_suggestion = suggestion.static_prompt_suggestion_name.is_some();
         let trigger = banner_state.trigger.clone();
         let should_start_new_conversation = suggestion.should_start_new_conversation;
@@ -9696,7 +9696,7 @@ impl TerminalView {
     /// Called when a suggested code diff fails and we need to fall back to prompt suggestions.
     fn try_clear_prompt_suggestions_banner_code_state(
         &mut self,
-        fallback_reason: PromptSuggestionFallbackReason,
+        _fallback_reason: PromptSuggestionFallbackReason,
         ctx: &mut ViewContext<Self>,
     ) {
         if let Some(banner) = &mut self.inline_banners_state.prompt_suggestions_banner {
@@ -10336,7 +10336,7 @@ impl TerminalView {
                     InlineBannerItem::new(banner_id, InlineBannerType::ShellProcessTerminated),
                 );
         } else {
-            let (termination_reason, termination_details, exit_reason) = match &termination_type {
+            let (termination_reason, _termination_details, _exit_reason) = match &termination_type {
                 shell_terminated_banner::TerminationType::PtySpawnFailure { .. } => {
                     (Some("PtySpawnFailure".to_string()), None::<String>, None)
                 }
@@ -10791,7 +10791,7 @@ impl TerminalView {
             let mut command = block.command_to_string();
             redact_secrets(&mut command);
 
-            let server_output_id = block.ai_conversation_id().and_then(|conversation_id| {
+            let _server_output_id = block.ai_conversation_id().and_then(|conversation_id| {
                 BlocklistAIHistoryModel::as_ref(ctx)
                     .conversation(&conversation_id)
                     .and_then(|conversation| {
@@ -11508,7 +11508,7 @@ impl TerminalView {
             ModelEvent::AfterBlockCompleted(AfterBlockCompletedEvent {
                 command_finished_to_precmd_delay,
                 block_type,
-                num_secrets_obfuscated,
+                num_secrets_obfuscated: _,
                 cloud_workflow_id,
                 cloud_env_var_collection_id,
             }) => {
@@ -11533,8 +11533,8 @@ impl TerminalView {
                 }
 
                 if let Some(delay) = command_finished_to_precmd_delay {
-                    let delay_ms = delay.as_millis() as u64;
-                    let honor_ps1_enabled = match &block_type {
+                    let _delay_ms = delay.as_millis() as u64;
+                    let _honor_ps1_enabled = match &block_type {
                         // If we have access to the value of honor_ps1 that the
                         // block was holding, use that.
                         BlockType::User(UserBlockCompleted {
@@ -11546,10 +11546,10 @@ impl TerminalView {
                         // Otherwise, grab the current value.
                         _ => *SessionSettings::as_ref(ctx).honor_ps1,
                     };
-                    if let BlockType::User(user_block_completed) = block_type {
-                        let is_universal_developer_input_enabled =
+                    if let BlockType::User(_user_block_completed) = block_type {
+                        let _is_universal_developer_input_enabled =
                             InputSettings::as_ref(ctx).is_universal_developer_input_enabled(ctx);
-                        let is_in_agent_view = self.agent_view_controller.as_ref(ctx).is_active();
+                        let _is_in_agent_view = self.agent_view_controller.as_ref(ctx).is_active();
 
                         // On dogfood only, we're interested in the block commands, durations,
                         // and exit codes to trial Warp Analytics.
@@ -12140,7 +12140,7 @@ impl TerminalView {
             ModelEvent::ImageReceived {
                 image_id,
                 image_data,
-                image_protocol,
+                image_protocol: _,
             } => {
                 AssetCache::handle(ctx).update(ctx, |asset_cache, ctx| {
                     asset_cache.insert_raw_asset_bytes::<ImageType>(
@@ -14661,7 +14661,7 @@ impl TerminalView {
         &mut self,
         prompt: &str,
         label: &Option<String>,
-        request_duration_ms: u64,
+        _request_duration_ms: u64,
         trigger: Option<PassiveSuggestionTrigger>,
         conversation_id: Option<AIConversationId>,
         server_request_token: Option<String>,
@@ -14672,7 +14672,7 @@ impl TerminalView {
         }
 
         self.clear_prompt_suggestions(ctx);
-        let block_id = trigger.as_ref().and_then(|t| t.block_id());
+        let _block_id = trigger.as_ref().and_then(|t| t.block_id());
         let suggestion_id = Uuid::new_v4().to_string();
         let banner_id = self.inline_banners_state.next_banner_id();
         let banner_state = PromptSuggestionBannerState {
@@ -14711,9 +14711,9 @@ impl TerminalView {
         title: Option<String>,
         original_edits: Vec<PassiveCodeDiffEntry>,
         conversation_id: Option<AIConversationId>,
-        request_duration_ms: u64,
+        _request_duration_ms: u64,
         trigger: PassiveSuggestionTrigger,
-        server_request_token: Option<String>,
+        _server_request_token: Option<String>,
         ctx: &mut ViewContext<Self>,
     ) {
         let action_id = AIAgentActionId::from(uuid::Uuid::new_v4().to_string());
@@ -14760,7 +14760,7 @@ impl TerminalView {
         };
         // Capture the string form for telemetry before `trigger_block_id` is
         // moved into the subscribe_to_view closure below.
-        let trigger_block_id_str = trigger_block_id.as_ref().map(|id| id.to_string());
+        let _trigger_block_id_str = trigger_block_id.as_ref().map(|id| id.to_string());
 
         let wrapper_view_id = wrapper_view.id();
         ctx.subscribe_to_view(&diff_view, move |me, view, event, ctx| {
@@ -14883,7 +14883,7 @@ impl TerminalView {
             }
         });
 
-        let suggestion_id = Uuid::new_v4().to_string();
+        let _suggestion_id = Uuid::new_v4().to_string();
 
         self.insert_rich_content(
             None,
@@ -14901,7 +14901,7 @@ impl TerminalView {
         prompt_suggestion: AgentModePromptSuggestion,
         block_id: BlockId,
         command: String,
-        request_duration_ms: u64,
+        _request_duration_ms: u64,
         ctx: &mut ViewContext<TerminalView>,
     ) {
         match prompt_suggestion {
@@ -14910,7 +14910,7 @@ impl TerminalView {
                     return;
                 }
 
-                let (query_string, block_command) = if should_collect_ai_ugc_telemetry(
+                let (_query_string, _block_command) = if should_collect_ai_ugc_telemetry(
                     ctx,
                     PrivacySettings::as_ref(ctx).is_telemetry_enabled,
                 ) {
@@ -14928,7 +14928,7 @@ impl TerminalView {
                     suggestion.is_coding_query() && Self::passive_code_diffs_enabled(ctx);
                 let static_prompt_suggestion_name =
                     suggestion.static_prompt_suggestion_name.clone();
-                let suggestion_id = suggestion.id.clone();
+                let _suggestion_id = suggestion.id.clone();
 
                 let trigger = {
                     let model = self.model.lock();
@@ -14961,7 +14961,7 @@ impl TerminalView {
                     input.notify_and_notify_children(ctx);
                 });
 
-                if let Some(static_name) = static_prompt_suggestion_name {
+                if let Some(_static_name) = static_prompt_suggestion_name {
                 } else {
                 }
 
@@ -15177,7 +15177,7 @@ impl TerminalView {
         trigger: NotificationsTrigger,
         title: String,
         description: String,
-        agent_variant: Option<NotificationAgentVariant>,
+        _agent_variant: Option<NotificationAgentVariant>,
         ctx: &mut ViewContext<Self>,
     ) {
         let notification_settings = SessionSettings::as_ref(ctx).notifications.value().clone();
@@ -15302,7 +15302,7 @@ impl TerminalView {
     /// Will send telemetry if the current session is not bootstrapped and will show a banner to
     /// the user if this is the first bootstrap in the session.
     fn on_bootstrap_failed_timer_complete(&mut self, _: (), ctx: &mut ViewContext<Self>) {
-        let (is_ssh, shell, is_subshell, was_triggered_by_rc_file, is_wsl, is_msys2) = {
+        let (is_ssh, shell, _is_subshell, _was_triggered_by_rc_file, _is_wsl, _is_msys2) = {
             let model = self.model.lock();
 
             // If we did actually bootstrap, or if the session is no longer usable
@@ -15345,7 +15345,7 @@ impl TerminalView {
         // the event if the user quits the app before the event queue is flushed and then
         // never reopens the app.
 
-        let bootstrap_block_contents = {
+        let _bootstrap_block_contents = {
             let model = self.model.lock();
             model.block_list().bootstrap_block_contents()
         };
@@ -17585,7 +17585,7 @@ impl TerminalView {
 
     fn maybe_open_link(
         &mut self,
-        link_open_method: LinkOpenMethod,
+        _link_open_method: LinkOpenMethod,
         position: &WithinModel<Point>,
         ctx: &mut ViewContext<Self>,
     ) {
@@ -18334,7 +18334,7 @@ impl TerminalView {
     }
 
     fn toggle_input_hint_text(&mut self, ctx: &mut ViewContext<Self>) {
-        let new_val = InputSettings::handle(ctx).update(ctx, |input_settings, ctx| {
+        let _new_val = InputSettings::handle(ctx).update(ctx, |input_settings, ctx| {
             report_if_error!(input_settings.show_hint_text.toggle_and_save_value(ctx));
             *input_settings.show_hint_text
         });
@@ -18345,7 +18345,7 @@ impl TerminalView {
     fn open_workflow_modal_with_command(
         &mut self,
         command: String,
-        source: SaveAsWorkflowModalSource,
+        _source: SaveAsWorkflowModalSource,
         ctx: &mut ViewContext<Self>,
     ) {
         ctx.emit(Event::OpenWorkflowModalWithCommand(command));
@@ -20062,7 +20062,7 @@ impl TerminalView {
     }
 
     fn bookmark_block(&mut self, index: &BlockIndex, ctx: &mut ViewContext<Self>) {
-        let enable_bookmark = match self.bookmarked_blocks.entry(*index) {
+        let _enable_bookmark = match self.bookmarked_blocks.entry(*index) {
             Entry::Occupied(occupied) => {
                 occupied.remove();
                 false
@@ -20293,7 +20293,7 @@ impl TerminalView {
                 self.select_most_recent_blocks(*count, ctx)
             }
             InputEvent::Copy => self.copy(ctx),
-            InputEvent::UnhandledModifierKeyOnEditor(keystroke) => {
+            InputEvent::UnhandledModifierKeyOnEditor(_keystroke) => {
             }
             InputEvent::ClearSelectionsWhenShellMode => self.clear_selections_when_shell_mode(ctx),
             InputEvent::AutosuggestionAccepted => {
@@ -23581,7 +23581,7 @@ impl TerminalView {
         ai_block_view_id: EntityId,
         exchange_id: AIAgentExchangeId,
         conversation_id: AIConversationId,
-        entrypoint: AgentModeRewindEntrypoint,
+        _entrypoint: AgentModeRewindEntrypoint,
         ctx: &mut ViewContext<Self>,
     ) {
         ctx.dispatch_typed_action(&WorkspaceAction::ShowRewindConfirmationDialog {
@@ -23787,7 +23787,7 @@ impl TerminalView {
             Troubleshoot => {
                 ctx.open_url(NOTIFICATIONS_TROUBLESHOOT_URL);
             }
-            TurnOn(trigger) => {
+            TurnOn(_trigger) => {
                 let current_settings = SessionSettings::as_ref(ctx).notifications.value().clone();
                 let new_settings = NotificationsSettings {
                     mode: NotificationsMode::Enabled,
@@ -23895,10 +23895,10 @@ impl TerminalView {
             });
 
         if let Some((is_ssh, shell)) = session_info {
-            let auth_state = self.auth_state.clone();
-            let executor = ctx.background_executor().clone();
+            let _auth_state = self.auth_state.clone();
+            let _executor = ctx.background_executor().clone();
             ctx.on_next_frame_drawn(move || {
-                let block_event = TelemetryEvent::BaselineCommandLatency(BlockLatencyInfo {
+                let _block_event = TelemetryEvent::BaselineCommandLatency(BlockLatencyInfo {
                     command: Some(block_latency_data.command.to_string()),
                     shell: Some(shell.to_string()),
                     is_ssh,
@@ -23921,7 +23921,7 @@ impl TerminalView {
     /// inactive query, toggling on a filter will simply open the filter editor.
     fn toggle_block_filter_on_selected_or_last_block(
         &mut self,
-        source: ToggleBlockFilterSource,
+        _source: ToggleBlockFilterSource,
         ctx: &mut ViewContext<Self>,
     ) {
         let model = self.model.lock();
@@ -24607,7 +24607,7 @@ impl TerminalView {
         }
         drop(model);
 
-        let is_ssh = mode.is_ssh();
+        let _is_ssh = mode.is_ssh();
         self.use_agent_footer.update(ctx, |footer, ctx| {
             footer.set_warpify_mode(mode, ctx);
         });
@@ -24670,7 +24670,7 @@ impl TerminalView {
 
     pub(super) fn toggle_file_tree(
         &mut self,
-        cli_agent: Option<crate::server::telemetry::CLIAgentType>,
+        _cli_agent: Option<crate::server::telemetry::CLIAgentType>,
         ctx: &mut ViewContext<Self>,
     ) {
         self.toggle_left_panel_file_tree(false, ctx);

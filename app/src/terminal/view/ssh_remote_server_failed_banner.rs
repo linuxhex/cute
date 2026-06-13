@@ -1,7 +1,7 @@
 //! Stub for ssh_remote_server_failed_banner after remote_server removal.
 
 use warp_core::SessionId;
-use warpui::{AppContext, Entity, View, ViewContext, TypedActionView};
+use warpui::{AppContext, Entity, View, TypedActionView};
 
 use crate::remote_server::transport::UserFacingError;
 

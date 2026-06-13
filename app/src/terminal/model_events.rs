@@ -9,12 +9,11 @@ use super::model::ansi;
 use super::model::ansi::{FinishUpdateValue, WarpificationUnavailableReason};
 use super::model::block::BlockId;
 use super::model::completions::ShellCompletion;
-use super::model::session::{IsLegacySSHSession, SessionId, SessionInfo};
+use super::model::session::{SessionId, SessionInfo};
 use super::model::terminal_model::{
     CommandType, ExitReason, HandlerEvent, TmuxControlModeContext, TmuxInstallationState,
 };
 use super::model::tmux::commands::TmuxCommand;
-use crate::features::FeatureFlag;
 use crate::server::telemetry::ImageProtocol;
 use crate::terminal::event::{
     AfterBlockCompletedEvent, BlockCompletedEvent, BlockMetadataReceivedEvent,
@@ -161,7 +160,7 @@ impl ModelEventDispatcher {
                 {
                     if let Some(TmuxControlModeContext::WarpInitiatedForSsh(control_mode)) = context
                     {
-                        let duration_ms = Instant::now()
+                        let _duration_ms = Instant::now()
                             .duration_since(control_mode.start_time)
                             .as_millis()
                             // Clip large durations to u64::MAX

@@ -776,7 +776,7 @@ impl TypedActionView for CodeSettingsPageView {
                 ctx.notify();
             }
             CodeSettingsPageAction::RestartLspServer { server } => {
-                let server_name = server.as_ref(ctx).server_name();
+                let _server_name = server.as_ref(ctx).server_name();
                 server.update(ctx, |server, ctx| {
                     server.restart(ctx);
                 });

@@ -77,9 +77,7 @@ use crate::server::cloud_objects::update_manager::{
 use crate::server::ids::{ClientId, ServerId, SyncId};
 use crate::server::server_api::ai::AIClient;
 use crate::server::server_api::ServerApiProvider;
-use crate::server::telemetry::{
-    CloudObjectTelemetryMetadata, TelemetryCloudObjectType,
-};
+use crate::server::telemetry::CloudObjectTelemetryMetadata;
 use crate::drive::sharing::dialog::SharingDialogSource;
 use crate::settings::app_installation_detection::{
     UserAppInstallDetectionSettings, UserAppInstallStatus,
@@ -892,7 +890,7 @@ impl WorkflowView {
 
     /// Generic object telemetry metadata for the currently-open object.
     #[cfg_attr(not(target_family = "wasm"), allow(dead_code))]
-    fn telemetry_metadata(&self, ctx: &mut ViewContext<Self>) -> CloudObjectTelemetryMetadata {
+    fn telemetry_metadata(&self, _ctx: &mut ViewContext<Self>) -> CloudObjectTelemetryMetadata {
         CloudObjectTelemetryMetadata {
             object_type: Some("Workflow".to_string()),
             object_uid: self.workflow_id.into_server().map(|id| id.to_string()),
