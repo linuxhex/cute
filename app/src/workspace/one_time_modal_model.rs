@@ -342,8 +342,6 @@ impl OneTimeModalModel {
         &mut self,
         ctx: &mut ModelContext<Self>,
     ) -> bool {
-        return false;
-
         let ai_settings = AISettings::as_ref(ctx);
         if *ai_settings.did_check_to_trigger_orchestration_launch_modal {
             return false;
@@ -358,9 +356,7 @@ impl OneTimeModalModel {
             }
         });
 
-        let should_show = !matches!(ChannelState::channel(), Channel::Integration);
-        self.set_orchestration_launch_modal_open(should_show, ctx);
-        should_show
+        false
     }
 
     pub fn is_build_plan_migration_modal_open(&self) -> bool {

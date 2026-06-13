@@ -190,24 +190,10 @@ pub(in crate::pane_group) fn host_terminal_shared_session_source_type(
 /// cloud-only UI stays gated on `AmbientAgent`.
 #[cfg(not(target_family = "wasm"))]
 pub(in crate::pane_group) fn inherit_share_for_local_child(
-    host_source: Option<&SharedSessionSource>,
-    child_task_id: AmbientAgentTaskId,
+    _host_source: Option<&SharedSessionSource>,
+    _child_task_id: AmbientAgentTaskId,
 ) -> IsSharedSessionCreator {
-    return IsSharedSessionCreator::No;
-    let Some(host_source) = host_source else {
-        return IsSharedSessionCreator::No;
-    };
-    if host_source.orchestrator_task_id().is_none() {
-        return IsSharedSessionCreator::No;
-    }
-    let child_task_id_str = child_task_id.to_string();
-    let source = match &host_source.source_type {
-        SessionSourceType::User => SharedSessionSource::user(Some(child_task_id_str)),
-        SessionSourceType::AmbientAgent { .. } => {
-            SharedSessionSource::ambient_agent(Some(child_task_id_str))
-        }
-    };
-    IsSharedSessionCreator::Yes { source }
+    IsSharedSessionCreator::No
 }
 
 impl TerminalPane {

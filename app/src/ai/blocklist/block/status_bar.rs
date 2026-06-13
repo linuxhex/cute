@@ -865,93 +865,14 @@ impl BlocklistAIStatusBar {
         ))
     }
 
-    fn render_cloud_mode_setup_status(&self, app: &AppContext) -> Option<Box<dyn Element>> {
-        return None;
-
-        let ambient_agent_model = self
-            .ambient_agent_view_model
-            .as_ref()
-            .map(|ambient_agent_view_model| ambient_agent_view_model.as_ref(app))?;
-
-        // The step indicator is only meaningful while a spawn is in flight. Terminal states
-        // (`Failed`, `NeedsGithubAuth`, `Cancelled`) still carry an `AgentProgress` for
-        // telemetry purposes, so guard on `is_waiting_for_session()` rather than relying on
-        // `agent_progress()` being `None`.
-        if !ambient_agent_model.is_waiting_for_session() {
-            return None;
-        }
-
-        let progress = ambient_agent_model.agent_progress()?;
-        let progress_text = progress.setup_status_text();
-        Some(render_warping_indicator_base(
-            WarpingIndicatorProps {
-                icon: None,
-                warping_indicator_text: MaybeShimmeringText::Shimmering {
-                    text: progress_text.into(),
-                    shimmering_text_handle: self.shimmering_text_handle.clone(),
-                },
-                non_shimmering_text: None,
-                non_shimmering_suffix: None,
-                buttons: None,
-                is_passive_code_diff: false,
-                secondary_element: self.render_tip(app),
-            },
-            app,
-        ))
+    fn render_cloud_mode_setup_status(&self, _app: &AppContext) -> Option<Box<dyn Element>> {
+        None
     }
 
     fn render_cloud_mode_setup_terminal_message(
         &self,
-        app: &AppContext,
+        _app: &AppContext,
     ) -> Option<Box<dyn Element>> {
-        return None;
-
-        let ambient_agent_model = self
-            .ambient_agent_view_model
-            .as_ref()
-            .map(|ambient_agent_view_model| ambient_agent_view_model.as_ref(app))?;
-        let theme = Appearance::as_ref(app).theme();
-        let error_color = theme.ansi_fg_red();
-
-        if let Some(auth_url) = ambient_agent_model.github_auth_url() {
-            let error_message = ambient_agent_model
-                .github_auth_error_message()
-                .unwrap_or("Missing GitHub authentication.");
-            return Some(render_wrapping_standard_message_bar(
-                CoreIcon::Triangle,
-                error_color,
-                error_color,
-                vec![
-                    FormattedTextFragment::plain_text(format!("{error_message} ")),
-                    FormattedTextFragment::hyperlink("Authenticate GitHub", auth_url.to_owned()),
-                ],
-                app,
-            ));
-        }
-
-        if ambient_agent_model.is_cancelled() {
-            let color = theme.disabled_text_color(theme.background()).into_solid();
-            return Some(render_wrapping_standard_message_bar(
-                CoreIcon::StopFilled,
-                color,
-                color,
-                vec![FormattedTextFragment::plain_text(
-                    "Cloud agent run cancelled",
-                )],
-                app,
-            ));
-        }
-
-        if let Some(error_message) = ambient_agent_model.error_message() {
-            return Some(render_wrapping_standard_message_bar(
-                CoreIcon::Triangle,
-                error_color,
-                error_color,
-                vec![FormattedTextFragment::plain_text(error_message.to_owned())],
-                app,
-            ));
-        }
-
         None
     }
 }

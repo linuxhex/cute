@@ -495,16 +495,7 @@ impl UserWorkspaces {
     // This is always possible, as unknown owners imply the shared space.
     pub fn owner_to_space(&self, owner: Owner, ctx: &AppContext) -> Space {
         match owner {
-            Owner::User { user_uid } => {
-                return Space::Personal;
-
-                let current_user = AuthStateProvider::as_ref(ctx).get().user_id();
-                if Some(user_uid) == current_user {
-                    Space::Personal
-                } else {
-                    Space::Shared
-                }
-            }
+            Owner::User { user_uid: _ } => Space::Personal,
             Owner::Team { team_uid } => {
                 if self.team_from_uid_across_all_workspaces(team_uid).is_some() {
                     Space::Team { team_uid }

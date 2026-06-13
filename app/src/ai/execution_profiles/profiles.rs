@@ -176,11 +176,6 @@ impl AIExecutionProfilesModel {
                             id: ClientProfileId::new()
                         }
                     }
-                    // RemoteServerProxy and RemoteServerDaemon removed - unreachable but handle for exhaustiveness
-                    _ => DefaultProfileState::Unsynced {
-                        id: ClientProfileId::new(),
-                        profile: super::create_default_from_legacy_settings(ctx),
-                    },
                 };
             }
         }

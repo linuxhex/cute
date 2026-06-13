@@ -978,9 +978,6 @@ impl AmbientAgentViewModel {
     }
 
     pub fn submit_cloud_followup(&mut self, prompt: String, ctx: &mut ModelContext<Self>) {
-        log::warn!("Attempted to submit cloud follow-up while HandoffCloudCloud is disabled");
-        return;
-
         let Some(task_id) = self.task_id else {
             log::warn!("Attempted to submit cloud follow-up without an ambient task ID");
             return;

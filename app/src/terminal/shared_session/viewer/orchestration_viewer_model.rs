@@ -462,7 +462,6 @@ impl OrchestrationViewerModel {
     /// Schedules the next session_id refetch tick on the streamer path.
     /// Safe to call unconditionally — bails when not needed.
     fn maybe_schedule_pending_session_id_poll(&mut self, ctx: &mut ModelContext<Self>) {
-        return;
         if self.pending_session_id_poll_handle.is_some() {
             return;
         }

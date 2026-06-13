@@ -7045,47 +7045,8 @@ impl TerminalView {
 
     fn maybe_insert_tombstone_for_non_running_shared_ambient_task(
         &mut self,
-        ctx: &mut ViewContext<Self>,
+        _ctx: &mut ViewContext<Self>,
     ) {
-        return;
-
-        let (task_id, is_active_shared_session, is_finished_viewer) = {
-            let model = self.model.lock();
-            if model.is_receiving_agent_conversation_replay() {
-                return;
-            }
-
-            let status = model.shared_session_status();
-            // This method also handles restored cloud-mode panes that rendered
-            // a conservative tombstone before task data arrived. When the task
-            // cache updates, either the existing tombstone or FinishedViewer
-            // status tells us to re-resolve the CTA/input state.
-            let should_update = model.is_shared_ambient_agent_session()
-                || self.conversation_ended_tombstone_view_id.is_some()
-                || status.is_finished_viewer();
-            if !should_update {
-                return;
-            }
-
-            (
-                self.ambient_agent_task_id_for_details_panel_from_model(&model, ctx),
-                status.is_active_viewer() || status.is_active_sharer(),
-                status.is_finished_viewer(),
-            )
-        };
-
-        let Some(task_id) = task_id else {
-            return;
-        };
-        let Some(task) = AgentConversationsModel::as_ref(ctx).get_task_data(&task_id) else {
-            return;
-        };
-
-        if !task.is_no_longer_running() || self.pending_cloud_followup_task_id.is_some() {
-            return;
-        }
-
-        self.insert_conversation_ended_tombstone_with_cta(None, ctx);
     }
 
     pub fn active_session(&self) -> &ModelHandle<ActiveSession> {
@@ -11978,30 +11939,8 @@ impl TerminalView {
 
     /// Returns `true` when the pending session has a connecting remote-server setup state
     /// and no failure banner is already shown for that session.
-    fn show_remote_server_loading_footer(&self, model: &TerminalModel, app: &AppContext) -> bool {
-        return false;
-        // Don't show the loading footer while the choice block is visible;
-        // the choice block replaces it.
-        if self.active_ssh_remote_server_choice_block().is_some() {
-            return false;
-        }
-        let Some(pending_sid) = model.pending_session_id() else {
-            return false;
-        };
-        let has_failed_banner = self.rich_content_views.iter().any(|view| {
-            matches!(
-                view.metadata(),
-                Some(RichContentMetadata::SshRemoteServerFailedBanner { handle })
-                if handle.as_ref(app).session_id() == pending_sid
-            )
-        });
-        if has_failed_banner {
-            return false;
-        }
-        self.sessions
-            .as_ref(app)
-            .remote_server_setup_state(pending_sid)
-            .is_some_and(|state| state.is_in_progress())
+    fn show_remote_server_loading_footer(&self, _model: &TerminalModel, _app: &AppContext) -> bool {
+        false
     }
 
     /// Renders a shimmering loading footer in place of the input editor
@@ -19834,58 +19773,10 @@ impl TerminalView {
 
     fn try_submit_pending_cloud_followup(
         &mut self,
-        prompt: String,
-        ctx: &mut ViewContext<Self>,
+        _prompt: String,
+        _ctx: &mut ViewContext<Self>,
     ) -> bool {
-        return false;
-        let blocks_cloud_followups = {
-            let model = self.model.lock();
-            self.blocks_cloud_followups_for_ambient_agent_session_from_model(&model, ctx)
-        };
-        if blocks_cloud_followups {
-            self.pending_cloud_followup_task_id = None;
-            return false;
-        }
-        let Some(task_id) = self
-            .pending_cloud_followup_task_id
-            .or_else(|| self.owned_ambient_agent_task_id(ctx))
-        else {
-            return false;
-        };
-
-        if prompt.trim().is_empty() {
-            self.input.update(ctx, |input, ctx| {
-                input.reset_after_cloud_followup_submission(ctx);
-                input.set_input_mode_agent(true, ctx);
-            });
-            self.update_pane_configuration(ctx);
-            self.focus_input_box(ctx);
-            ctx.notify();
-            return true;
-        }
-
-        let Some(ambient_agent_view_model) = self.ambient_agent_view_model.clone() else {
-            self.restore_followup_prompt_after_failed_submission(&prompt, ctx);
-            self.show_error_toast("Couldn't continue this cloud task.".to_string(), ctx);
-            return true;
-        };
-
-        if ambient_agent_view_model.as_ref(ctx).task_id() != Some(task_id) {
-            self.restore_followup_prompt_after_failed_submission(&prompt, ctx);
-            self.show_error_toast("Couldn't continue this cloud task.".to_string(), ctx);
-            return true;
-        }
-
-        ambient_agent_view_model.update(ctx, |model, ctx| {
-            model.submit_cloud_followup(prompt, ctx);
-        });
-        self.input.update(ctx, |input, ctx| {
-            input.reset_after_cloud_followup_submission(ctx);
-            input.set_input_mode_agent(true, ctx);
-        });
-        self.update_pane_configuration(ctx);
-        ctx.notify();
-        true
+        false
     }
 
     fn handle_input_event(&mut self, event: &InputEvent, ctx: &mut ViewContext<Self>) {

@@ -344,8 +344,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::LocalComputerUse,
         #[cfg(feature = "local_claude_codex_child_harnesses")]
         FeatureFlag::LocalClaudeCodexChildHarnesses,
-        #[cfg(feature = "team_api_keys")]
-        FeatureFlag::TeamApiKeys,
         #[cfg(feature = "named_agents")]
         FeatureFlag::NamedAgents,
         #[cfg(feature = "cloud_conversations")]
@@ -445,8 +443,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::WarpifyFooter,
         #[cfg(feature = "solo_user_byok")]
         FeatureFlag::SoloUserByok,
-        #[cfg(feature = "billing_and_usage_page_v2")]
-        FeatureFlag::BillingAndUsagePageV2,
         #[cfg(feature = "skip_firebase_anonymous_user")]
         FeatureFlag::SkipFirebaseAnonymousUser,
         #[cfg(feature = "hoa_onboarding_flow")]

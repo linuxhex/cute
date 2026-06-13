@@ -106,11 +106,7 @@ pub enum CustomAction {
     NewPersonalWorkflow,
     NewPersonalNotebook,
     NewPersonalEnvVars,
-    NewTeamWorkflow,
-    NewTeamNotebook,
-    NewTeamEnvVars,
     SearchDrive,
-    OpenTeamSettings,
     ShareCurrentSession,
     SharePaneContents,
     #[cfg(windows)]
@@ -125,7 +121,6 @@ pub enum CustomAction {
     OpenMCPServerCollection,
     ToggleProjectExplorer,
     NewPersonalAIPrompt,
-    NewTeamAIPrompt,
     OpenRepository,
     NewTerminalTab,
     NewAgentTab,
@@ -451,17 +446,12 @@ pub fn custom_tag_to_keystroke(custom: CustomTag) -> Option<Keystroke> {
         | CustomAction::NewPersonalWorkflow
         | CustomAction::NewPersonalNotebook
         | CustomAction::NewPersonalEnvVars
-        | CustomAction::NewTeamWorkflow
-        | CustomAction::NewTeamNotebook
-        | CustomAction::NewTeamEnvVars
         | CustomAction::SearchDrive
-        | CustomAction::OpenTeamSettings
         | CustomAction::ShareCurrentSession
         | CustomAction::SharePaneContents
         | CustomAction::OpenAIFactCollection
         | CustomAction::OpenMCPServerCollection
         | CustomAction::NewPersonalAIPrompt
-        | CustomAction::NewTeamAIPrompt
         | CustomAction::NewAgentTab => None,
     }
 }

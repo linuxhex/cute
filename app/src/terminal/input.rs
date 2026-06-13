@@ -3685,70 +3685,9 @@ impl Input {
     #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
     pub(crate) fn collect_cloud_launch_attachments(
         &self,
-        ctx: &mut ViewContext<Self>,
+        _ctx: &mut ViewContext<Self>,
     ) -> HandoffLaunchAttachments {
-        return HandoffLaunchAttachments::default();
-
-        let mut request_attachments: Vec<AttachmentInput> = self
-            .ai_context_model
-            .as_ref(ctx)
-            .pending_images()
-            .iter()
-            .map(|image| AttachmentInput {
-                file_name: image.file_name.clone(),
-                mime_type: image.mime_type.clone(),
-                data: image.data.clone(),
-            })
-            .collect();
-
-        let mut skipped_files: Vec<String> = Vec::new();
-        for file in self.ai_context_model.as_ref(ctx).pending_files() {
-            match std::fs::read(&file.file_path) {
-                Ok(bytes) => {
-                    if bytes.len() > MAX_ATTACHMENT_SIZE_BYTES {
-                        skipped_files.push(file.file_name.clone());
-                        continue;
-                    }
-                    request_attachments.push(AttachmentInput {
-                        file_name: file.file_name.clone(),
-                        mime_type: file.mime_type.clone(),
-                        data: base64::engine::general_purpose::STANDARD.encode(&bytes),
-                    });
-                }
-                Err(e) => {
-                    log::error!("Failed to read file {}: {e}", file.file_path.display());
-                }
-            }
-        }
-
-        if !skipped_files.is_empty() {
-            let window_id = ctx.window_id();
-            let message = if skipped_files.len() == 1 {
-                format!(
-                    "{} was not attached — exceeds 10MB limit.",
-                    skipped_files[0]
-                )
-            } else {
-                format!(
-                    "{} files were not attached — exceed 10MB limit.",
-                    skipped_files.len()
-                )
-            };
-            ToastStack::handle(ctx).update(ctx, |ts, ctx| {
-                ts.add_ephemeral_toast(DismissibleToast::error(message), window_id, ctx);
-            });
-        }
-
-        let display_attachments: Vec<PendingAttachment> = self
-            .ai_context_model
-            .as_ref(ctx)
-            .pending_attachments()
-            .to_vec();
-
-        HandoffLaunchAttachments {
-            request_attachments,
-            display_attachments,
-        }
+        HandoffLaunchAttachments::default()
     }
 
     #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
@@ -6256,16 +6195,8 @@ impl Input {
         });
     }
 
-    fn should_block_cloud_mode_setup_submission(&self, app: &AppContext) -> bool {
-        return false;
-
-        self.ambient_agent_view_model()
-            .is_some_and(|ambient_agent_model| {
-                let ambient_agent_model = ambient_agent_model.as_ref(app);
-                ambient_agent_model.is_ambient_agent()
-                    && !ambient_agent_model.is_configuring_ambient_agent()
-                    && !ambient_agent_model.is_agent_running()
-            })
+    fn should_block_cloud_mode_setup_submission(&self, _app: &AppContext) -> bool {
+        false
     }
 
     /// Try to execute a command in the local session that was

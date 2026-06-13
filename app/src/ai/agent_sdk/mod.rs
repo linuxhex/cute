@@ -576,11 +576,10 @@ fn run_task(
                 }
             }
         }
-        TaskCommand::Message(message_cmd) => {
-            return Err(anyhow::anyhow!(
+        TaskCommand::Message(_message_cmd) => {
+            Err(anyhow::anyhow!(
                 "The 'message' subcommand is not available in this build"
-            ));
-            ambient::run_message(ctx, global_options, message_cmd)
+            ))
         }
     }
 }

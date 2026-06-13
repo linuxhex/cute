@@ -136,42 +136,8 @@ impl TerminalView {
     }
 
     /// Returns the shareable object for the active agent view conversation, if any.
-    fn agent_view_shareable_object(&self, ctx: &ViewContext<Self>) -> Option<ShareableObject> {
-        return None;
-
-        // If we're in a shared session, prioritize this to share.
-        if let Some(shared_session) = &self.shared_session {
-            return Some(ShareableObject::Session {
-                handle: ctx.handle(),
-                session_id: *shared_session.session_id(),
-                started_at: *shared_session.started_at(),
-            });
-        }
-
-        // Check if agent view is active
-        let conversation_id = self
-            .agent_view_controller
-            .as_ref(ctx)
-            .agent_view_state()
-            .active_conversation_id()?;
-
-        // Don't show share button for empty conversations
-        let conversation = BlocklistAIHistoryModel::as_ref(ctx).conversation(&conversation_id)?;
-        if conversation.is_empty() {
-            return None;
-        }
-        let exchange_count = conversation.exchange_count();
-        // If there's only one exchange, make sure it's completed (not still streaming)
-        if exchange_count == 1 {
-            if let Some(latest_exchange) = conversation.latest_exchange() {
-                if latest_exchange.output_status.is_streaming() {
-                    return None;
-                }
-            }
-        }
-
-        // Return the ShareableObject with the conversation ID
-        Some(ShareableObject::AIConversation(conversation_id))
+    fn agent_view_shareable_object(&self, _ctx: &ViewContext<Self>) -> Option<ShareableObject> {
+        None
     }
 
     /// Updates the pane header's shareable object based on agent view state.
@@ -446,28 +412,15 @@ impl TerminalView {
         (right_row.finish(), min_width)
     }
 
-    fn render_parent_conversation_header_card(&self, app: &AppContext) -> Option<Box<dyn Element>> {
-        return None;
-
-        let active_conversation_id = self
-            .agent_view_controller
-            .as_ref(app)
-            .agent_view_state()
-            .active_conversation_id()?;
-        let active_conversation =
-            BlocklistAIHistoryModel::as_ref(app).conversation(&active_conversation_id)?;
-        parent_conversation_navigation_card(
-            active_conversation,
-            self.mouse_states.parent_conversation_header_link.clone(),
-            app,
-        )
+    fn render_parent_conversation_header_card(&self, _app: &AppContext) -> Option<Box<dyn Element>> {
+        None
     }
 
     fn maybe_add_parent_navigation_card(
         &self,
         header: Box<dyn Element>,
-        parent_conversation_header_card: Option<Box<dyn Element>>,
-        app: &AppContext,
+        _parent_conversation_header_card: Option<Box<dyn Element>>,
+        _app: &AppContext,
     ) -> Box<dyn Element> {
         // When `OrchestrationPillBar` is on, the pill bar takes the place of the
         // parent navigation card (the parent pill is the "back to parent" link)
@@ -483,24 +436,7 @@ impl TerminalView {
         // arrived yet, `OrchestrationPillBar::pill_specs` returns `None`
         // and the pill bar's `render` short-circuits to `Empty`, so the
         // gate here is intentionally permissive.
-        return header;
-
-        if let Some(parent_card) = parent_conversation_header_card {
-            Flex::column()
-                .with_cross_axis_alignment(CrossAxisAlignment::Stretch)
-                .with_child(
-                    Container::new(parent_card)
-                        .with_padding_left(4.)
-                        .with_padding_right(4.)
-                        .with_padding_top(4.)
-                        .with_padding_bottom(2.)
-                        .finish(),
-                )
-                .with_child(header)
-                .finish()
-        } else {
-            header
-        }
+        header
     }
 
     fn render_terminal_pane_header(

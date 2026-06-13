@@ -357,8 +357,6 @@ impl TerminalView {
         block_id: &BlockId,
         ctx: &mut ViewContext<Self>,
     ) {
-        return;
-
         let Some(ambient_agent_view_model) = self.ambient_agent_view_model.clone() else {
             return;
         };
@@ -645,8 +643,6 @@ impl TerminalView {
         initial_prompt: Option<String>,
         ctx: &mut ViewContext<Self>,
     ) {
-        return;
-
         // If cloud mode is started from fullscreen agent view, we must ensure the resulting
         // rich content (ambient agent entry block) is scoped to the terminal-level.
         if FeatureFlag::AgentView.is_enabled()

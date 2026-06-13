@@ -8604,7 +8604,7 @@ impl Workspace {
             },
             Some(WorkspaceAction::AddAmbientAgentTab) => SidecarItemKind::BuiltIn {
                 name: label.to_string(),
-                default_mode: DefaultSessionMode::CloudAgent,
+                default_mode: DefaultSessionMode::Agent,
                 shell: None,
             },
             Some(WorkspaceAction::AddTerminalTab { .. }) => SidecarItemKind::BuiltIn {
@@ -21826,15 +21826,12 @@ impl TypedActionView for Workspace {
                             self.add_terminal_tab(false, ctx);
                         }
                     }
-                    DefaultSessionMode::CloudAgent => {
-                        self.add_ambient_agent_tab(ctx);
-                    }
                     DefaultSessionMode::DockerSandbox => {
                         self.add_docker_sandbox_tab(ctx);
                     }
                     // Terminal and Agent are handled by the existing path
                     // (add_terminal_tab applies DefaultSessionMode::Agent internally).
-                    DefaultSessionMode::Terminal | DefaultSessionMode::Agent => {
+                    DefaultSessionMode::Terminal | DefaultSessionMode::Agent | DefaultSessionMode::TabConfig => {
                         if FeatureFlag::WelcomeTab.is_enabled() {
                             self.add_welcome_tab(ctx);
                         } else {

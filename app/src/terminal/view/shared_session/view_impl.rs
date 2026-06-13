@@ -877,7 +877,7 @@ impl TerminalView {
             return;
         }
         self.insert_conversation_ended_tombstone_with_cta(None, ctx);
-        return;
+
         let Some(state) = self.cloud_conversation_continuation_ui_state(ctx) else {
             return;
         };
@@ -898,8 +898,6 @@ impl TerminalView {
         task_id: crate::ai::ambient_agents::AmbientAgentTaskId,
         ctx: &mut ViewContext<Self>,
     ) {
-        return;
-
         let Some(ambient_agent_view_model) = self.ambient_agent_view_model.as_ref() else {
             self.show_error_toast("Couldn't continue this cloud task.".to_string(), ctx);
             return;
@@ -1758,7 +1756,6 @@ impl TerminalView {
         ctx: &mut ViewContext<Self>,
     ) {
         self.insert_conversation_ended_tombstone_with_cta(None, ctx);
-        return;
 
         match self.cloud_conversation_continuation_ui_state(ctx) {
             Some(CloudConversationContinuationUiState::Tombstone { cta }) => {
