@@ -1,8 +1,4 @@
 //! Commands to interact with ambient agents on Warp's platform.
-use std::sync::Arc;
-
-use anyhow::anyhow;
-use comfy_table::Cell;
 use futures::{future, StreamExt};
 use warp_cli::agent::{Harness, OutputFormat, Prompt, RunCloudArgs};
 use warp_cli::json_filter::JsonOutput;
@@ -27,17 +23,16 @@ use crate::ai::ambient_agents::spawn::{
 };
 use crate::ai::ambient_agents::task::HarnessConfig;
 use crate::ai::ambient_agents::{
-    AgentConfigSnapshot, AmbientAgentTask, AmbientAgentTaskId, AmbientAgentTaskState,
+    AgentConfigSnapshot, AmbientAgentTask, AmbientAgentTaskState,
 };
 use crate::ai::artifacts::Artifact;
 use crate::auth::AuthStateProvider;
 use crate::cloud_object::model::persistence::CloudModel;
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::server_api::ai::{
-    AIClient, AgentSource, ArtifactType, ExecutionLocation,
+    AgentSource, ArtifactType, ExecutionLocation,
     RunSortBy, RunSortOrder, SpawnAgentRequest, TaskListFilter,
 };
-use crate::server::server_api::ServerApi;
 use crate::terminal::shared_session;
 use crate::util::time_format::format_approx_duration_from_now_utc;
 use crate::workspaces::user_workspaces::UserWorkspaces;
