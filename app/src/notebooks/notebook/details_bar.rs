@@ -82,11 +82,7 @@ impl DetailsBar {
             );
         }
 
-        let editability = if false {
-            notebook_data.editability(app)
-        } else {
-            ContentEditability::Editable
-        };
+        let editability = ContentEditability::Editable;
         if matches!(
             editability,
             ContentEditability::RequiresLogin | ContentEditability::Editable

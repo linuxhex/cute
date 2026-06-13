@@ -413,14 +413,7 @@ impl TerminalManager {
         true
     }
 
-    pub fn start_cloud_mode_setup_command_tracking(&mut self) {
-        if false {
-            self.model
-                .lock()
-                .block_list_mut()
-                .set_is_executing_oz_environment_startup_commands(true);
-        }
-    }
+    pub fn start_cloud_mode_setup_command_tracking(&mut self) {}
 
     /// Connects this terminal manager to a shared session.
     /// This method sets up the network model and all associated event handlers.
@@ -1084,22 +1077,6 @@ impl TerminalManager {
                 };
 
                 view.update(ctx, |view, ctx| {
-                    // In cloud-mode startup (before the first exchange), shared-session input
-                    // sync reflects environment setup commands. Skip applying remote edits so
-                    // the visible input isn't populated with setup-command text.
-                    if false
-                        && {
-                            let model = view.model.lock();
-                            is_cloud_agent_pre_first_exchange(
-                                view.ambient_agent_view_model(),
-                                view.agent_view_controller(),
-                                &model,
-                                ctx,
-                            )
-                        }
-                    {
-                        return;
-                    }
                     view.apply_viewer_shared_session_input_update(block_id, operations.clone(), ctx);
                 })
             }
@@ -1403,18 +1380,8 @@ impl TerminalManager {
         };
         // During cloud startup (pre-first-exchange), keep local input mode stable
         // and ignore remote shell/ai mode toggles from session-sharing context sync.
-        let is_pre_first_exchange = false && {
-            let view_ref = view.as_ref(ctx);
-            let model = view_ref.model.lock();
-            is_cloud_agent_pre_first_exchange(
-                view_ref.ambient_agent_view_model(),
-                view_ref.agent_view_controller(),
-                &model,
-                ctx,
-            )
-        };
         let suppress_input_mode_update =
-            view.as_ref(ctx).is_shared_ambient_agent_session() || is_pre_first_exchange;
+            view.as_ref(ctx).is_shared_ambient_agent_session();
         if suppress_input_mode_update {
             return;
         }
@@ -1633,11 +1600,6 @@ impl TerminalManager {
             "[orch-viewer] stopping orchestration viewer model parent_task_id={parent_task_id} \
              consumer_id={consumer_id:?}"
         );
-        if false {
-            OrchestrationEventStreamer::handle(ctx).update(ctx, move |streamer, _ctx| {
-                streamer.unregister_viewer_mode_consumer(parent_task_id, consumer_id);
-            });
-        }
         // `handle` drops here, releasing the per-pane viewer model.
         drop(handle);
     }
@@ -1703,28 +1665,6 @@ impl TerminalManager {
         model
             .lock()
             .clear_write_to_pty_events_for_shared_session_tx();
-        if false {
-            terminal_view.update(ctx, |terminal_view, ctx| {
-                // Owned ambient tasks remain editable Cloud Mode panes after their live shared
-                // session ends; non-owners are still read-only viewers of a finished session.
-                let owns_ambient_task = terminal_view.owned_ambient_agent_task_id(ctx).is_some();
-                model
-                    .lock()
-                    .set_shared_session_status(if owns_ambient_task {
-                        SharedSessionStatus::NotShared
-                    } else {
-                        SharedSessionStatus::FinishedViewer
-                    });
-                if let Some(ambient_agent_view_model) =
-                    terminal_view.ambient_agent_view_model().cloned()
-                {
-                    ambient_agent_view_model.update(ctx, |model, ctx| {
-                        model.record_ambient_execution_ended(ended_session_id, ctx);
-                    });
-                }
-                terminal_view.on_ambient_agent_execution_ended(ctx);
-            });
-        }
         if Self::current_network(current_network)
             .is_some_and(|network| network.as_ref(ctx).session_id() == ended_session_id)
         {

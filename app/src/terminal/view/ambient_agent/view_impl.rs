@@ -97,9 +97,7 @@ impl TerminalView {
         // Legacy `Failed`, `NeedsGithubAuth`, and `Cancelled` hand off to the existing error /
         // auth / cancelled UI; `HarnessCommandStarted` hands off to the live harness CLI block.
         let should_remove_pending_user_query = match event {
-            AmbientAgentViewModelEvent::Failed { .. } => {
-                !false
-            }
+            AmbientAgentViewModelEvent::Failed { .. } => true,
             AmbientAgentViewModelEvent::NeedsGithubAuth
             | AmbientAgentViewModelEvent::Cancelled
             | AmbientAgentViewModelEvent::HarnessCommandStarted { .. }
@@ -135,48 +133,20 @@ impl TerminalView {
                     ctx.notify();
                     return;
                 }
-                if false {
-                    // Render the submitted cloud prompt while the real shared-session transcript
-                    // catches up. The pending block is removed later by
-                    // `HarnessCommandStarted` / failure / cancel / auth handlers.
-                    //
-                    // `request.prompt` is stored stripped of any `/plan` / `/orchestrate`
-                    // prefix; rebuild the display form from `request.mode` so the user sees
-                    // exactly what they typed.
-                    let prompt = ambient_agent_view_model
-                        .as_ref(ctx)
-                        .request()
-                        .and_then(|request| {
-                            request
-                                .prompt
-                                .as_deref()
-                                .map(|prompt| display_user_query_with_mode(request.mode, prompt))
-                        })
-                        .unwrap_or_default();
-                    if !prompt.is_empty() {
-                        self.insert_cloud_mode_queued_user_query_block(prompt, ctx);
-                    }
-                } else {
-                    // Reset tip cooldown so the first tip shows for 60 seconds
-                    let tip_model = ambient_agent_view_model
-                        .as_ref(ctx)
-                        .ui_state
-                        .tip_model
-                        .clone();
-                    tip_model.update(ctx, |model, model_ctx| {
-                        model.reset_cooldown(model_ctx);
-                    });
-                }
+                // Reset tip cooldown so the first tip shows for 60 seconds
+                let tip_model = ambient_agent_view_model
+                    .as_ref(ctx)
+                    .ui_state
+                    .tip_model
+                    .clone();
+                tip_model.update(ctx, |model, model_ctx| {
+                    model.reset_cooldown(model_ctx);
+                });
                 // Re-render to show loading state.
                 ctx.emit(TerminalViewEvent::TerminalViewStateChanged);
                 ctx.notify();
             }
             AmbientAgentViewModelEvent::FollowupDispatched => {
-                if false {
-                    ambient_agent_view_model.update(ctx, |model, ctx| {
-                        model.start_new_setup_command_group(ctx);
-                    });
-                }
                 self.update_active_ambient_agent_conversation_status(
                     ConversationStatus::InProgress,
                     None,
@@ -205,11 +175,7 @@ impl TerminalView {
                     self.pending_cloud_followup_task_id = None;
                     self.remove_conversation_ended_tombstone(ctx);
                 }
-                if false {
-                    self.refresh_conversation_details_panel_if_open(ctx);
-                } else {
-                    self.maybe_auto_open_conversation_details_panel(ctx);
-                }
+                self.maybe_auto_open_conversation_details_panel(ctx);
                 // Re-render to hide the loading screen now that the session is ready.
                 ctx.emit(TerminalViewEvent::TerminalViewStateChanged);
                 ctx.notify();
@@ -238,10 +204,6 @@ impl TerminalView {
                     ctx,
                 );
 
-                if false {
-                    self.insert_conversation_ended_tombstone_with_resolved_cta(ctx);
-                }
-
                 // Refresh the details panel to show failed status
                 if self.is_conversation_details_panel_open {
                     self.fetch_and_update_conversation_details_panel(ctx);
@@ -256,13 +218,6 @@ impl TerminalView {
                 ctx.notify();
             }
             AmbientAgentViewModelEvent::ShowAICreditModal => {
-                if false
-                    && ambient_agent_view_model.as_ref(ctx).is_ambient_agent()
-                    && !self.model.lock().is_shared_ambient_agent_session()
-                {
-                    self.show_out_of_credits_modal(ctx);
-                }
-
                 ctx.notify();
             }
             AmbientAgentViewModelEvent::NeedsGithubAuth => {

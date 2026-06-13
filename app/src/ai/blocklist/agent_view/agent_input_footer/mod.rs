@@ -808,29 +808,7 @@ impl AgentInputFooter {
             me.update_display_chips(&model, ctx);
         });
 
-        let v2_model_selector = if false {
-            let ambient_agent_view_model_for_selector = ambient_agent_view_model.clone();
-            let view = ctx.add_typed_action_view(|ctx| {
-                ModelSelector::new(
-                    menu_positioning_provider.clone(),
-                    terminal_view_id,
-                    ambient_agent_view_model_for_selector,
-                    ctx,
-                )
-            });
-            ctx.subscribe_to_view(&view, |_, _, event, ctx| match event {
-                ModelSelectorEvent::MenuVisibilityChanged { open } => {
-                    if *open {
-                        ctx.emit(AgentInputFooterEvent::ModelSelectorOpened);
-                    } else {
-                        ctx.emit(AgentInputFooterEvent::ModelSelectorClosed);
-                    }
-                }
-            });
-            Some(view)
-        } else {
-            None
-        };
+        let v2_model_selector = None;
 
         let mut me = Self {
             terminal_view_id,

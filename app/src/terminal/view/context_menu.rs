@@ -128,30 +128,6 @@ impl TerminalView {
         );
         items.push(MenuItem::Separator);
 
-        if false {
-            let history_model = BlocklistAIHistoryModel::as_ref(ctx);
-            if history_model.can_conversation_be_shared(&ai_conversation_id) {
-                items.push(
-                    MenuItemFields::new("Copy share link")
-                        .with_on_select_action(TerminalAction::ContextMenu(
-                            ContextMenuAction::CopyConversationShareLink {
-                                conversation_id: ai_conversation_id,
-                            },
-                        ))
-                        .into_item(),
-                );
-                items.push(
-                    MenuItemFields::new("Share conversation")
-                        .with_on_select_action(TerminalAction::ContextMenu(
-                            ContextMenuAction::OpenConversationShareDialog {
-                                conversation_id: ai_conversation_id,
-                            },
-                        ))
-                        .into_item(),
-                );
-            }
-        }
-
         items.push(
             MenuItemFields::new("Copy conversation text")
                 .with_on_select_action(TerminalAction::ContextMenu(
@@ -318,20 +294,6 @@ impl TerminalView {
         ctx: &mut ViewContext<Self>,
     ) -> Vec<MenuItem<TerminalAction>> {
         let mut items = Vec::new();
-
-        if false
-            && ShareableObject::AIConversation(conversation_id)
-                .link(ctx)
-                .is_some()
-        {
-            items.push(
-                MenuItemFields::new("Copy share link")
-                    .with_on_select_action(TerminalAction::ContextMenu(
-                        ContextMenuAction::CopyConversationShareLink { conversation_id },
-                    ))
-                    .into_item(),
-            );
-        }
 
         items.push(
             MenuItemFields::new("Copy conversation text")

@@ -1306,11 +1306,7 @@ impl CodePageWidget {
         let workspaces: Vec<WorkspaceMetadata> =
             PersistedWorkspace::as_ref(app).workspaces().collect();
         #[cfg(not(target_family = "wasm"))]
-        let remote_entries = if false {
-            RemoteCodebaseIndexModel::as_ref(app).entries_for_settings()
-        } else {
-            Vec::new()
-        };
+        let remote_entries = Vec::new();
 
         let codebase_manager = CodebaseIndexManager::as_ref(app);
         let lsp_manager = LspManagerModel::as_ref(app);
