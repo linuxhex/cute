@@ -13,8 +13,6 @@ use instant::Instant;
 use warp_core::features::FeatureFlag;
 use warpui::{AppContext, Entity, ModelContext, SingletonEntity};
 
-#[cfg(not(target_family = "wasm"))]
-use crate::ai::agent::SearchCodebaseFailureReason;
 use crate::ai::agent::{AIAgentActionId, SearchCodebaseResult};
 use crate::ai::blocklist::SessionContext;
 use crate::ai::get_relevant_files::api::{FileContext as FileContextRequest, GetRelevantFiles};

@@ -33,11 +33,11 @@ pub(super) fn root_directory_for_search(
 }
 
 pub(super) fn send_request(
-    query: String,
-    partial_paths: Option<Vec<String>>,
+    _query: String,
+    _partial_paths: Option<Vec<String>>,
     session_context: SessionContext,
     requested_codebase_path: Option<String>,
-    action_id: crate::ai::agent::AIAgentActionId,
+    _action_id: crate::ai::agent::AIAgentActionId,
     ctx: &mut ModelContext<GetRelevantFilesController>,
 ) -> RemoteSearchRequest {
     if !should_use_codebase_indexing(CodebaseAutoIndexingSurface::Remote, ctx) {
