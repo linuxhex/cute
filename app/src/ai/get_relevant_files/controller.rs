@@ -382,27 +382,6 @@ impl GetRelevantFilesController {
         };
     }
 
-    #[cfg(not(target_family = "wasm"))]
-    fn handle_remote_search_result(
-        &mut self,
-        search_result: anyhow::Result<SearchCodebaseResult>,
-        action_id: AIAgentActionId,
-        ctx: &mut ModelContext<Self>,
-    ) {
-        if self.pending_requests.remove(&action_id).is_none() {
-            return;
-        }
-
-        let result = search_result.unwrap_or_else(|e| SearchCodebaseResult::Failed {
-            reason: SearchCodebaseFailureReason::ClientError,
-            message: e.to_string(),
-        });
-        ctx.emit(GetRelevantFilesControllerEvent::Success {
-            action_id,
-            result: GetRelevantFilesControllerResult::SearchResult(result),
-        });
-    }
-
     /// Returns the path to the root directory for a codebase search where pwd is `directory`.
     pub fn root_directory_for_search(&self, directory: &Path, app: &AppContext) -> Option<PathBuf> {
         let mut start = None;
