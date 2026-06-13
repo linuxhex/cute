@@ -224,7 +224,6 @@ use crate::code::editor::{add_color, remove_color};
 use crate::code::editor_management::CodeManager;
 use crate::code::editor_management::CodeSource;
 use crate::code_review::diff_state::DiffStateModel;
-use crate::code_review::telemetry_event::CodeReviewPaneEntrypoint;
 use crate::code_review::GlobalCodeReviewModel;
 use crate::coding_panel_enablement_state::CodingPanelEnablementState;
 use crate::context_chips::ChipRuntimeCapabilities;
@@ -811,8 +810,6 @@ struct CodeReviewPaneContext {
 struct RightPanelUpdateParams<'a> {
     pane_group: &'a ViewHandle<PaneGroup>,
     target_open_state: bool,
-    entrypoint: Option<CodeReviewPaneEntrypoint>,
-    cli_agent: Option<crate::terminal::CLIAgent>,
     review_pane_context: Option<&'a CodeReviewPaneContext>,
 }
 
@@ -8001,8 +7998,6 @@ impl Workspace {
         self.open_right_panel(
             &context,
             &pane_group,
-            panel_context.entrypoint,
-            panel_context.cli_agent,
             ctx,
         );
 
@@ -8113,8 +8108,6 @@ impl Workspace {
             RightPanelUpdateParams {
                 pane_group: pane_group_handle,
                 target_open_state,
-                entrypoint: Some(CodeReviewPaneEntrypoint::RightPanel),
-                cli_agent: None,
                 review_pane_context: context.as_ref(),
             },
             ctx,
@@ -8126,8 +8119,6 @@ impl Workspace {
         &mut self,
         context: &CodeReviewPaneContext,
         pane_group_handle: &ViewHandle<PaneGroup>,
-        entrypoint: CodeReviewPaneEntrypoint,
-        cli_agent: Option<crate::terminal::CLIAgent>,
         ctx: &mut ViewContext<Self>,
     ) {
         if pane_group_handle.as_ref(ctx).right_panel_open {
@@ -8143,8 +8134,6 @@ impl Workspace {
             RightPanelUpdateParams {
                 pane_group: pane_group_handle,
                 target_open_state: true,
-                entrypoint: Some(entrypoint),
-                cli_agent,
                 review_pane_context: Some(context),
             },
             ctx,
@@ -8176,8 +8165,6 @@ impl Workspace {
             RightPanelUpdateParams {
                 pane_group: pane_group_handle,
                 target_open_state: false,
-                entrypoint: None,
-                cli_agent: None,
                 review_pane_context: None,
             },
             ctx,
@@ -22322,8 +22309,6 @@ impl TypedActionView for Workspace {
                             self.open_right_panel(
                                 &context,
                                 &pane_group_handle,
-                                CodeReviewPaneEntrypoint::GitDiffChip,
-                                None,
                                 ctx,
                             );
                         }
