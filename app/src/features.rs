@@ -147,8 +147,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::PredictAMQueries,
         #[cfg(feature = "full_source_code_embedding")]
         FeatureFlag::FullSourceCodeEmbedding,
-        #[cfg(feature = "remote_codebase_indexing")]
-        FeatureFlag::RemoteCodebaseIndexing,
         #[cfg(feature = "use_tantivy_search")]
         FeatureFlag::UseTantivySearch,
         #[cfg(feature = "grep_tool")]
@@ -181,8 +179,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::RetryTruncatedCodeResponses,
         #[cfg(feature = "read_image_files")]
         FeatureFlag::ReadImageFiles,
-        #[cfg(feature = "usage_based_pricing")]
-        FeatureFlag::UsageBasedPricing,
         #[cfg(feature = "cross_repo_context")]
         FeatureFlag::CrossRepoContext,
         #[cfg(feature = "codebase_index_persistence")]
@@ -373,12 +369,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::InlineHistoryMenu,
         #[cfg(feature = "inline_repo_menu")]
         FeatureFlag::InlineRepoMenu,
-        #[cfg(feature = "cloud_mode")]
-        FeatureFlag::CloudMode,
-        #[cfg(feature = "cloud_mode_from_local_session")]
-        FeatureFlag::CloudModeFromLocalSession,
-        #[cfg(feature = "cloud_mode_image_context")]
-        FeatureFlag::CloudModeImageContext,
         #[cfg(feature = "summarization_via_message_replacement")]
         FeatureFlag::SummarizationViaMessageReplacement,
         #[cfg(feature = "pluggable_notifications")]
