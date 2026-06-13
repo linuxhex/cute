@@ -20,15 +20,15 @@ use warpui::{
 };
 
 use super::settings_page::{
-    add_setting, render_alternating_color_list, render_body_item, render_dropdown_item,
+    add_setting, render_alternating_color_list, render_body_item,
     render_page_title, AdditionalInfo, Category, LocalOnlyIconState, MatchData, PageType,
     SettingsPageEvent, SettingsPageMeta, SettingsPageViewHandle, SettingsWidget, ToggleState,
-    HEADER_FONT_SIZE, HEADER_PADDING,
+    HEADER_FONT_SIZE,
 };
 use super::{flags, SettingsAction, SettingsSection, ToggleSettingActionPair};
 use crate::appearance::Appearance;
 use crate::terminal::warpify::settings::{
-    EnableSshWarpification, SshExtensionInstallMode, SshExtensionInstallModeSetting,
+    EnableSshWarpification, SshExtensionInstallMode,
     UseSshTmuxWrapper, WarpifySettings, WarpifySettingsChangedEvent,
 };
 use crate::ui_components::blended_colors;

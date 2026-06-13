@@ -21,7 +21,7 @@ pub use agent_view_block::*;
 pub use controller::*;
 pub use ephemeral_message_model::*;
 pub use inline_agent_view_header::*;
-pub use orchestration_pill_bar::{render_orchestration_breadcrumbs, OrchestrationPillBar};
+pub use orchestration_pill_bar::OrchestrationPillBar;
 use pathfinder_color::ColorU;
 use warp_core::ui::appearance::Appearance;
 use warp_core::ui::color::blend::Blend;

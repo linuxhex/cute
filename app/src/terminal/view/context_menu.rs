@@ -6,7 +6,7 @@ use super::{
     ClipboardContent, ContextMenuAction, ContextMenuState, ContextMenuType,
     EntityId, FeatureFlag, ForkAIConversationParams, ForkFromExchange,
     ForkedConversationDestination, MenuItem, MenuItemFields, RichContentLink,
-    ServerConversationToken, ServerOutputId, ShareableObject, TerminalAction,
+    ServerConversationToken, ServerOutputId, TerminalAction,
     TerminalModel, TerminalView, Tip, TipHint, Vector2F, ViewContext, CONTEXT_MENU_WIDTH,
 };
 

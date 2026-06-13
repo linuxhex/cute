@@ -1,13 +1,12 @@
 use std::result::Result as StdResult;
 use std::sync::Arc;
 
-use anyhow::{anyhow, bail, Context as _, Result};
+use anyhow::{anyhow, bail, Result};
 use async_trait::async_trait;
 use firebase::{FetchAccessTokenResponse, FirebaseError};
 use instant::Duration;
 #[cfg(test)]
 use mockall::{automock, predicate::*};
-use oauth2::TokenResponse;
 use thiserror::Error;
 use warp_core::errors::{AnyhowErrorExt, ErrorExt};
 

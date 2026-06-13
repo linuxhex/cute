@@ -61,7 +61,7 @@ use crate::terminal::input::{HandoffComposeState, SET_INPUT_MODE_TERMINAL_ACTION
 use crate::terminal::model::block::LONG_RUNNING_COMMAND_DURATION_MS;
 use crate::terminal::model_events::{ModelEvent, ModelEventDispatcher};
 use crate::terminal::view::ambient_agent::{
-    is_cloud_agent_pre_first_exchange, AmbientAgentViewModel, AmbientAgentViewModelEvent,
+    AmbientAgentViewModel, AmbientAgentViewModelEvent,
 };
 use crate::terminal::warpify::render::LEFT_STRIPE_WIDTH;
 use crate::terminal::{

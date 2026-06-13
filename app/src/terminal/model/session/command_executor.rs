@@ -148,7 +148,6 @@ fn new_command_executor_for_local_tty_session(
     ctx: &mut ModelContext<Sessions>,
 ) -> Arc<dyn CommandExecutor> {
     use msys2_command_executor::MSYS2CommandExecutor;
-    use remote_server_executor::RemoteServerCommandExecutor;
     use settings::Setting as _;
     use tmux_executor::TmuxCommandExecutor;
     use warpui::SingletonEntity as _;
@@ -156,7 +155,6 @@ fn new_command_executor_for_local_tty_session(
 
     use super::IsLegacySSHSession;
     use crate::features::FeatureFlag;
-    use crate::remote_server::manager::RemoteServerManager;
     use crate::settings::DebugSettings;
     use crate::terminal::available_shells::AvailableShells;
     use crate::terminal::model::session::{BootstrapSessionType, ShellLaunchData};

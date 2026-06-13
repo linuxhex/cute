@@ -10,7 +10,6 @@ use diesel::SqliteConnection;
 use diesel::result::Error;
 use persistence::model::{NewObjectMetadata, NewObjectPermissions, ObjectMetadata};
 use persistence::schema;
-use warp_core::features::FeatureFlag;
 
 use crate::ids::SyncId;
 

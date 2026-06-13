@@ -93,7 +93,7 @@ use crate::terminal::session_settings::{
 };
 use crate::terminal::shared_session::SharedSessionStatus;
 use crate::terminal::view::ambient_agent::{
-    AmbientAgentViewModel, ModelSelector, ModelSelectorEvent,
+    AmbientAgentViewModel, ModelSelector,
 };
 use crate::terminal::view::init::OPEN_CLI_AGENT_RICH_INPUT_KEYBINDING;
 use crate::terminal::view::TerminalAction;

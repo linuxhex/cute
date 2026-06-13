@@ -19,7 +19,6 @@ use super::loading_screen::{
 };
 use super::{AmbientAgentEntryBlock, AmbientAgentViewModel, AmbientAgentViewModelEvent};
 use crate::ai::agent::conversation::{AIConversationId, ConversationStatus};
-use crate::ai::agent::display_user_query_with_mode;
 #[cfg(not(target_family = "wasm"))]
 use crate::ai::agent_sdk::driver::harness::auth_check_command_for;
 use crate::ai::blocklist::agent_view::AgentViewEntryOrigin;

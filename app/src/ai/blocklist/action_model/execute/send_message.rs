@@ -20,7 +20,6 @@ use crate::ai::ambient_agents::AmbientAgentTaskId;
 use crate::ai::blocklist::history_model::BlocklistAIHistoryModel;
 use crate::ai::blocklist::orchestration_events::{OrchestrationEventService, SendMessageResult};
 use crate::server::server_api::ai::{SendAgentMessageRequest, SendAgentMessageResponse};
-use crate::server::server_api::ServerApiProvider;
 
 #[cfg(not(target_family = "wasm"))]
 const SEND_AGENT_MESSAGE_TIMEOUT: Duration = Duration::from_secs(15);
