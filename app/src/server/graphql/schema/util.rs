@@ -3,13 +3,6 @@ use crate::cloud_object::model::actions::{
     ObjectAction, ObjectActionHistory, ObjectActionSubtype, ObjectActionType,
 };
 use crate::server::ids::{HashedSqliteId, ObjectUid, ServerId, SyncId};
-pub fn action_type_to_gql_action_type(
-    action: ObjectActionType,
-) -> warp_graphql::object_actions::ActionType {
-    match action {
-        ObjectActionType::Execute => warp_graphql::object_actions::ActionType::Executed,
-    }
-}
 
 /// Converts the graphql action type ("EXECUTED", etc) to ObjectActionType.
 fn try_into_object_action_type(

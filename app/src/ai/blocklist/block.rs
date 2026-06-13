@@ -274,14 +274,6 @@ pub enum AIBlockResponseRating {
     Negative,
 }
 
-impl AIBlockResponseRating {
-    pub fn name(&self) -> &'static str {
-        match self {
-            AIBlockResponseRating::Positive => "positive",
-            AIBlockResponseRating::Negative => "negative",
-        }
-    }
-}
 
 #[derive(Clone)]
 struct ActionButtons {
@@ -358,10 +350,6 @@ pub(super) struct AIBlockStateHandles {
     /// A given citation should only appear once per block.
     footer_citation_chip_handles: HashMap<AIAgentCitation, MouseStateHandle>,
     orchestration_navigation_card_handles: HashMap<AIAgentActionId, MouseStateHandle>,
-    /// Persistent mouse-state handles per received-message transcript row,
-    /// used by the clickable sender avatar.
-    pub(super) transcript_avatar_handles: HashMap<MessageId, MouseStateHandle>,
-
     references_section_collapsible_handle: MouseStateHandle,
 
     autoread_files_speedbump_checkbox_handle: MouseStateHandle,
@@ -755,24 +743,6 @@ impl CollapsibleElementState {
                     scroll_pinned_to_bottom: true
                 }
             )
-    }
-}
-
-const RECEIVED_MESSAGE_COLLAPSIBLE_ID_PREFIX: &str = "received-message:";
-
-pub(crate) fn received_message_collapsible_id(message_id: &str) -> MessageId {
-    MessageId::new(format!(
-        "{RECEIVED_MESSAGE_COLLAPSIBLE_ID_PREFIX}{message_id}"
-    ))
-}
-
-fn default_collapsible_state_for_orchestration_action(
-    action: &AIAgentActionType,
-) -> Option<CollapsibleElementState> {
-    match action {
-        AIAgentActionType::StartAgent { .. } => Some(CollapsibleElementState::default()),
-        AIAgentActionType::SendMessageToAgent { .. } => Some(CollapsibleElementState::collapsed()),
-        _ => None,
     }
 }
 
@@ -5438,7 +5408,6 @@ impl Entity for AIBlock {
 /// User's final response to an AI-suggested code edit.
 #[derive(Clone, Copy, Debug, Serialize)]
 pub enum RequestedEditResolution {
-    Accept,
     Reject,
 }
 
