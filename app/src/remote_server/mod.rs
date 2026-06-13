@@ -6,7 +6,6 @@
 
 pub mod codebase_index_model;
 pub mod codebase_index_proto;
-pub mod manager;
 pub mod proto;
 pub mod client;
 pub mod setup;

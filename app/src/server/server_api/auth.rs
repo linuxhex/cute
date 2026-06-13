@@ -88,9 +88,6 @@ pub trait AuthClient: 'static + Send + Sync {
         response: Result<warp_graphql::mutations::mint_custom_token::MintCustomTokenResult>,
     ) -> Result<String, MintCustomTokenError>;
 
-    async fn fetch_user_properties<'a>(&self, auth_token: Option<&'a str>)
-        -> Result<warp_graphql::queries::get_user::UserOutput>;
-
     async fn get_user_settings(&self) -> Result<Option<SyncedUserSettings>>;
 
     #[allow(dead_code)]
@@ -243,13 +240,6 @@ impl AuthClient for ServerApi {
             },
             Err(_) => Err(MintCustomTokenError::Unknown),
         }
-    }
-
-    async fn fetch_user_properties<'a>(
-        &self,
-        _auth_token: Option<&'a str>,
-    ) -> Result<warp_graphql::queries::get_user::UserOutput> {
-        Err(anyhow!("User properties not supported in local version"))
     }
 
     async fn get_user_settings(&self) -> Result<Option<SyncedUserSettings>> {
@@ -517,4 +507,3 @@ pub enum MintCustomTokenError {
     Unknown,
 }
 
-pub const EXPERIMENT_ID_HEADER: &str = "X-Warp-Experiment-Id";
