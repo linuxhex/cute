@@ -29,7 +29,7 @@ use crate::ai::get_relevant_files::controller::GetRelevantFilesController;
 use crate::remote_server::codebase_index_model::{
     RemoteCodebaseIndexModel, RemoteCodebaseSearchAvailability, RemoteCodebaseSearchContext,
 };
-use crate::server::server_api::{ServerApi, ServerApiProvider};
+use crate::server::server_api::ServerApi;
 
 pub(super) enum RemoteSearchRequest {
     Pending(futures_util::stream::AbortHandle),
