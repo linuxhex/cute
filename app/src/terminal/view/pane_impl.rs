@@ -239,19 +239,12 @@ impl TerminalView {
         let is_fullscreen_agent_view = self.agent_view_controller.as_ref(app).is_fullscreen();
 
         if in_nav_stack || (is_fullscreen_agent_view && has_parent_terminal) {
-            if false {
-                Flex::row()
-                    .with_cross_axis_alignment(CrossAxisAlignment::Center)
-                    .with_child(ChildView::new(&self.agent_view_back_button).finish())
-                    .finish()
-            } else {
-                Flex::column()
-                    .with_main_axis_alignment(MainAxisAlignment::Center)
-                    .with_cross_axis_alignment(CrossAxisAlignment::Start)
-                    .with_main_axis_size(MainAxisSize::Max)
-                    .with_child(ChildView::new(&self.agent_view_back_button).finish())
-                    .finish()
-            }
+            Flex::column()
+                .with_main_axis_alignment(MainAxisAlignment::Center)
+                .with_cross_axis_alignment(CrossAxisAlignment::Start)
+                .with_main_axis_size(MainAxisSize::Max)
+                .with_child(ChildView::new(&self.agent_view_back_button).finish())
+                .finish()
         } else {
             Flex::row().finish()
         }

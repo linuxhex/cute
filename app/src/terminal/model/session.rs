@@ -134,67 +134,6 @@ impl Sessions {
         // client itself is baked in at session construction time
         // (see `new_command_executor_for_local_tty_session`) so we no
         // longer need to wire it here on connect/disconnect.
-        #[cfg(feature = "local_tty")]
-        if false {
-            let mgr = RemoteServerManager::handle(ctx);
-            ctx.subscribe_to_model(&mgr, |sessions, event, ctx| match event {
-                RemoteServerManagerEvent::SessionConnected {
-                    session_id: sid,
-                    host_id,
-                } => {
-                    if let Some(session) = sessions.sessions.get(sid) {
-                        session.set_remote_host_id(Some(host_id.clone()));
-                    }
-                }
-                RemoteServerManagerEvent::SessionDisconnected {
-                    session_id: sid, ..
-                } => {
-                    if let Some(session) = sessions.sessions.get(sid) {
-                        session.set_remote_host_id(None);
-                    }
-                }
-                RemoteServerManagerEvent::SetupStateChanged { session_id, state } => {
-                    sessions.set_remote_server_setup_state(*session_id, state.clone());
-                    ctx.notify();
-                }
-                RemoteServerManagerEvent::BufferUpdated { .. }
-                | RemoteServerManagerEvent::BufferConflictDetected { .. } => {
-                    // Handled directly by GlobalBufferModel's subscription.
-                }
-                RemoteServerManagerEvent::SessionConnecting { .. }
-                | RemoteServerManagerEvent::SessionDeregistered { .. }
-                | RemoteServerManagerEvent::SessionConnectionFailed { .. }
-                | RemoteServerManagerEvent::HostConnected { .. }
-                | RemoteServerManagerEvent::HostDisconnected { .. }
-                | RemoteServerManagerEvent::NavigatedToDirectory { .. }
-                | RemoteServerManagerEvent::RepoMetadataSnapshot { .. }
-                | RemoteServerManagerEvent::RepoMetadataUpdated { .. }
-                | RemoteServerManagerEvent::RepoMetadataDirectoryLoaded { .. }
-                | RemoteServerManagerEvent::CodebaseIndexStatusesSnapshot { .. }
-                | RemoteServerManagerEvent::CodebaseIndexStatusUpdated { .. }
-                | RemoteServerManagerEvent::CodebaseIndexMutationFailed { .. }
-                | RemoteServerManagerEvent::BinaryCheckComplete { .. }
-                | RemoteServerManagerEvent::BinaryInstallComplete { .. }
-                | RemoteServerManagerEvent::ClientRequestFailed { .. }
-                | RemoteServerManagerEvent::ServerMessageDecodingError { .. }
-                | RemoteServerManagerEvent::DiffStateSnapshotReceived { .. }
-                | RemoteServerManagerEvent::DiffStateMetadataUpdateReceived { .. }
-                | RemoteServerManagerEvent::DiffStateFileDeltaReceived { .. }
-                | RemoteServerManagerEvent::GetBranchesResponse { .. } => {}
-                RemoteServerManagerEvent::SessionReconnected {
-                    session_id: sid,
-                    client,
-                    ..
-                } => {
-                    if let Some(session) = sessions.sessions.get(sid) {
-                        let new_executor =
-                            Arc::new(RemoteServerCommandExecutor::new(*sid, client.clone()));
-                        session.set_command_executor(new_executor);
-                        log::info!("Swapped command executor for session {sid:?} after reconnect");
-                    }
-                }
-            });
-        }
         #[cfg(not(feature = "local_tty"))]
         let _ = ctx;
 
