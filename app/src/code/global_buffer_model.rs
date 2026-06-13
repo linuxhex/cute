@@ -333,30 +333,6 @@ impl GlobalBufferModel {
             Self::handle_lsp_manager_events,
         );
 
-        // Subscribe to remote buffer updates from the RemoteServerManager.
-        #[cfg(feature = "local_tty")]
-        if false {
-            use crate::remote_server::manager::{RemoteServerManager, RemoteServerManagerEvent};
-            let mgr = RemoteServerManager::handle(_ctx);
-            _ctx.subscribe_to_model(&mgr, |_me, event, _ctx| match event {
-                RemoteServerManagerEvent::BufferUpdated {
-                    session_id: _,
-                    path,
-                    content,
-                } => {
-                    // Stub: BufferUpdated now has different fields
-                    // This is a placeholder to handle the event
-                    log::info!("BufferUpdated event for path: {}", path);
-                    let _ = content;
-                }
-                RemoteServerManagerEvent::BufferConflictDetected { session_id: _, path } => {
-                    // Stub: BufferConflictDetected now has session_id
-                    log::info!("BufferConflictDetected event for path: {}", path);
-                }
-                _ => {}
-            });
-        }
-
         Self {
             location_to_id: BiMap::new(),
             buffers: HashMap::new(),
