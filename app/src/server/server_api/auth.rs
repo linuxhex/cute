@@ -156,7 +156,7 @@ impl ServerApi {
             Credentials::Firebase(auth_tokens) => {
                 let expiration_time = auth_tokens.expiration_time;
 
-                if chrono::DateTime::now() + chrono::Duration::minutes(5) >= expiration_time {
+                if chrono::Utc::now() + chrono::Duration::minutes(5) >= expiration_time {
                     let refresh_token = auth_tokens.refresh_token.clone();
                     let firebase_token = FirebaseToken::Refresh(RefreshToken::new(refresh_token));
 
@@ -217,7 +217,7 @@ impl AuthClient for ServerApi {
             linked_at: None,
             personal_object_limits: None,
             principal_type: Default::default(),
-            global_skills: None,
+            global_skills: vec![],
         };
         Ok(FetchUserResult {
             user,

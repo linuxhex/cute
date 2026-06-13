@@ -107,7 +107,7 @@ use warp_graphql::queries::task_git_credentials::{
 use warp_multi_agent_api::ConversationData;
 
 use super::auth::AuthClient;
-use super::harness_support::{UploadField, UploadFieldValue, UploadTarget};
+use super::harness_support::{ResolvePromptRequest, ResolvedHarnessPrompt, UploadField, UploadFieldValue, UploadTarget};
 use super::ServerApi;
 use crate::ai::agent::api::ServerConversationToken;
 use crate::ai::agent::conversation::{
@@ -2563,6 +2563,7 @@ impl AIClient for ServerApi {
         .await?;
         Ok(response)
     }
+
 }
 
 impl TryFrom<warp_graphql::queries::get_feature_model_choices::FeatureModelChoice>
@@ -3164,6 +3165,23 @@ impl StoreClient for ServerApi {
                 Err(anyhow!("failed to retrieve codebase context config").into())
             }
         }
+    }
+}
+
+impl ServerApi {
+    pub async fn resolve_prompt_for_task(
+        &self,
+        _task_id: &AmbientAgentTaskId,
+        _request: ResolvePromptRequest,
+    ) -> anyhow::Result<ResolvedHarnessPrompt> {
+        anyhow::bail!("resolve_prompt_for_task not implemented")
+    }
+
+    pub async fn fetch_transcript_for_task(
+        &self,
+        _task_id: &AmbientAgentTaskId,
+    ) -> anyhow::Result<Vec<u8>> {
+        anyhow::bail!("fetch_transcript_for_task not implemented")
     }
 }
 

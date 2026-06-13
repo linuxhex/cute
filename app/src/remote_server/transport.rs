@@ -7,6 +7,8 @@ use serde::{Deserialize, Serialize};
 pub struct UserFacingError {
     pub message: String,
     pub stage: SetupStage,
+    pub body: String,
+    pub detail: String,
 }
 
 /// Stub for SetupStage.
@@ -16,4 +18,5 @@ pub enum SetupStage {
     CheckBinary,
     StartDaemon,
     Connect,
+    Unknown,
 }

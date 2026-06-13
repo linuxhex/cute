@@ -274,6 +274,9 @@ impl CodeSettingsPageView {
                     }
                     ctx.notify();
                 }
+                RemoteCodebaseIndexModelEvent::IndexUpdated | RemoteCodebaseIndexModelEvent::IndexRemoved => {
+                    ctx.notify();
+                }
             });
             remote_codebase_count
         };
@@ -1537,16 +1540,21 @@ impl CodePageWidget {
     ) -> Box<dyn Element> {
         let mut workspace_content = Flex::column().with_spacing(MAIN_SECTION_MARGIN);
 
-        let remote_path_label = format!("{}:{}", entry.host_label, entry.remote_path.path.as_str());
+        let remote_path_label = if let Some(ref remote_path) = entry.remote_path {
+            format!("{}:{}", entry.host_label.as_deref().unwrap_or(""), remote_path.path.as_str())
+        } else {
+            entry.repo_path.clone()
+        };
         workspace_content.add_child(self.render_workspace_header(
             remote_path_label,
             None,
             appearance,
         ));
 
+        let action_target = entry.remote_path.clone().map(LocalOrRemotePath::Remote);
         workspace_content.add_child(self.render_indexing_subsection_for_target(
             self.remote_indexing_status_presentation(&entry.status, appearance),
-            Some(LocalOrRemotePath::Remote(entry.remote_path.clone())),
+            action_target,
             resync_mouse,
             delete_mouse,
             appearance,
@@ -1836,6 +1844,13 @@ impl CodePageWidget {
                 icon: Some(Icon::AlertTriangle),
                 refresh_action: Some(IndexingRefreshAction::Resync),
                 show_delete: true,
+            },
+            RemoteCodebaseIndexState::NotIndexed | RemoteCodebaseIndexState::Indexed | RemoteCodebaseIndexState::Error => IndexingStatusPresentation {
+                text: Cow::from("Unknown"),
+                color: theme.disabled_ui_text_color().into_solid(),
+                icon: None,
+                refresh_action: None,
+                show_delete: false,
             },
         }
     }

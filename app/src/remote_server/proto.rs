@@ -124,6 +124,7 @@ pub struct TextEdit {
     pub start_offset: u64,
     pub end_offset: u64,
     pub new_text: String,
+    pub text: String,
 }
 
 /// Stub module for open_buffer_response.

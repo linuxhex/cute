@@ -1042,7 +1042,7 @@ pub(crate) fn initialize_app(
 
     ctx.add_singleton_model(|_ctx| AuthStateProvider::new(auth_state.clone()));
 
-    ctx.add_singleton_model(AppTelemetryContextProvider::new_context_provider);
+    ctx.add_singleton_model(|ctx| AppTelemetryContextProvider::new_context_provider(ctx));
 
     ctx.add_singleton_model(|ctx| {
         AuthManager::new(

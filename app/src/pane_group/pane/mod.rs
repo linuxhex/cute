@@ -150,6 +150,7 @@ pub(crate) enum IPaneType {
     Welcome,
     DeferredPlaceholder,
     BranchSelector,
+    NetworkLog,
     /// A pane type only for tests.
     #[cfg(test)]
     Dummy,
@@ -174,6 +175,7 @@ impl Display for IPaneType {
             IPaneType::Welcome => write!(f, "Welcome"),
             IPaneType::DeferredPlaceholder => write!(f, "Placeholder"),
             IPaneType::BranchSelector => write!(f, "Branch Selector"),
+            IPaneType::NetworkLog => write!(f, "Network Log"),
             #[cfg(test)]
             IPaneType::Dummy => write!(f, "Dummy"),
         }
@@ -497,6 +499,7 @@ impl PaneId {
             >::with_id(self.0.pane_view_id)
             .finish(),
             IPaneType::DeferredPlaceholder => warpui::elements::Empty::new().finish(),
+            IPaneType::NetworkLog => warpui::elements::Empty::new().finish(),
             #[cfg(test)]
             IPaneType::Dummy => warpui::elements::Empty::new().finish(),
         };

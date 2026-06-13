@@ -997,35 +997,20 @@ impl NotebookView {
 
     /// The current notebook metadata for telemetry.
     fn telemetry_metadata(&self, ctx: &ViewContext<Self>) -> NotebookTelemetryMetadata {
-        let active_notebook_data = self.active_notebook_data.as_ref(ctx);
-        let owner = active_notebook_data.owner(ctx);
-        let space = active_notebook_data.space(ctx);
-        NotebookTelemetryMetadata::new(
-            self.server_id(ctx),
-            owner.and_then(Into::into),
-            owner.map_or(NotebookLocation::PersonalCloud, Into::into),
-            space.map(Into::into),
-        )
+        NotebookTelemetryMetadata::new()
     }
 
-    fn open_telemetry_metadata(&self, ctx: &ViewContext<Self>) -> NotebookTelemetryMetadata {
-        self.telemetry_metadata(ctx).with_markdown_table_count(
-            self.input
-                .as_ref(ctx)
-                .model()
-                .as_ref(ctx)
-                .markdown_table_count(ctx),
-        )
+    fn open_telemetry_metadata(&self, _ctx: &ViewContext<Self>) -> NotebookTelemetryMetadata {
+        NotebookTelemetryMetadata::new()
     }
 
     #[cfg_attr(not(target_family = "wasm"), allow(dead_code))]
-    fn generic_telemetry_metadata(&self, ctx: &ViewContext<Self>) -> CloudObjectTelemetryMetadata {
-        let notebook_data = self.active_notebook_data.as_ref(ctx);
+    fn generic_telemetry_metadata(&self, _ctx: &ViewContext<Self>) -> CloudObjectTelemetryMetadata {
         CloudObjectTelemetryMetadata {
-            object_type: TelemetryCloudObjectType::Notebook,
-            object_uid: notebook_data.id().and_then(SyncId::into_server),
-            space: notebook_data.space(ctx).map(Into::into),
-            team_uid: notebook_data.owner(ctx).and_then(Into::into),
+            object_type: None,
+            object_uid: None,
+            space: None,
+            team_uid: None,
         }
     }
 

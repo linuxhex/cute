@@ -179,7 +179,7 @@ fn new_command_executor_for_local_tty_session(
         if let IsLegacySSHSession::Yes { .. } = &session_info.is_legacy_ssh_session {
             let session_id = session_info.session_id;
             let maybe_client = RemoteServerManager::handle(ctx)
-                .read(ctx, |mgr, _| mgr.client_for_session(session_id).cloned());
+                .read(ctx, |mgr, _| mgr.client_for_session(session_id));
             if let Some(client) = maybe_client {
                 log::info!("creating a remote server executor for session {session_id:?}");
                 return Arc::new(RemoteServerCommandExecutor::new(session_id, client));

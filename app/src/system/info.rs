@@ -423,7 +423,7 @@ struct CpuUsageStats {
 impl From<CpuUsageStats> for telemetry::CpuUsageStats {
     fn from(value: CpuUsageStats) -> Self {
         Self {
-            num_cpus: value.num_cpus,
+            num_cpus: value.num_cpus as u32,
             max_usage: value.max_usage,
             avg_usage: value.avg_usage,
         }
@@ -496,9 +496,9 @@ impl MemoryUsageStats {
 impl From<MemoryUsageStats> for telemetry::MemoryUsageStats {
     fn from(value: MemoryUsageStats) -> Self {
         Self {
-            total_application_usage_bytes: value.total_application_usage_bytes,
-            total_blocks: value.total_blocks,
-            total_lines: value.total_lines,
+            total_application_usage_bytes: value.total_application_usage_bytes as u64,
+            total_blocks: value.total_blocks as u64,
+            total_lines: value.total_lines as u64,
             active_block_stats: value.active_block_stats.into(),
             inactive_5m_stats: value.inactive_5m_stats.into(),
             inactive_1h_stats: value.inactive_1h_stats.into(),
@@ -531,9 +531,9 @@ impl std::fmt::Debug for BlockMemoryStats {
 impl From<BlockMemoryStats> for telemetry::BlockMemoryUsageStats {
     fn from(value: BlockMemoryStats) -> Self {
         Self {
-            num_blocks: value.num_blocks,
-            num_lines: value.num_lines,
-            estimated_memory_usage_bytes: value.estimated_memory_usage_bytes,
+            num_blocks: value.num_blocks as u64,
+            num_lines: value.num_lines as u64,
+            estimated_memory_usage_bytes: value.estimated_memory_usage_bytes as u64,
         }
     }
 }

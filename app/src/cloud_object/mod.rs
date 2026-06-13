@@ -388,6 +388,20 @@ pub trait CloudObject: Debug {
     /// directly because that would make the trait not object safe.  This
     /// is a workaround.
     fn clone_box(&self) -> Box<dyn CloudObject>;
+
+    /// Creates a queue item for object creation (stub for cloud sync removal).
+    fn create_object_queue_item(
+        &self,
+        _entrypoint: CloudObjectEventEntrypoint,
+        _initiated_by: InitiatedBy,
+    ) -> Option<QueueItem> {
+        None
+    }
+
+    /// Creates a queue item for object update (stub for cloud sync removal).
+    fn update_object_queue_item(&self, _revision: Option<Revision>) -> QueueItem {
+        panic!("update_object_queue_item: cloud sync has been removed")
+    }
 }
 
 /// Defines a common trait for cloud models to implement.

@@ -1530,10 +1530,11 @@ impl FileTreeView {
 
         // Find a connected session for the host that owns this remote root.
         let mgr = RemoteServerManager::as_ref(ctx);
-        let Some(sessions) = mgr.sessions_for_host(host_id) else {
+        let sessions = mgr.sessions_for_host(host_id);
+        if sessions.is_empty() {
             log::warn!("load_remote_directory: no sessions for host {host_id}");
             return;
-        };
+        }
         // Any session for this host suffices – they all share the same remote
         // server process, so any one of them can service the request.
         let Some(&session_id) = sessions.iter().next() else {

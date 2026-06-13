@@ -157,7 +157,8 @@ async fn upload_handoff_snapshot(
 ) -> (TouchedWorkspace, Result<HandoffUploadResult, anyhow::Error>) {
     match target {
         SnapshotUploadTarget::Remote { client } => {
-            let result = match client.upload_handoff_snapshot(paths).await {
+            let path_bufs: Vec<std::path::PathBuf> = paths.iter().map(|sp| sp.to_local_path_lossy()).collect();
+            let result = match client.upload_handoff_snapshot(path_bufs).await {
                 Ok(resp) => try_upload_result_from_proto(resp),
                 Err(err) => Err(anyhow::anyhow!(err).context("Remote handoff snapshot RPC failed")),
             };
@@ -192,8 +193,7 @@ pub(crate) fn resolve_upload_target(
     ctx: &mut ViewContext<Workspace>,
 ) -> SnapshotUploadTarget {
     let remote_client = RemoteServerManager::as_ref(ctx)
-        .client_for_session(session_id)
-        .cloned();
+        .client_for_session(session_id);
     match remote_client {
         Some(client) => SnapshotUploadTarget::Remote { client },
         None => {

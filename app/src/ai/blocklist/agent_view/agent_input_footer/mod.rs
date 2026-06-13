@@ -1219,7 +1219,7 @@ impl AgentInputFooter {
         error_label: &str,
         success_toast: &str,
         operation_kind: PluginChipTelemetryKind,
-        _operation: F,
+        operation: F,
         ctx: &mut ViewContext<Self>,
     ) -> bool
     where

@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use cloud_objects::cloud_object::CloudObjectUpsertParams;
+use cloud_objects::cloud_object::{CloudObjectUpsertParams, SerializedModel};
 // Re-exported from cloud_objects.
 pub use cloud_objects::cloud_object::{GenericStringModel, Serializer};
 pub use warp_server_client::ids::GenericStringObjectId;
@@ -17,35 +17,8 @@ use crate::cloud_object::{
 use crate::drive::items::WarpDriveItem;
 use crate::drive::CloudObjectTypeAndId;
 use crate::persistence::ModelEvent;
-use crate::server::cloud_objects::update_manager::InitiatedBy;
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::server_api::object::ObjectClient;
-
-/// Serialized model data for generic string objects.
-#[derive(Clone, Debug, PartialEq, Default)]
-pub struct SerializedModel(String);
-
-impl SerializedModel {
-    pub fn new(data: String) -> Self {
-        Self(data)
-    }
-
-    pub fn model_as_str(&self) -> &str {
-        &self.0
-    }
-}
-
-impl From<SerializedModel> for String {
-    fn from(model: SerializedModel) -> Self {
-        model.0
-    }
-}
-
-impl From<String> for SerializedModel {
-    fn from(s: String) -> Self {
-        Self(s)
-    }
-}
 
 /// A trait that generic string-based objects should implement.
 pub trait CloudStringObject: CloudObject + Send + Sync {
@@ -163,7 +136,7 @@ where
     }
 
     fn serialized(&self) -> SerializedModel {
-        self.model().serialized()
+        S::serialize(&self.model().string_model)
     }
 
     fn clone_box(&self) -> Box<dyn CloudStringObject> {
@@ -286,7 +259,7 @@ where
                 None
             };
         let res = object_client
-            .update_generic_string_object(server_id.into(), self.serialized(), revision)
+            .update_generic_string_object(server_id.into(), S::serialize(&self.string_model), revision)
             .await;
         res.and_then(|update_result| match update_result {
             UpdateCloudObjectResult::Success {

@@ -12,6 +12,7 @@ use warp_completer::completer::CommandOutput;
 use warp_core::SessionId;
 
 use super::{CommandExecutor, ExecuteCommandOptions};
+use crate::remote_server::client::RemoteServerClient;
 
 /// Stub remote server command executor. Construction panics since remote_server has been removed.
 pub struct RemoteServerCommandExecutor {
@@ -20,7 +21,7 @@ pub struct RemoteServerCommandExecutor {
 
 impl RemoteServerCommandExecutor {
     /// Panics: remote_server has been removed.
-    pub fn new(_session_id: SessionId, _client: ()) -> Self {
+    pub fn new(_session_id: SessionId, _client: Arc<RemoteServerClient>) -> Self {
         unimplemented!("RemoteServerCommandExecutor::new: remote_server has been removed")
     }
 }

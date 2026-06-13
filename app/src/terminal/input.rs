@@ -7350,11 +7350,8 @@ impl Input {
                         CloudModel::as_ref(ctx).get_env_var_collection(env_vars_id);
                     let telemetry_metadata = EnvVarTelemetryMetadata {
                         object_id: env_vars_id.into_server().map(Into::into),
-                        team_uid: env_vars_object
-                            .and_then(|object| object.permissions.owner.into()),
-                        space: env_vars_object
-                            .map_or(Space::Personal, |object| object.space(ctx))
-                            .into(),
+                        team_uid: None,
+                        space: None,
                     };
                 }
             }

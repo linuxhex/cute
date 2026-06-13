@@ -412,6 +412,12 @@ pub enum ModelEvent {
     ExitShell {
         session_id: SessionId,
     },
+    /// Stub for SSH init shell.
+    SshInitShell,
+    /// Stub for remote server block requested.
+    RemoteServerBlockRequested {
+        session_id: SessionId,
+    },
 }
 
 #[derive(Clone, Debug)]

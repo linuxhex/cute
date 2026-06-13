@@ -269,10 +269,10 @@ pub enum RichContentMetadata {
     },
     HarnessSessionHeader,
     SshRemoteServerFailedBanner {
-        handle: ViewHandle<SshErrorBlock>,
+        handle: ViewHandle<super::ssh_remote_server_failed_banner::SshRemoteServerFailedBanner>,
     },
     SshRemoteServerChoiceBlock {
-        handle: ViewHandle<SshWarpifyBlock>,
+        handle: ViewHandle<super::ssh_remote_server_choice_view::SshRemoteServerChoiceView>,
     },
 }
 

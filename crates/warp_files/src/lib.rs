@@ -20,6 +20,7 @@ use repo_metadata::repository::{RepositorySubscriber, SubscriberId};
 use repo_metadata::{CanonicalizedPath, Repository, RepositoryUpdate};
 use warp_util::content_version::ContentVersion;
 use warp_util::file::{FileId, FileLoadError, FileSaveError};
+use warp_util::remote_path::RemotePath;
 use warpui::r#async::SpawnedFutureHandle;
 use warpui::{AppContext, Entity, ModelContext, ModelHandle, SingletonEntity};
 use watcher::{BulkFilesystemWatcher, BulkFilesystemWatcherEvent};
@@ -346,6 +347,11 @@ impl FileModel {
         self.file_state.insert_local(file_id, local_file);
 
         file_id
+    }
+
+    /// Register a remote file. This is a stub method since remote_server has been removed.
+    pub fn register_remote_file(&mut self, _remote_path: RemotePath) -> anyhow::Result<()> {
+        anyhow::bail!("remote_server has been removed")
     }
 
     /// Open a file to get its content asynchronously. This also opts in to receiving file watcher updates.

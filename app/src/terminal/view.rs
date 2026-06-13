@@ -4340,11 +4340,8 @@ impl TerminalView {
                     }
                     RemoteServerManagerEvent::SessionConnectionFailed {
                         session_id,
-                        phase,
+                        host_id: _,
                         error,
-                        exit_status,
-                        proxy_stderr,
-                        is_cancelled,
                     } => {
                         me.model.lock().event_proxy.send_terminal_event(
                             crate::terminal::event::Event::RemoteServerFailed {
@@ -4353,30 +4350,26 @@ impl TerminalView {
                             },
                         );
 
-                        if !is_cancelled {
-                            let (_remote_os, _remote_arch) = RemoteServerManager::handle(ctx)
-                                .as_ref(ctx)
-                                .platform_for_session(*session_id)
-                                .map(|p| {
-                                    (
-                                        Some(p.os.as_str().to_owned()),
-                                        Some(p.arch.as_str().to_owned()),
-                                    )
-                                })
-                                .unwrap_or((None, None));
-                            me.show_ssh_remote_server_failed_banner(
-                                *session_id,
-                                crate::remote_server::transport::UserFacingError {
-                                    body: "Failed to start SSH extension".into(),
-                                    detail: if error.is_empty() {
-                                        None
-                                    } else {
-                                        Some(error.clone())
-                                    },
-                                },
-                                ctx,
-                            );
-                        }
+                        let (_remote_os, _remote_arch) = RemoteServerManager::handle(ctx)
+                            .as_ref(ctx)
+                            .platform_for_session(*session_id)
+                            .map(|p| {
+                                (
+                                    Some(p.os.as_str().to_owned()),
+                                    Some(p.arch.as_str().to_owned()),
+                                )
+                            })
+                            .unwrap_or((None, None));
+                        me.show_ssh_remote_server_failed_banner(
+                            *session_id,
+                            crate::remote_server::transport::UserFacingError {
+                                message: "Failed to start SSH extension".into(),
+                                stage: crate::remote_server::transport::SetupStage::Unknown,
+                                body: "Failed to start SSH extension".into(),
+                                detail: error.clone(),
+                            },
+                            ctx,
+                        );
                     }
                     RemoteServerManagerEvent::SessionDisconnected {
                         session_id,
@@ -4407,8 +4400,7 @@ impl TerminalView {
                     }
                     RemoteServerManagerEvent::BinaryInstallComplete {
                         session_id,
-                        result,
-                        install_source: _install_source,
+                        success: _,
                     } => {
                         let (_remote_os, _remote_arch) = RemoteServerManager::handle(ctx)
                             .as_ref(ctx)
@@ -4420,47 +4412,10 @@ impl TerminalView {
                                 )
                             })
                             .unwrap_or((None, None));
-                        if let Err(error) = result {
-                            log::warn!("Remote server install failed: {error:#}");
-                            me.show_ssh_remote_server_failed_banner(
-                                *session_id,
-                                error.user_facing_error(
-                                    crate::remote_server::transport::SetupStage::InstallBinary,
-                                ),
-                                ctx,
-                            );
-                        }
                     }
                     RemoteServerManagerEvent::BinaryCheckComplete {
                         session_id,
-                        result,
-                        remote_platform,
-                        ..
-                    } => {
-                        let (_remote_os, _remote_arch) = remote_platform
-                            .as_ref()
-                            .map(|p| {
-                                (
-                                    Some(p.os.as_str().to_owned()),
-                                    Some(p.arch.as_str().to_owned()),
-                                )
-                            })
-                            .unwrap_or((None, None));
-                        if let Err(error) = result {
-                            log::warn!("Remote server binary check failed: {error:#}");
-                            me.show_ssh_remote_server_failed_banner(
-                                *session_id,
-                                error.user_facing_error(
-                                    crate::remote_server::transport::SetupStage::CheckBinary,
-                                ),
-                                ctx,
-                            );
-                        }
-                    }
-                    RemoteServerManagerEvent::ClientRequestFailed {
-                        session_id,
-                        operation: _operation,
-                        error_kind: _error_kind,
+                        needs_install: _,
                     } => {
                         let (_remote_os, _remote_arch) = RemoteServerManager::handle(ctx)
                             .as_ref(ctx)
@@ -4473,7 +4428,22 @@ impl TerminalView {
                             })
                             .unwrap_or((None, None));
                     }
-                    RemoteServerManagerEvent::ServerMessageDecodingError { session_id } => {
+                    RemoteServerManagerEvent::ClientRequestFailed {
+                        session_id,
+                        error: _,
+                    } => {
+                        let (_remote_os, _remote_arch) = RemoteServerManager::handle(ctx)
+                            .as_ref(ctx)
+                            .platform_for_session(*session_id)
+                            .map(|p| {
+                                (
+                                    Some(p.os.as_str().to_owned()),
+                                    Some(p.arch.as_str().to_owned()),
+                                )
+                            })
+                            .unwrap_or((None, None));
+                    }
+                    RemoteServerManagerEvent::ServerMessageDecodingError { session_id, error: _ } => {
                         let (_remote_os, _remote_arch) = RemoteServerManager::handle(ctx)
                             .as_ref(ctx)
                             .platform_for_session(*session_id)
@@ -4487,8 +4457,7 @@ impl TerminalView {
                     }
                     RemoteServerManagerEvent::NavigatedToDirectory {
                         session_id: nav_session_id,
-                        remote_path,
-                        is_git: _,
+                        path: remote_path_str,
                     } => {
                         // Repo registration is now handled by the unified
                         // detect_possible_git_repo callback in BlockMetadataReceived.
@@ -4498,9 +4467,16 @@ impl TerminalView {
                             .active_block_session_id()
                             .is_some_and(|sid| sid == *nav_session_id);
                         if is_relevant {
-                            ctx.emit(Event::Pane(PaneEvent::RemoteRepoNavigated {
-                                remote_path: remote_path.clone(),
-                            }));
+                            // Try to construct a RemotePath from the path string
+                            if let (Some(host_id), Ok(std_path)) = (
+                                RemoteServerManager::handle(ctx).as_ref(ctx).host_id_for_session(*nav_session_id),
+                                warp_util::standardized_path::StandardizedPath::try_new(remote_path_str),
+                            ) {
+                                let remote_path = warp_util::remote_path::RemotePath::new(host_id, std_path);
+                                ctx.emit(Event::Pane(PaneEvent::RemoteRepoNavigated {
+                                    remote_path,
+                                }));
+                            }
                         }
                     }
                     RemoteServerManagerEvent::SessionReconnected {
@@ -6868,12 +6844,12 @@ impl TerminalView {
                 let workflow_telem_metadata = associated_workflow.map(|workflow| {
                     let workflow_data = &workflow.model().data;
                     WorkflowTelemetryMetadata {
-                        workflow_source: workflow.space(ctx).into(),
-                        workflow_categories: workflow_data.tags().cloned(),
-                        workflow_selection_source: WorkflowSelectionSource::AgentMode,
-                        workflow_id: workflow.sync_id().into_server().map(Into::into),
-                        workflow_space: Some(workflow.space(ctx).into()),
-                        enum_ids: workflow_data.get_server_enum_ids(),
+                        workflow_source: Some(format!("{:?}", workflow.space(ctx))),
+                        workflow_categories: workflow_data.tags().map(|t| t.clone()),
+                        workflow_selection_source: Some(format!("{:?}", WorkflowSelectionSource::AgentMode)),
+                        workflow_id: workflow.sync_id().into_server().map(|id| id.to_string()),
+                        workflow_space: Some(format!("{:?}", workflow.space(ctx))),
+                        enum_ids: Some(workflow_data.get_server_enum_ids().iter().map(|id| id.to_string()).collect()),
                     }
                 });
 
@@ -12274,6 +12250,9 @@ impl TerminalView {
             ctx.add_typed_action_view(|ctx| SshRemoteServerChoiceView::new(session_id, ctx));
 
         ctx.subscribe_to_view(&choice_view, move |me, _, event, ctx| match event {
+            SshRemoteServerChoiceViewEvent::Dismissed => {
+                me.remove_ssh_remote_server_choice_block(session_id, ctx);
+            }
             SshRemoteServerChoiceViewEvent::Install => {
                 me.remove_ssh_remote_server_choice_block(session_id, ctx);
                 ctx.emit(Event::RemoteServerInstallRequested { session_id });
@@ -12363,9 +12342,11 @@ impl TerminalView {
                     .map(|state| match state {
                         RemoteServerSetupState::Checking => "Checking...".to_string(),
                         RemoteServerSetupState::Installing {
+                            version: _,
                             progress_percent: Some(p),
                         } => format!("Installing... ({p}%)"),
                         RemoteServerSetupState::Installing {
+                            version: _,
                             progress_percent: None,
                         } => "Installing...".to_string(),
                         RemoteServerSetupState::Updating => "Updating...".to_string(),
@@ -12781,7 +12762,7 @@ impl TerminalView {
             trigger,
             title,
             description,
-            Some(NotificationAgentVariant::CLIAgent((*agent).into())),
+            Some(NotificationAgentVariant),
             ctx,
         );
     }
@@ -15184,7 +15165,7 @@ impl TerminalView {
             trigger,
             block_summary.title,
             block_summary.description,
-            Some(NotificationAgentVariant::Oz),
+            Some(NotificationAgentVariant),
             ctx,
         );
     }
@@ -23918,8 +23899,8 @@ impl TerminalView {
             let executor = ctx.background_executor().clone();
             ctx.on_next_frame_drawn(move || {
                 let block_event = TelemetryEvent::BaselineCommandLatency(BlockLatencyInfo {
-                    command: block_latency_data.command,
-                    shell,
+                    command: Some(block_latency_data.command.to_string()),
+                    shell: Some(shell.to_string()),
                     is_ssh,
                     // The execution time is from the time the block started (i.e. user hit
                     // enter) to when the first frame after the block completed is finished
@@ -27147,7 +27128,7 @@ impl Drop for TerminalView {
                     if let Err(error) = server_api
                         .send_telemetry_event(
                             TelemetryEvent::SessionAbandonedBeforeBootstrap {
-                                pending_shell,
+                                pending_shell: pending_shell.is_some(),
                                 has_pending_ssh_session,
                                 was_ever_visible,
                                 duration_since_start,

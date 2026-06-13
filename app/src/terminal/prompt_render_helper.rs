@@ -250,10 +250,10 @@ impl PromptRenderHelper {
                 return match state {
                     RemoteServerSetupState::Checking => "Starting shell...".to_string(),
                     RemoteServerSetupState::Installing {
-                        progress_percent: Some(p),
+                        progress_percent: Some(p), ..
                     } => format!("Installing Warp SSH Extension... ({p}%)"),
                     RemoteServerSetupState::Installing {
-                        progress_percent: None,
+                        progress_percent: None, ..
                     } => "Installing Warp SSH Extension...".to_string(),
                     RemoteServerSetupState::Updating => {
                         "Updating Warp SSH Extension...".to_string()

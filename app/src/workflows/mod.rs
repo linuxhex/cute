@@ -37,7 +37,7 @@ use crate::persistence::ModelEvent;
 use crate::server::cloud_objects::update_manager::InitiatedBy;
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::server_api::object::ObjectClient;
-use crate::cloud_object::model::generic_string_model::SerializedModel;
+use crate::server::sync_queue::SerializedModel;
 
 pub fn init(app: &mut AppContext) {
     categories::init(app);

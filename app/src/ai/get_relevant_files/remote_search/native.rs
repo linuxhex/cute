@@ -46,10 +46,9 @@ pub(super) fn root_directory_for_search(
         .or_else(|| {
             requested_codebase_path
                 .is_none()
-                .then(|| session_context.current_working_directory().clone())
+                .then(|| session_context.current_working_directory().as_ref().map(|s| PathBuf::from(s)))
                 .flatten()
         })
-        .map(PathBuf::from)
 }
 
 pub(super) fn send_request(
@@ -71,8 +70,14 @@ pub(super) fn send_request(
         .active_repo_availability(&session_context, requested_codebase_path.as_deref());
     match availability {
         RemoteCodebaseSearchAvailability::Ready(search_context) => {
+            let Some(remote_path) = search_context.remote_path.as_ref() else {
+                return RemoteSearchRequest::Ready(SearchCodebaseResult::Failed {
+                    reason: SearchCodebaseFailureReason::ClientError,
+                    message: "Remote codebase search is unavailable because the remote path is not set.".to_string(),
+                });
+            };
             let Some(client) = crate::remote_server::manager::RemoteServerManager::as_ref(ctx)
-                .client_for_host(&search_context.remote_path.host_id)
+                .client_for_host(&remote_path.host_id)
                 .cloned()
             else {
                 return RemoteSearchRequest::Ready(SearchCodebaseResult::Failed {
@@ -81,7 +86,7 @@ pub(super) fn send_request(
                 });
             };
             if search_context.is_stale {
-                let remote_path = search_context.remote_path.clone();
+                let remote_path = search_context.remote_path.clone().unwrap();
                 let sync_requested = crate::remote_server::manager::RemoteServerManager::handle(ctx)
                     .update(ctx, |manager, ctx| {
                         manager.trigger_codebase_incremental_sync(remote_path, ctx)
@@ -99,7 +104,7 @@ pub(super) fn send_request(
                         execute_remote_codebase_search(
                             query,
                             partial_paths,
-                            search_context,
+                            *search_context,
                             client,
                             store_client,
                         )
@@ -134,9 +139,12 @@ async fn execute_remote_codebase_search(
     client: Arc<crate::remote_server::client::RemoteServerClient>,
     store_client: Arc<ServerApi>,
 ) -> Result<SearchCodebaseResult, anyhow::Error> {
-    let root_hash = search_context.root_hash;
-    let root_hash_string = root_hash.to_string();
-    let repo_path = search_context.remote_path.path.as_str().to_string();
+    let root_hash_string = search_context.root_hash.clone();
+    let root_hash = root_hash_string.parse()?;
+    let remote_path = search_context.remote_path.clone().ok_or_else(|| {
+        anyhow::anyhow!("Remote path not set in search context")
+    })?;
+    let repo_path = remote_path.path.as_str().to_string();
     let embedding_config = store_client
         .codebase_context_config()
         .await?
@@ -164,7 +172,7 @@ async fn execute_remote_codebase_search(
         .collect_vec();
     let metadata_response = client
         .get_fragment_metadata_from_hash(
-            repo_path.clone(),
+            PathBuf::from(repo_path.clone()),
             root_hash_string,
             candidate_hash_strings,
         )
@@ -288,7 +296,8 @@ const RETRIEVE_FRAGMENT_CONTEXT_LENGTH: usize = 0;
 fn remote_fragment_metadata(
     fragment: ProtoFragmentMetadata,
 ) -> anyhow::Result<(ContentHash, AiFragmentMetadata)> {
-    let content_hash = ContentHash::from_str(&fragment.content_hash)?;
+    let hash_str = String::from_utf8_lossy(&fragment.content_hash).to_string();
+    let content_hash = ContentHash::from_str(&hash_str)?;
     Ok((
         content_hash,
         AiFragmentMetadata {

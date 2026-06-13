@@ -137,6 +137,13 @@ pub enum Event {
         title: Option<String>,
         body: String,
     },
+    RemoteServerReady {
+        session_id: SessionId,
+    },
+    RemoteServerFailed {
+        session_id: SessionId,
+        error: String,
+    },
 }
 
 #[derive(Debug, Clone)]
@@ -346,7 +353,7 @@ pub enum RemoteServerSetupState {
     Checking,
     Installing {
         version: String,
-        progress_percent: f32,
+        progress_percent: Option<f32>,
     },
     Updating,
     Initializing,
@@ -515,6 +522,12 @@ impl Debug for Event {
             }
             Event::ExitShell { session_id } => {
                 write!(f, "ExitShell(session: {session_id:?})")
+            }
+            Event::RemoteServerReady { session_id } => {
+                write!(f, "RemoteServerReady(session: {session_id:?})")
+            }
+            Event::RemoteServerFailed { session_id, error } => {
+                write!(f, "RemoteServerFailed(session: {session_id:?}, error: {error})")
             }
         }
     }

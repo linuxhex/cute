@@ -573,7 +573,10 @@ impl WelcomePalette {
 
     fn close(&mut self, ctx: &mut ViewContext<Self>, accepted_action_type: Option<&'static str>) {
         let buffer_length = self.search_bar.as_ref(ctx).query(ctx).len();
-        let filter = self.active_query_filter(ctx);
+        let filter = self
+            .active_query_filter(ctx)
+            .map(|f| f.display_name())
+            .unwrap_or("none");
         let event = if let Some(result_type) = accepted_action_type {
             TelemetryEvent::PaletteSearchResultAccepted {
                 result_type,

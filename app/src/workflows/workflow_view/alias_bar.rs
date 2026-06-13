@@ -125,9 +125,8 @@ impl AliasBar {
     }
 
     /// The current workflow's space for telemetry events.
-    fn workflow_space(&self, app: &AppContext) -> Option<TelemetrySpace> {
-        let workflow = CloudModel::as_ref(app).get_workflow(&self.workflow_id)?;
-        Some(workflow.space(app).into())
+    fn workflow_space(&self, _app: &AppContext) -> Option<TelemetrySpace> {
+        None
     }
 
     fn mark_dirty(&mut self, is_dirty: bool, ctx: &mut ViewContext<Self>) {
