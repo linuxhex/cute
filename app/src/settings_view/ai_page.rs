@@ -1998,7 +1998,7 @@ impl AISettingsPageView {
             None => {
                 // Full page: all widgets (legacy behavior)
                 widgets.push(Box::new(GlobalAIWidget::default()));
-                if !FeatureFlag::UsageBasedPricing.is_enabled() {
+                if !false {
                     widgets.push(Box::new(UsageWidget::default()));
                 }
                 if ai_settings
@@ -2089,7 +2089,7 @@ impl AISettingsPageView {
                 }
             }
             Some(AISubpage::Profiles) => {
-                if !FeatureFlag::UsageBasedPricing.is_enabled() {
+                if !false {
                     widgets.push(Box::new(UsageWidget::default()));
                 }
                 widgets.push(Box::new(AgentsWidget::default()));

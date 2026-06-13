@@ -17,7 +17,7 @@ impl CodebaseAutoIndexingSurface {
     fn required_feature_enabled(self) -> bool {
         match self {
             Self::Local => true,
-            Self::Remote => FeatureFlag::RemoteCodebaseIndexing.is_enabled(),
+            Self::Remote => false,
         }
     }
 }

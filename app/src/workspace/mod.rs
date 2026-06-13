@@ -698,7 +698,7 @@ pub fn init(app: &mut AppContext) {
             id!("Workspace") & id!(flags::IS_ANY_AI_ENABLED) & !id!("Workspace_PaneDragging"),
         )
         .with_enabled(|| {
-            FeatureFlag::AgentView.is_enabled() && FeatureFlag::CloudMode.is_enabled()
+            FeatureFlag::AgentView.is_enabled() && false
         }),
         EditableBinding::new(
             "workspace:toggle_left_panel",

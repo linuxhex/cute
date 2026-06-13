@@ -70,7 +70,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         #[cfg(feature = "dynamic_workflow_enums")]
         FeatureFlag::DynamicWorkflowEnums,
         #[cfg(feature = "shared_with_me")]
-        FeatureFlag::SharedWithMe,
         #[cfg(feature = "am_workflows")]
         FeatureFlag::AgentModeWorkflows,
         #[cfg(feature = "ai_rules")]
@@ -350,7 +349,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         #[cfg(feature = "named_agents")]
         FeatureFlag::NamedAgents,
         #[cfg(feature = "cloud_conversations")]
-        FeatureFlag::CloudConversations,
         #[cfg(feature = "agent_toolbar_editor")]
         FeatureFlag::AgentToolbarEditor,
         #[cfg(feature = "configurable_toolbar")]
@@ -396,7 +394,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         #[cfg(feature = "open_warp_launch_modal")]
         FeatureFlag::OpenWarpLaunchModal,
         #[cfg(feature = "orchestration_launch_modal")]
-        FeatureFlag::OrchestrationLaunchModal,
         #[cfg(feature = "new_tab_styling")]
         FeatureFlag::NewTabStyling,
         #[cfg(feature = "skill_arguments")]
@@ -408,11 +405,8 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         #[cfg(feature = "incremental_auto_reload")]
         FeatureFlag::IncrementalAutoReload,
         #[cfg(feature = "orchestration_v2")]
-        FeatureFlag::OrchestrationV2,
         #[cfg(feature = "orchestration_pill_bar")]
-        FeatureFlag::OrchestrationPillBar,
         #[cfg(feature = "orchestration_viewer_pill_bar")]
-        FeatureFlag::OrchestrationViewerPillBar,
         #[cfg(feature = "run_agents_tool")]
         FeatureFlag::RunAgentsTool,
         #[cfg(feature = "pending_user_query_indicator")]
@@ -470,17 +464,13 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         #[cfg(feature = "trim_trailing_blank_lines")]
         FeatureFlag::TrimTrailingBlankLines,
         #[cfg(feature = "cloud_mode_setup_v2")]
-        FeatureFlag::CloudModeSetupV2,
         #[cfg(feature = "cloud_mode_input_v2")]
-        FeatureFlag::CloudModeInputV2,
         #[cfg(feature = "configurable_context_window")]
         FeatureFlag::ConfigurableContextWindow,
         #[cfg(feature = "handoff_cloud_cloud")]
-        FeatureFlag::HandoffCloudCloud,
         #[cfg(feature = "git_credential_refresh")]
         FeatureFlag::GitCredentialRefresh,
         #[cfg(feature = "remote_code_review")]
-        FeatureFlag::RemoteCodeReview,
         #[cfg(feature = "custom_inference_endpoints")]
         FeatureFlag::CustomInferenceEndpoints,
     ]);

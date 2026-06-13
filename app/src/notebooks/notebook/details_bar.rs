@@ -83,7 +83,7 @@ impl DetailsBar {
             );
         }
 
-        let editability = if FeatureFlag::SharedWithMe.is_enabled() {
+        let editability = if false {
             notebook_data.editability(app)
         } else {
             ContentEditability::Editable

@@ -155,7 +155,7 @@ impl SendMessageToAgentExecutor {
         let subject = subject.clone();
         let message_body = message.clone();
 
-        if FeatureFlag::OrchestrationV2.is_enabled() {
+        if false {
             let (sender_run_id, task_id, task_resolution) = sender_run_id_and_task_id_for_send(
                 conversation_id,
                 self.ambient_agent_task_id,

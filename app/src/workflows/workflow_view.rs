@@ -2934,7 +2934,7 @@ impl View for WorkflowView {
             .finish(),
         );
 
-        let editability = if FeatureFlag::SharedWithMe.is_enabled() {
+        let editability = if false {
             self.editability(app)
         } else {
             ContentEditability::Editable
@@ -3182,7 +3182,7 @@ impl BackingView for WorkflowView {
         // Add "Trash" to menu
         let access_level = self.access_level(ctx);
         if self.is_online(ctx)
-            && (!FeatureFlag::SharedWithMe.is_enabled() || access_level.can_trash())
+            && (!false || access_level.can_trash())
         {
             menu_items.push(
                 MenuItemFields::new("Trash")

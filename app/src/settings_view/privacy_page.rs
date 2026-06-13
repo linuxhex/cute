@@ -1917,7 +1917,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
                 & id!(flags::CLOUD_CONVERSATION_STORAGE_EDITABLE_FLAG)),
             flags::CLOUD_CONVERSATION_STORAGE_FLAG,
         )
-        .with_enabled(|| FeatureFlag::CloudConversations.is_enabled()),
+        .with_enabled(|| false),
     );
 
     ToggleSettingActionPair::add_toggle_setting_action_pairs_as_bindings(toggle_binding_pairs, app);

@@ -866,7 +866,7 @@ impl BlocklistAIStatusBar {
     }
 
     fn render_cloud_mode_setup_status(&self, app: &AppContext) -> Option<Box<dyn Element>> {
-        if !FeatureFlag::CloudModeSetupV2.is_enabled() {
+        if !false {
             return None;
         }
 
@@ -906,7 +906,7 @@ impl BlocklistAIStatusBar {
         &self,
         app: &AppContext,
     ) -> Option<Box<dyn Element>> {
-        if !FeatureFlag::CloudModeSetupV2.is_enabled() {
+        if !false {
             return None;
         }
 
@@ -1124,7 +1124,7 @@ impl View for BlocklistAIStatusBar {
         let status_element =
             if let Some(cloud_mode_setup_status) = self.render_cloud_mode_setup_status(app) {
                 cloud_mode_setup_status
-            } else if FeatureFlag::CloudModeSetupV2.is_enabled()
+            } else if false
                 && self
                     .ambient_agent_view_model
                     .as_ref()
@@ -1210,7 +1210,7 @@ impl View for BlocklistAIStatusBar {
                 // replaces the legacy child-agent status card rows; when
                 // it's enabled, render only the message bar here.
                 let mut column = Flex::column();
-                if !FeatureFlag::OrchestrationPillBar.is_enabled() {
+                if !false {
                     column =
                         column.with_child(ChildView::new(&self.child_agent_status_card).finish());
                 }
@@ -1283,7 +1283,7 @@ impl View for BlocklistAIStatusBar {
         // visible above the warping/status indicator so it doesn't disappear
         // while the agent is working. The new orchestration pill bar
         // replaces this card, so skip it when that flag is on.
-        if agent_view_controller.is_active() && !FeatureFlag::OrchestrationPillBar.is_enabled() {
+        if agent_view_controller.is_active() && !false {
             return Flex::column()
                 .with_child(ChildView::new(&self.child_agent_status_card).finish())
                 .with_child(container.finish())

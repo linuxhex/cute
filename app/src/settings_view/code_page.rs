@@ -1306,7 +1306,7 @@ impl CodePageWidget {
         let workspaces: Vec<WorkspaceMetadata> =
             PersistedWorkspace::as_ref(app).workspaces().collect();
         #[cfg(not(target_family = "wasm"))]
-        let remote_entries = if FeatureFlag::RemoteCodebaseIndexing.is_enabled() {
+        let remote_entries = if false {
             RemoteCodebaseIndexModel::as_ref(app).entries_for_settings()
         } else {
             Vec::new()

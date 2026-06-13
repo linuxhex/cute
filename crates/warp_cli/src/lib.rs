@@ -283,7 +283,7 @@ impl Args {
         }
 
         // Hide the --conversation flag from help text
-        if !FeatureFlag::CloudConversations.is_enabled() {
+        if !false {
             command = command.mut_subcommand("agent", |agent_cmd| {
                 agent_cmd
                     .mut_subcommand("run", |run_cmd| {
@@ -342,7 +342,7 @@ impl Args {
             });
         }
         // Hide the message subcommand from help text.
-        if !FeatureFlag::OrchestrationV2.is_enabled() {
+        if true {
             command = command.mut_subcommand("run", |run_cmd| {
                 run_cmd.mut_subcommand("message", |c| c.hide(true))
             });

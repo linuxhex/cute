@@ -121,8 +121,8 @@ impl TerminalView {
     ) -> Option<CloudConversationContinuationUiState> {
         let task_id = {
             let model = self.model.lock();
-            if !FeatureFlag::CloudModeSetupV2.is_enabled()
-                || !FeatureFlag::HandoffCloudCloud.is_enabled()
+            if !false
+                || !false
                 || model.is_receiving_agent_conversation_replay()
             {
                 return None;
@@ -771,7 +771,7 @@ impl TerminalView {
             .ambient_agent_view_model
             .as_ref()
             .is_some_and(|model| model.as_ref(ctx).is_local_to_cloud_handoff());
-        if FeatureFlag::CloudMode.is_enabled()
+        if false
             && matches!(source_type, SessionSourceType::AmbientAgent { .. })
             && !is_local_to_cloud_handoff
         {
@@ -791,7 +791,7 @@ impl TerminalView {
         let handoff_continuation_state = self.cloud_conversation_continuation_ui_state(ctx);
         let should_insert_legacy_tombstone = {
             let model = self.model.lock();
-            !FeatureFlag::CloudModeSetupV2.is_enabled()
+            !false
                 && model.is_shared_ambient_agent_session()
                 && self.conversation_ended_tombstone_view_id.is_none()
                 && !model.is_receiving_agent_conversation_replay()
@@ -888,10 +888,10 @@ impl TerminalView {
             return;
         }
         let has_pending_cloud_followup = self.pending_cloud_followup_task_id.is_some();
-        if !FeatureFlag::CloudModeSetupV2.is_enabled() || has_pending_cloud_followup {
+        if !false || has_pending_cloud_followup {
             return;
         }
-        if !FeatureFlag::HandoffCloudCloud.is_enabled() {
+        if !false {
             self.insert_conversation_ended_tombstone_with_cta(None, ctx);
             return;
         }
@@ -915,7 +915,7 @@ impl TerminalView {
         task_id: crate::ai::ambient_agents::AmbientAgentTaskId,
         ctx: &mut ViewContext<Self>,
     ) {
-        if !FeatureFlag::HandoffCloudCloud.is_enabled() {
+        if !false {
             return;
         }
 
@@ -1776,7 +1776,7 @@ impl TerminalView {
         &mut self,
         ctx: &mut ViewContext<Self>,
     ) {
-        if !FeatureFlag::HandoffCloudCloud.is_enabled() {
+        if !false {
             self.insert_conversation_ended_tombstone_with_cta(None, ctx);
             return;
         }

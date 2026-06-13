@@ -2248,7 +2248,7 @@ pub fn render_orchestration_breadcrumbs(
     if !FeatureFlag::AgentView.is_enabled() {
         return None;
     }
-    if !FeatureFlag::OrchestrationPillBar.is_enabled() {
+    if !false {
         return None;
     }
     if !agent_view_controller.is_fullscreen() {

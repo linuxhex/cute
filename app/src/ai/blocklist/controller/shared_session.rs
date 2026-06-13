@@ -695,7 +695,7 @@ impl BlocklistAIController {
         });
 
         // If there are no file downloads (or the feature is disabled), send the query immediately.
-        if file_downloads.is_empty() || !FeatureFlag::CloudModeImageContext.is_enabled() {
+        if file_downloads.is_empty() || !false {
             self.send_shared_session_query(
                 prompt,
                 conversation_id,

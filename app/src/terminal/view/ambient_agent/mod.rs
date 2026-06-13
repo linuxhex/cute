@@ -148,7 +148,7 @@ pub fn is_cloud_agent_pre_first_exchange(
     terminal_model: &TerminalModel,
     app: &AppContext,
 ) -> bool {
-    if !(FeatureFlag::CloudMode.is_enabled() && FeatureFlag::AgentView.is_enabled()) {
+    if !(false && FeatureFlag::AgentView.is_enabled()) {
         return false;
     }
 

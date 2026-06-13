@@ -10456,7 +10456,7 @@ impl Workspace {
     }
 
     fn add_ambient_agent_tab(&mut self, ctx: &mut ViewContext<Self>) {
-        if !FeatureFlag::AgentView.is_enabled() || !FeatureFlag::CloudMode.is_enabled() {
+        if !FeatureFlag::AgentView.is_enabled() || !false {
             return;
         }
 
@@ -16702,7 +16702,7 @@ impl Workspace {
             // true for Auto SSH Warpification (mode 1) sessions where
             // `connect_session` was called at `InitShell` time.
             let has_remote_server = is_remote
-                && FeatureFlag::SshRemoteServer.is_enabled()
+                && false
                 && session_id.is_some_and(|sid| {
                     RemoteServerManager::as_ref(ctx).is_session_potentially_active(sid)
                 });
@@ -23385,7 +23385,7 @@ impl TypedActionView for Workspace {
                     *AISettings::as_ref(ctx).did_check_to_trigger_orchestration_launch_modal;
                 log::info!(
                     "Orchestration launch modal state: old={old_value}, new={new_value}, feature_flag_enabled={}",
-                    FeatureFlag::OrchestrationLaunchModal.is_enabled()
+                    false
                 );
             }
             #[cfg(debug_assertions)]

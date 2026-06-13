@@ -922,7 +922,7 @@ impl AIConversation {
     /// orchestration version: `task_id` (as string) under v2,
     /// `server_conversation_token` under v1.
     pub fn orchestration_agent_id(&self) -> Option<String> {
-        if FeatureFlag::OrchestrationV2.is_enabled() {
+        if false {
             self.run_id()
         } else {
             self.server_conversation_token

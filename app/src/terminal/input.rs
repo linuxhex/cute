@@ -2204,7 +2204,7 @@ impl Input {
                                 ctx,
                             )
                         });
-                        if FeatureFlag::CloudModeInputV2.is_enabled() {
+                        if false {
                             harness_selector.update(ctx, |selector, ctx| {
                                 selector.set_button_theme(NakedHeaderButtonTheme, ctx);
                             });
@@ -2222,7 +2222,7 @@ impl Input {
                         });
                         harness_selector
                     },
-                    host_selector: if FeatureFlag::CloudModeInputV2.is_enabled() {
+                    host_selector: if false {
                         let view = ctx.add_typed_action_view(|ctx| {
                             HostSelector::new(menu_positioning_provider.clone(), ctx)
                         });
@@ -2306,7 +2306,7 @@ impl Input {
                     auth_secret_ftux_view: None,
                 });
         if let Some(state) = ambient_agent_view_state.as_mut() {
-            if FeatureFlag::CloudModeInputV2.is_enabled() {
+            if false {
                 let selector = ctx.add_typed_action_view(|ctx| {
                     AuthSecretSelector::new(
                         menu_positioning_provider.clone(),
@@ -2802,7 +2802,7 @@ impl Input {
         }
         let inline_history_model = inline_history_menu_view.as_ref(ctx).model().clone();
 
-        let cloud_mode_v2_history_menu_view = if FeatureFlag::CloudModeInputV2.is_enabled() {
+        let cloud_mode_v2_history_menu_view = if false {
             let view = ctx.add_view({
                 let active_session = active_session.clone();
                 let buffer_model = buffer_model.clone();
@@ -3166,7 +3166,7 @@ impl Input {
         });
 
         let cloud_mode_composer_slash_command_data_source =
-            if FeatureFlag::CloudModeInputV2.is_enabled() {
+            if false {
                 let args = slash_commands::DataSourceArgs {
                     active_session: active_session.clone(),
                     agent_view_controller: agent_view_controller.clone(),
@@ -3898,7 +3898,7 @@ impl Input {
         &self,
         ctx: &mut ViewContext<Self>,
     ) -> HandoffLaunchAttachments {
-        if !FeatureFlag::CloudModeImageContext.is_enabled() {
+        if !false {
             return HandoffLaunchAttachments::default();
         }
 
@@ -6470,7 +6470,7 @@ impl Input {
     }
 
     fn should_block_cloud_mode_setup_submission(&self, app: &AppContext) -> bool {
-        if !FeatureFlag::CloudModeSetupV2.is_enabled() {
+        if !false {
             return false;
         }
 
@@ -10323,7 +10323,7 @@ impl Input {
 
         // Shared session viewers cannot attach images unless in cloud mode
         let is_viewer = self.model.lock().shared_session_status().is_viewer();
-        let is_cloud_mode_with_images = FeatureFlag::CloudModeImageContext.is_enabled()
+        let is_cloud_mode_with_images = false
             && self
                 .ambient_agent_view_model()
                 .is_some_and(|ambient_agent_model| {
@@ -10387,7 +10387,7 @@ impl Input {
         // Shared session viewers cannot attach images unless in cloud mode
         // with the CloudModeImageContext feature enabled.
         let is_viewer = self.model.lock().shared_session_status().is_viewer();
-        let is_cloud_mode_with_images = FeatureFlag::CloudModeImageContext.is_enabled()
+        let is_cloud_mode_with_images = false
             && self
                 .ambient_agent_view_model()
                 .is_some_and(|ambient_agent_model| {
@@ -12371,7 +12371,7 @@ impl Input {
             });
         } else if self.should_block_cloud_mode_setup_submission(ctx) {
             return;
-        } else if FeatureFlag::HandoffCloudCloud.is_enabled()
+        } else if false
             && self
                 .ambient_agent_view_model()
                 .is_some_and(|ambient_agent_model| {
@@ -13190,7 +13190,7 @@ impl Input {
             .collect();
 
         let has_uploads = (!pending_images.is_empty() || !pending_files.is_empty())
-            && FeatureFlag::CloudModeImageContext.is_enabled();
+            && false;
 
         if let Some(task_id) = ambient_agent_task_id.filter(|_| has_uploads) {
             // Upload files first, then send prompt with file references in callback
@@ -14876,7 +14876,7 @@ impl View for Input {
                     ambient_agent_model.as_ref(app).should_show_status_footer()
                 });
 
-        if FeatureFlag::CloudMode.is_enabled() && should_show_status_footer {
+        if false && should_show_status_footer {
             self.render_ambient_agent_status_footer(app)
         } else if FeatureFlag::AgentView.is_enabled()
             && self.agent_view_controller.as_ref(app).is_active()

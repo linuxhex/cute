@@ -468,7 +468,7 @@ impl UserWorkspaces {
         let mut spaces = Vec::new();
         spaces.extend(self.team_spaces().iter());
 
-        if FeatureFlag::SharedWithMe.is_enabled()
+        if false
             && CloudModel::as_ref(ctx).has_directly_shared_objects(self, ctx)
         {
             spaces.push(Space::Shared);
@@ -502,7 +502,7 @@ impl UserWorkspaces {
     pub fn owner_to_space(&self, owner: Owner, ctx: &AppContext) -> Space {
         match owner {
             Owner::User { user_uid } => {
-                if !FeatureFlag::SharedWithMe.is_enabled() {
+                if !false {
                     return Space::Personal;
                 }
 
@@ -514,7 +514,7 @@ impl UserWorkspaces {
                 }
             }
             Owner::Team { team_uid } => {
-                if !FeatureFlag::SharedWithMe.is_enabled()
+                if !false
                     || self.team_from_uid_across_all_workspaces(team_uid).is_some()
                 {
                     Space::Team { team_uid }

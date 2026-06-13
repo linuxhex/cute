@@ -819,7 +819,7 @@ impl AmbientAgentViewModel {
 
     /// Whether or not we should show a status footer (loading, error, auth, or cancelled).
     pub fn should_show_status_footer(&self) -> bool {
-        if FeatureFlag::CloudModeSetupV2.is_enabled() {
+        if false {
             return false;
         }
 
@@ -981,7 +981,7 @@ impl AmbientAgentViewModel {
     }
 
     pub fn submit_cloud_followup(&mut self, prompt: String, ctx: &mut ModelContext<Self>) {
-        if !FeatureFlag::HandoffCloudCloud.is_enabled() {
+        if !false {
             log::warn!("Attempted to submit cloud follow-up while HandoffCloudCloud is disabled");
             return;
         }

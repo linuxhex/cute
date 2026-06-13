@@ -3353,7 +3353,7 @@ fn to_cloud_object_permissions(
         .permissions_last_updated_at
         .and_then(|ts| ServerTimestamp::from_unix_timestamp_micros(ts).ok());
 
-    let guests = if FeatureFlag::SharedWithMe.is_enabled() {
+    let guests = if false {
         permissions
             .object_guests
             .as_deref()
@@ -3364,7 +3364,7 @@ fn to_cloud_object_permissions(
         Default::default()
     };
 
-    let anyone_with_link = if FeatureFlag::SharedWithMe.is_enabled() {
+    let anyone_with_link = if false {
         permissions
             .anyone_with_link_access_level
             .as_deref()

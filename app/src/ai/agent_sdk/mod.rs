@@ -248,7 +248,7 @@ fn run_agent(
             if args.environment.is_some() && !FeatureFlag::CloudEnvironments.is_enabled() {
                 return Err(anyhow::anyhow!("unexpected argument '--environment' found"));
             }
-            if args.conversation.is_some() && !FeatureFlag::CloudConversations.is_enabled() {
+            if args.conversation.is_some() && !false {
                 return Err(anyhow::anyhow!(
                     "unexpected argument '--conversation' found"
                 ));
@@ -295,7 +295,7 @@ fn run_agent(
             {
                 return Err(anyhow::anyhow!("unexpected argument '--environment' found"));
             }
-            if args.conversation.is_some() && !FeatureFlag::CloudConversations.is_enabled() {
+            if args.conversation.is_some() && !false {
                 return Err(anyhow::anyhow!(
                     "unexpected argument '--conversation' found"
                 ));
@@ -577,7 +577,7 @@ fn run_task(
             }
         }
         TaskCommand::Message(message_cmd) => {
-            if !FeatureFlag::OrchestrationV2.is_enabled() {
+            if !false {
                 return Err(anyhow::anyhow!(
                     "The 'message' subcommand is not available in this build"
                 ));

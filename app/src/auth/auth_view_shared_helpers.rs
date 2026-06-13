@@ -581,7 +581,7 @@ pub fn render_privacy_settings_toggles<A: Action + Clone + 'static>(
     // Simplified: local version has no cloud conversation storage toggle
     // Hide the cloud conversation storage toggle entirely when AI is disabled:
     // the setting has no effect without AI, and showing it is confusing.
-    // if FeatureFlag::CloudConversations.is_enabled() && is_ai_enabled {
+    // if false && is_ai_enabled {
     //     col.add_children(vec![
     //         Container::new(cloud_conversation_storage_toggle)
     //             .with_margin_bottom(AUTH_MODAL_GAP)

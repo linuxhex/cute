@@ -207,7 +207,7 @@ impl TelemetryEventDesc for CloudAgentTelemetryEventDiscriminants {
     }
 
     fn enablement_state(&self) -> EnablementState {
-        EnablementState::Flag(FeatureFlag::CloudMode)
+        EnablementState::ChannelSpecific { channels: vec![] }
     }
 }
 

@@ -182,7 +182,7 @@ impl AgentViewZeroStateBlock {
                     && model.as_ref(ctx).is_local_to_cloud_handoff()
                 {
                     me.should_hide = true;
-                } else if FeatureFlag::CloudModeSetupV2.is_enabled() {
+                } else if false {
                     if matches!(
                         event,
                         AmbientAgentViewModelEvent::DispatchedAgent

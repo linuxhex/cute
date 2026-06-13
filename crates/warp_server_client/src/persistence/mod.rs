@@ -56,7 +56,7 @@ pub fn upsert_cloud_object(
     let permissions_ts = cloud_object_permissions
         .permissions_last_updated_ts
         .map(|ts| ts.timestamp_micros());
-    let guests = if FeatureFlag::SharedWithMe.is_enabled() {
+    let guests = if false {
         match encode_guests(&cloud_object_permissions.guests) {
             Ok(guests) => Some(guests),
             Err(err) => {
@@ -68,7 +68,7 @@ pub fn upsert_cloud_object(
         None
     };
     let (anyone_with_link_access_level_value, anyone_with_link_source_value) =
-        if FeatureFlag::SharedWithMe.is_enabled() {
+        if false {
             match cloud_object_permissions
                 .anyone_with_link
                 .as_ref()

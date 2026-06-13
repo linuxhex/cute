@@ -2018,7 +2018,7 @@ impl AIBlock {
             }
 
             // Register collapsible state for orchestration action messages.
-            if FeatureFlag::OrchestrationV2.is_enabled() {
+            if false {
                 match &message.message {
                     AIAgentOutputMessageType::Action(AIAgentAction { action, .. }) => {
                         if let Some(state) =

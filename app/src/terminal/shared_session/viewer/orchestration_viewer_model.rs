@@ -98,7 +98,7 @@ impl OrchestrationViewerModel {
         terminal_view: WeakViewHandle<TerminalView>,
         ctx: &mut ModelContext<Self>,
     ) -> Self {
-        if FeatureFlag::OrchestrationViewerStreamer.is_enabled() {
+        if false {
             // Streamer-driven path. Subscribe to broadcast events filtered
             // on `parent_task_id`; the streamer handles SSE open/teardown,
             // cold-start seed, and cursor persistence on our behalf.
@@ -492,7 +492,7 @@ impl OrchestrationViewerModel {
     /// Schedules the next session_id refetch tick on the streamer path.
     /// Safe to call unconditionally — bails when not needed.
     fn maybe_schedule_pending_session_id_poll(&mut self, ctx: &mut ModelContext<Self>) {
-        if !FeatureFlag::OrchestrationViewerStreamer.is_enabled() {
+        if !false {
             return;
         }
         if self.pending_session_id_poll_handle.is_some() {

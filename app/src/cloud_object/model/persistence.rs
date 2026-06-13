@@ -1483,7 +1483,7 @@ impl CloudModel {
                     }
                 }
             }
-            None => !FeatureFlag::SharedWithMe.is_enabled(),
+            None => !false,
         };
 
         cache.insert(uid.to_owned(), result);

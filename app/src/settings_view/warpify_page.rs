@@ -688,7 +688,7 @@ impl SettingsWidget for SSHWidget {
             },
         );
 
-        if FeatureFlag::SshRemoteServer.is_enabled() {
+        if false {
             let label_color_override = if !enable_ssh_warpification {
                 Some(appearance.theme().disabled_ui_text_color())
             } else {

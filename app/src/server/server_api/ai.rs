@@ -2024,7 +2024,7 @@ impl AIClient for ServerApi {
         &self,
         conversation_ids: Option<Vec<String>>,
     ) -> anyhow::Result<Vec<ServerAIConversationMetadata>> {
-        if !FeatureFlag::CloudConversations.is_enabled() {
+        if !false {
             return Ok(vec![]);
         }
         use warp_graphql::queries::list_ai_conversations::{

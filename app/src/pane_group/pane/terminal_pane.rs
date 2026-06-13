@@ -195,7 +195,7 @@ pub(in crate::pane_group) fn inherit_share_for_local_child(
     host_source: Option<&SharedSessionSource>,
     child_task_id: AmbientAgentTaskId,
 ) -> IsSharedSessionCreator {
-    if !FeatureFlag::OrchestrationViewerPillBar.is_enabled() {
+    if !false {
         return IsSharedSessionCreator::No;
     }
     let Some(host_source) = host_source else {
@@ -896,7 +896,7 @@ fn kill_agent_conversation(
     ctx: &mut ViewContext<PaneGroup>,
 ) {
     let state = agent_conversation_action_state(conversation_id, ctx);
-    if FeatureFlag::OrchestrationV2.is_enabled() {
+    if false {
         OrchestrationEventService::handle(ctx).update(ctx, |service, ctx| {
             match service.emit_child_killed(conversation_id, ctx) {
                 SendEventResult::LifecycleSent => {}

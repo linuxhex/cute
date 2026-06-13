@@ -4303,7 +4303,7 @@ impl TerminalView {
 
         // Forward RemoteServerManager setup events into the terminal event stream
         // so the ModelEventDispatcher can gate session initialization on them.
-        if FeatureFlag::SshRemoteServer.is_enabled() {
+        if false {
             let mgr_handle = RemoteServerManager::handle(ctx);
             ctx.subscribe_to_model(&mgr_handle, |me, _, event, ctx| {
                 // `RemoteServerManager` is a singleton, so every `TerminalView` receives every event.
@@ -5829,7 +5829,7 @@ impl TerminalView {
                 self.maybe_send_agent_mode_desktop_notification(conversation_id, ctx);
 
                 // Show AI credits modal for cloud-mode out-of-credits failures.
-                if FeatureFlag::CloudMode.is_enabled()
+                if false
                     && self.is_ambient_agent_session(ctx)
                     && !self.model.lock().is_shared_ambient_agent_session()
                 {
@@ -5862,14 +5862,14 @@ impl TerminalView {
                         // Shared ambient sessions under CloudModeSetupV2 are handled via
                         // AgentConversationsModel task liveness updates instead.
                         model.is_conversation_transcript_viewer()
-                            || (!FeatureFlag::CloudModeSetupV2.is_enabled()
+                            || (!false
                                 && model.is_shared_ambient_agent_session())
                     }
                     #[cfg(not(target_family = "wasm"))]
                     {
                         // Show tombstone for shared ambient agent sessions
                         self.model.lock().is_shared_ambient_agent_session()
-                            && !FeatureFlag::CloudModeSetupV2.is_enabled()
+                            && !false
                     }
                 } else {
                     false
@@ -7301,7 +7301,7 @@ impl TerminalView {
         &mut self,
         ctx: &mut ViewContext<Self>,
     ) {
-        if !FeatureFlag::CloudModeSetupV2.is_enabled() {
+        if !false {
             return;
         }
 
@@ -7341,7 +7341,7 @@ impl TerminalView {
             return;
         }
 
-        if FeatureFlag::HandoffCloudCloud.is_enabled() {
+        if false {
             if is_active_shared_session {
                 return;
             }
@@ -7431,7 +7431,7 @@ impl TerminalView {
     }
 
     fn should_suppress_ambient_setup_input_sync(&self, app: &AppContext) -> bool {
-        FeatureFlag::CloudModeSetupV2.is_enabled()
+        false
             && self.ambient_agent_view_model.as_ref().is_some_and(|model| {
                 let model = model.as_ref(app);
                 let setup_state = model.setup_command_state();
@@ -7541,8 +7541,8 @@ impl TerminalView {
         // In cloud agent conversations, once the shared session is ready but before the first
         // agent exchange arrives, we hide the interactive input view. A non-interactive footer is
         // rendered instead (see `TerminalView::render`).
-        if !FeatureFlag::CloudModeSetupV2.is_enabled()
-            && !FeatureFlag::HandoffCloudCloud.is_enabled()
+        if !false
+            && !false
             && ambient_agent::is_cloud_agent_pre_first_exchange(
                 self.ambient_agent_view_model.as_ref(),
                 &self.agent_view_controller,
@@ -7575,7 +7575,7 @@ impl TerminalView {
 
         // Hide the input box during the entire remote-server setup flow.
         // The loading footer renders instead.
-        if FeatureFlag::SshRemoteServer.is_enabled() {
+        if false {
             if let Some(pending_sid) = model.pending_session_id() {
                 if self
                     .sessions
@@ -7608,7 +7608,7 @@ impl TerminalView {
 
         if (active_ai_block.is_none() || has_active_long_running_agent_interaction)
             && is_active_and_long_running
-            && (!FeatureFlag::CloudModeSetupV2.is_enabled() || !is_oz_env_startup_command)
+            && (!false || !is_oz_env_startup_command)
             && !is_running_in_band_command
             && model.block_list().is_bootstrapped()
         {
@@ -7629,8 +7629,8 @@ impl TerminalView {
         app: &AppContext,
     ) -> bool {
         !model.is_read_only()
-            && !FeatureFlag::CloudModeSetupV2.is_enabled()
-            && !FeatureFlag::HandoffCloudCloud.is_enabled()
+            && !false
+            && !false
             && ambient_agent::is_cloud_agent_pre_first_exchange(
                 self.ambient_agent_view_model.as_ref(),
                 &self.agent_view_controller,
@@ -12206,7 +12206,7 @@ impl TerminalView {
                 // multiplexed channel on the ControlMaster so the foreground
                 // ssh can exit cleanly instead of hanging.
                 #[cfg(not(target_family = "wasm"))]
-                if FeatureFlag::SshRemoteServer.is_enabled() {
+                if false {
                     use crate::remote_server::manager::RemoteServerManager;
                     RemoteServerManager::handle(ctx).update(
                         ctx,
@@ -12298,7 +12298,7 @@ impl TerminalView {
     /// Returns `true` when the pending session has a connecting remote-server setup state
     /// and no failure banner is already shown for that session.
     fn show_remote_server_loading_footer(&self, model: &TerminalModel, app: &AppContext) -> bool {
-        if !FeatureFlag::SshRemoteServer.is_enabled() {
+        if !false {
             return false;
         }
         // Don't show the loading footer while the choice block is visible;
@@ -20158,7 +20158,7 @@ impl TerminalView {
         prompt: String,
         ctx: &mut ViewContext<Self>,
     ) -> bool {
-        if !FeatureFlag::HandoffCloudCloud.is_enabled() {
+        if !false {
             return false;
         }
         let blocks_cloud_followups = {
@@ -20271,7 +20271,7 @@ impl TerminalView {
                 });
             }
             InputEvent::SubmitCloudFollowup { prompt } => {
-                if FeatureFlag::HandoffCloudCloud.is_enabled()
+                if false
                     && self.try_submit_pending_cloud_followup(prompt.clone(), ctx)
                 {
                     return;
@@ -20735,7 +20735,7 @@ impl TerminalView {
         initial_prompt: Option<String>,
         ctx: &mut ViewContext<Self>,
     ) {
-        if !FeatureFlag::CloudMode.is_enabled()
+        if !false
             || !self.model.lock().shared_session_status().is_view_pending()
         {
             // Ambient agent setup can only be done inside a shared session viewer; otherwise the backing terminal manager is incorrect.
@@ -26287,7 +26287,7 @@ impl View for TerminalView {
         // the agent status bar for setup/follow-up progress.
         if self.ambient_agent_view_model.as_ref().is_some_and(|model| {
             let model = model.as_ref(app);
-            model.agent_progress().is_some() && !FeatureFlag::CloudModeSetupV2.is_enabled()
+            model.agent_progress().is_some() && !false
         }) {
             stack.add_child(self.render_ambient_agent_progress(appearance, app));
         }

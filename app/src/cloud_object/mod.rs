@@ -275,7 +275,7 @@ pub trait CloudObject: Debug {
                         // If the object has a parent, but the parent is not in CloudModel, assume
                         // the object is shared, but not its parent. For backwards compatibility,
                         // if sharing is disabled, default to trashed rather than untrashed.
-                        !FeatureFlag::SharedWithMe.is_enabled()
+                        !false
                     }
                 }
             }

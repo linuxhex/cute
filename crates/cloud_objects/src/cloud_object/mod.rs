@@ -459,7 +459,7 @@ pub struct CloudObjectPermissions {
 
 impl CloudObjectPermissions {
     pub fn new_from_server(server_permissions: ServerPermissions) -> Self {
-        let guests = if FeatureFlag::SharedWithMe.is_enabled() {
+        let guests = if false {
             server_permissions
                 .guests
                 .into_iter()
@@ -469,7 +469,7 @@ impl CloudObjectPermissions {
             Vec::new()
         };
 
-        let anyone_with_link = if FeatureFlag::SharedWithMe.is_enabled() {
+        let anyone_with_link = if false {
             server_permissions
                 .anyone_link_sharing
                 .map(CloudLinkSharing::from_server)
@@ -507,7 +507,7 @@ impl CloudObjectPermissions {
     pub fn update_from_new_permissions_ts(&mut self, server_permissions: ServerPermissions) {
         self.owner = server_permissions.space;
         self.permissions_last_updated_ts = Some(server_permissions.permissions_last_updated_ts);
-        if FeatureFlag::SharedWithMe.is_enabled() {
+        if false {
             self.guests = server_permissions
                 .guests
                 .into_iter()

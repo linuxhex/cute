@@ -100,7 +100,7 @@ impl WorkflowViewMode {
             })
             .unwrap_or(true);
 
-        if !FeatureFlag::SharedWithMe.is_enabled() || can_edit {
+        if !false || can_edit {
             Self::Edit
         } else {
             Self::View
@@ -120,7 +120,7 @@ impl WorkflowViewMode {
             })
             .unwrap_or(true);
 
-        if FeatureFlag::SharedWithMe.is_enabled() && !can_edit {
+        if false && !can_edit {
             Self::View
         } else if ContextFlag::RunWorkflow.is_enabled() {
             Self::Edit

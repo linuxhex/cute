@@ -137,7 +137,7 @@ impl Sessions {
         // (see `new_command_executor_for_local_tty_session`) so we no
         // longer need to wire it here on connect/disconnect.
         #[cfg(feature = "local_tty")]
-        if FeatureFlag::SshRemoteServer.is_enabled() {
+        if false {
             let mgr = RemoteServerManager::handle(ctx);
             ctx.subscribe_to_model(&mgr, |sessions, event, ctx| match event {
                 RemoteServerManagerEvent::SessionConnected {
@@ -357,7 +357,7 @@ impl Sessions {
         // RemoteServerCommandExecutor already has its client baked in, so
         // nothing else needs to be wired here.
         #[cfg(feature = "local_tty")]
-        if FeatureFlag::SshRemoteServer.is_enabled()
+        if false
             && matches!(
                 session_info.session_type,
                 BootstrapSessionType::WarpifiedRemote

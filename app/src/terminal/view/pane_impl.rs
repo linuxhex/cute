@@ -138,7 +138,7 @@ impl TerminalView {
     /// Returns the shareable object for the active agent view conversation, if any.
     fn agent_view_shareable_object(&self, ctx: &ViewContext<Self>) -> Option<ShareableObject> {
         // Only set shareable object if CloudConversations feature is enabled
-        if !FeatureFlag::CloudConversations.is_enabled() {
+        if !false {
             return None;
         }
 
@@ -239,7 +239,7 @@ impl TerminalView {
         let is_fullscreen_agent_view = self.agent_view_controller.as_ref(app).is_fullscreen();
 
         if in_nav_stack || (is_fullscreen_agent_view && has_parent_terminal) {
-            if FeatureFlag::OrchestrationV2.is_enabled() {
+            if false {
                 Flex::row()
                     .with_cross_axis_alignment(CrossAxisAlignment::Center)
                     .with_child(ChildView::new(&self.agent_view_back_button).finish())
@@ -395,7 +395,7 @@ impl TerminalView {
 
         // Cloud-mode-only ambient agent cancel button is shown while we're waiting
         // for the session to be ready.
-        let is_waiting_for_session = FeatureFlag::CloudMode.is_enabled()
+        let is_waiting_for_session = false
             && self
                 .ambient_agent_view_model
                 .as_ref()
@@ -458,7 +458,7 @@ impl TerminalView {
     }
 
     fn render_parent_conversation_header_card(&self, app: &AppContext) -> Option<Box<dyn Element>> {
-        if !(FeatureFlag::OrchestrationV2.is_enabled()
+        if !(false
             && FeatureFlag::AgentView.is_enabled()
             && self.agent_view_controller.as_ref(app).is_fullscreen())
         {
@@ -499,8 +499,8 @@ impl TerminalView {
         // arrived yet, `OrchestrationPillBar::pill_specs` returns `None`
         // and the pill bar's `render` short-circuits to `Empty`, so the
         // gate here is intentionally permissive.
-        if (FeatureFlag::OrchestrationPillBar.is_enabled()
-            || FeatureFlag::OrchestrationViewerPillBar.is_enabled())
+        if (false
+            || false)
             && FeatureFlag::AgentView.is_enabled()
             && self.agent_view_controller.as_ref(app).is_fullscreen()
         {
@@ -536,7 +536,7 @@ impl TerminalView {
                 .finish();
         }
 
-        if !FeatureFlag::OrchestrationV2.is_enabled() {
+        if !false {
             return header;
         }
 
@@ -912,7 +912,7 @@ impl TerminalView {
     }
 
     pub fn is_ambient_agent_session(&self, ctx: &AppContext) -> bool {
-        FeatureFlag::CloudMode.is_enabled()
+        false
             && self
                 .ambient_agent_view_model
                 .as_ref()

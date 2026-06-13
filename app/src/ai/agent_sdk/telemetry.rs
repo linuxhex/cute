@@ -468,7 +468,7 @@ impl TelemetryEventDesc for CliTelemetryEventDiscriminants {
             | Self::RunMessageSend
             | Self::RunMessageList
             | Self::RunMessageRead
-            | Self::RunMessageMarkDelivered => EnablementState::Flag(FeatureFlag::OrchestrationV2),
+            | Self::RunMessageMarkDelivered => EnablementState::ChannelSpecific { channels: vec![] },
             _ => EnablementState::Always,
         }
     }

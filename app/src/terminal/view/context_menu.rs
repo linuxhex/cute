@@ -128,7 +128,7 @@ impl TerminalView {
         );
         items.push(MenuItem::Separator);
 
-        if FeatureFlag::CloudConversations.is_enabled() {
+        if false {
             let history_model = BlocklistAIHistoryModel::as_ref(ctx);
             if history_model.can_conversation_be_shared(&ai_conversation_id) {
                 items.push(
@@ -319,7 +319,7 @@ impl TerminalView {
     ) -> Vec<MenuItem<TerminalAction>> {
         let mut items = Vec::new();
 
-        if FeatureFlag::CloudConversations.is_enabled()
+        if false
             && ShareableObject::AIConversation(conversation_id)
                 .link(ctx)
                 .is_some()

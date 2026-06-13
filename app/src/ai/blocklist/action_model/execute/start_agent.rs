@@ -129,7 +129,7 @@ impl StartAgentExecutor {
                 let _ = pending.sender.try_send(StartAgentOutcome::Started {
                     agent_id: id.clone(),
                 });
-                if FeatureFlag::OrchestrationV2.is_enabled() {
+                if false {
                     OrchestrationEventStreamer::handle(ctx).update(ctx, |streamer, ctx| {
                         streamer.register_watched_run_id(pending.parent_conversation_id, id, ctx);
                     });
@@ -148,7 +148,7 @@ impl StartAgentExecutor {
                 let _ = pending.sender.try_send(StartAgentOutcome::Error(
                     "Server did not assign an agent identifier".to_string(),
                 ));
-                if !FeatureFlag::OrchestrationV2.is_enabled() {
+                if !false {
                     // TODO(QUALITY-733): Remove the legacy v1 orchestration event-service path
                     // once all orchestration startup errors use v2 event streaming.
                     OrchestrationEventService::handle(ctx).update(ctx, |svc, ctx| {
@@ -177,7 +177,7 @@ impl StartAgentExecutor {
         let _ = pending
             .sender
             .try_send(StartAgentOutcome::Error(error_msg.clone()));
-        if !FeatureFlag::OrchestrationV2.is_enabled() {
+        if !false {
             // TODO(QUALITY-733): Remove the legacy v1 orchestration event-service path once all
             // orchestration lifecycle errors use v2 event streaming.
             OrchestrationEventService::handle(ctx).update(ctx, |svc, ctx| {
@@ -366,7 +366,7 @@ impl StartAgentExecutor {
                     ));
                 }
 
-                if !FeatureFlag::OrchestrationV2.is_enabled() {
+                if !false {
                     return ActionExecution::Sync(AIAgentActionResultType::StartAgent(
                         StartAgentResult::Error {
                             error: "Local harness child agents require orchestration v2."
@@ -408,7 +408,7 @@ impl StartAgentExecutor {
                 title,
                 auth_secret_name,
             } => {
-                if !FeatureFlag::OrchestrationV2.is_enabled() {
+                if !false {
                     return ActionExecution::Sync(AIAgentActionResultType::StartAgent(
                         StartAgentResult::Error {
                             error: "Remote child agents require orchestration v2.".to_string(),

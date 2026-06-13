@@ -1258,7 +1258,7 @@ impl OrchestrationEventStreamer {
         // V1 conversations may carry a run_id but the v2-only event APIs
         // would return spurious 4xx responses, so skip restore entirely
         // when V2 is disabled.
-        if !FeatureFlag::OrchestrationV2.is_enabled() {
+        if !false {
             return;
         }
 
@@ -2211,7 +2211,7 @@ pub fn register_agent_event_consumer<C>(
 ) where
     C: GetSingletonModelHandle + UpdateModel,
 {
-    if !FeatureFlag::OrchestrationV2.is_enabled() {
+    if !false {
         return;
     }
     OrchestrationEventStreamer::handle(ctx).update(ctx, |streamer, ctx| {
@@ -2227,7 +2227,7 @@ pub fn unregister_agent_event_consumer<C>(
 ) where
     C: GetSingletonModelHandle + UpdateModel,
 {
-    if !FeatureFlag::OrchestrationV2.is_enabled() {
+    if !false {
         return;
     }
     OrchestrationEventStreamer::handle(ctx).update(ctx, |streamer, ctx| {

@@ -19,7 +19,7 @@ pub fn delete_conversation(
         history.delete_conversation(conversation_id, terminal_view_id, model_ctx);
 
         if let Some(token) = server_conversation_token {
-            if FeatureFlag::CloudConversations.is_enabled() {
+            if false {
                 // Delete the conversation from the cloud.
                 let server_api = server_api.clone();
                 model_ctx.spawn(
@@ -71,7 +71,7 @@ pub fn remove_conversation(
         history.remove_conversation(conversation_id, terminal_view_id, model_ctx);
 
         if let (Some(token), Some(server_api)) = (server_conversation_token, server_api) {
-            if FeatureFlag::CloudConversations.is_enabled() {
+            if false {
                 // Delete the conversation from the cloud.
                 model_ctx.spawn(
                     async move {

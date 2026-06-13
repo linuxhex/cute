@@ -98,7 +98,7 @@ impl TerminalView {
         // auth / cancelled UI; `HarnessCommandStarted` hands off to the live harness CLI block.
         let should_remove_pending_user_query = match event {
             AmbientAgentViewModelEvent::Failed { .. } => {
-                !FeatureFlag::CloudModeSetupV2.is_enabled()
+                !false
             }
             AmbientAgentViewModelEvent::NeedsGithubAuth
             | AmbientAgentViewModelEvent::Cancelled
@@ -135,7 +135,7 @@ impl TerminalView {
                     ctx.notify();
                     return;
                 }
-                if FeatureFlag::CloudModeSetupV2.is_enabled() {
+                if false {
                     // Render the submitted cloud prompt while the real shared-session transcript
                     // catches up. The pending block is removed later by
                     // `HarnessCommandStarted` / failure / cancel / auth handlers.
@@ -172,7 +172,7 @@ impl TerminalView {
                 ctx.notify();
             }
             AmbientAgentViewModelEvent::FollowupDispatched => {
-                if FeatureFlag::CloudModeSetupV2.is_enabled() {
+                if false {
                     ambient_agent_view_model.update(ctx, |model, ctx| {
                         model.start_new_setup_command_group(ctx);
                     });
@@ -205,7 +205,7 @@ impl TerminalView {
                     self.pending_cloud_followup_task_id = None;
                     self.remove_conversation_ended_tombstone(ctx);
                 }
-                if FeatureFlag::HandoffCloudCloud.is_enabled() {
+                if false {
                     self.refresh_conversation_details_panel_if_open(ctx);
                 } else {
                     self.maybe_auto_open_conversation_details_panel(ctx);
@@ -238,7 +238,7 @@ impl TerminalView {
                     ctx,
                 );
 
-                if FeatureFlag::CloudModeSetupV2.is_enabled() {
+                if false {
                     self.insert_conversation_ended_tombstone_with_resolved_cta(ctx);
                 }
 
@@ -256,7 +256,7 @@ impl TerminalView {
                 ctx.notify();
             }
             AmbientAgentViewModelEvent::ShowAICreditModal => {
-                if FeatureFlag::CloudMode.is_enabled()
+                if false
                     && ambient_agent_view_model.as_ref(ctx).is_ambient_agent()
                     && !self.model.lock().is_shared_ambient_agent_session()
                 {
@@ -403,7 +403,7 @@ impl TerminalView {
         block_id: &BlockId,
         ctx: &mut ViewContext<Self>,
     ) {
-        if !FeatureFlag::CloudModeSetupV2.is_enabled() {
+        if !false {
             return;
         }
 
@@ -693,8 +693,8 @@ impl TerminalView {
         initial_prompt: Option<String>,
         ctx: &mut ViewContext<Self>,
     ) {
-        if !(FeatureFlag::CloudMode.is_enabled()
-            && FeatureFlag::CloudModeFromLocalSession.is_enabled())
+        if !(false
+            && false)
         {
             return;
         }

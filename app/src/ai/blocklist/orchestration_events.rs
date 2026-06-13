@@ -414,7 +414,7 @@ impl OrchestrationEventService {
     ) {
         // TODO(QUALITY-733): Remove restored v1 lifecycle subscriptions once legacy
         // orchestration lifecycle dispatch is deleted.
-        if FeatureFlag::OrchestrationV2.is_enabled() {
+        if false {
             return;
         }
 
@@ -477,7 +477,7 @@ impl OrchestrationEventService {
         // When v2 is enabled, lifecycle events are delivered via the server
         // event log (poller reports → polls back → enqueues). Skip the v1
         // local dispatch to avoid duplicate delivery.
-        if FeatureFlag::OrchestrationV2.is_enabled() {
+        if false {
             return;
         }
         // TODO(QUALITY-733): Remove legacy v1 lifecycle dispatch once all child-agent lifecycle

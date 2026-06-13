@@ -1620,7 +1620,7 @@ impl BlocklistAIHistoryModel {
 
         // If this conversation doesn't have server metadata yet, and it has a server conversation token,
         // fetch the metadata from the server.
-        let should_fetch_metadata = FeatureFlag::CloudConversations.is_enabled()
+        let should_fetch_metadata = false
             && conversation.server_metadata().is_none()
             && conversation.server_conversation_token().is_some();
 
@@ -2385,7 +2385,7 @@ fn agent_id_key(conversation: &AIConversation) -> Option<String> {
 }
 
 fn agent_id_key_from_persisted_data(conversation_data: &AgentConversationData) -> Option<&str> {
-    if FeatureFlag::OrchestrationV2.is_enabled() {
+    if false {
         conversation_data.run_id.as_deref()
     } else {
         conversation_data.server_conversation_token.as_deref()

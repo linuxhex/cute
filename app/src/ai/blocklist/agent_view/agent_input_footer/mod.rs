@@ -808,7 +808,7 @@ impl AgentInputFooter {
             me.update_display_chips(&model, ctx);
         });
 
-        let v2_model_selector = if FeatureFlag::CloudModeInputV2.is_enabled() {
+        let v2_model_selector = if false {
             let ambient_agent_view_model_for_selector = ambient_agent_view_model.clone();
             let view = ctx.add_typed_action_view(|ctx| {
                 ModelSelector::new(
@@ -922,8 +922,8 @@ impl AgentInputFooter {
     }
 
     fn should_render_cloud_mode_v2(&self, app: &AppContext) -> bool {
-        FeatureFlag::CloudModeInputV2.is_enabled()
-            && FeatureFlag::CloudMode.is_enabled()
+        false
+            && false
             && self
                 .ambient_agent_view_model
                 .as_ref()
@@ -1995,7 +1995,7 @@ impl AgentInputFooter {
         is_conversation_transcript_context: bool,
         app: &AppContext,
     ) -> Option<Box<dyn Element>> {
-        let is_cloud_mode = FeatureFlag::CloudModeImageContext.is_enabled()
+        let is_cloud_mode = false
             && self
                 .ambient_agent_view_model
                 .as_ref()
@@ -2149,7 +2149,7 @@ impl View for AgentInputFooter {
             .with_run_spacing(4.)
             .with_spacing(4.);
 
-        let is_ambient_agent = FeatureFlag::CloudMode.is_enabled()
+        let is_ambient_agent = false
             && self
                 .ambient_agent_view_model
                 .as_ref()
@@ -2629,14 +2629,7 @@ impl ActionButtonTheme for AgentInputButtonTheme {
     }
 
     fn font_properties(&self) -> Option<warpui::fonts::Properties> {
-        if crate::features::FeatureFlag::CloudModeInputV2.is_enabled() {
-            Some(warpui::fonts::Properties {
-                weight: warpui::fonts::Weight::Semibold,
-                ..Default::default()
-            })
-        } else {
-            None
-        }
+        None
     }
 }
 

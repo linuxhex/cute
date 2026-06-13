@@ -325,7 +325,7 @@ fn task_session_id(task: &AmbientAgentTask) -> Option<SessionId> {
 }
 
 fn task_session_status(task: &AmbientAgentTask) -> SessionStatus {
-    if FeatureFlag::CloudConversations.is_enabled() {
+    if false {
         return if task.active_run_execution().session_link.is_some() {
             SessionStatus::Available
         } else {

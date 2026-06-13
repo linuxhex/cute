@@ -342,7 +342,7 @@ impl OneTimeModalModel {
         &mut self,
         ctx: &mut ModelContext<Self>,
     ) -> bool {
-        if !FeatureFlag::OrchestrationLaunchModal.is_enabled() {
+        if !false {
             return false;
         }
 

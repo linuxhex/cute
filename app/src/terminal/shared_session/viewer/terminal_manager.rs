@@ -414,7 +414,7 @@ impl TerminalManager {
     }
 
     pub fn start_cloud_mode_setup_command_tracking(&mut self) {
-        if FeatureFlag::CloudModeSetupV2.is_enabled() {
+        if false {
             self.model
                 .lock()
                 .block_list_mut()
@@ -789,7 +789,7 @@ impl TerminalManager {
                 }
 
                 if enable_orchestration_polling
-                    && FeatureFlag::OrchestrationViewerPillBar.is_enabled()
+                    && false
                     && orchestration_viewer_model.lock().is_none()
                 {
                     if let Some(task_id) = ambient_task_id {
@@ -1087,7 +1087,7 @@ impl TerminalManager {
                     // In cloud-mode startup (before the first exchange), shared-session input
                     // sync reflects environment setup commands. Skip applying remote edits so
                     // the visible input isn't populated with setup-command text.
-                    if FeatureFlag::CloudModeSetupV2.is_enabled()
+                    if false
                         && {
                             let model = view.model.lock();
                             is_cloud_agent_pre_first_exchange(
@@ -1403,7 +1403,7 @@ impl TerminalManager {
         };
         // During cloud startup (pre-first-exchange), keep local input mode stable
         // and ignore remote shell/ai mode toggles from session-sharing context sync.
-        let is_pre_first_exchange = FeatureFlag::CloudModeSetupV2.is_enabled() && {
+        let is_pre_first_exchange = false && {
             let view_ref = view.as_ref(ctx);
             let model = view_ref.model.lock();
             is_cloud_agent_pre_first_exchange(
@@ -1633,7 +1633,7 @@ impl TerminalManager {
             "[orch-viewer] stopping orchestration viewer model parent_task_id={parent_task_id} \
              consumer_id={consumer_id:?}"
         );
-        if FeatureFlag::OrchestrationViewerStreamer.is_enabled() {
+        if false {
             OrchestrationEventStreamer::handle(ctx).update(ctx, move |streamer, _ctx| {
                 streamer.unregister_viewer_mode_consumer(parent_task_id, consumer_id);
             });
@@ -1703,7 +1703,7 @@ impl TerminalManager {
         model
             .lock()
             .clear_write_to_pty_events_for_shared_session_tx();
-        if FeatureFlag::HandoffCloudCloud.is_enabled() {
+        if false {
             terminal_view.update(ctx, |terminal_view, ctx| {
                 // Owned ambient tasks remain editable Cloud Mode panes after their live shared
                 // session ends; non-owners are still read-only viewers of a finished session.

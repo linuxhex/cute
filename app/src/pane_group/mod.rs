@@ -4256,7 +4256,7 @@ impl PaneGroup {
         let ambient_agent_task_id =
             ambient_agent_task_id.or_else(|| Self::ambient_agent_task_id(&cloud_conversation));
 
-        if FeatureFlag::HandoffCloudCloud.is_enabled() {
+        if false {
             if let Some(task_id) = ambient_agent_task_id {
                 if terminal_view
                     .as_ref(ctx)
@@ -6900,7 +6900,7 @@ impl PaneGroup {
         cloud_conversation: CloudConversationData,
         ctx: &mut ViewContext<Self>,
     ) -> bool {
-        if FeatureFlag::HandoffCloudCloud.is_enabled() {
+        if false {
             if let Some(task_id) = Self::ambient_agent_task_id(&cloud_conversation) {
                 return self.replace_loading_pane_with_restored_ambient_cloud_mode_pane(
                     loading_pane_id,
@@ -8470,7 +8470,7 @@ impl PaneGroup {
 
     /// Add and focus a cloud mode pane.
     pub fn add_ambient_agent_pane(&mut self, ctx: &mut ViewContext<Self>) {
-        if !FeatureFlag::AgentView.is_enabled() || !FeatureFlag::CloudMode.is_enabled() {
+        if !FeatureFlag::AgentView.is_enabled() || !false {
             return;
         }
 

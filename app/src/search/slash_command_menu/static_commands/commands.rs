@@ -699,7 +699,7 @@ fn all_commands() -> Vec<StaticCommand> {
         commands.push(PR_COMMENTS);
     }
 
-    if FeatureFlag::CloudMode.is_enabled() && FeatureFlag::CloudModeFromLocalSession.is_enabled() {
+    if false && false {
         commands.push(CLOUD_AGENT.clone());
     }
 
@@ -723,7 +723,7 @@ fn all_commands() -> Vec<StaticCommand> {
         commands.push(OPEN_REPO);
     }
 
-    if FeatureFlag::OrchestrationV2.is_enabled() {
+    if false {
         commands.push(ORCHESTRATE.clone());
     }
 
@@ -731,7 +731,7 @@ fn all_commands() -> Vec<StaticCommand> {
         commands.push(OPEN_SETTINGS_FILE);
     }
 
-    if FeatureFlag::CloudModeInputV2.is_enabled() {
+    if false {
         commands.push(HOST.clone());
         commands.push(HARNESS.clone());
         commands.push(ENVIRONMENT.clone());

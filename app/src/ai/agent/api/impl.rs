@@ -107,7 +107,7 @@ pub async fn generate_multi_agent_output(
             supports_bundled_skills: FeatureFlag::BundledSkills.is_enabled(),
             supports_research_agent: params.research_agent_enabled,
             supports_orchestration_v2: params.orchestration_enabled
-                && FeatureFlag::OrchestrationV2.is_enabled(),
+                && false,
             custom_model_providers: params.custom_model_providers,
         }),
         metadata: Some(api::request::Metadata {
@@ -212,7 +212,7 @@ fn get_supported_tools(params: &RequestParams) -> Vec<api::ToolType> {
             // after a successful connection handshake, so its presence is a
             // sufficient proxy for client availability.
             supported_tools.extend(&[api::ToolType::ReadFiles, api::ToolType::ApplyFileDiffs]);
-            if FeatureFlag::RemoteCodebaseIndexing.is_enabled() {
+            if false {
                 supported_tools.push(api::ToolType::SearchCodebase);
             }
         }
@@ -238,12 +238,12 @@ fn get_supported_tools(params: &RequestParams) -> Vec<api::ToolType> {
         // Always advertise the legacy start-agent tool so the server
         // can fall back to it when its own orchestrate flag is off.
         // When RunAgents is also enabled, advertise it alongside.
-        supported_tools.push(if FeatureFlag::OrchestrationV2.is_enabled() {
+        supported_tools.push(if false {
             api::ToolType::StartAgentV2
         } else {
             api::ToolType::StartAgent
         });
-        if FeatureFlag::RunAgentsTool.is_enabled() && FeatureFlag::OrchestrationV2.is_enabled() {
+        if FeatureFlag::RunAgentsTool.is_enabled() && false {
             supported_tools.push(api::ToolType::RunAgents);
         }
         supported_tools.push(api::ToolType::SendMessageToAgent);
@@ -276,7 +276,7 @@ fn get_supported_cli_agent_tools(params: &RequestParams) -> Vec<api::ToolType> {
         }
         Some(SessionType::WarpifiedRemote { host_id: Some(_) }) => {
             supported_cli_agent_tools.push(api::ToolType::ReadFiles);
-            if FeatureFlag::RemoteCodebaseIndexing.is_enabled() {
+            if false {
                 supported_cli_agent_tools.push(api::ToolType::SearchCodebase);
             }
         }
