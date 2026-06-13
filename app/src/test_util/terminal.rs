@@ -40,7 +40,6 @@ use crate::cloud_object::model::persistence::CloudModel;
 use crate::code_review::git_status_update::GitStatusUpdateModel;
 use crate::context_chips::prompt::Prompt;
 use crate::network::NetworkStatus;
-use crate::pricing::PricingInfoModel;
 use crate::search::files::model::FileSearchModel;
 use crate::server::cloud_objects::listener::Listener;
 use crate::server::cloud_objects::update_manager::UpdateManager;

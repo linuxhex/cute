@@ -17,7 +17,6 @@ use crate::auth::AuthStateProvider;
 use crate::cloud_object::CloudObjectEventEntrypoint;
 use crate::network::{NetworkStatus, NetworkStatusEvent, NetworkStatusKind};
 use crate::persistence::ModelEvent;
-use crate::pricing::PricingInfoModel;
 use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::ids::ServerId;
 use crate::server::retry_strategies::{
@@ -334,18 +333,12 @@ impl TeamUpdateManager {
     #[allow(dead_code)]
     fn on_team_left(
         &mut self,
-        left_team_uid: ServerId,
+        _left_team_uid: ServerId,
         result: Result<WorkspacesMetadataWithPricing>,
         ctx: &mut ModelContext<Self>,
     ) {
         match result {
             Ok(response) => {
-                if let Some(pricing_info) = response.pricing_info {
-                    PricingInfoModel::handle(ctx).update(ctx, |model, ctx| {
-                        model.update_pricing_info(pricing_info, ctx);
-                    });
-                }
-
                 let workspaces = response.metadata.workspaces;
                 let joinable_teams = response.metadata.joinable_teams;
 
@@ -373,7 +366,7 @@ impl TeamUpdateManager {
                 UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
                     // We first remove team objects from local state so that they're not shown to the user.
                     // Then, refresh all objects to fetch any that were independently shared.
-                    update_manager.remove_team_objects(left_team_uid, ctx);
+                    update_manager.remove_team_objects(_left_team_uid, ctx);
                     update_manager.refresh_updated_objects(ctx);
                 });
 
@@ -410,12 +403,6 @@ impl TeamUpdateManager {
         match result {
             Err(_) => ctx.emit(TeamUpdateManagerEvent::RenameTeamError),
             Ok(response) => {
-                if let Some(pricing_info) = response.pricing_info.clone() {
-                    PricingInfoModel::handle(ctx).update(ctx, |model, ctx| {
-                        model.update_pricing_info(pricing_info, ctx);
-                    });
-                }
-
                 self.on_workspaces_updated(Ok(response.metadata.clone()), ctx);
 
                 // Update sqlite
@@ -436,12 +423,6 @@ impl TeamUpdateManager {
     ) {
         match request_state {
             RequestState::RequestSucceeded(response) => {
-                if let Some(pricing_info) = response.pricing_info.clone() {
-                    PricingInfoModel::handle(ctx).update(ctx, |model, ctx| {
-                        model.update_pricing_info(pricing_info, ctx);
-                    });
-                }
-
                 // Right now, this function is coupled with how we handle leaving a team.
                 // TODO(zheng) refactor so we can separate these two cases and have clearer logic.
                 self.on_workspaces_updated(Ok(response.metadata), ctx);
