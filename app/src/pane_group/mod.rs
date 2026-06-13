@@ -4256,37 +4256,6 @@ impl PaneGroup {
         let ambient_agent_task_id =
             ambient_agent_task_id.or_else(|| Self::ambient_agent_task_id(&cloud_conversation));
 
-        if false {
-            if let Some(task_id) = ambient_agent_task_id {
-                if terminal_view
-                    .as_ref(ctx)
-                    .ambient_agent_view_model()
-                    .is_some()
-                {
-                    Self::load_data_into_restored_ambient_cloud_mode_view(
-                        terminal_view,
-                        cloud_conversation,
-                        task_id,
-                        ctx,
-                    );
-                    ctx.notify();
-                    return;
-                }
-
-                if let Some(pane_id) = self.find_pane_id_for_terminal_view(terminal_view.id(), ctx)
-                {
-                    self.replace_loading_pane_with_restored_ambient_cloud_mode_pane(
-                        pane_id,
-                        cloud_conversation,
-                        task_id,
-                        ctx,
-                    );
-                    ctx.notify();
-                    return;
-                }
-            }
-        }
-
         BlocklistAIHistoryModel::handle(ctx).update(ctx, |history_model, _ctx| {
             history_model.mark_terminal_view_as_conversation_transcript_viewer(terminal_view.id());
         });
@@ -6900,16 +6869,6 @@ impl PaneGroup {
         cloud_conversation: CloudConversationData,
         ctx: &mut ViewContext<Self>,
     ) -> bool {
-        if false {
-            if let Some(task_id) = Self::ambient_agent_task_id(&cloud_conversation) {
-                return self.replace_loading_pane_with_restored_ambient_cloud_mode_pane(
-                    loading_pane_id,
-                    cloud_conversation,
-                    task_id,
-                    ctx,
-                );
-            }
-        }
         let restoration = match cloud_conversation {
             CloudConversationData::Oz(conversation) => {
                 ConversationRestorationInNewPaneType::Historical {
