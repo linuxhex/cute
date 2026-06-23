@@ -117,6 +117,7 @@ impl CLIAgentType {
     pub const Goose: Self = Self;
     pub const Hermes: Self = Self;
     pub const Qoder: Self = Self;
+    pub const Trae: Self = Self;
     pub const Unknown: Self = Self;
     pub const Vibe: Self = Self;
 }

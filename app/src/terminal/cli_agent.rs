@@ -135,6 +135,14 @@ const QODER_GREEN: ColorU = ColorU {
     a: 255,
 };
 
+/// Trae brand color (blue #4F46E5, from ByteDance's Trae AI IDE)
+const TRAE_BLUE: ColorU = ColorU {
+    r: 79,
+    g: 70,
+    b: 229,
+    a: 255,
+};
+
 /// Represents a CLI agent (e.g., Claude Code, Gemini CLI, Codex, Amp, Droid, OpenCode, Copilot, Pi, Auggie, Cursor, Goose, Hermes, Mistral Vibe, Qoder)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Sequence, Serialize, Deserialize)]
 pub enum CLIAgent {
@@ -152,6 +160,7 @@ pub enum CLIAgent {
     Hermes,
     Vibe,
     Qoder,
+    Trae,
     /// Represents an unknown/custom CLI agent matched by user-configured regex patterns.
     Unknown,
 }
@@ -174,6 +183,7 @@ impl CLIAgent {
             CLIAgent::Hermes => "hermes",
             CLIAgent::Vibe => "vibe",
             CLIAgent::Qoder => "qoder",
+            CLIAgent::Trae => "trae",
             CLIAgent::Unknown => "",
         }
     }
@@ -222,6 +232,7 @@ impl CLIAgent {
             CLIAgent::Hermes => "Hermes",
             CLIAgent::Vibe => "Mistral Vibe",
             CLIAgent::Qoder => "Qoder",
+            CLIAgent::Trae => "Trae",
             CLIAgent::Unknown => "CLI Agent",
         }
     }
@@ -246,6 +257,7 @@ impl CLIAgent {
             // up in a follow-up once an officially licensed SVG is available.
             CLIAgent::Vibe => None,
             CLIAgent::Qoder => Some(Icon::QoderLogo),
+            CLIAgent::Trae => Some(Icon::TraeLogo),
             CLIAgent::Unknown => None,
         }
     }
@@ -277,6 +289,7 @@ impl CLIAgent {
             CLIAgent::Hermes => &[SkillProvider::Agents],
             CLIAgent::Vibe => &[SkillProvider::Agents],
             CLIAgent::Qoder => &[SkillProvider::Agents],
+            CLIAgent::Trae => &[SkillProvider::Agents],
             CLIAgent::Unknown => &[],
         }
     }
@@ -320,6 +333,7 @@ impl CLIAgent {
             CLIAgent::Hermes => Some(HERMES_PURPLE),
             CLIAgent::Vibe => Some(MISTRAL_ORANGE),
             CLIAgent::Qoder => Some(QODER_GREEN),
+            CLIAgent::Trae => Some(TRAE_BLUE),
             CLIAgent::Unknown => None,
         }
     }
@@ -584,6 +598,7 @@ impl From<CLIAgent> for CLIAgentType {
             CLIAgent::Hermes => CLIAgentType::Hermes,
             CLIAgent::Vibe => CLIAgentType::Vibe,
             CLIAgent::Qoder => CLIAgentType::Qoder,
+            CLIAgent::Trae => CLIAgentType::Trae,
             CLIAgent::Unknown => CLIAgentType::Unknown,
         }
     }
