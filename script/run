@@ -1,10 +1,11 @@
 #!/bin/bash
 #
-# Cross-platform entrypoint for running a local Warp build.
+# Cross-platform entrypoint for running Cute application.
 #
-# On macOS this delegates to `./script/macos/run`, which builds and runs Warp
+# This script ONLY builds and runs the 'cute' application.
+# On macOS this delegates to `./script/macos/run`, which builds and runs Cute
 # as a real `.app` bundle (with code signing, plist updates, etc.). On Linux
-# and Windows it invokes `cargo run` directly for the appropriate binary.
+# and Windows it invokes `cargo run` directly for the cute binary.
 #
 # This script owns all cross-platform setup (running install_channel_config,
 # detecting internal vs OSS builds, and mapping legacy `--features` entries
@@ -26,14 +27,9 @@ COMMON_SKILLS_TARGET="${WARP_COMMON_SKILLS_INSTALL_TARGET:-}"
 ./script/install_channel_config || echo "Skipping internal channel config installation (no repo access)."
 
 
-# If warp_channel_config is on PATH, build the Local channel binary; otherwise build the OSS channel.
-if command -v warp-channel-config &>/dev/null; then
-    WARP_BIN_NAME="warp"
-    WARP_CHANNEL="local"
-else
-    WARP_BIN_NAME="cute"
-    WARP_CHANNEL="oss"
-fi
+# Cute application only - no warp support
+WARP_BIN_NAME="cute"
+WARP_CHANNEL="oss"
 
 # Shared argument parsing. macOS-specific flags (--dont-open,
 # --open_with_launchd, --generate-schema) are forwarded through MAC_ARGS and

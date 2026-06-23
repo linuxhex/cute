@@ -2,13 +2,14 @@
 #
 # Bundle Cute application for distribution.
 #
-# Simplified version - only supports cute channel
+# THIS SCRIPT ONLY SUPPORTS THE 'CUTE' APPLICATION.
+# No other channels (warp, warp-local, etc.) are supported.
 #
 
 set -e
 
 # Determine the repository root directory
-WORKSPACE_ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+WORKSPACE_ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")"/../.. && pwd)"
 
 export MACOSX_DEPLOYMENT_TARGET="10.14"
 
@@ -95,9 +96,6 @@ while (( "$#" )); do
     -o|--open)
       OPEN_AFTER_BUNDLE=true
       shift
-      ;;
-    --channel)
-      shift 2
       ;;
     *)
       PARAMS="$PARAMS $1"

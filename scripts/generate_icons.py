@@ -11,7 +11,7 @@ from PIL import Image
 SOURCE_ICON = "/Users/caomunian/Study/cute/images/logoimg.png"
 
 # 目标渠道和尺寸
-CHANNELS = ["stable", "local", "oss", "dev", "preview"]
+CHANNELS = ["stable", "local", "oss", "dev", "preview", "cute"]
 SIZES = [16, 32, 48, 64, 128, 256, 512]
 
 # 基础路径
