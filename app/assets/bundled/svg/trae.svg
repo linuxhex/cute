@@ -1,3 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" fill="none">
+  <defs>
+    <linearGradient id="trae-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#4F46E5"/>
+    </linearGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="90" cy="90" r="90" fill="url(#trae-gradient)"/>
+  <!-- T letter stylized -->
+  <path d="M45 50h90v18H99v62H81V68H45V50z" fill="white"/>
+  <!-- Accent line -->
+  <path d="M60 130h60v4H60v-4z" fill="white" fill-opacity="0.6"/>
+</svg>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
   <path d="M3 4h18v3h-7.5v13h-3V7H3V4z"/>
 </svg>

@@ -397,6 +397,7 @@ impl CLIAgent {
         // Check if resolved command matches any known CLI agent.
         // Also matches `aifx agent run claude` as Claude for Uber employees,
         // and the `vibe-acp` ACP-mode binary as Mistral Vibe.
+        // And `trae-cli` as Trae.
         enum_iterator::all::<CLIAgent>()
             .filter(|agent| !matches!(agent, CLIAgent::Unknown))
             .find(|agent| {
@@ -404,6 +405,7 @@ impl CLIAgent {
                     || (matches!(agent, CLIAgent::Claude)
                         && Self::is_aifx_agent_run_claude(&resolved_command, ctx))
                     || (matches!(agent, CLIAgent::Vibe) && resolved_first_word == "vibe-acp")
+                    || (matches!(agent, CLIAgent::Trae) && resolved_first_word == "trae-cli")
             })
     }
 
