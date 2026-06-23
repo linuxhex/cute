@@ -1092,6 +1092,7 @@ impl Workspace {
             .args([
                 "for-each-ref",
                 "--sort=-committerdate",
+                "--count=50",  // 限制加载数量,避免分支过多
                 "--format=%(refname:short)	%(objectname:short)	%(subject)	%(authorname)	%(authoremail)	%(authordate:unix)",
                 "refs/heads/",
             ])
@@ -1139,40 +1140,74 @@ impl Workspace {
             }
         }
 
-        // Get remote branches
-        let remote_branches = crate::util::git::list_remote_branches_sync(repo_path);
+        // Get remote branches - also use for-each-ref for batch loading
+        // Limit to 30 most recent remote branches per remote
+        let remote_output = command::blocking::Command::new("git")
+            .args([
+                "for-each-ref",
+                "--sort=-committerdate",
+                "--count=100",  // 限制远程分支数量
+                "--format=%(refname)\t%(objectname:short)\t%(subject)\t%(authorname)\t%(authoremail)\t%(authordate:unix)",
+                "refs/remotes/",
+            ])
+            .current_dir(repo_path)
+            .stdout(command::Stdio::piped())
+            .stderr(command::Stdio::null())
+            .output();
 
-        for full_branch_name in remote_branches {
-            // Parse remote/branch format
-            let parts: Vec<&str> = full_branch_name.splitn(2, '/').collect();
-            if parts.len() != 2 {
-                continue;
+        if let Ok(out) = remote_output {
+            if out.status.success() {
+                let stdout = String::from_utf8_lossy(&out.stdout);
+                for line in stdout.lines() {
+                    let parts: Vec<&str> = line.split('\t').collect();
+                    if parts.len() >= 6 {
+                        let full_ref_name = parts[0];  // refs/remotes/origin/branch
+                        
+                        // Parse refs/remotes/remote_name/branch_name
+                        if !full_ref_name.starts_with("refs/remotes/") {
+                            continue;
+                        }
+                        let without_prefix = &full_ref_name["refs/remotes/".len()..];
+                        let name_parts: Vec<&str> = without_prefix.splitn(2, '/').collect();
+                        if name_parts.len() != 2 {
+                            continue;
+                        }
+                        let remote_name = name_parts[0].to_string();
+                        let branch_name = name_parts[1].to_string();
+
+                        // Skip HEAD references
+                        if branch_name == "HEAD" {
+                            continue;
+                        }
+
+                        let timestamp = parts[5].parse::<i64>().ok();
+                        let last_commit = timestamp.map(|ts| {
+                            crate::workspace::branch_selector::CommitInfo {
+                                hash: parts[1].to_string(),
+                                message: parts[2].to_string(),
+                                author: parts[3].to_string(),
+                                author_email: parts[4].to_string(),
+                                timestamp: chrono::DateTime::from_timestamp(ts, 0)
+                                    .unwrap_or_default()
+                                    .with_timezone(&chrono::Utc),
+                                graph_line: None,
+                            }
+                        });
+
+                        branches.push(BranchInfo {
+                            name: branch_name,
+                            full_name: full_ref_name.to_string(),
+                            is_current: false,
+                            is_remote: true,
+                            remote_name: Some(remote_name),
+                            last_commit,
+                            recent_commits: Vec::new(),
+                            ahead: 0,
+                            behind: 0,
+                        });
+                    }
+                }
             }
-            let remote_name = parts[0].to_string();
-            let branch_name = parts[1].to_string();
-
-            // Skip HEAD references
-            if branch_name == "HEAD" {
-                continue;
-            }
-
-            // Try to get last commit info synchronously
-            let last_commit = Self::get_branch_last_commit_sync(repo_path, &full_branch_name);
-
-            // 延迟加载：初始不加载 recent_commits，点击分支时再加载
-            let recent_commits = Vec::new();
-
-            branches.push(BranchInfo {
-                name: branch_name,
-                full_name: full_branch_name,
-                is_current: false,
-                is_remote: true,
-                remote_name: Some(remote_name),
-                last_commit,
-                recent_commits,
-                ahead: 0,
-                behind: 0,
-            });
         }
 
         // Sort: current branch first, then local branches, then remote branches
