@@ -19,7 +19,6 @@ use std::collections::HashMap;
 use std::time::Duration;
 
 use session_sharing_protocol::common::SessionId;
-use warp_core::features::FeatureFlag;
 use warpui::r#async::{SpawnedFutureHandle, Timer};
 use warpui::{Entity, EntityId, ModelContext, SingletonEntity, WeakViewHandle};
 
@@ -98,35 +97,6 @@ impl OrchestrationViewerModel {
         terminal_view: WeakViewHandle<TerminalView>,
         ctx: &mut ModelContext<Self>,
     ) -> Self {
-        if FeatureFlag::OrchestrationViewerStreamer.is_enabled() {
-            // Streamer-driven path. Subscribe to broadcast events filtered
-            // on `parent_task_id`; the streamer handles SSE open/teardown,
-            // cold-start seed, and cursor persistence on our behalf.
-            let streamer = OrchestrationEventStreamer::handle(ctx);
-            ctx.subscribe_to_model(&streamer, move |me, event, ctx| {
-                me.handle_streamer_event(event, ctx);
-            });
-            ctx.subscribe_to_model(&BlocklistAIHistoryModel::handle(ctx), |me, event, ctx| {
-                me.handle_history_event(event, ctx);
-            });
-
-            let model = Self {
-                parent_task_id,
-                terminal_view_id,
-                terminal_view,
-                children: HashMap::new(),
-                children_by_run_id: HashMap::new(),
-                polling_handle: None,
-                fetch_generation: 0,
-                idle_due_to_no_children: false,
-                pending_session_id_poll_handle: None,
-                #[cfg(test)]
-                metadata_fetch_dispatch_count: 0,
-            };
-            model.register_viewer_mode_consumer_if_possible(ctx);
-            return model;
-        }
-
         // Legacy polling path. Kick to fast cadence on `AppendedExchange` so
         // follow-up input that spawns new children surfaces without waiting
         // for the next 30s idle poll.
@@ -492,9 +462,6 @@ impl OrchestrationViewerModel {
     /// Schedules the next session_id refetch tick on the streamer path.
     /// Safe to call unconditionally — bails when not needed.
     fn maybe_schedule_pending_session_id_poll(&mut self, ctx: &mut ModelContext<Self>) {
-        if !FeatureFlag::OrchestrationViewerStreamer.is_enabled() {
-            return;
-        }
         if self.pending_session_id_poll_handle.is_some() {
             return;
         }

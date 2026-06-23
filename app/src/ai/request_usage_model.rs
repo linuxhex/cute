@@ -12,7 +12,6 @@ use warpui::{AppContext, Entity, ModelContext, SingletonEntity};
 use crate::ai::agent::conversation::AIConversationId;
 use crate::ai::agent::AIAgentExchangeId;
 use crate::auth::AuthStateProvider;
-use crate::pricing::PricingInfoModel;
 use crate::server::server_api::ai::AIClient;
 use crate::settings::AISettings;
 use crate::workspaces::user_workspaces::UserWorkspaces;
@@ -28,6 +27,7 @@ pub enum BonusGrantScope {
     Workspace(WorkspaceUid),
 }
 
+#[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, Default)]
 pub enum BuyCreditsBannerDisplayState {
     #[default]
@@ -393,23 +393,10 @@ impl AIRequestUsageModel {
         let workspace_has_overages =
             current_workspace.is_some_and(|workspace| workspace.are_overages_remaining());
 
-        let is_payg_enabled = current_workspace
-            .is_some_and(|w| w.billing_metadata.is_enterprise_pay_as_you_go_enabled());
-        let is_enterprise_auto_reload_enabled = current_workspace
-            .is_some_and(|w| w.billing_metadata.is_enterprise_auto_reload_enabled());
-        let is_self_serve_auto_reload_enabled = current_workspace.is_some_and(|workspace| {
-            workspace
-                .billing_metadata
-                .is_purchase_add_on_credits_policy_enabled()
-                && workspace
-                    .settings
-                    .addon_credits_settings
-                    .auto_reload_enabled
-                && PricingInfoModel::as_ref(ctx)
-                    .addon_credits_options()
-                    .and_then(|options| workspace.get_auto_reload_price_cents(options))
-                    .is_some_and(|price| !workspace.would_addon_purchase_reach_limit(price))
-        });
+        // Simplified: local version has no enterprise pay-as-you-go or auto-reload
+        let is_payg_enabled = false;
+        let is_enterprise_auto_reload_enabled = false;
+        let is_self_serve_auto_reload_enabled = false;
 
         // If you have provided your own API key,
         // it doesn't matter if you are out of warp-provided requests.
@@ -470,8 +457,10 @@ impl AIRequestUsageModel {
         self.request_limit_info.next_refresh_time.utc()
     }
 
+    /// Simplified: local version has no refresh time display
+    #[allow(dead_code)]
     pub fn next_refresh_time_local(&self) -> DateTime<Local> {
-        self.next_refresh_time().with_timezone(&Local)
+        Local::now()
     }
 
     pub fn is_unlimited(&self) -> bool {
@@ -486,6 +475,7 @@ impl AIRequestUsageModel {
         }
     }
 
+    #[allow(dead_code)]
     pub fn bonus_grants(&self) -> &[BonusGrant] {
         &self.bonus_grants
     }
@@ -520,6 +510,7 @@ impl AIRequestUsageModel {
             .sum()
     }
 
+    #[allow(dead_code)]
     pub fn total_current_workspace_bonus_credits_remaining(&self, ctx: &AppContext) -> i32 {
         UserWorkspaces::as_ref(ctx)
             .current_workspace()
@@ -538,73 +529,16 @@ impl AIRequestUsageModel {
             .sum()
     }
 
-    /// Computes the current banner state based on live conditions.
-    /// This is called on-demand and always returns fresh state.
+    /// Simplified: local version has no add-on credits purchase
+    #[allow(dead_code)]
     pub fn compute_buy_addon_credits_banner_display_state(
         &self,
-        ctx: &AppContext,
+        _ctx: &AppContext,
     ) -> BuyCreditsBannerDisplayState {
-        // Early return if user dismissed
-        if self.buy_addon_credits_banner_dismissed {
-            return BuyCreditsBannerDisplayState::Hidden;
-        }
-        let current_workspace = UserWorkspaces::as_ref(ctx).current_workspace();
-        let policy_allows_purchasing = current_workspace
-            .map(|w| {
-                w.billing_metadata
-                    .tier
-                    .purchase_add_on_credits_policy
-                    .is_some_and(|p| p.enabled)
-            })
-            .unwrap_or(false);
-
-        // TODO: we might want to suggest credits purchase if request_remain/bonus credits is below certain threshold
-        // something to consider after launch
-        // Ambient-only credits are usable for cloud agents and should not suppress this banner.
-        let now = Utc::now();
-        let has_non_ambient_bonus_credits = self
-            .bonus_grants
-            .iter()
-            .filter(|grant| grant.grant_type != BonusGrantType::AmbientOnly)
-            .filter(|grant| grant.expiration.is_none_or(|exp| now < exp))
-            .filter(|grant| grant.request_credits_remaining > 0)
-            .any(|grant| match grant.scope {
-                BonusGrantScope::User => true,
-                BonusGrantScope::Workspace(uid) => {
-                    current_workspace.is_some_and(|workspace| workspace.uid == uid)
-                }
-            });
-        if !policy_allows_purchasing
-            || self.has_requests_remaining()
-            || has_non_ambient_bonus_credits
-        {
-            return BuyCreditsBannerDisplayState::Hidden;
-        }
-
-        let auto_reload_enabled = current_workspace
-            .is_some_and(|w| w.settings.addon_credits_settings.auto_reload_enabled);
-        if !auto_reload_enabled {
-            return BuyCreditsBannerDisplayState::OutOfCredits;
-        }
-
-        let at_monthly_limit =
-            current_workspace.is_some_and(|w| w.is_at_addon_credits_monthly_limit());
-
-        let auto_reload_would_exceed = current_workspace
-            .and_then(|workspace| {
-                let options = PricingInfoModel::as_ref(ctx).addon_credits_options()?;
-                let price = workspace.get_auto_reload_price_cents(options)?;
-                Some(workspace.would_addon_purchase_reach_limit(price))
-            })
-            .unwrap_or(false);
-
-        if at_monthly_limit || auto_reload_would_exceed {
-            BuyCreditsBannerDisplayState::MonthlyLimitReached
-        } else {
-            BuyCreditsBannerDisplayState::Hidden
-        }
+        BuyCreditsBannerDisplayState::Hidden
     }
 
+    #[allow(dead_code)]
     pub fn dismiss_buy_credits_banner(&mut self, ctx: &mut ModelContext<Self>) {
         self.buy_addon_credits_banner_dismissed = true;
         ctx.notify();

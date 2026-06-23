@@ -1,6 +1,5 @@
 //! Components for the notebook header.
 
-use warp_core::features::FeatureFlag;
 use warpui::elements::{
     Container, CrossAxisAlignment, Flex, Highlight, MainAxisAlignment, MainAxisSize,
     MouseStateHandle, ParentElement, Shrinkable,
@@ -83,11 +82,7 @@ impl DetailsBar {
             );
         }
 
-        let editability = if FeatureFlag::SharedWithMe.is_enabled() {
-            notebook_data.editability(app)
-        } else {
-            ContentEditability::Editable
-        };
+        let editability = ContentEditability::Editable;
         if matches!(
             editability,
             ContentEditability::RequiresLogin | ContentEditability::Editable

@@ -1,5 +1,8 @@
 // Some of these re-exported types aren't used in the wasm build, so we suppress this
 // warning.
+//
+// Note: Cloud-specific logic has been removed. Only type definitions remain
+// for local agent use.
 #[cfg_attr(target_family = "wasm", expect(unused_imports))]
 pub use cloud_object_models::{
     AmbientAgentEnvironment, AwsProviderConfig, BaseImage, CloudAmbientAgentEnvironment,
@@ -14,7 +17,6 @@ use crate::cloud_object::model::json_model::JsonModel;
 use crate::cloud_object::{
     GenericStringObjectFormat, GenericStringObjectUniqueKey, JsonObjectType, Revision,
 };
-use crate::server::sync_queue::QueueItem;
 use crate::workspaces::user_workspaces::UserWorkspaces;
 
 impl StringModel for AmbientAgentEnvironment {
@@ -36,16 +38,12 @@ impl StringModel for AmbientAgentEnvironment {
         self.name.clone()
     }
 
-    fn update_object_queue_item(
+    fn _update_object_queue_item(
         &self,
-        revision_ts: Option<Revision>,
-        object: &CloudAmbientAgentEnvironment,
-    ) -> QueueItem {
-        QueueItem::UpdateCloudEnvironment {
-            model: object.model().clone().into(),
-            id: object.id,
-            revision: revision_ts.or_else(|| object.metadata.revision.clone()),
-        }
+        _revision_ts: Option<Revision>,
+        _object: &CloudAmbientAgentEnvironment,
+    ) {
+        // No-op for local version
     }
 
     fn uniqueness_key(&self) -> Option<GenericStringObjectUniqueKey> {
@@ -72,6 +70,7 @@ impl JsonModel for AmbientAgentEnvironment {
 /// If the user is on a team, returns `Owner::Team`. Otherwise, returns
 /// `Owner::User` with the current user's ID. Returns `None` if the user
 /// is not logged in.
+#[allow(dead_code)]
 pub fn owner_for_new_environment(ctx: &AppContext) -> Option<Owner> {
     if let Some(team_uid) = UserWorkspaces::as_ref(ctx).current_team_uid() {
         Some(Owner::Team { team_uid })
@@ -85,6 +84,7 @@ pub fn owner_for_new_environment(ctx: &AppContext) -> Option<Owner> {
 ///
 /// Returns `Owner::User` with the current user's ID. Returns `None` if the user
 /// is not logged in.
+#[allow(dead_code)]
 pub fn owner_for_new_personal_environment(ctx: &AppContext) -> Option<Owner> {
     let user_id = AuthStateProvider::as_ref(ctx).get().user_id()?;
     Some(Owner::User { user_uid: user_id })

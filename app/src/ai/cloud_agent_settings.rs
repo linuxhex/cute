@@ -2,13 +2,15 @@
 //!
 //! This module contains user-specific settings for cloud agent features,
 //! such as remembering the last selected environment.
+//!
+//! Note: Cloud-specific logic has been removed. Only settings storage remains
+//! for local agent use.
 
 use std::collections::HashMap;
 
 use settings::macros::define_settings_group;
 use settings::{Setting as _, SupportedPlatforms, SyncToCloud};
 use warp_cli::agent::Harness;
-use warp_core::report_if_error;
 
 use crate::server::ids::SyncId;
 
@@ -94,6 +96,7 @@ impl CloudAgentSettings {
             .unwrap_or(false)
     }
 
+    #[allow(dead_code)]
     pub fn mark_harness_auth_ftux_completed(
         &mut self,
         harness: Harness,
@@ -105,6 +108,7 @@ impl CloudAgentSettings {
     }
 
     /// Persists (or clears) the harness model selection for the given harness.
+    #[allow(dead_code)]
     pub fn persist_harness_model_selection(
         &mut self,
         harness: Harness,
@@ -124,6 +128,6 @@ impl CloudAgentSettings {
                 },
             );
         }
-        report_if_error!(self.last_selected_harness_model.set_value(map, ctx));
+        let _ = self.last_selected_harness_model.set_value(map, ctx);
     }
 }

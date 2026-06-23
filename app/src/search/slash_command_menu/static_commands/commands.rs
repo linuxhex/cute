@@ -699,10 +699,6 @@ fn all_commands() -> Vec<StaticCommand> {
         commands.push(PR_COMMENTS);
     }
 
-    if FeatureFlag::CloudMode.is_enabled() && FeatureFlag::CloudModeFromLocalSession.is_enabled() {
-        commands.push(CLOUD_AGENT.clone());
-    }
-
     if FeatureFlag::OzHandoff.is_enabled()
         && FeatureFlag::HandoffLocalCloud.is_enabled()
         && cfg!(all(feature = "local_fs", not(target_family = "wasm")))
@@ -723,19 +719,11 @@ fn all_commands() -> Vec<StaticCommand> {
         commands.push(OPEN_REPO);
     }
 
-    if FeatureFlag::OrchestrationV2.is_enabled() {
-        commands.push(ORCHESTRATE.clone());
-    }
 
     if FeatureFlag::SettingsFile.is_enabled() && cfg!(feature = "local_fs") {
         commands.push(OPEN_SETTINGS_FILE);
     }
 
-    if FeatureFlag::CloudModeInputV2.is_enabled() {
-        commands.push(HOST.clone());
-        commands.push(HARNESS.clone());
-        commands.push(ENVIRONMENT.clone());
-    }
 
     commands
 }

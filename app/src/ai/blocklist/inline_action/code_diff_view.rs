@@ -51,8 +51,7 @@ use crate::ai::agent::icons::{self, yellow_stop_icon};
 use crate::ai::agent::{AIAgentActionId, AIIdentifiers, FileEdit, FileLocations, ServerOutputId};
 use crate::ai::blocklist::action_model::{
     AIActionStatus, BlocklistAIActionEvent, BlocklistAIActionModel,
-    EditAcceptAndContinueClickedEvent, EditAcceptClickedEvent, EditResolvedEvent, EditStats,
-    MalformedFinalLineProxyEvent, RequestFileEditsFormatKind, RequestFileEditsTelemetryEvent,
+    RequestFileEditsFormatKind,
 };
 use crate::ai::blocklist::history_model::BlocklistAIHistoryModel;
 use crate::ai::blocklist::inline_action::inline_action_header::INLINE_ACTION_HORIZONTAL_PADDING;
@@ -67,7 +66,7 @@ use crate::ai::paths::host_native_absolute_path;
 use crate::ai::predict::prompt_suggestions::ACCEPT_PROMPT_SUGGESTION_KEYBINDING;
 use crate::ai::skills::{
     icon_override_for_skill_name, render_skill_button, skill_path_from_location, SkillManager,
-    SkillOpenOrigin, SkillReference, SkillTelemetryEvent,
+    SkillReference,
 };
 use crate::code::diff_viewer::{DiffViewer, DisplayMode};
 use crate::code::editor::view::{CodeEditorEvent, CodeEditorRenderOptions, CodeEditorView};
@@ -79,9 +78,6 @@ use crate::menu::{Event as MenuEvent, Menu, MenuItemFields, MenuVariant};
 use crate::pane_group::focus_state::PaneFocusHandle;
 use crate::pane_group::pane::{view, PaneId};
 use crate::pane_group::{BackingView, PaneEvent};
-use crate::server::telemetry::{
-    AgentModeCodeFileNavigationSource, ToggleCodeSuggestionsSettingSource,
-};
 use crate::settings::AISettings;
 use crate::terminal::input::SET_INPUT_MODE_AGENT_ACTION_NAME;
 use crate::terminal::ShellLaunchData;
@@ -98,7 +94,7 @@ use crate::view_components::compactible_action_button::{
 use crate::view_components::compactible_split_action_button::CompactibleSplitActionButton;
 use crate::view_components::DismissibleToast;
 use crate::workspace::ToastStack;
-use crate::{cmd_or_ctrl_shift, send_telemetry_from_ctx, TelemetryEvent};
+use crate::cmd_or_ctrl_shift;
 
 const REQUESTED_EDIT_CANCEL_LABEL: &str = "Cancel";
 const REQUESTED_EDIT_REFINE_LABEL: &str = "Refine";
@@ -650,14 +646,10 @@ impl CodeDiffView {
                 }
                 me.user_edited_file_contents = true;
 
-                let Some(output_id) = me.server_output_id() else {
+                let Some(_output_id) = me.server_output_id() else {
                     return;
                 };
 
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::AgentModeCodeSuggestionEditedByUser { output_id },
-                    ctx
-                );
             }
         });
     }
@@ -1055,23 +1047,8 @@ impl CodeDiffView {
 
         match selection {
             AcceptSelection::Only => {
-                send_telemetry_from_ctx!(
-                    RequestFileEditsTelemetryEvent::EditAcceptClicked(EditAcceptClickedEvent {
-                        identifiers: self.identifiers.clone(),
-                        passive_diff: self.is_passive,
-                    }),
-                    ctx
-                );
             }
             AcceptSelection::AndContinueWithAgent => {
-                send_telemetry_from_ctx!(
-                    RequestFileEditsTelemetryEvent::EditAcceptAndContinueClicked(
-                        EditAcceptAndContinueClickedEvent {
-                            identifiers: self.identifiers.clone(),
-                        }
-                    ),
-                    ctx
-                );
             }
             AcceptSelection::AndAutoExecute => {}
         }
@@ -2102,11 +2079,7 @@ impl CodeDiffView {
                 .update(ctx, |v, ctx| v.navigate_previous_diff_hunk(ctx)),
         };
 
-        if let Some(output_id) = self.server_output_id() {
-            send_telemetry_from_ctx!(
-                TelemetryEvent::AgentModeCodeDiffHunksNavigated { output_id },
-                ctx
-            );
+        if let Some(_output_id) = self.server_output_id() {
         }
     }
 
@@ -2135,14 +2108,7 @@ impl CodeDiffView {
         });
         ctx.notify();
 
-        if let Some(output_id) = self.server_output_id() {
-            send_telemetry_from_ctx!(
-                TelemetryEvent::AgentModeCodeFilesNavigated {
-                    output_id,
-                    source: AgentModeCodeFileNavigationSource::NavigationCommand
-                },
-                ctx
-            );
+        if let Some(_output_id) = self.server_output_id() {
         }
     }
 
@@ -2249,23 +2215,10 @@ impl CodeDiffView {
     /// Consolidates the common telemetry logic for reject operations.
     fn send_telemetry_for_edit_resolution(
         &self,
-        response: RequestedEditResolution,
+        _response: RequestedEditResolution,
         ctx: &mut ViewContext<Self>,
     ) {
-        let (lines_added, lines_removed) = self.pending_diffs_line_counts(ctx);
-        send_telemetry_from_ctx!(
-            RequestFileEditsTelemetryEvent::EditResolved(EditResolvedEvent {
-                identifiers: self.identifiers.clone(),
-                response,
-                stats: EditStats {
-                    files_edited: self.pending_diffs.len(),
-                    lines_added,
-                    lines_removed,
-                },
-                passive_diff: self.is_passive,
-            }),
-            ctx
-        );
+        let (_lines_added, _lines_removed) = self.pending_diffs_line_counts(ctx);
     }
 
     /// We are processing unified diff and saving files concurrently. That's why
@@ -2334,10 +2287,10 @@ impl CodeDiffView {
 
                 let mut updated_files = Vec::new();
                 let mut deleted_files = Vec::new();
-                let mut edited_file_count = 0;
-                let mut correction_count = 0;
-                let mut edited_correction_count = 0;
-                let mut unedited_correction_count = 0;
+                let mut _edited_file_count = 0;
+                let mut _correction_count = 0;
+                let mut _edited_correction_count = 0;
+                let mut _unedited_correction_count = 0;
 
                 for diff in self.pending_diffs.iter() {
                     let Some(path) = diff.diff_view.as_ref(ctx).file_path() else {
@@ -2374,14 +2327,14 @@ impl CodeDiffView {
                             });
 
                         if was_edited {
-                            edited_file_count += 1;
+                            _edited_file_count += 1;
                         }
                         if has_malformed_terminal_signal {
-                            correction_count += 1;
+                            _correction_count += 1;
                             if was_edited {
-                                edited_correction_count += 1;
+                                _edited_correction_count += 1;
                             } else {
-                                unedited_correction_count += 1;
+                                _unedited_correction_count += 1;
                             }
                         }
                         updated_files.push((
@@ -2398,22 +2351,7 @@ impl CodeDiffView {
                         ));
                     }
                 }
-                if correction_count > 0 {
-                    send_telemetry_from_ctx!(
-                        RequestFileEditsTelemetryEvent::MalformedFinalLineProxy(
-                            MalformedFinalLineProxyEvent {
-                                identifiers: self.identifiers.clone(),
-                                file_count: self.pending_diffs.len(),
-                                edited_file_count,
-                                correction_count,
-                                edited_correction_count,
-                                unedited_correction_count,
-                                format_kind: self.edit_format_kind,
-                                passive_diff: self.is_passive,
-                            }
-                        ),
-                        ctx
-                    );
+                if _correction_count > 0 {
                 }
 
                 // Extract accepted file contents from editor buffers so the
@@ -2797,14 +2735,7 @@ impl TypedActionView for CodeDiffView {
                     self.selected_tab = *idx;
                     ctx.notify();
 
-                    if let Some(output_id) = self.server_output_id() {
-                        send_telemetry_from_ctx!(
-                            TelemetryEvent::AgentModeCodeFilesNavigated {
-                                output_id,
-                                source: AgentModeCodeFileNavigationSource::SelectedFileTab
-                            },
-                            ctx
-                        );
+                    if let Some(_output_id) = self.server_output_id() {
                     }
                 }
             }
@@ -2824,12 +2755,6 @@ impl TypedActionView for CodeDiffView {
             }
             CodeDiffViewAction::ScrollToExpand => {
                 self.expand_inline_banner(ctx);
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::ExpandedCodeSuggestions {
-                        identifiers: self.identifiers.clone(),
-                    },
-                    ctx
-                );
             }
             CodeDiffViewAction::ToggleCodeSuggestions => {
                 let checked = AISettings::handle(ctx).update(ctx, |settings, ctx| {
@@ -2839,14 +2764,7 @@ impl TypedActionView for CodeDiffView {
                 });
                 ctx.notify();
 
-                if let Ok(checked) = checked {
-                    send_telemetry_from_ctx!(
-                        TelemetryEvent::ToggleCodeSuggestionsSetting {
-                            source: ToggleCodeSuggestionsSettingSource::Speedbump,
-                            is_code_suggestions_enabled: checked,
-                        },
-                        ctx
-                    );
+                if let Ok(_checked) = checked {
                 }
             }
             CodeDiffViewAction::OpenSettings => {
@@ -2870,16 +2788,6 @@ impl TypedActionView for CodeDiffView {
                 mouse_state,
             } => {
                 // Sends a telemetry event when a skill is opened from a code diff view
-                send_telemetry_from_ctx!(
-                    SkillTelemetryEvent::Opened {
-                        reference: reference.clone(),
-                        name: SkillManager::as_ref(ctx)
-                            .skill_by_reference(reference)
-                            .map(|skill| skill.name.clone()),
-                        origin: SkillOpenOrigin::EditFiles,
-                    },
-                    ctx
-                );
 
                 // Resets the interaction state of the skill button to avoid an immediate re-hover
                 if let Ok(mut state) = mouse_state.lock() {

@@ -33,11 +33,9 @@ use crate::auth::auth_view_shared_helpers::{
 };
 use crate::auth::login_failure_notification::{self, LoginFailureReason};
 use crate::editor::{EditorView, SingleLineEditorOptions, TextColors, TextOptions};
-use crate::server::telemetry::{LoginEventSource, TelemetryEvent};
 use crate::settings::PrivacySettings;
 use crate::themes::theme::Fill as ThemeFill;
 use crate::util::bindings::CustomAction;
-use crate::{send_telemetry_from_ctx, send_telemetry_sync_from_ctx};
 
 const TOS_URL: &str = "https://www.warp.dev/terms-of-service";
 
@@ -392,19 +390,13 @@ impl LoginSlideView {
     fn handle_login_later(&mut self, ctx: &mut ViewContext<Self>) {
         // Send synchronously since this is an important event in the sign up funnel and we
         // don't want to lose events if the user quits before the event queue is flushed.
-        send_telemetry_sync_from_ctx!(
-            TelemetryEvent::LoginLaterConfirmationButtonClicked {
-                source: LoginEventSource::OnboardingSlide,
-            },
-            ctx
-        );
         if FeatureFlag::SkipFirebaseAnonymousUser.is_enabled() {
             AuthManager::handle(ctx).update(ctx, |_, ctx| {
                 ctx.emit(AuthManagerEvent::SkippedLogin);
             });
         } else {
             AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
-                auth_manager.create_anonymous_user(None, ctx);
+                auth_manager.create_anonymous_user(ctx);
             });
         }
         ctx.emit(LoginSlideEvent::LoginLaterConfirmed);
@@ -1180,12 +1172,6 @@ impl TypedActionView for LoginSlideView {
                     return;
                 }
                 // Otherwise Enter is log in
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::LoginButtonClicked {
-                        source: LoginEventSource::OnboardingSlide,
-                    },
-                    ctx
-                );
                 self.last_login_failure_reason = None;
                 self.step = LoginStep::BrowserOpen;
                 AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
@@ -1195,12 +1181,6 @@ impl TypedActionView for LoginSlideView {
                 ctx.notify();
             }
             LoginSlideAction::ShowSkipDialog => {
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::LoginLaterButtonClicked {
-                        source: LoginEventSource::OnboardingSlide,
-                    },
-                    ctx
-                );
                 self.active_overlay = Some(LoginSlideOverlay::SkipDialog);
                 ctx.notify();
             }
@@ -1283,12 +1263,6 @@ impl TypedActionView for LoginSlideView {
                 ctx.notify();
             }
             LoginSlideAction::ShowPrivacySettings => {
-                send_telemetry_sync_from_ctx!(
-                    TelemetryEvent::OpenAuthPrivacySettings {
-                        source: LoginEventSource::OnboardingSlide,
-                    },
-                    ctx
-                );
                 self.step = LoginStep::PrivacySettings;
                 ctx.notify();
             }
@@ -1325,14 +1299,15 @@ impl TypedActionView for LoginSlideView {
                 ctx.notify();
             }
             LoginSlideAction::ToggleCloudConversationStorage => {
-                let handle = PrivacySettings::handle(ctx);
-                ctx.update_model(&handle, |settings, ctx| {
-                    settings.set_is_cloud_conversation_storage_enabled(
-                        !settings.is_cloud_conversation_storage_enabled,
-                        ctx,
-                    );
-                });
-                ctx.notify();
+                // Simplified: local version has no cloud conversation storage
+                // let handle = PrivacySettings::handle(ctx);
+                // ctx.update_model(&handle, |settings, ctx| {
+                //     settings.set_is_cloud_conversation_storage_enabled(
+                //         !settings.is_cloud_conversation_storage_enabled,
+                //         ctx,
+                //     );
+                // });
+                // ctx.notify();
             }
             LoginSlideAction::DismissNotification => {
                 self.last_login_failure_reason = None;

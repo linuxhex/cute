@@ -17,7 +17,7 @@ pub mod user_uid;
 #[cfg(target_family = "wasm")]
 pub mod web_handoff;
 
-use ::settings::{Setting, SettingsManager, ToggleableSetting};
+use ::settings::{Setting, ToggleableSetting};
 use ai::index::full_source_code_embedding::manager::CodebaseIndexManager;
 pub use auth_manager::AuthManager;
 pub use auth_state::AuthStateProvider;
@@ -39,11 +39,10 @@ use crate::env_vars::manager::EnvVarCollectionManager;
 use crate::notebooks::manager::NotebookManager;
 use crate::palette::PaletteMode;
 use crate::server::cloud_objects::update_manager::UpdateManager;
-use crate::server::sync_queue::SyncQueue;
-use crate::server::telemetry::{PaletteSource, TelemetryEvent};
+use crate::server::telemetry::PaletteSource;
 use crate::session_management::{RunningSessionSummary, SessionNavigationData};
 use crate::settings::{
-    CloudPreferencesSettings, PrivacySettings, CRASH_REPORTING_ENABLED_DEFAULTS_KEY,
+    PrivacySettings, CRASH_REPORTING_ENABLED_DEFAULTS_KEY,
     TELEMETRY_ENABLED_DEFAULTS_KEY,
 };
 use crate::terminal::general_settings::GeneralSettings;
@@ -51,10 +50,7 @@ use crate::terminal::shared_session::manager::Manager as SharedSessionManager;
 use crate::workflows::manager::WorkflowManager;
 use crate::workspace::{Workspace, WorkspaceAction};
 use crate::workspaces::update_manager::TeamUpdateManager;
-use crate::{
-    focus_running_window_and_show_native_modal, persistence, report_if_error,
-    send_telemetry_sync_from_app_ctx, GlobalResourceHandlesProvider,
-};
+use crate::{focus_running_window_and_show_native_modal, persistence, report_if_error, GlobalResourceHandlesProvider};
 
 /// Prefix for API keys used in authentication
 #[cfg_attr(target_family = "wasm", allow(dead_code))]
@@ -71,7 +67,6 @@ pub fn init(app: &mut AppContext) {
 /// If the app has running processes or dirty objects, we'll show a confirmation modal before logging out.
 /// If the user aborts, the user will not be logged out.
 pub fn maybe_log_out(app: &mut AppContext) {
-    send_telemetry_sync_from_app_ctx!(TelemetryEvent::UserInitiatedLogOut, app);
 
     let sessions = SessionNavigationData::all_sessions(app).collect_vec();
     let num_long_running_commands = RunningSessionSummary::new(&sessions)
@@ -95,7 +90,6 @@ pub fn maybe_log_out(app: &mut AppContext) {
             || num_unsaved_objects > 0
             || num_unsaved_files > 0)
     {
-        send_telemetry_sync_from_app_ctx!(TelemetryEvent::LogOutModalShown, app);
         let mut button_data = vec![ModalButton::for_app("Yes, log out", |ctx| {
             log_out(ctx);
         })];
@@ -112,10 +106,6 @@ pub fn maybe_log_out(app: &mut AppContext) {
             ));
 
             button_data.push(ModalButton::for_app("Show running processes", move |ctx| {
-                send_telemetry_sync_from_app_ctx!(
-                    TelemetryEvent::LogOutModalCancel { nav_palette: true },
-                    ctx
-                );
                 let windowing_model = ctx.windows();
                 let window_id = if let Some(active_window_id) = windowing_model.active_window() {
                     active_window_id
@@ -176,11 +166,7 @@ pub fn maybe_log_out(app: &mut AppContext) {
             ));
         }
 
-        button_data.push(ModalButton::for_app("Cancel", move |ctx| {
-            send_telemetry_sync_from_app_ctx!(
-                TelemetryEvent::LogOutModalCancel { nav_palette: false },
-                ctx
-            );
+        button_data.push(ModalButton::for_app("Cancel", move |_ctx| {
         }));
 
         let alert_data = AlertDialogWithCallbacks::for_app(
@@ -212,7 +198,6 @@ pub fn maybe_log_out(app: &mut AppContext) {
 
 // Log out the user, clears workspace state, stops running processes, and deletes database.
 pub fn log_out(app: &mut AppContext) {
-    send_telemetry_sync_from_app_ctx!(TelemetryEvent::LogOut, app);
 
     CodebaseIndexManager::handle(app).update(app, |index_manager, ctx| {
         index_manager.reset_codebase_indexing(ctx);
@@ -241,10 +226,6 @@ pub fn log_out(app: &mut AppContext) {
     });
     CloudModel::handle(app).update(app, |cloud_model, _| {
         cloud_model.reset();
-    });
-    // Clear the sync queue so that we don't try to sync the old user's objects to the new user.
-    SyncQueue::handle(app).update(app, |sync_queue, _| {
-        sync_queue.clear();
     });
 
     // Stop the cloud object and workspace metadata polling loops that were started on login.
@@ -289,15 +270,16 @@ pub fn log_out(app: &mut AppContext) {
 // This is so they do not experience the old settings when they log in with a different account.
 // Partial deletion of user defaults is a stopgap for Logout v0. The correct solution is:
 fn remove_cloud_persisted_settings(app: &mut AppContext) {
-    let is_settings_sync_enabled = *CloudPreferencesSettings::as_ref(app).settings_sync_enabled;
-    if is_settings_sync_enabled {
-        SettingsManager::handle(app).update(app, |settings_manager, ctx| {
-            let errors = settings_manager.clear_cloud_settings_local_state(ctx);
-            for e in errors {
-                log::error!("Failed to remove cloud synced setting from user defaults: {e:?}");
-            }
-        });
-    }
+    // Simplified: local version has no settings sync
+    // let is_settings_sync_enabled = *CloudPreferencesSettings::as_ref(app).settings_sync_enabled;
+    // if is_settings_sync_enabled {
+    //     SettingsManager::handle(app).update(app, |settings_manager, ctx| {
+    //         let errors = settings_manager.clear_cloud_settings_local_state(ctx);
+    //         for e in errors {
+    //             log::error!("Failed to remove cloud synced setting from user defaults: {e:?}");
+    //         }
+    //     });
+    // }
 
     if let Err(e) = app
         .private_user_preferences()

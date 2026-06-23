@@ -35,10 +35,10 @@ use crate::ai::ambient_agents::AmbientAgentTaskId;
 use crate::ai::blocklist::BlocklistAIHistoryModel;
 use crate::auth::UserUid;
 use crate::context_chips::ContextChipKind;
+use crate::drive::sharing::dialog::SharingDialogSource;
 use crate::drive::sharing::ShareableObject;
 use crate::editor::{InteractionState, ReplicaId};
 use crate::menu::{Event as MenuEvent, MenuItem, MenuItemFields};
-use crate::server::telemetry::SharingDialogSource;
 use crate::settings::InputModeSettings;
 use crate::terminal::block_list_viewport::ScrollPositionUpdate;
 use crate::terminal::model::blocks::BlockListPoint;
@@ -67,7 +67,6 @@ use crate::terminal::view::{
 };
 use crate::terminal::TerminalModel;
 use crate::view_components::{DismissibleToast, ToastFlavor};
-use crate::{send_telemetry_from_ctx, TelemetryEvent};
 
 impl TerminalView {
     pub fn sharer_session_kind(&self) -> Option<&Kind> {
@@ -122,9 +121,7 @@ impl TerminalView {
     ) -> Option<CloudConversationContinuationUiState> {
         let task_id = {
             let model = self.model.lock();
-            if !FeatureFlag::CloudModeSetupV2.is_enabled()
-                || !FeatureFlag::HandoffCloudCloud.is_enabled()
-                || model.is_receiving_agent_conversation_replay()
+            if model.is_receiving_agent_conversation_replay()
             {
                 return None;
             }
@@ -582,17 +579,7 @@ impl TerminalView {
             scrollback_type,
             source,
         });
-        if let Some(action_source) = action_source {
-            send_telemetry_from_ctx!(
-                TelemetryEvent::StartedSharingCurrentSession {
-                    includes_scrollback: !matches!(
-                        scrollback_type,
-                        SharedSessionScrollbackType::None
-                    ),
-                    source: action_source,
-                },
-                ctx
-            );
+        if let Some(_action_source) = action_source {
         }
     }
 
@@ -681,10 +668,6 @@ impl TerminalView {
         );
         ctx.emit(Event::StopSharingCurrentSession { reason });
 
-        send_telemetry_from_ctx!(
-            TelemetryEvent::StoppedSharingCurrentSession { source, reason },
-            ctx
-        );
     }
 
     // TODO: why do we need to pass through input replica ID as a separate argument?
@@ -780,26 +763,7 @@ impl TerminalView {
         self.update_pane_configuration(ctx);
 
         self.update_shared_session_pane_header(ctx);
-        // Shared ambient agent sessions should auto-open the details panel once, except for
-        // local-to-cloud handoff panes where the user stays in the moved conversation by default.
-        let is_local_to_cloud_handoff = self
-            .ambient_agent_view_model
-            .as_ref()
-            .is_some_and(|model| model.as_ref(ctx).is_local_to_cloud_handoff());
-        if FeatureFlag::CloudMode.is_enabled()
-            && matches!(source_type, SessionSourceType::AmbientAgent { .. })
-            && !is_local_to_cloud_handoff
-        {
-            self.maybe_auto_open_conversation_details_panel(ctx);
-        }
 
-        send_telemetry_from_ctx!(
-            TelemetryEvent::JoinedSharedSession {
-                session_id,
-                source_type,
-            },
-            ctx
-        );
     }
 
     pub fn rejoin_session_share(&mut self, ctx: &mut ViewContext<Self>) {
@@ -813,8 +777,7 @@ impl TerminalView {
         let handoff_continuation_state = self.cloud_conversation_continuation_ui_state(ctx);
         let should_insert_legacy_tombstone = {
             let model = self.model.lock();
-            !FeatureFlag::CloudModeSetupV2.is_enabled()
-                && model.is_shared_ambient_agent_session()
+            model.is_shared_ambient_agent_session()
                 && self.conversation_ended_tombstone_view_id.is_none()
                 && !model.is_receiving_agent_conversation_replay()
         };
@@ -910,13 +873,11 @@ impl TerminalView {
             return;
         }
         let has_pending_cloud_followup = self.pending_cloud_followup_task_id.is_some();
-        if !FeatureFlag::CloudModeSetupV2.is_enabled() || has_pending_cloud_followup {
+        if has_pending_cloud_followup {
             return;
         }
-        if !FeatureFlag::HandoffCloudCloud.is_enabled() {
-            self.insert_conversation_ended_tombstone_with_cta(None, ctx);
-            return;
-        }
+        self.insert_conversation_ended_tombstone_with_cta(None, ctx);
+
         let Some(state) = self.cloud_conversation_continuation_ui_state(ctx) else {
             return;
         };
@@ -937,10 +898,6 @@ impl TerminalView {
         task_id: crate::ai::ambient_agents::AmbientAgentTaskId,
         ctx: &mut ViewContext<Self>,
     ) {
-        if !FeatureFlag::HandoffCloudCloud.is_enabled() {
-            return;
-        }
-
         let Some(ambient_agent_view_model) = self.ambient_agent_view_model.as_ref() else {
             self.show_error_toast("Couldn't continue this cloud task.".to_string(), ctx);
             return;
@@ -1310,12 +1267,6 @@ impl TerminalView {
             return;
         }
 
-        send_telemetry_from_ctx!(
-            TelemetryEvent::JumpToSharedSessionParticipant {
-                jumped_to: participant_id.clone()
-            },
-            ctx
-        );
     }
 
     // If open, ensure that participant avatar context menu is not triggered
@@ -1427,8 +1378,8 @@ impl TerminalView {
 
     pub fn open_shared_session_on_desktop(
         &mut self,
-        source: SharedSessionActionSource,
-        ctx: &mut ViewContext<Self>,
+        _source: SharedSessionActionSource,
+        _ctx: &mut ViewContext<Self>,
     ) {
         #[cfg(target_family = "wasm")]
         {
@@ -1444,7 +1395,6 @@ impl TerminalView {
             }
         }
 
-        send_telemetry_from_ctx!(TelemetryEvent::WebSessionOpenedOnDesktop { source }, ctx);
     }
 
     // Called when viewer receives acknowledgment from server
@@ -1536,7 +1486,7 @@ impl TerminalView {
     // logic in TerminalView and Workspace (when starting a share).
     pub fn copy_shared_session_link(
         &mut self,
-        source: SharedSessionActionSource,
+        _source: SharedSessionActionSource,
         ctx: &mut ViewContext<Self>,
     ) {
         let manager = Manager::as_ref(ctx);
@@ -1556,7 +1506,6 @@ impl TerminalView {
             toast_stack.add_ephemeral_toast(toast, window_id, ctx);
         });
 
-        send_telemetry_from_ctx!(TelemetryEvent::CopiedSharedSessionLink { source }, ctx);
     }
 
     pub fn open_shared_session_qr_code(&mut self, ctx: &mut ViewContext<Self>) {
@@ -1806,10 +1755,7 @@ impl TerminalView {
         &mut self,
         ctx: &mut ViewContext<Self>,
     ) {
-        if !FeatureFlag::HandoffCloudCloud.is_enabled() {
-            self.insert_conversation_ended_tombstone_with_cta(None, ctx);
-            return;
-        }
+        self.insert_conversation_ended_tombstone_with_cta(None, ctx);
 
         match self.cloud_conversation_continuation_ui_state(ctx) {
             Some(CloudConversationContinuationUiState::Tombstone { cta }) => {

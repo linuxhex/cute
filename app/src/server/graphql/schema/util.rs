@@ -1,14 +1,39 @@
 use crate::anyhow;
-use crate::cloud_object::model::actions::{
-    ObjectAction, ObjectActionHistory, ObjectActionSubtype, ObjectActionType,
-};
+use crate::cloud_object::model::actions::{ObjectAction, ObjectActionHistory, ObjectActionSubtype, ObjectActionType};
 use crate::server::ids::{HashedSqliteId, ObjectUid, ServerId, SyncId};
-pub fn action_type_to_gql_action_type(
-    action: ObjectActionType,
-) -> warp_graphql::object_actions::ActionType {
-    match action {
-        ObjectActionType::Execute => warp_graphql::object_actions::ActionType::Executed,
-    }
+
+/// Converts the graphql action history type into an ObjectActionHistory, requires converting
+/// the individual actions, action types, and action subtypes.
+pub fn object_action_history_from_gql(
+    history: warp_graphql::object_actions::ObjectActionHistory,
+) -> Result<ObjectActionHistory, anyhow::Error> {
+    let uid: ObjectUid = history.uid.into_inner();
+    let sync_id = SyncId::ServerId(ServerId::from_string_lossy(&uid));
+    let hashed_sqlite_id = sync_id.sqlite_uid_hash(history.object_type.try_into()?);
+
+    let actions = history
+        .actions
+        .map(|actions| {
+            actions
+                .iter()
+                .filter_map(|action| {
+                    try_into_object_action(action, uid.clone(), hashed_sqlite_id.clone()).ok()
+                })
+                .collect::<Vec<ObjectAction>>()
+        })
+        .unwrap_or_default();
+
+    Ok(ObjectActionHistory {
+        uid,
+        hashed_sqlite_id,
+        latest_processed_at_timestamp: history
+            .latest_processed_at_timestamp
+            .ok_or(anyhow!(
+                "Parsing error: latest processed at timestamp did not exist."
+            ))?
+            .utc(),
+        actions,
+    })
 }
 
 /// Converts the graphql action type ("EXECUTED", etc) to ObjectActionType.
@@ -53,38 +78,4 @@ fn try_into_object_action(
             Err(anyhow!("Unknown object action subtype"))
         }
     }
-}
-
-/// Converts the graphql action history type into an ObjectActionHistory, requires converting
-/// the individual actions, action types, and action subtypes.
-pub fn object_action_history_from_gql(
-    history: warp_graphql::object_actions::ObjectActionHistory,
-) -> Result<ObjectActionHistory, anyhow::Error> {
-    let uid: ObjectUid = history.uid.into_inner();
-    let sync_id = SyncId::ServerId(ServerId::from_string_lossy(&uid));
-    let hashed_sqlite_id = sync_id.sqlite_uid_hash(history.object_type.try_into()?);
-
-    let actions = history
-        .actions
-        .map(|actions| {
-            actions
-                .iter()
-                .filter_map(|action| {
-                    try_into_object_action(action, uid.clone(), hashed_sqlite_id.clone()).ok()
-                })
-                .collect::<Vec<ObjectAction>>()
-        })
-        .unwrap_or_default();
-
-    Ok(ObjectActionHistory {
-        uid,
-        hashed_sqlite_id,
-        latest_processed_at_timestamp: history
-            .latest_processed_at_timestamp
-            .ok_or(anyhow!(
-                "Parsing error: latest processed at timestamp did not exist."
-            ))?
-            .utc(),
-        actions,
-    })
 }

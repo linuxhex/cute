@@ -5,8 +5,6 @@ use std::sync::mpsc::SyncSender;
 
 use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
 use base64::Engine as _;
-#[cfg(not(target_family = "wasm"))]
-use session_sharing_protocol::sharer::SessionSourceType;
 use url::Url;
 use warp_cli::agent::Harness;
 use warp_core::execution_mode::AppExecutionMode;
@@ -27,8 +25,7 @@ use crate::ai::agent::StartAgentExecutionMode;
 use crate::ai::ambient_agents::task::{normalize_orchestrator_agent_name, HarnessConfig};
 use crate::ai::ambient_agents::{AgentConfigSnapshot, AmbientAgentTaskId};
 use crate::ai::blocklist::agent_view::{AgentViewControllerEvent, AgentViewEntryOrigin};
-use crate::ai::blocklist::orchestration_event_streamer::OrchestrationEventStreamer;
-use crate::ai::blocklist::orchestration_events::{OrchestrationEventService, SendEventResult};
+use crate::ai::blocklist::orchestration_events::OrchestrationEventService;
 #[cfg(feature = "local_fs")]
 use crate::ai::blocklist::BlocklistAIHistoryEvent;
 use crate::ai::blocklist::{BlocklistAIHistoryModel, StartAgentRequest};
@@ -37,7 +34,6 @@ use crate::ai::llms::LLMPreferences;
 use crate::ai::skills::SkillManager;
 use crate::app_state::{AmbientAgentPaneSnapshot, LeafContents, TerminalPaneSnapshot};
 use crate::code::buffer_location::LocalOrRemotePath;
-use crate::features::FeatureFlag;
 use crate::pane_group::child_agent::{
     create_error_child_agent_conversation, ErrorChildAgentConversationRequest,
 };
@@ -192,26 +188,10 @@ pub(in crate::pane_group) fn host_terminal_shared_session_source_type(
 /// cloud-only UI stays gated on `AmbientAgent`.
 #[cfg(not(target_family = "wasm"))]
 pub(in crate::pane_group) fn inherit_share_for_local_child(
-    host_source: Option<&SharedSessionSource>,
-    child_task_id: AmbientAgentTaskId,
+    _host_source: Option<&SharedSessionSource>,
+    _child_task_id: AmbientAgentTaskId,
 ) -> IsSharedSessionCreator {
-    if !FeatureFlag::OrchestrationViewerPillBar.is_enabled() {
-        return IsSharedSessionCreator::No;
-    }
-    let Some(host_source) = host_source else {
-        return IsSharedSessionCreator::No;
-    };
-    if host_source.orchestrator_task_id().is_none() {
-        return IsSharedSessionCreator::No;
-    }
-    let child_task_id_str = child_task_id.to_string();
-    let source = match &host_source.source_type {
-        SessionSourceType::User => SharedSessionSource::user(Some(child_task_id_str)),
-        SessionSourceType::AmbientAgent { .. } => {
-            SharedSessionSource::ambient_agent(Some(child_task_id_str))
-        }
-    };
-    IsSharedSessionCreator::Yes { source }
+    IsSharedSessionCreator::No
 }
 
 impl TerminalPane {
@@ -896,27 +876,6 @@ fn kill_agent_conversation(
     ctx: &mut ViewContext<PaneGroup>,
 ) {
     let state = agent_conversation_action_state(conversation_id, ctx);
-    if FeatureFlag::OrchestrationV2.is_enabled() {
-        OrchestrationEventService::handle(ctx).update(ctx, |service, ctx| {
-            match service.emit_child_killed(conversation_id, ctx) {
-                SendEventResult::LifecycleSent => {}
-                SendEventResult::LifecycleDropped => {
-                    log::info!(
-                        "KillAgentConversation: killed lifecycle event not emitted for {conversation_id:?}"
-                    );
-                }
-                SendEventResult::Error(error) => {
-                    log::warn!(
-                        "KillAgentConversation: failed to emit killed lifecycle event for {conversation_id:?}: {error}"
-                    );
-                }
-            }
-        });
-        // Tombstone every Kill so late events cannot restore a removed child.
-        OrchestrationEventStreamer::handle(ctx).update(ctx, |streamer, ctx| {
-            streamer.mark_conversation_killed(conversation_id, ctx);
-        });
-    }
 
     if let Some(state) = state {
         if state.is_in_progress {
@@ -1102,11 +1061,6 @@ fn handle_terminal_view_event(
             }
             Event::OpenSettings(section) => {
                 ctx.emit(pane_group::Event::OpenSettings(*section));
-            }
-            Event::OpenAutoReloadModal { purchased_credits } => {
-                ctx.emit(pane_group::Event::OpenAutoReloadModal {
-                    purchased_credits: *purchased_credits,
-                });
             }
             #[cfg(not(target_family = "wasm"))]
             Event::OpenPluginInstructionsPane(agent, kind) => {
@@ -1483,9 +1437,6 @@ fn handle_terminal_view_event(
                     diff_mode: diff_mode.to_owned(),
                     open_code_review: open_code_review.clone(),
                 });
-            }
-            Event::ShowCloudAgentCapacityModal { variant } => {
-                ctx.emit(pane_group::Event::ShowCloudAgentCapacityModal { variant: *variant });
             }
             Event::FreeTierLimitCheckTriggered => {
                 ctx.emit(pane_group::Event::FreeTierLimitCheckTriggered);

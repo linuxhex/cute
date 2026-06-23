@@ -13,7 +13,6 @@ use warp_cli::agent::Harness;
 use warp_core::command::ExitCode;
 use warp_core::execution_mode::AppExecutionMode;
 use warp_core::features::FeatureFlag;
-use warp_core::send_telemetry_from_ctx;
 use warp_core::ui::appearance::Appearance;
 use warp_core::ui::theme::color::internal_colors;
 use warp_core::ui::theme::WarpTheme;
@@ -59,7 +58,6 @@ use crate::ai::blocklist::{
 };
 use crate::ai::llms::LLMPreferences;
 use crate::ai::skills::SkillDescriptor;
-use crate::code_review::CodeReviewTelemetryEvent;
 use crate::notebooks::NotebookId;
 use crate::persistence::model::{
     AgentConversationData, ConversationUsageMetadata, ModelTokenUsage, PersistedAutoexecuteMode,
@@ -924,13 +922,9 @@ impl AIConversation {
     /// orchestration version: `task_id` (as string) under v2,
     /// `server_conversation_token` under v1.
     pub fn orchestration_agent_id(&self) -> Option<String> {
-        if FeatureFlag::OrchestrationV2.is_enabled() {
-            self.run_id()
-        } else {
-            self.server_conversation_token
-                .as_ref()
-                .map(|t| t.as_str().to_string())
-        }
+        self.server_conversation_token
+            .as_ref()
+            .map(|t| t.as_str().to_string())
     }
 
     /// Updates the server conversation token for this conversation.
@@ -2114,7 +2108,7 @@ impl AIConversation {
             exchange_id: initial_exchange_id,
             ..
         } = added_exchanges.first();
-        let identifiers = AIIdentifiers {
+        let _identifiers = AIIdentifiers {
             server_output_id: None,
             server_conversation_id: self.server_conversation_token.clone().map(Into::into),
             client_conversation_id: Some(self.id),
@@ -2122,21 +2116,12 @@ impl AIConversation {
             model_id: None,
         };
 
-        let will_attempt_to_resume = matches!(
+        let _will_attempt_to_resume = matches!(
             &error,
             RenderableAIError::Other {
                 will_attempt_resume: true,
                 ..
             }
-        );
-        send_telemetry_from_ctx!(
-            crate::TelemetryEvent::AgentModeError {
-                identifiers,
-                error: error.to_string(),
-                is_user_visible: true,
-                will_attempt_to_resume,
-            },
-            ctx
         );
 
         for AddedExchange {
@@ -2517,12 +2502,6 @@ impl AIConversation {
                                         comments_op.clone(),
                                     );
                                     if resolved_count > 0 {
-                                        send_telemetry_from_ctx!(
-                                            CodeReviewTelemetryEvent::CommentResolved {
-                                                resolved_count
-                                            },
-                                            ctx
-                                        );
                                     }
                                 } else {
                                     log::error!(
@@ -4082,7 +4061,6 @@ impl AIAgentExchange {
                         server_output_id: Some(server_output_id),
                         api_metadata_bytes: None,
                         suggestions: None,
-                        telemetry_events: vec![],
                         model_info: None,
                         request_cost: None,
                     }));

@@ -3,13 +3,11 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use instant::Instant;
-use markdown_parser::FormattedTextFragment;
 use parking_lot::FairMutex;
 use pathfinder_color::ColorU;
 use warp_core::features::FeatureFlag;
 use warp_core::ui::appearance::Appearance;
 use warp_core::ui::theme::Fill;
-use warp_core::ui::Icon as CoreIcon;
 use warp_multi_agent_api as api;
 use warpui::elements::shimmering_text::ShimmeringTextStateHandle;
 use warpui::elements::{Border, Container, Empty, Flex, MouseStateHandle, ParentElement, Text};
@@ -51,18 +49,16 @@ use crate::ai::blocklist::{
 };
 use crate::ai::llms::LLMPreferences;
 use crate::ai::AgentTip;
-use crate::server::telemetry::TelemetryEvent;
 use crate::settings::{InputModeSettings, InputSettings};
 use crate::settings_view::keybindings::KeybindingChangedNotifier;
 use crate::terminal::input::buffer_model::{InputBufferModel, InputBufferUpdateEvent};
-use crate::terminal::input::message_bar::common::render_wrapping_standard_message_bar;
 use crate::terminal::input::slash_command_model::SlashCommandModel;
 use crate::terminal::input::suggestions_mode_model::InputSuggestionsModeModel;
 use crate::terminal::input::{HandoffComposeState, SET_INPUT_MODE_TERMINAL_ACTION_NAME};
 use crate::terminal::model::block::LONG_RUNNING_COMMAND_DURATION_MS;
 use crate::terminal::model_events::{ModelEvent, ModelEventDispatcher};
 use crate::terminal::view::ambient_agent::{
-    is_cloud_agent_pre_first_exchange, AmbientAgentViewModel, AmbientAgentViewModelEvent,
+    AmbientAgentViewModel, AmbientAgentViewModelEvent,
 };
 use crate::terminal::warpify::render::LEFT_STRIPE_WIDTH;
 use crate::terminal::{
@@ -70,7 +66,7 @@ use crate::terminal::{
     TOGGLE_HIDE_CLI_RESPONSES_KEYBINDING, TOGGLE_QUEUE_NEXT_PROMPT_KEYBINDING,
 };
 use crate::util::bindings::keybinding_name_to_keystroke;
-use crate::{send_telemetry_from_app_ctx, BlocklistAIHistoryModel};
+use crate::BlocklistAIHistoryModel;
 
 pub fn init(app: &mut AppContext) {
     summarization_cancel_dialog::init(app);
@@ -722,13 +718,7 @@ impl BlocklistAIStatusBar {
             // Get the current tip from the model
             self.current_tip = tip_model.as_ref(ctx).current_tip().cloned();
 
-            if let Some(tip) = self.current_tip.as_ref() {
-                send_telemetry_from_app_ctx!(
-                    TelemetryEvent::AgentTipShown {
-                        tip: tip.description.clone()
-                    },
-                    ctx
-                );
+            if let Some(_tip) = self.current_tip.as_ref() {
             }
         } else {
             self.current_tip = None;
@@ -872,97 +862,14 @@ impl BlocklistAIStatusBar {
         ))
     }
 
-    fn render_cloud_mode_setup_status(&self, app: &AppContext) -> Option<Box<dyn Element>> {
-        if !FeatureFlag::CloudModeSetupV2.is_enabled() {
-            return None;
-        }
-
-        let ambient_agent_model = self
-            .ambient_agent_view_model
-            .as_ref()
-            .map(|ambient_agent_view_model| ambient_agent_view_model.as_ref(app))?;
-
-        // The step indicator is only meaningful while a spawn is in flight. Terminal states
-        // (`Failed`, `NeedsGithubAuth`, `Cancelled`) still carry an `AgentProgress` for
-        // telemetry purposes, so guard on `is_waiting_for_session()` rather than relying on
-        // `agent_progress()` being `None`.
-        if !ambient_agent_model.is_waiting_for_session() {
-            return None;
-        }
-
-        let progress = ambient_agent_model.agent_progress()?;
-        let progress_text = progress.setup_status_text();
-        Some(render_warping_indicator_base(
-            WarpingIndicatorProps {
-                icon: None,
-                warping_indicator_text: MaybeShimmeringText::Shimmering {
-                    text: progress_text.into(),
-                    shimmering_text_handle: self.shimmering_text_handle.clone(),
-                },
-                non_shimmering_text: None,
-                non_shimmering_suffix: None,
-                buttons: None,
-                is_passive_code_diff: false,
-                secondary_element: self.render_tip(app),
-            },
-            app,
-        ))
+    fn render_cloud_mode_setup_status(&self, _app: &AppContext) -> Option<Box<dyn Element>> {
+        None
     }
 
     fn render_cloud_mode_setup_terminal_message(
         &self,
-        app: &AppContext,
+        _app: &AppContext,
     ) -> Option<Box<dyn Element>> {
-        if !FeatureFlag::CloudModeSetupV2.is_enabled() {
-            return None;
-        }
-
-        let ambient_agent_model = self
-            .ambient_agent_view_model
-            .as_ref()
-            .map(|ambient_agent_view_model| ambient_agent_view_model.as_ref(app))?;
-        let theme = Appearance::as_ref(app).theme();
-        let error_color = theme.ansi_fg_red();
-
-        if let Some(auth_url) = ambient_agent_model.github_auth_url() {
-            let error_message = ambient_agent_model
-                .github_auth_error_message()
-                .unwrap_or("Missing GitHub authentication.");
-            return Some(render_wrapping_standard_message_bar(
-                CoreIcon::Triangle,
-                error_color,
-                error_color,
-                vec![
-                    FormattedTextFragment::plain_text(format!("{error_message} ")),
-                    FormattedTextFragment::hyperlink("Authenticate GitHub", auth_url.to_owned()),
-                ],
-                app,
-            ));
-        }
-
-        if ambient_agent_model.is_cancelled() {
-            let color = theme.disabled_text_color(theme.background()).into_solid();
-            return Some(render_wrapping_standard_message_bar(
-                CoreIcon::StopFilled,
-                color,
-                color,
-                vec![FormattedTextFragment::plain_text(
-                    "Cloud agent run cancelled",
-                )],
-                app,
-            ));
-        }
-
-        if let Some(error_message) = ambient_agent_model.error_message() {
-            return Some(render_wrapping_standard_message_bar(
-                CoreIcon::Triangle,
-                error_color,
-                error_color,
-                vec![FormattedTextFragment::plain_text(error_message.to_owned())],
-                app,
-            ));
-        }
-
         None
     }
 }
@@ -999,7 +906,7 @@ fn render_agent_tip(tip: &AgentTip, app: &AppContext) -> Box<dyn Element> {
     let appearance = Appearance::as_ref(app);
     let theme = appearance.theme();
 
-    let tip_description = tip.description.clone();
+    let _tip_description = tip.description.clone();
     let action_text = tip.action.clone().and_then(|action| action.display_text());
 
     let mut fragments = tip.to_formatted_text(app);
@@ -1029,13 +936,6 @@ fn render_agent_tip(tip: &AgentTip, app: &AppContext) -> Box<dyn Element> {
         use warpui::elements::HyperlinkLens;
         match link {
             HyperlinkLens::Url(url) => {
-                send_telemetry_from_app_ctx!(
-                    TelemetryEvent::AgentTipClicked {
-                        tip: tip_description.clone(),
-                        click_target: url.to_string(),
-                    },
-                    app
-                );
                 app.open_url(url);
             }
             HyperlinkLens::Action(action_ref) => {
@@ -1043,13 +943,6 @@ fn render_agent_tip(tip: &AgentTip, app: &AppContext) -> Box<dyn Element> {
                     .as_any()
                     .downcast_ref::<crate::workspace::WorkspaceAction>()
                 {
-                    send_telemetry_from_app_ctx!(
-                        TelemetryEvent::AgentTipClicked {
-                            tip: tip_description.clone(),
-                            click_target: action_text.clone().unwrap_or_default(),
-                        },
-                        app
-                    );
                     evt.dispatch_typed_action(action.clone());
                 }
             }
@@ -1145,35 +1038,6 @@ impl View for BlocklistAIStatusBar {
         let status_element =
             if let Some(cloud_mode_setup_status) = self.render_cloud_mode_setup_status(app) {
                 cloud_mode_setup_status
-            } else if FeatureFlag::CloudModeSetupV2.is_enabled()
-                && self
-                    .ambient_agent_view_model
-                    .as_ref()
-                    .is_some_and(|ambient_agent_view_model| {
-                        let terminal_model = self.terminal_model.lock();
-                        is_cloud_agent_pre_first_exchange(
-                            Some(ambient_agent_view_model),
-                            &self.agent_view_controller,
-                            &terminal_model,
-                            app,
-                        )
-                    })
-            {
-                render_warping_indicator_base(
-                    WarpingIndicatorProps {
-                        icon: None,
-                        warping_indicator_text: MaybeShimmeringText::Shimmering {
-                            text: "Setting up environment".into(),
-                            shimmering_text_handle: self.shimmering_text_handle.clone(),
-                        },
-                        non_shimmering_text: None,
-                        non_shimmering_suffix: None,
-                        buttons: None,
-                        is_passive_code_diff: false,
-                        secondary_element: self.render_tip(app),
-                    },
-                    app,
-                )
             } else if self
                 .terminal_model
                 .lock()
@@ -1231,10 +1095,8 @@ impl View for BlocklistAIStatusBar {
                 // replaces the legacy child-agent status card rows; when
                 // it's enabled, render only the message bar here.
                 let mut column = Flex::column();
-                if !FeatureFlag::OrchestrationPillBar.is_enabled() {
-                    column =
-                        column.with_child(ChildView::new(&self.child_agent_status_card).finish());
-                }
+                column =
+                    column.with_child(ChildView::new(&self.child_agent_status_card).finish());
                 column = column.with_child(ChildView::new(&self.agent_message_bar).finish());
                 return column.finish();
             } else {
@@ -1304,7 +1166,7 @@ impl View for BlocklistAIStatusBar {
         // visible above the warping/status indicator so it doesn't disappear
         // while the agent is working. The new orchestration pill bar
         // replaces this card, so skip it when that flag is on.
-        if agent_view_controller.is_active() && !FeatureFlag::OrchestrationPillBar.is_enabled() {
+        if agent_view_controller.is_active() && !false {
             return Flex::column()
                 .with_child(ChildView::new(&self.child_agent_status_card).finish())
                 .with_child(container.finish())

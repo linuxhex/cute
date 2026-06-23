@@ -7,7 +7,6 @@ use settings::ToggleableSetting as _;
 use strum::IntoEnumIterator;
 use uuid::Uuid;
 use warp_core::features::FeatureFlag;
-use warp_core::send_telemetry_from_ctx;
 use warp_core::ui::appearance::AppearanceEvent;
 use warp_core::ui::theme::color::internal_colors;
 use warp_core::ui::Icon;
@@ -49,7 +48,7 @@ use crate::editor::{
 use crate::modal::{Modal, ModalEvent, ModalViewState};
 use crate::pane_group::Direction;
 use crate::search_bar::SearchBar;
-use crate::server::telemetry::{MCPTemplateInstallationSource, TelemetryEvent};
+use crate::server::telemetry::MCPTemplateInstallationSource;
 use crate::settings::{AISettings, AISettingsChangedEvent};
 use crate::settings_view::mcp_servers::server_card::{
     ServerCardEvent, ServerCardOptions, ServerCardStatus, ServerCardView, TitleChip,
@@ -715,14 +714,10 @@ impl MCPServersListPageView {
                             instructions_in_markdown: None,
                             origin: InstallOrigin::InApp,
                         });
-                        let source: MCPTemplateInstallationSource = match is_shared {
+                        let _source: MCPTemplateInstallationSource = match is_shared {
                             true => MCPTemplateInstallationSource::Shared,
                             false => MCPTemplateInstallationSource::Local,
                         };
-                        send_telemetry_from_ctx!(
-                            TelemetryEvent::MCPTemplateInstalled { source },
-                            ctx
-                        );
                     }
                 }
                 ServerCardItemId::TemplatableMCPInstallation(_) => {
@@ -970,12 +965,6 @@ impl MCPServersListPageView {
                     instructions_in_markdown: instructions,
                     origin: InstallOrigin::InApp,
                 });
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::MCPTemplateInstalled {
-                        source: MCPTemplateInstallationSource::Gallery
-                    },
-                    ctx
-                );
             }
             Err(e) => {
                 log::warn!("Could not install gallery item {gallery_uuid}: {e}");
@@ -1546,10 +1535,10 @@ impl MCPServersListPageView {
             }
         }
 
-        // If the path is the Warp data directory (e.g. ~/.warp or ~/.warp_dev), set the text to
-        // "global". The Warp provider stores its data directory as the root path rather than the
+        // If the path is the Cute data directory (e.g. ~/.warp or ~/.warp_dev), set the text to
+        // "global". The Cute provider stores its data directory as the root path rather than the
         // home directory, unlike other providers that store the home directory directly.
-        if root_path == &crate::warp_managed_paths_watcher::warp_data_dir() {
+        if root_path == &crate::cute_managed_paths_watcher::cute_data_dir() {
             return Some("global".to_string());
         }
 

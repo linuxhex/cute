@@ -38,7 +38,7 @@ use super::block_list::{
 };
 use super::model::{
     self, ActiveMCPServer, CurrentUserInformation, MCPEnvironmentVariables, NewActiveMCPServer,
-    NewApp, NewCommand, NewFolder, NewNotebook, NewServerExperiment, NewTab, NewTeam, NewWindow,
+    NewApp, NewCommand, NewFolder, NewNotebook, NewTab, NewTeam, NewWindow,
     NewWorkspace, NewWorkspaceMetadata, NewWorkspaceTeam, ObjectMetadata, ObjectPermissions,
     Project, Tab, Window, WorkspaceMetadata as WorkspaceMetadataModel, AI_DOCUMENT_PANE_KIND,
     AI_FACT_PANE_KIND, CODE_PANE_KIND, ENV_VAR_COLLECTION_PANE_KIND,
@@ -90,7 +90,6 @@ use crate::code::editor_management::CodeSource;
 use crate::drive::folders::{CloudFolder, CloudFolderModel, FolderId};
 use crate::drive::OpenWarpDriveObjectSettings;
 use crate::env_vars::{CloudEnvVarCollection, CloudEnvVarCollectionModel};
-use crate::features::FeatureFlag;
 use crate::notebooks::{CloudNotebook, CloudNotebookModel, NotebookId};
 use crate::persistence::agent::read_agent_conversations;
 use crate::persistence::block_list::{get_all_restored_blocks, read_ai_queries};
@@ -98,9 +97,7 @@ use crate::persistence::model::{
     NewCloudObjectsRefresh, NewGenericStringObject, NewPersistedObjectAction, NewTeamSettings,
     ProjectRules, UserProfile, CODE_REVIEW_PANE_KIND, GET_STARTED_PANE_KIND,
 };
-use crate::server::experiments::ServerExperiment;
 use crate::server::ids::{ClientId, HashableId, ServerId, SyncId, ToServerId};
-use crate::server::telemetry::TelemetryEvent;
 use crate::settings::cloud_preferences::{CloudPreference, CloudPreferenceModel};
 use crate::settings_view::SettingsSection;
 use crate::suggestions::ignored_suggestions_model::SuggestionType;
@@ -110,10 +107,10 @@ use crate::terminal::ShellLaunchData;
 use crate::themes::theme::AnsiColorIdentifier;
 use crate::workflows::workflow_enum::{CloudWorkflowEnum, CloudWorkflowEnumModel};
 use crate::workflows::{CloudWorkflow, CloudWorkflowModel, WorkflowId};
-use crate::workspaces::team::Team as TeamMetadata;
 use crate::workspaces::user_profiles::{user_profile_from_persistence, UserProfileWithUID};
 use crate::workspaces::workspace::{Workspace as WorkspaceMetadata, WorkspaceUid};
-use crate::{report_error, report_if_error, safe_info, send_telemetry_from_app_ctx};
+use crate::workspaces::{MembershipRole, Team as TeamMetadata, TeamMember};
+use crate::{report_error, report_if_error, safe_info};
 
 diesel::define_sql_function! {
     fn json_extract(target: diesel::sql_types::Text, path: diesel::sql_types::Text) -> diesel::sql_types::Text;
@@ -153,10 +150,6 @@ pub fn initialize(
             let writer_handles = match start_writer(conn, database_path.clone()) {
                 Ok(writer_handles) => Some(writer_handles),
                 Err(err) => {
-                    send_telemetry_from_app_ctx!(
-                        TelemetryEvent::DatabaseWriteError(err.to_string()),
-                        ctx
-                    );
                     report_db_error("starting writer", err, &database_path);
                     None
                 }
@@ -164,10 +157,6 @@ pub fn initialize(
             (persisted_data, writer_handles)
         }
         Err(err) => {
-            send_telemetry_from_app_ctx!(
-                TelemetryEvent::DatabaseStartUpError(err.to_string()),
-                ctx
-            );
             report_db_error("initialization", err, &database_path);
             (None, None)
         }
@@ -182,7 +171,6 @@ fn read_persisted_data(
     match read_sqlite_data(conn, user_uid) {
         Ok(app_state) => Some(Box::new(app_state)),
         Err(err) => {
-            send_telemetry_from_app_ctx!(TelemetryEvent::DatabaseReadError(err.to_string()), ctx);
             report_error!(anyhow::Error::new(err).context("Failed to read persisted data"));
             None
         }
@@ -433,7 +421,7 @@ fn app_database_file_path() -> PathBuf {
 }
 
 fn remote_server_daemon_database_file_path(identity_key: &str) -> PathBuf {
-    let data_dir = remote_server::setup::remote_server_daemon_data_dir(identity_key);
+    let data_dir = crate::remote_server::setup::remote_server_daemon_data_dir(identity_key);
     let expanded_data_dir = shellexpand::tilde(&data_dir).into_owned();
     PathBuf::from(expanded_data_dir).join(WARP_SQLITE_FILE_NAME)
 }
@@ -691,9 +679,6 @@ fn handle_model_event(event: ModelEvent, connection: &mut SqliteConnection) -> a
         } => {
             sync_object_actions(connection, objects_to_sync).context("error syncing object actions")
         }
-        ModelEvent::SaveExperiments { experiments } => {
-            save_experiments(connection, experiments).context("error saving experiments")
-        }
         ModelEvent::UpsertAIQuery { query } => {
             upsert_ai_query(connection, query).context("error upserting AI query")
         }
@@ -916,7 +901,6 @@ fn save_app_state(conn: &mut SqliteConnection, app_state: &AppState) -> Result<(
                 quake_mode: window.quake_mode,
                 universal_search_width: window.universal_search_width,
                 warp_ai_width: window.warp_ai_width,
-                voltron_width: window.voltron_width,
                 warp_drive_index_width: window.warp_drive_index_width,
                 left_panel_open: Some(window.left_panel_open),
                 vertical_tabs_panel_open: Some(window.vertical_tabs_panel_open),
@@ -2851,7 +2835,6 @@ fn read_sqlite_data(
                 bounds,
                 universal_search_width: window.universal_search_width,
                 warp_ai_width: window.warp_ai_width,
-                voltron_width: window.voltron_width,
                 warp_drive_index_width: window.warp_drive_index_width,
                 left_panel_open: window_left_panel_open,
                 vertical_tabs_panel_open: window.vertical_tabs_panel_open.unwrap_or(false),
@@ -3152,15 +3135,15 @@ fn read_sqlite_data(
 
     let team_member_rows: Vec<model::TeamMemberRow> =
         schema::team_members::dsl::team_members.load(conn)?;
-    let members_by_team_id: HashMap<i32, Vec<crate::workspaces::team::TeamMember>> =
+    let members_by_team_id: HashMap<i32, Vec<TeamMember>> =
         team_member_rows
             .into_iter()
             .fold(HashMap::new(), |mut acc, row| {
-                let member = crate::workspaces::team::TeamMember {
+                let member = TeamMember {
                     uid: UserUid::new(&row.user_uid),
                     email: row.email,
                     role: serde_json::from_str(&row.role)
-                        .unwrap_or(crate::workspaces::team::MembershipRole::User),
+                        .unwrap_or(MembershipRole::User),
                 };
                 acc.entry(row.team_id).or_default().push(member);
                 acc
@@ -3256,14 +3239,6 @@ fn read_sqlite_data(
         .filter_map(|action| object_action_from_persisted(action).ok())
         .collect();
 
-    let server_experiments = schema::server_experiments::dsl::server_experiments
-        .load_iter::<model::ServerExperiment, DefaultLoadingMode>(conn)?
-        .filter_map(|server_experiment| server_experiment.ok())
-        .filter_map(|server_experiment| {
-            ServerExperiment::from_string(server_experiment.experiment).ok()
-        })
-        .collect();
-
     let restored_blocks = get_all_restored_blocks(conn)?;
 
     // Load active MCP servers from database
@@ -3304,7 +3279,6 @@ fn read_sqlite_data(
         user_profiles,
         time_of_next_force_object_refresh,
         object_actions,
-        experiments: server_experiments,
         ai_queries,
         codebase_indices,
         workspace_language_servers,
@@ -3378,33 +3352,9 @@ fn to_cloud_object_permissions(
         .permissions_last_updated_at
         .and_then(|ts| ServerTimestamp::from_unix_timestamp_micros(ts).ok());
 
-    let guests = if FeatureFlag::SharedWithMe.is_enabled() {
-        permissions
-            .object_guests
-            .as_deref()
-            // If deserializing guests fails, default to None and wait for an eventual refresh.
-            .and_then(|guests| super::cloud_objects::decode_guests(guests).ok())
-            .unwrap_or_default()
-    } else {
-        Default::default()
-    };
+    let guests = Vec::new();
 
-    let anyone_with_link = if FeatureFlag::SharedWithMe.is_enabled() {
-        permissions
-            .anyone_with_link_access_level
-            .as_deref()
-            .and_then(|access_level| {
-                super::cloud_objects::decode_link_sharing(
-                    access_level,
-                    permissions.anyone_with_link_source.as_deref(),
-                )
-                // If deserializing link sharing fails, default to None and wait for an
-                // eventual refresh.
-                .ok()
-            })
-    } else {
-        None
-    };
+    let anyone_with_link = None;
 
     Some(CloudObjectPermissions {
         owner,
@@ -3536,27 +3486,6 @@ fn upsert_user_profiles(
                 .values(new_user_profile)
                 .execute(conn)?;
         }
-        Ok(())
-    })
-}
-
-fn save_experiments(
-    conn: &mut SqliteConnection,
-    experiments: Vec<ServerExperiment>,
-) -> Result<(), Error> {
-    conn.transaction::<(), Error, _>(|conn| {
-        diesel::delete(schema::server_experiments::dsl::server_experiments).execute(conn)?;
-
-        let new_experiments = experiments
-            .into_iter()
-            .map(|experiment| NewServerExperiment {
-                experiment: experiment.to_string(),
-            })
-            .collect_vec();
-
-        diesel::insert_into(schema::server_experiments::dsl::server_experiments)
-            .values(new_experiments)
-            .execute(conn)?;
         Ok(())
     })
 }

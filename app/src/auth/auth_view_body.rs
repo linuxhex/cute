@@ -31,14 +31,13 @@ use crate::auth::auth_view_shared_helpers::render_offline_contents;
 use crate::editor::{
     EditorView, InteractionState, SingleLineEditorOptions, TextColors, TextOptions,
 };
-use crate::experiments::{AuthFlowInstructions, Experiment};
 use crate::modal::MODAL_CORNER_RADIUS;
 use crate::network::NetworkStatus;
-use crate::server::telemetry::{AnonymousUserSignupEntrypoint, LoginEventSource, TelemetryEvent};
+use crate::server::telemetry::AnonymousUserSignupEntrypoint;
 use crate::settings::{AISettings, PrivacySettings};
 use crate::themes::theme::Fill as ThemeFill;
 use crate::util::color::{darken, lighten};
-use crate::{report_error, send_telemetry_from_ctx, send_telemetry_sync_from_ctx};
+use crate::report_error;
 
 const TOS_URL: &str = "https://www.warp.dev/terms-of-service";
 
@@ -46,7 +45,6 @@ const COMMON_BODY_UI_FONT_SIZE: f32 = 12.;
 const AUTH_MODAL_GAP: f32 = 16.;
 
 const AUTH_TOKEN_INPUT_PLACEHOLDER_TEXT: &str = "Auth Token";
-const AUTH_TOKEN_INPUT_PLACEHOLDER_TEXT_EXPERIMENTAL: &str = "Browser auth token";
 
 const AUTH_TOKEN_INPUT_BORDER_RADIUS: Radius = Radius::Pixels(4.);
 
@@ -140,7 +138,6 @@ pub enum AuthViewBodyAction {
 
 impl AuthViewBody {
     pub fn new(variant: AuthViewVariant, ctx: &mut ViewContext<Self>) -> Self {
-        let experiment_group = AuthFlowInstructions::get_group(ctx);
         let auth_token_input = ctx.add_typed_action_view(|ctx| {
             let appearance = Appearance::as_ref(ctx);
             let mut editor = EditorView::single_line(
@@ -161,14 +158,7 @@ impl AuthViewBody {
                 ctx,
             );
 
-            let placeholder_text =
-                if matches!(experiment_group, Some(AuthFlowInstructions::Experiment)) {
-                    AUTH_TOKEN_INPUT_PLACEHOLDER_TEXT_EXPERIMENTAL
-                } else {
-                    AUTH_TOKEN_INPUT_PLACEHOLDER_TEXT
-                };
-
-            editor.set_placeholder_text(placeholder_text, ctx);
+            editor.set_placeholder_text(AUTH_TOKEN_INPUT_PLACEHOLDER_TEXT, ctx);
             editor
         });
 
@@ -841,12 +831,6 @@ impl TypedActionView for AuthViewBody {
     fn handle_action(&mut self, action: &AuthViewBodyAction, ctx: &mut ViewContext<Self>) {
         match action {
             AuthViewBodyAction::Login => {
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::LoginButtonClicked {
-                        source: LoginEventSource::AuthModal,
-                    },
-                    ctx
-                );
                 self.auth_step = AuthStep::BrowserOpen;
 
                 AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
@@ -855,23 +839,11 @@ impl TypedActionView for AuthViewBody {
                 });
             }
             AuthViewBodyAction::InitiateLoginLater => {
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::LoginLaterButtonClicked {
-                        source: LoginEventSource::AuthModal,
-                    },
-                    ctx
-                );
                 self.loginless_step = LoginlessStep::Initiated;
             }
             AuthViewBodyAction::LoginLater => {
                 // Send synchronously since this is an important event in the sign up funnel and we
                 // don't want to lose events if the user quits before the event queue is flushed.
-                send_telemetry_sync_from_ctx!(
-                    TelemetryEvent::LoginLaterConfirmationButtonClicked {
-                        source: LoginEventSource::AuthModal,
-                    },
-                    ctx
-                );
                 ctx.emit(AuthViewBodyEvent::LoginLaterClicked);
             }
             AuthViewBodyAction::EnterToken => {
@@ -905,7 +877,6 @@ impl TypedActionView for AuthViewBody {
             AuthViewBodyAction::Signup => {
                 // Send synchronously since this is an important event in the sign up funnel and we
                 // don't want to lose events if the user quits before the event queue is flushed.
-                send_telemetry_sync_from_ctx!(TelemetryEvent::SignUpButtonClicked, ctx);
                 self.auth_step = AuthStep::BrowserOpen;
 
                 AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
@@ -938,12 +909,6 @@ impl TypedActionView for AuthViewBody {
             }
             AuthViewBodyAction::ShowOverlay(overlay) => {
                 if let AuthViewOverlay::PrivacySettings = overlay {
-                    send_telemetry_sync_from_ctx!(
-                        TelemetryEvent::OpenAuthPrivacySettings {
-                            source: LoginEventSource::AuthModal,
-                        },
-                        ctx
-                    );
                 }
                 self.active_overlay = Some(*overlay);
                 ctx.notify();
@@ -971,14 +936,15 @@ impl TypedActionView for AuthViewBody {
                 ctx.notify();
             }
             AuthViewBodyAction::ToggleCloudConversationStorage => {
-                let privacy_settings_handle = PrivacySettings::handle(ctx);
-                ctx.update_model(&privacy_settings_handle, |privacy_settings, ctx| {
-                    privacy_settings.set_is_cloud_conversation_storage_enabled(
-                        !privacy_settings.is_cloud_conversation_storage_enabled,
-                        ctx,
-                    );
-                });
-                ctx.notify();
+                // Simplified: local version has no cloud conversation storage
+                // let privacy_settings_handle = PrivacySettings::handle(ctx);
+                // ctx.update_model(&privacy_settings_handle, |privacy_settings, ctx| {
+                //     privacy_settings.set_is_cloud_conversation_storage_enabled(
+                //         !privacy_settings.is_cloud_conversation_storage_enabled,
+                //         ctx,
+                //     );
+                // });
+                // ctx.notify();
             }
             AuthViewBodyAction::Close => {
                 ctx.emit(AuthViewBodyEvent::Close);

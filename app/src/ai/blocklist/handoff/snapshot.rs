@@ -9,13 +9,12 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use remote_server::proto::UploadHandoffSnapshotResponse;
+use crate::remote_server::proto::UploadHandoffSnapshotResponse;
 use warp_util::standardized_path::StandardizedPath;
 use warpui::{ModelHandle, SingletonEntity, ViewContext};
 
 use crate::ai::agent_sdk::driver::upload_snapshot_for_handoff;
 use crate::ai::blocklist::handoff::touched_repos::{derive_touched_workspace, TouchedWorkspace};
-use crate::remote_server::manager::RemoteServerManager;
 use crate::server::server_api::ai::{AIClient, InitialSnapshotToken};
 use crate::server::server_api::ServerApiProvider;
 use crate::terminal::model::session::SessionId;
@@ -52,7 +51,7 @@ pub(crate) enum SnapshotUploadTarget {
     },
     /// Delegate to the remote server daemon via `UploadHandoffSnapshot` RPC.
     Remote {
-        client: Arc<remote_server::client::RemoteServerClient>,
+        client: Arc<crate::remote_server::client::RemoteServerClient>,
     },
 }
 
@@ -82,33 +81,6 @@ pub(crate) fn try_upload_result_from_proto(
             Ok(HandoffUploadResult::Uploaded(token))
         }
         None => Ok(HandoffUploadResult::EmptyWorkspace),
-    }
-}
-
-/// Convert a `Result<Option<InitialSnapshotToken>>` (from the daemon-side
-/// gather+upload pipeline) into an `UploadHandoffSnapshotResponse` proto.
-///
-/// Used by `server_model.rs::handle_upload_handoff_snapshot` to build the
-/// response without inline match boilerplate.
-pub(crate) fn upload_result_to_proto(
-    result: Result<Option<InitialSnapshotToken>, anyhow::Error>,
-) -> UploadHandoffSnapshotResponse {
-    match result {
-        Ok(Some(token)) => UploadHandoffSnapshotResponse {
-            initial_snapshot_token: Some(token.as_str().to_string()),
-            success: true,
-            error: None,
-        },
-        Ok(None) => UploadHandoffSnapshotResponse {
-            initial_snapshot_token: None,
-            success: true,
-            error: None,
-        },
-        Err(e) => UploadHandoffSnapshotResponse {
-            initial_snapshot_token: None,
-            success: false,
-            error: Some(format!("{e:#}")),
-        },
     }
 }
 
@@ -157,7 +129,8 @@ async fn upload_handoff_snapshot(
 ) -> (TouchedWorkspace, Result<HandoffUploadResult, anyhow::Error>) {
     match target {
         SnapshotUploadTarget::Remote { client } => {
-            let result = match client.upload_handoff_snapshot(paths).await {
+            let path_bufs: Vec<std::path::PathBuf> = paths.iter().map(|sp| sp.to_local_path_lossy()).collect();
+            let result = match client.upload_handoff_snapshot(path_bufs).await {
                 Ok(resp) => try_upload_result_from_proto(resp),
                 Err(err) => Err(anyhow::anyhow!(err).context("Remote handoff snapshot RPC failed")),
             };
@@ -185,24 +158,17 @@ async fn upload_handoff_snapshot(
     }
 }
 
-/// Resolve the upload target for a session. Returns `Remote` when the session
-/// has a connected daemon, `Local` otherwise.
+/// Resolve the upload target for a session. Returns `Local` since
+/// RemoteServerManager has been removed and remote upload is not available.
 pub(crate) fn resolve_upload_target(
-    session_id: SessionId,
+    _session_id: SessionId,
     ctx: &mut ViewContext<Workspace>,
 ) -> SnapshotUploadTarget {
-    let remote_client = RemoteServerManager::as_ref(ctx)
-        .client_for_session(session_id)
-        .cloned();
-    match remote_client {
-        Some(client) => SnapshotUploadTarget::Remote { client },
-        None => {
-            let server_api_provider = ServerApiProvider::as_ref(ctx);
-            SnapshotUploadTarget::Local {
-                ai_client: server_api_provider.get_ai_client(),
-                http: server_api_provider.get_http_client(),
-            }
-        }
+    // RemoteServerManager has been removed; always use local upload.
+    let server_api_provider = ServerApiProvider::as_ref(ctx);
+    SnapshotUploadTarget::Local {
+        ai_client: server_api_provider.get_ai_client(),
+        http: server_api_provider.get_http_client(),
     }
 }
 

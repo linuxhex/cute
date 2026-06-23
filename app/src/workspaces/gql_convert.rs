@@ -1,10 +1,10 @@
 use std::path::PathBuf;
 
-use anyhow::{anyhow, bail, Result};
+use anyhow::{anyhow, Result};
 use regex::Regex;
 use warp_graphql::billing::{
     AiAutonomyPolicy as GqlAiAutonomyPolicy, AmbientAgentsPolicy as GqlAmbientAgentsPolicy,
-    BillingCycleUsageHistory as GqlBillingCycleUsageHistory, BillingMetadata as GqlBillingMetadata,
+    BillingMetadata as GqlBillingMetadata,
     BonusGrant as GqlBonusGrant, ByoApiKeyPolicy as GqlByoApiKeyPolicy,
     CodebaseContextPolicy as GqlCodebaseContextPolicy, CustomerType as GqlCustomerType,
     DelinquencyStatus as GqlDelinquencyStatus,
@@ -24,7 +24,6 @@ use warp_graphql::billing::{
 };
 use warp_graphql::queries::get_conversation_usage as gql_usage;
 use warp_graphql::queries::get_workspaces_metadata_for_user::User as GqlUser;
-use warp_graphql::subscriptions::get_warp_drive_updates::WarpDriveUpdate;
 use warp_graphql::user::DiscoverableTeamData as GqlDiscoverableTeamData;
 use warp_graphql::workspace::{
     AddonCreditsSettings as GqlAddonCreditsSettings,
@@ -40,20 +39,18 @@ use warp_graphql::workspace::{
     WriteToPtyAutonomyValue as GqlWriteToPtyAutonomyValue,
 };
 
-use super::team::{DiscoverableTeam, MembershipRole, Team, TeamMember};
 use super::user_workspaces::WorkspacesMetadataResponse;
 use super::workspace::{
     AIAutonomyPolicy, AddonCreditsSettings, AdminEnablementSetting, AiAutonomySettings,
-    AiPermissionsSettings, AmbientAgentsPolicy, BillingCycleUsageData, BillingCycleUsageEntry,
-    BillingCycleUsageSummary, BillingMetadata, CloudConversationStorageSettings,
-    CodebaseContextSettings, CustomerType, DelinquencyStatus, EmailInvite, EnterpriseSecretRegex,
-    HostEnablementSetting, InstanceShape, InviteLinkDomainRestriction, LinkSharingSettings,
-    LlmSettings, MaxPriorCycles, SandboxedAgentSettings, SecretRedactionSettings,
-    SessionSharingPolicy, SharedNotebooksPolicy, SharedWorkflowsPolicy,
-    TelemetryDataCollectionPolicy, TelemetrySettings, Tier, UgcCollectionEnablementSetting,
-    UgcCollectionSettings, UgcDataCollectionPolicy, UsageBasedPricingPolicy,
-    UsageVisibilityGranularity, UsageVisibilityPolicy, WarpAiPolicy, Workspace,
-    WorkspaceInviteCode, WorkspaceMember, WorkspaceMemberUsageInfo, WorkspaceSettings,
+    AiPermissionsSettings, AmbientAgentsPolicy, BillingMetadata, CloudConversationStorageSettings,
+    CodebaseContextSettings, CustomerType, DelinquencyStatus, DiscoverableTeam, EmailInvite,
+    EnterpriseSecretRegex, HostEnablementSetting, InstanceShape, InviteLinkDomainRestriction,
+    LinkSharingSettings, LlmSettings, MaxPriorCycles, MembershipRole, SandboxedAgentSettings,
+    SecretRedactionSettings, SessionSharingPolicy, SharedNotebooksPolicy, SharedWorkflowsPolicy,
+    Team, TeamMember, TelemetryDataCollectionPolicy, TelemetrySettings, Tier,
+    UgcCollectionEnablementSetting, UgcCollectionSettings, UgcDataCollectionPolicy,
+    UsageBasedPricingPolicy, UsageVisibilityGranularity, UsageVisibilityPolicy, WarpAiPolicy,
+    Workspace, WorkspaceInviteCode, WorkspaceMember, WorkspaceMemberUsageInfo, WorkspaceSettings,
     WorkspaceSizePolicy,
 };
 use crate::ai::blocklist::usage::conversation_usage_view::ConversationUsageInfo;
@@ -62,17 +59,14 @@ use crate::ai::execution_profiles::{
 };
 use crate::ai::{BonusGrant, BonusGrantScope};
 use crate::auth::UserUid;
-use crate::server::cloud_objects::listener::ObjectUpdateMessage;
-use crate::server::experiments::ServerExperiment;
-use crate::server::graphql::schema::object_action_history_from_gql;
 use crate::server::ids::ServerId;
 use crate::settings::AgentModeCommandExecutionPredicate;
 use crate::workspaces::workspace::{
     AiOverages, BonusGrantsPurchased, ByoApiKeyPolicy, CodebaseContextPolicy,
     EnterpriseCreditsAutoReloadPolicy, EnterprisePayAsYouGoPolicy, MultiAdminPolicy,
-    PurchaseAddOnCreditsPolicy, UsageBasedPricingSettings,
+    PurchaseAddOnCreditsPolicy,
 };
-use crate::{convert_to_server_experiment, report_error};
+use crate::{report_error};
 
 pub const PLACEHOLDER_WORKSPACE_UID: &str = "NOT_A_REAL_WORKSPACE_UID";
 
@@ -477,35 +471,6 @@ impl From<GqlUsageVisibilityPolicy> for UsageVisibilityPolicy {
     }
 }
 
-fn convert_billing_cycle_usage(history: GqlBillingCycleUsageHistory) -> BillingCycleUsageData {
-    BillingCycleUsageData {
-        current_period_start: history.current_period_start.utc(),
-        current_period_end: history.current_period_end.utc(),
-        summaries: history
-            .summaries
-            .into_iter()
-            .map(|summary| BillingCycleUsageSummary {
-                period_start: summary.period_start.utc(),
-                period_end: summary.period_end.utc(),
-                entries: summary
-                    .entries
-                    .into_iter()
-                    .map(|entry| BillingCycleUsageEntry {
-                        subject_type: entry.subject_type,
-                        subject_uid: entry.subject_uid,
-                        subject_display_name: entry.subject_display_name,
-                        cost_type: entry.cost_type,
-                        usage_bucket: entry.usage_bucket,
-                        usage_source: entry.usage_source,
-                        credits_used: entry.credits_used,
-                        cost_cents: entry.cost_cents,
-                    })
-                    .collect(),
-            })
-            .collect(),
-    }
-}
-
 impl From<GqlTier> for Tier {
     fn from(gql_tier: GqlTier) -> Tier {
         Self {
@@ -865,23 +830,6 @@ impl From<GqlWorkspaceSettings> for WorkspaceSettings {
                     .computer_use_setting
                     .and_then(convert_gql_computer_use_autonomy_value_to_computer_use_permission),
             },
-            usage_based_pricing_settings: UsageBasedPricingSettings {
-                enabled: gql_workspace_settings.usage_based_pricing_settings.enabled,
-                max_monthly_spend_cents: gql_workspace_settings
-                    .usage_based_pricing_settings
-                    .max_monthly_spend_cents
-                    .and_then(|cents| {
-                        if cents < 0 {
-                            report_error!(anyhow!(
-                                "Usage-based pricing has a negative max monthly spend of {} cents",
-                                cents
-                            ));
-                            None
-                        } else {
-                            Some(cents as u32)
-                        }
-                    }),
-            },
             addon_credits_settings: gql_workspace_settings.addon_credits_settings.into(),
             codebase_context_settings: CodebaseContextSettings {
                 setting: gql_workspace_settings
@@ -951,7 +899,6 @@ impl Team {
                 .map(|id| id.clone().into_inner()),
             organization_settings: gql_workspace.settings.clone().into(),
             is_eligible_for_discovery: gql_workspace.is_eligible_for_discovery,
-            has_billing_history: gql_workspace.has_billing_history,
         }
     }
 }
@@ -980,10 +927,6 @@ impl From<GqlWorkspace> for Workspace {
                     cents_spent: info.current_month_spend_cents,
                 })
                 .unwrap_or_default(),
-            billing_cycle_usage: gql_workspace
-                .billing_cycle_usage_history
-                .map(convert_billing_cycle_usage),
-            has_billing_history: gql_workspace.has_billing_history,
             settings: gql_workspace.settings.clone().into(),
             invite_code: gql_workspace
                 .invite_code
@@ -1040,65 +983,12 @@ impl From<GqlUser> for WorkspacesMetadataResponse {
             .map(|gql_joinable_team| gql_joinable_team.into())
             .collect();
 
-        let experiments = gql_user
-            .experiments
-            .and_then(|experiments| convert_to_server_experiment!(experiments));
-
         // TODO(skambashi) refactor to return back workspaces, and not teams
         WorkspacesMetadataResponse {
             workspaces,
             joinable_teams,
-            experiments,
             feature_model_choices,
         }
-    }
-}
-
-pub fn object_update_message_from_gql(value: WarpDriveUpdate) -> Result<ObjectUpdateMessage> {
-    match value {
-        WarpDriveUpdate::ObjectActionOccurred(message) => {
-            Ok(ObjectUpdateMessage::ObjectActionOccurred {
-                history: object_action_history_from_gql(message.history)?,
-            })
-        }
-        WarpDriveUpdate::ObjectContentUpdated(message) => {
-            let server_object = message.object.try_into()?;
-            let last_editor = message.last_editor.map(|e| e.into());
-            Ok(ObjectUpdateMessage::ObjectContentChanged {
-                server_object: Box::new(server_object),
-                last_editor,
-            })
-        }
-        WarpDriveUpdate::ObjectDeleted(message) => Ok(ObjectUpdateMessage::ObjectDeleted {
-            object_uid: ServerId::from_string_lossy(message.object_uid.inner()),
-        }),
-        WarpDriveUpdate::ObjectMetadataUpdated(message) => {
-            Ok(ObjectUpdateMessage::ObjectMetadataChanged {
-                metadata: message.metadata.try_into()?,
-            })
-        }
-        WarpDriveUpdate::ObjectPermissionsUpdated(message) => {
-            Ok(ObjectUpdateMessage::ObjectPermissionsChangedV2 {
-                object_uid: ServerId::from_string_lossy(message.object_uid.inner()),
-                user_profiles: message
-                    .user_profiles
-                    .into_iter()
-                    .flatten()
-                    .map(Into::into)
-                    .collect(),
-                permissions: message.permissions.try_into()?,
-            })
-        }
-        WarpDriveUpdate::TeamMembershipsChanged(_) => {
-            Ok(ObjectUpdateMessage::TeamMembershipsChanged)
-        }
-        WarpDriveUpdate::AmbientTaskUpdated(message) => {
-            Ok(ObjectUpdateMessage::AmbientTaskUpdated {
-                task_id: message.task_id.inner().to_string(),
-                timestamp: message.task_updated_ts.utc(),
-            })
-        }
-        WarpDriveUpdate::Unknown => bail!("Unexpected WarpDriveUpdate variant"),
     }
 }
 

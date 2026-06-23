@@ -10,7 +10,7 @@ use warpui::{
 };
 
 use crate::ai::ambient_agents::github_auth_url::{AuthSource, GithubAuthRedirectTarget};
-use crate::ai::cloud_environments;
+use crate::ai::cloud_environments::{self, CloudAmbientAgentEnvironmentModel};
 use crate::appearance::Appearance;
 use crate::modal::MODAL_BACKDROP_OPACITY;
 use crate::server::cloud_objects::update_manager::UpdateManager;
@@ -124,7 +124,7 @@ impl HandoffEnvironmentCreationModal {
                 let create_future =
                     UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
                         update_manager.create_ambient_agent_environment_online(
-                            environment.clone(),
+                            CloudAmbientAgentEnvironmentModel::new(environment.clone()),
                             client_id,
                             owner,
                             ctx,

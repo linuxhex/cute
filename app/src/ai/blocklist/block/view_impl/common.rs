@@ -97,8 +97,6 @@ use crate::ui_components::buttons::icon_button;
 use crate::ui_components::icons::Icon;
 use crate::util::link_detection::{add_link_detection_mouse_interactions, DetectedLinksState};
 use crate::workspace::WorkspaceAction;
-use crate::workspaces::user_workspaces::UserWorkspaces;
-use crate::workspaces::workspace::CustomerType;
 
 pub const STATUS_ICON_SIZE_DELTA: f32 = 4.;
 pub const STATUS_FOOTER_VERTICAL_PADDING: f32 = 4.;
@@ -3255,9 +3253,8 @@ pub(crate) fn render_debug_footer<V: View>(
 
     // Check if we should show the submit button (hide for dogfood and enterprise users)
     let is_dogfood = ChannelState::channel().is_dogfood();
-    let is_enterprise_user = UserWorkspaces::as_ref(app)
-        .current_team()
-        .is_some_and(|team| team.billing_metadata.customer_type == CustomerType::Enterprise);
+    // Simplified: local version is not enterprise
+    let is_enterprise_user = false;
     let submit_button = if !is_dogfood && !is_enterprise_user {
         let submit_button_style = UiComponentStyles {
             font_color: Some(

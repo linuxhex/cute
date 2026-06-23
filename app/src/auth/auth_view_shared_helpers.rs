@@ -414,7 +414,7 @@ pub fn render_privacy_settings_toggles<A: Action + Clone + 'static>(
     app: &AppContext,
     handles: &PrivacySettingsHandles,
     actions: &PrivacySettingsActions<A>,
-    is_ai_enabled: bool,
+    _is_ai_enabled: bool,
 ) -> Box<dyn Element> {
     fn render_description(appearance: &Appearance, text: String) -> Box<dyn Element> {
         let disclaimer_styles = UiComponentStyles {
@@ -510,7 +510,7 @@ pub fn render_privacy_settings_toggles<A: Action + Clone + 'static>(
     );
 
     let toggle_cloud = actions.toggle_cloud_conversation_storage.clone();
-    let cloud_conversation_storage_toggle = Flex::row()
+    let _cloud_conversation_storage_toggle = Flex::row()
         .with_main_axis_size(MainAxisSize::Max)
         .with_main_axis_alignment(MainAxisAlignment::SpaceBetween)
         .with_child(
@@ -537,7 +537,7 @@ pub fn render_privacy_settings_toggles<A: Action + Clone + 'static>(
         )
         .finish();
 
-    let cloud_conversation_storage_description = render_description(
+    let _cloud_conversation_storage_description = render_description(
         appearance,
         if PrivacySettings::as_ref(app).is_cloud_conversation_storage_enabled {
             "Agent conversations can be shared with others and are retained when you log in on different devices. This data is only stored for product functionality, and Warp will not use it for analytics."
@@ -578,18 +578,19 @@ pub fn render_privacy_settings_toggles<A: Action + Clone + 'static>(
         ]);
     }
 
+    // Simplified: local version has no cloud conversation storage toggle
     // Hide the cloud conversation storage toggle entirely when AI is disabled:
     // the setting has no effect without AI, and showing it is confusing.
-    if FeatureFlag::CloudConversations.is_enabled() && is_ai_enabled {
-        col.add_children(vec![
-            Container::new(cloud_conversation_storage_toggle)
-                .with_margin_bottom(AUTH_MODAL_GAP)
-                .finish(),
-            Container::new(cloud_conversation_storage_description)
-                .with_margin_bottom(20.)
-                .finish(),
-        ]);
-    }
+    // if false && is_ai_enabled {
+    //     col.add_children(vec![
+    //         Container::new(cloud_conversation_storage_toggle)
+    //             .with_margin_bottom(AUTH_MODAL_GAP)
+    //             .finish(),
+    //         Container::new(cloud_conversation_storage_description)
+    //             .with_margin_bottom(20.)
+    //             .finish(),
+    //     ]);
+    // }
 
     col.finish()
 }

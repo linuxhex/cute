@@ -28,7 +28,6 @@ use session_sharing_protocol::sharer::{
 };
 use settings::Setting as _;
 use warp_core::execution_mode::AppExecutionMode;
-use warp_core::send_telemetry_from_ctx;
 use warpui::r#async::executor::Background;
 use warpui::{AppContext, ModelContext, ModelHandle, SingletonEntity, ViewHandle, WindowId};
 #[cfg(unix)]
@@ -62,7 +61,6 @@ use crate::features::FeatureFlag;
 use crate::network::{NetworkStatusEvent, NetworkStatusKind};
 use crate::pane_group::TerminalViewResources;
 use crate::persistence::ModelEvent;
-use crate::server::telemetry::{TelemetryAgentViewEntryOrigin, TelemetryEvent};
 use crate::settings::{DebugSettings, PrivacySettings, SshSettings};
 use crate::terminal::available_shells::{AvailableShell, AvailableShells};
 use crate::terminal::cli_agent_sessions::{
@@ -98,8 +96,7 @@ use crate::terminal::view::{ConversationRestorationInNewPaneType, Event as Termi
 use crate::terminal::warpify::settings::WarpifySettings;
 use crate::terminal::writeable_pty::pty_controller::{EventLoopSendError, EventLoopSender};
 use crate::terminal::writeable_pty::terminal_manager_util::{
-    init_pty_controller_model, init_remote_server_controller, wire_up_pty_controller_with_view,
-    wire_up_remote_server_controller_with_view,
+    init_pty_controller_model, wire_up_pty_controller_with_view,
 };
 use crate::terminal::writeable_pty::{self, Message};
 use crate::terminal::{
@@ -107,11 +104,9 @@ use crate::terminal::{
     TerminalView, PTY_READS_BROADCAST_CHANNEL_SIZE,
 };
 use crate::view_components::ToastFlavor;
-use crate::{send_telemetry_on_executor, NetworkStatus};
+use crate::NetworkStatus;
 
 type PtyController = writeable_pty::PtyController<mio_channel::Sender<Message>>;
-type RemoteServerController =
-    writeable_pty::remote_server_controller::RemoteServerController<mio_channel::Sender<Message>>;
 
 const ACL_UPDATE_FAILURE_RESPONSE: &str = "Something went wrong. Please try again.";
 
@@ -150,10 +145,6 @@ pub struct TerminalManager {
     /// of the PTY controller.
     #[allow(dead_code)]
     pty_controller: ModelHandle<PtyController>,
-
-    /// The manager is responsible for managing the lifetime of the remote server controller.
-    #[expect(dead_code)]
-    remote_server_controller: ModelHandle<RemoteServerController>,
 
     /// The process ID of the PTY. Purely used for integration tests. None if the PTY has not yet
     /// been started.
@@ -348,10 +339,6 @@ impl TerminalManager {
             ctx,
         );
 
-        // Initialize the RemoteServerController.
-        let remote_server_controller =
-            init_remote_server_controller(&pty_controller, &model_events, ctx);
-
         let current_prompt = ctx.add_model(|ctx| {
             CurrentPrompt::new_with_model_events(sessions.clone(), Some(&model_events), ctx)
         });
@@ -459,8 +446,6 @@ impl TerminalManager {
             model_event_sender,
             ctx,
         );
-
-        wire_up_remote_server_controller_with_view(&remote_server_controller, &view, ctx);
 
         let session_sharer_clone = session_sharer.clone();
         ctx.subscribe_to_model(&SessionSettings::handle(ctx), move |_, event, ctx| {
@@ -592,8 +577,8 @@ impl TerminalManager {
                         }
                     }
                     AgentViewControllerEvent::ExitedAgentView {
-                        origin,
-                        final_exchange_count,
+                        origin: _,
+                        final_exchange_count: _,
                         ..
                     } => {
                         if conversation_remote_update_guard.should_broadcast() {
@@ -604,13 +589,6 @@ impl TerminalManager {
                                 ctx,
                             );
                         }
-                        send_telemetry_from_ctx!(
-                            TelemetryEvent::AgentViewExited {
-                                origin: TelemetryAgentViewEntryOrigin::from(*origin),
-                                was_empty: *final_exchange_count == 0,
-                            },
-                            ctx
-                        );
                     }
                     AgentViewControllerEvent::ExitConfirmed { .. } => {}
                 },
@@ -808,7 +786,6 @@ impl TerminalManager {
             #[cfg(unix)]
             terminal_attributes_poller: None,
             pty_controller,
-            remote_server_controller,
 
             #[cfg(feature = "integration_tests")]
             pid: None,
@@ -2611,8 +2588,8 @@ pub fn get_shell_starter(
 
 fn get_shell_starter_internal(
     shell_starter_source: ShellStarterSource,
-    background_executor: Arc<Background>,
-    auth_state: &AuthState,
+    _background_executor: Arc<Background>,
+    _auth_state: &AuthState,
 ) -> ShellStarter {
     match shell_starter_source {
         ShellStarterSource::Override(shell_starter) => shell_starter,
@@ -2623,14 +2600,7 @@ fn get_shell_starter_internal(
             unsupported_shell,
             starter,
         } => {
-            if let Some(unsupported_shell) = unsupported_shell {
-                send_telemetry_on_executor!(
-                    auth_state,
-                    TelemetryEvent::UnsupportedShell {
-                        shell: unsupported_shell
-                    },
-                    background_executor
-                );
+            if let Some(_unsupported_shell) = unsupported_shell {
             }
 
             ShellStarter::Direct(starter)

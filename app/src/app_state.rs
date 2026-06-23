@@ -49,7 +49,6 @@ pub struct WindowSnapshot {
     pub quake_mode: bool,
     pub universal_search_width: Option<f32>,
     pub warp_ai_width: Option<f32>,
-    pub voltron_width: Option<f32>,
     pub warp_drive_index_width: Option<f32>,
     pub left_panel_open: bool,
     pub vertical_tabs_panel_open: bool,

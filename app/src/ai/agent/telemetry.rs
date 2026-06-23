@@ -25,7 +25,7 @@ impl ForTelemetry for AIAgentCitation {
             Self::WarpDriveObject { uid } => {
                 CloudModel::as_ref(ctx).get_by_uid(uid).map(|object| {
                     CitationForTelemetry::WarpDriveObject {
-                        object_type: object.object_type(),
+                        object_type: object.object_type().to_string(),
                         uid: object.uid(),
                     }
                 })

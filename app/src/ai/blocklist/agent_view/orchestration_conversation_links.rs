@@ -14,15 +14,10 @@ use warpui::{AppContext, Element, EntityId, EventContext, SingletonEntity};
 
 use crate::ai::agent::api::ServerConversationToken;
 use crate::ai::agent::conversation::{AIConversation, AIConversationId};
-use crate::ai::agent_conversations_model::entry::AgentConversationEntryId;
-use crate::ai::agent_conversations_model::{
-    AgentConversationNavigationSubject, AgentConversationsModel,
-};
 use crate::ai::blocklist::BlocklistAIHistoryModel;
-use crate::terminal::view::TerminalAction;
 use crate::ui_components::blended_colors;
 use crate::ui_components::icons::Icon;
-use crate::workspace::{RestoreConversationLayout, WorkspaceAction, WorkspaceRegistry};
+use crate::workspace::WorkspaceRegistry;
 
 pub(crate) fn conversation_id_for_agent_id(
     agent_id: &str,
@@ -80,37 +75,6 @@ pub(crate) fn pane_group_id_containing_terminal_view(
     None
 }
 
-/// Navigates to a child agent's pane: focuses an existing sibling pane,
-/// activates the owning tab, or splits off a new pane.
-pub(crate) fn dispatch_focus_or_open_child_agent_pane(
-    conversation_id: AIConversationId,
-    self_terminal_view_id: EntityId,
-    ctx: &mut EventContext,
-    app: &AppContext,
-) {
-    if let Some(owner_view_id) =
-        BlocklistAIHistoryModel::as_ref(app).terminal_view_id_for_conversation(&conversation_id)
-    {
-        if owner_view_id != self_terminal_view_id {
-            if let Some(owner_pane_group_id) =
-                pane_group_id_containing_terminal_view(owner_view_id, app)
-            {
-                let self_pane_group_id =
-                    pane_group_id_containing_terminal_view(self_terminal_view_id, app);
-                if Some(owner_pane_group_id) == self_pane_group_id {
-                    ctx.dispatch_typed_action(TerminalAction::RevealChildAgent { conversation_id });
-                } else {
-                    ctx.dispatch_typed_action(WorkspaceAction::FocusTerminalViewInWorkspace {
-                        terminal_view_id: owner_view_id,
-                    });
-                }
-                return;
-            }
-        }
-    }
-    ctx.dispatch_typed_action(TerminalAction::OpenChildAgentInNewPane { conversation_id });
-}
-
 pub(crate) fn parent_conversation_id(
     active_conversation: &AIConversation,
     app: &AppContext,
@@ -120,62 +84,6 @@ pub(crate) fn parent_conversation_id(
             .parent_agent_id()
             .and_then(|id| conversation_id_for_agent_id(id, app))
     })
-}
-
-pub(crate) fn conversation_navigation_action(
-    conversation_id: AIConversationId,
-    app: &AppContext,
-) -> Option<WorkspaceAction> {
-    AgentConversationsModel::resolve_open_action(
-        AgentConversationNavigationSubject::Entry(AgentConversationEntryId::Conversation(
-            conversation_id,
-        )),
-        Some(RestoreConversationLayout::SplitPane),
-        app,
-    )
-}
-
-pub(crate) fn parent_conversation_navigation_card(
-    active_conversation: &AIConversation,
-    mouse_state: MouseStateHandle,
-    app: &AppContext,
-) -> Option<Box<dyn Element>> {
-    let parent_conversation_id = parent_conversation_id(active_conversation, app)?;
-    let parent_title = BlocklistAIHistoryModel::as_ref(app)
-        .conversation(&parent_conversation_id)
-        .and_then(|conversation| conversation.title())
-        .unwrap_or_else(|| "Parent conversation".to_string());
-    let action = conversation_navigation_action(parent_conversation_id, app)?;
-    Some(conversation_navigation_card(
-        parent_title,
-        Some("Back to parent conversation".to_string()),
-        move |ctx, _, _| {
-            ctx.dispatch_typed_action(action.clone());
-        },
-        mouse_state,
-        false,
-        app,
-    ))
-}
-
-pub(crate) fn conversation_navigation_card(
-    title: String,
-    subtitle: Option<String>,
-    on_click: impl FnMut(&mut EventContext, &AppContext, Vector2F) + 'static,
-    mouse_state: MouseStateHandle,
-    expands_to_max_width: bool,
-    app: &AppContext,
-) -> Box<dyn Element> {
-    conversation_navigation_card_with_icon(
-        None,
-        title,
-        subtitle,
-        on_click,
-        mouse_state,
-        expands_to_max_width,
-        None,
-        app,
-    )
 }
 
 /// Renders a clickable card with an optional leading icon, title/subtitle,

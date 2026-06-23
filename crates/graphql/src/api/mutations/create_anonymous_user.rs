@@ -14,7 +14,6 @@ pub struct CreateAnonymousUserVariables {
 pub struct CreateAnonymousUserInput {
     pub anonymous_user_type: AnonymousUserType,
     pub expiration_type: AnonymousUserExpirationType,
-    pub referral_code: Option<String>,
 }
 
 #[derive(cynic::QueryFragment, Debug)]

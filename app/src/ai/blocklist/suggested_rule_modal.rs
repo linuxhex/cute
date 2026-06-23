@@ -26,12 +26,10 @@ use crate::editor::{
 };
 use crate::modal::{Modal, ModalEvent};
 use crate::network::NetworkStatus;
-use crate::send_telemetry_from_ctx;
 use crate::server::cloud_objects::update_manager::{
     ObjectOperation, OperationSuccessType, UpdateManager, UpdateManagerEvent,
 };
 use crate::server::ids::SyncId;
-use crate::server::telemetry::TelemetryEvent;
 use crate::ui_components::blended_colors;
 use crate::view_components::action_button::{ActionButton, PrimaryTheme};
 use crate::workspaces::user_workspaces::UserWorkspaces;
@@ -369,14 +367,7 @@ impl SuggestedRuleView {
             }
             EditorEvent::Edited(_) => {
                 // todo this seems noisy?
-                if let Some(SuggestedRuleAndId { rule, .. }) = &self.rule_and_id {
-                    send_telemetry_from_ctx!(
-                        TelemetryEvent::AISuggestedRuleContentChanged {
-                            rule_id: rule.logging_id.clone(),
-                            is_saved: self.is_saved
-                        },
-                        ctx
-                    );
+                if let Some(SuggestedRuleAndId { rule: _rule, .. }) = &self.rule_and_id {
                 }
             }
             EditorEvent::Navigate(NavigationKey::Tab)

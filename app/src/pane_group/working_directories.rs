@@ -9,8 +9,6 @@ use std::path::PathBuf;
 #[cfg(feature = "local_fs")]
 use indexmap::IndexSet;
 #[cfg(feature = "local_fs")]
-use remote_server::manager::RemoteServerManager;
-#[cfg(feature = "local_fs")]
 use repo_metadata::repositories::DetectedRepositories;
 #[cfg(feature = "local_fs")]
 use warp_util::remote_path::RemotePath;
@@ -393,13 +391,9 @@ impl WorkingDirectoriesModel {
                 let path = path.clone();
                 ctx.add_model(|ctx| DiffStateModel::new_local(path, ctx))
             }
-            LocalOrRemotePath::Remote(remote_path) => {
-                let mgr_handle = RemoteServerManager::handle(ctx);
-                mgr_handle
-                    .as_ref(ctx)
-                    .client_for_host(&remote_path.host_id)?;
-                let remote_path = remote_path.clone();
-                ctx.add_model(|ctx| DiffStateModel::new_remote(remote_path, ctx))
+            LocalOrRemotePath::Remote(_) => {
+                // RemoteServerManager has been removed; remote paths are not supported.
+                return None;
             }
         };
 

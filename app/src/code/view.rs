@@ -72,7 +72,6 @@ use crate::util::path::{display_name_with_host, display_path_with_host};
 use crate::view_components::{DismissibleToast, MarkdownToggleEvent, MarkdownToggleView};
 use crate::workspace::util::get_context_target_terminal_view;
 use crate::workspace::{ActiveSession, TabBarDropTargetData, ToastStack, WorkspaceAction};
-use crate::{send_telemetry_from_ctx, TelemetryEvent};
 
 type SaveCallback =
     Box<dyn FnOnce(SaveOutcome, &mut CodeView, &mut ViewContext<CodeView>) + Send + Sync + 'static>;
@@ -359,7 +358,6 @@ impl CodeView {
                 self.set_title_after_content_update(ctx);
                 self.update_tab_bar_state(ctx);
                 self.focus_contents(ctx);
-                send_telemetry_from_ctx!(TelemetryEvent::PreviewPanePromoted, ctx);
                 ctx.notify();
             }
         }
@@ -1031,25 +1029,15 @@ impl CodeView {
             if let Some(routing) = terminal_view.update(ctx, |tv, ctx| {
                 tv.try_send_text_to_cli_agent_or_rich_input(prompt, ctx)
             }) {
-                let destination = match routing {
+                let _destination = match routing {
                     CliAgentRouting::RichInput => CodeContextDestination::RichInput,
                     CliAgentRouting::Pty => CodeContextDestination::Pty,
                 };
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::CodeSelectionAddedAsContext { destination },
-                    ctx
-                );
                 return;
             }
         }
 
         // Otherwise insert the location snippet into the input buffer (original behavior).
-        send_telemetry_from_ctx!(
-            TelemetryEvent::CodeSelectionAddedAsContext {
-                destination: CodeContextDestination::AgentInput,
-            },
-            ctx
-        );
         ctx.dispatch_typed_action(&WorkspaceAction::InsertInInput {
             content: format!("{file_path}:{start_line}-{end_line} "),
             replace_buffer: false,

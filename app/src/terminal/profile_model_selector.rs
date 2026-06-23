@@ -146,14 +146,7 @@ impl ActionButtonTheme for SelectorChipTheme {
     }
 
     fn font_properties(&self) -> Option<warpui::fonts::Properties> {
-        if FeatureFlag::CloudModeInputV2.is_enabled() {
-            Some(warpui::fonts::Properties {
-                weight: warpui::fonts::Weight::Semibold,
-                ..Default::default()
-            })
-        } else {
-            None
-        }
+        None
     }
 }
 

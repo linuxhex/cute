@@ -4,7 +4,6 @@ use instant::Instant;
 use session_sharing_protocol::common::SessionId;
 use warp_cli::agent::Harness;
 use warp_core::features::FeatureFlag;
-use warp_core::send_telemetry_from_ctx;
 use warp_terminal::model::BlockId;
 use warpui::r#async::{SpawnedFutureHandle, Timer};
 use warpui::{AppContext, Entity, EntityId, ModelContext, SingletonEntity};
@@ -16,7 +15,6 @@ use crate::ai::agent::extract_user_query_mode;
 use crate::ai::ambient_agents::github_auth_notifier::{GitHubAuthEvent, GitHubAuthNotifier};
 use crate::ai::ambient_agents::spawn::{spawn_task, submit_run_followup, AmbientAgentEvent};
 use crate::ai::ambient_agents::task::{HarnessAuthSecretsConfig, HarnessConfig};
-use crate::ai::ambient_agents::telemetry::CloudAgentTelemetryEvent;
 use crate::ai::ambient_agents::{
     github_auth_url, AgentSource, AmbientAgentTaskId, OUT_OF_CREDITS_TASK_FAILURE_MESSAGE,
     SERVER_OVERLOADED_TASK_FAILURE_MESSAGE,
@@ -44,11 +42,8 @@ use crate::server::server_api::ai::{
 use crate::server::server_api::{
     AIApiError, ClientError, CloudAgentCapacityError, ServerApiProvider,
 };
-use crate::settings::PrivacySettings;
 use crate::terminal::view::ambient_agent::{SetupCommandGroupId, SetupCommandState};
 use crate::terminal::CLIAgent;
-use crate::workspaces::user_workspaces::UserWorkspaces;
-use crate::workspaces::workspace::AdminEnablementSetting;
 
 /// Tracks progress timestamps for each step during ambient agent spawning.
 #[derive(Debug, Clone)]
@@ -824,9 +819,6 @@ impl AmbientAgentViewModel {
 
     /// Whether or not we should show a status footer (loading, error, auth, or cancelled).
     pub fn should_show_status_footer(&self) -> bool {
-        if FeatureFlag::CloudModeSetupV2.is_enabled() {
-            return false;
-        }
 
         self.is_waiting_for_session()
             || self.is_failed()
@@ -986,11 +978,6 @@ impl AmbientAgentViewModel {
     }
 
     pub fn submit_cloud_followup(&mut self, prompt: String, ctx: &mut ModelContext<Self>) {
-        if !FeatureFlag::HandoffCloudCloud.is_enabled() {
-            log::warn!("Attempted to submit cloud follow-up while HandoffCloudCloud is disabled");
-            return;
-        }
-
         let Some(task_id) = self.task_id else {
             log::warn!("Attempted to submit cloud follow-up without an ambient task ID");
             return;
@@ -1366,9 +1353,8 @@ impl AmbientAgentViewModel {
                     return;
                 }
 
-                if matches!(self.status, Status::WaitingForSession { .. }) {
-                    ctx.emit(AmbientAgentViewModelEvent::ShowCloudAgentCapacityModal);
-                }
+                // Simplified: local version has no cloud agent capacity modal
+                // Ignore event
             }
             AmbientAgentEvent::TimedOut => {}
         }
@@ -1380,12 +1366,6 @@ impl AmbientAgentViewModel {
         ctx: &mut ModelContext<Self>,
     ) {
         let error_message = err.to_string();
-        send_telemetry_from_ctx!(
-            CloudAgentTelemetryEvent::DispatchFailed {
-                error: error_message.clone()
-            },
-            ctx
-        );
 
         if let Some(client_error) = err.downcast_ref::<ClientError>() {
             if let Some(auth_url) = &client_error.auth_url {
@@ -1395,7 +1375,7 @@ impl AmbientAgentViewModel {
         }
         if let Some(capacity_error) = err.downcast_ref::<CloudAgentCapacityError>() {
             self.handle_spawn_error(capacity_error.error.clone(), ctx);
-            ctx.emit(AmbientAgentViewModelEvent::ShowCloudAgentCapacityModal);
+            // Simplified: local version has no cloud agent capacity modal
             return;
         }
         if let Some(ai_api_error) = err.downcast_ref::<AIApiError>() {
@@ -1726,15 +1706,17 @@ pub enum AmbientAgentViewModelEvent {
     RunLifecycleChanged,
 }
 
-pub(crate) fn should_disable_snapshot(ctx: &AppContext) -> bool {
-    let privacy = PrivacySettings::as_ref(ctx);
-    if !privacy.is_cloud_conversation_storage_enabled {
-        return true;
-    }
-    matches!(
-        UserWorkspaces::as_ref(ctx).get_cloud_conversation_storage_enablement_setting(),
-        AdminEnablementSetting::Disable
-    )
+pub(crate) fn should_disable_snapshot(_ctx: &AppContext) -> bool {
+    // Simplified: local version has no cloud conversation storage, always disable snapshot
+    true
+    // let privacy = PrivacySettings::as_ref(ctx);
+    // if !privacy.is_cloud_conversation_storage_enabled {
+    //     return true;
+    // }
+    // matches!(
+    //     UserWorkspaces::as_ref(ctx).get_cloud_conversation_storage_enablement_setting(),
+    //     AdminEnablementSetting::Disable
+    // )
 }
 
 impl Entity for AmbientAgentViewModel {

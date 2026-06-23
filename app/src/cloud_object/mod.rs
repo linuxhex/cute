@@ -11,7 +11,6 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use url::Url;
 use warp_core::channel::Channel;
-use warp_core::features::FeatureFlag;
 use warp_graphql::queries::get_updated_cloud_objects::UpdatedObjectInput;
 use warp_graphql::scalars::time::ServerTimestamp;
 use warpui::{AppContext, SingletonEntity};
@@ -31,14 +30,13 @@ use crate::persistence::ModelEvent;
 use crate::server::cloud_objects::update_manager::InitiatedBy;
 use crate::server::ids::{HashableId, HashedSqliteId, ObjectUid, ServerId, SyncId, ToServerId};
 use crate::server::server_api::object::ObjectClient;
-use crate::server::sync_queue::{QueueItem, SerializedModel};
+use crate::server::sync_queue::QueueItem;
 use crate::util::time_format::format_approx_duration_from_now_utc;
 use crate::workflows::{CloudWorkflow, WorkflowSource};
 use crate::workspaces::user_profiles::UserProfiles;
 use crate::workspaces::user_workspaces::UserWorkspaces;
 
 pub mod breadcrumbs;
-pub mod grab_edit_access_modal;
 pub mod model;
 pub mod toast_message;
 
@@ -136,20 +134,6 @@ pub trait CloudObject: Debug {
     /// Returns an optional UpdatedObjectInput to use during initial load, where
     /// the object's timestamps are sent to the server for comparison
     fn versions(&self, app: &AppContext) -> Option<UpdatedObjectInput>;
-
-    /// Returns an optional sync queue item of this object that would allow it to
-    /// created properly on the server. Returns None if it's already been created
-    /// server-side.
-    fn create_object_queue_item(
-        &self,
-        entrypoint: CloudObjectEventEntrypoint,
-        initiated_by: InitiatedBy,
-    ) -> Option<QueueItem>;
-
-    /// Returns a sync queue item of this object that would allow it to be updated
-    /// properly on the server.  Takes an optional revision_ts to set as the revision
-    /// in the sync queue item.
-    fn update_object_queue_item(&self, revision_ts: Option<Revision>) -> QueueItem;
 
     /// Returns whether this model type should render as a warp drive item.
     fn renders_in_warp_drive(&self) -> bool;
@@ -290,7 +274,7 @@ pub trait CloudObject: Debug {
                         // If the object has a parent, but the parent is not in CloudModel, assume
                         // the object is shared, but not its parent. For backwards compatibility,
                         // if sharing is disabled, default to trashed rather than untrashed.
-                        !FeatureFlag::SharedWithMe.is_enabled()
+                        !false
                     }
                 }
             }
@@ -403,6 +387,20 @@ pub trait CloudObject: Debug {
     /// directly because that would make the trait not object safe.  This
     /// is a workaround.
     fn clone_box(&self) -> Box<dyn CloudObject>;
+
+    /// Creates a queue item for object creation (stub for cloud sync removal).
+    fn create_object_queue_item(
+        &self,
+        _entrypoint: CloudObjectEventEntrypoint,
+        _initiated_by: InitiatedBy,
+    ) -> Option<QueueItem> {
+        None
+    }
+
+    /// Creates a queue item for object update (stub for cloud sync removal).
+    fn update_object_queue_item(&self, _revision: Option<Revision>) -> QueueItem {
+        panic!("update_object_queue_item: cloud sync has been removed")
+    }
 }
 
 /// Defines a common trait for cloud models to implement.
@@ -472,25 +470,6 @@ pub trait CloudModelType: Debug + Clone + Send + Sync {
     fn bulk_upsert_event(objects: Vec<CloudObjectUpsertParams<Self>>) -> ModelEvent
     where
         Self: Sized;
-
-    /// Returns the sync queue item for creating this model on the server.
-    fn create_object_queue_item(
-        &self,
-        object: &Self::CloudObjectType,
-        entrypoint: CloudObjectEventEntrypoint,
-        initiated_by: InitiatedBy,
-    ) -> Option<QueueItem>;
-
-    /// Returns the sync queue item for updating this model on the server.
-    /// Takes an optional revision timestamp to set in the queue item.
-    fn update_object_queue_item(
-        &self,
-        revision_ts: Option<Revision>,
-        object: &Self::CloudObjectType,
-    ) -> QueueItem;
-
-    /// Returns a serialized model.
-    fn serialized(&self) -> SerializedModel;
 
     /// Sends a request to the server to create this model.
     async fn send_create_request(
@@ -757,19 +736,6 @@ where
         }
     }
 
-    fn create_object_queue_item(
-        &self,
-        entrypoint: CloudObjectEventEntrypoint,
-        initiated_by: InitiatedBy,
-    ) -> Option<QueueItem> {
-        self.model()
-            .create_object_queue_item(self, entrypoint, initiated_by)
-    }
-
-    fn update_object_queue_item(&self, revision_ts: Option<Revision>) -> QueueItem {
-        self.model().update_object_queue_item(revision_ts, self)
-    }
-
     fn renders_in_warp_drive(&self) -> bool {
         self.model().renders_in_warp_drive()
     }
@@ -978,10 +944,10 @@ fn get_top_folder_trashed_ts(
 }
 
 pub use cloud_object_client::{
-    ObjectDeleteResult, ObjectMetadataUpdateResult, ObjectPermissionsUpdateData,
+    ObjectDeleteResult, ObjectMetadataUpdateResult,
 };
 pub use cloud_object_models::{
-    ServerAIExecutionProfile, ServerAIFact, ServerAmbientAgentEnvironment, ServerCloudAgentConfig,
+    ServerAIExecutionProfile, ServerAIFact, ServerAmbientAgentEnvironment,
     ServerCloudObject, ServerEnvVarCollection, ServerFolder, ServerMCPServer, ServerNotebook,
     ServerPreference, ServerScheduledAmbientAgent, ServerTemplatableMCPServer, ServerWorkflow,
     ServerWorkflowEnum, TryFromGql,

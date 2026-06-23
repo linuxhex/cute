@@ -976,6 +976,17 @@ impl TypedActionView for EnvironmentsPageView {
                 self.pending_share_server_id = Some(server_id);
 
                 UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
+                    let (destination_folder_id, space) = match CloudObjectLocation::Space(Space::Team { team_uid }) {
+                        CloudObjectLocation::Space(space) => (None, space),
+                        CloudObjectLocation::Folder(folder_id) => {
+                            let server_id = match folder_id {
+                                SyncId::ClientId(_) => None,
+                                SyncId::ServerId(id) => Some(id),
+                            };
+                            (server_id, Space::Personal)
+                        },
+                        CloudObjectLocation::Trash => (None, Space::Personal),
+                    };
                     update_manager.move_object_to_location(
                         CloudObjectTypeAndId::GenericStringObject {
                             object_type: GenericStringObjectFormat::Json(
@@ -983,7 +994,8 @@ impl TypedActionView for EnvironmentsPageView {
                             ),
                             id: *env_id,
                         },
-                        CloudObjectLocation::Space(Space::Team { team_uid }),
+                        destination_folder_id,
+                        space,
                         ctx,
                     );
                 });

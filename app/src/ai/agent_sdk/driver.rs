@@ -72,7 +72,6 @@ use crate::ai::skills::{
 };
 use crate::auth::AuthStateProvider;
 use crate::cloud_object::{CloudObject, CloudObjectLookup as _};
-use crate::send_telemetry_from_app_ctx;
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::server_api::ai::AIClient;
 use crate::server::server_api::harness_support::{
@@ -2303,14 +2302,12 @@ impl AgentDriver {
                         let telemetry_harness = harness_name.clone();
                         let telemetry_pattern = error.pattern.clone();
                         let _ = foreground
-                            .spawn(move |_, ctx| {
-                                use warp_core::telemetry::TelemetryEvent as _;
-                                let event =
+                            .spawn(move |_, _ctx| {
+                                let _event =
                                     ThirdPartyHarnessTelemetryEvent::RuntimeErrorDetected {
                                         harness: telemetry_harness,
                                         pattern: telemetry_pattern,
                                     };
-                                send_telemetry_from_app_ctx!(event, ctx);
                             })
                             .await;
                         let session_status = foreground

@@ -77,9 +77,8 @@ use crate::server::cloud_objects::update_manager::{
 use crate::server::ids::{ClientId, ServerId, SyncId};
 use crate::server::server_api::ai::AIClient;
 use crate::server::server_api::ServerApiProvider;
-use crate::server::telemetry::{
-    CloudObjectTelemetryMetadata, SharingDialogSource, TelemetryCloudObjectType, TelemetryEvent,
-};
+use crate::server::telemetry::CloudObjectTelemetryMetadata;
+use crate::drive::sharing::dialog::SharingDialogSource;
 use crate::settings::app_installation_detection::{
     UserAppInstallDetectionSettings, UserAppInstallStatus,
 };
@@ -96,7 +95,7 @@ use crate::view_components::{DismissibleToast, ToastLink, ToastType};
 use crate::workflows::workflow::{Argument, Workflow};
 use crate::workflows::CloudWorkflow;
 use crate::workspace::{ToastStack, WorkspaceAction};
-use crate::{send_telemetry_from_ctx, FeatureFlag, UserWorkspaces};
+use crate::{FeatureFlag, UserWorkspaces};
 
 mod alias_argument_selector;
 mod alias_bar;
@@ -309,6 +308,7 @@ pub struct WorkflowView {
     default_argument_id: usize,
     pub(super) ai_metadata_assist_state: AiAssistState,
     revision_ts: Option<Revision>,
+    #[allow(dead_code)]
     pub(super) auth_state: Arc<AuthState>,
     pub(super) ai_client: Arc<dyn AIClient>,
     owner: Option<Owner>,
@@ -890,17 +890,13 @@ impl WorkflowView {
 
     /// Generic object telemetry metadata for the currently-open object.
     #[cfg_attr(not(target_family = "wasm"), allow(dead_code))]
-    fn telemetry_metadata(&self, ctx: &mut ViewContext<Self>) -> CloudObjectTelemetryMetadata {
-        let space = CloudModel::as_ref(ctx)
-            .get_workflow(&self.workflow_id)
-            .map(|workflow| workflow.space(ctx));
-
+    fn telemetry_metadata(&self, _ctx: &mut ViewContext<Self>) -> CloudObjectTelemetryMetadata {
         CloudObjectTelemetryMetadata {
-            object_type: TelemetryCloudObjectType::Workflow,
-            object_uid: self.workflow_id.into_server(),
-            space: space.map(Into::into),
+            object_type: Some("Workflow".to_string()),
+            object_uid: self.workflow_id.into_server().map(|id| id.to_string()),
+            space: None,
             team_uid: match self.owner {
-                Some(Owner::Team { team_uid, .. }) => Some(team_uid),
+                Some(Owner::Team { team_uid, .. }) => Some(team_uid.to_string()),
                 _ => None,
             },
         }
@@ -913,11 +909,6 @@ impl WorkflowView {
     /// The current user's access level for this workflow.
     fn access_level(&self, app: &AppContext) -> SharingAccessLevel {
         CloudViewModel::as_ref(app).access_level(&self.workflow_id.uid(), app)
-    }
-
-    /// Whether or not the current user is allowed to edit this workflow.
-    fn editability(&self, app: &AppContext) -> ContentEditability {
-        CloudViewModel::as_ref(app).object_editability(&self.workflow_id.uid(), app)
     }
 
     pub fn pane_configuration(&self) -> &ModelHandle<PaneConfiguration> {
@@ -2633,10 +2624,6 @@ impl WorkflowView {
                             environment_variables: None,
                         };
 
-                        send_telemetry_from_ctx!(
-                            TelemetryEvent::AutoGenerateMetadataSuccess,
-                            ctx
-                        );
 
                         pane.populate_missing_field_with_suggestion(workflow, ctx);
                         ctx.notify();
@@ -2644,29 +2631,11 @@ impl WorkflowView {
                     Err(err) => {
                         let message = err.user_facing_message();
                         if let GeneratedCommandMetadataError::RateLimited = err {
-                            let current_user_id = pane.auth_state.user_id().unwrap_or_default();
-                            if let Some(team) = UserWorkspaces::as_ref(ctx).current_team() {
-                                let current_user_email =
-                                    pane.auth_state.user_email().unwrap_or_default();
-                                let has_admin_permissions = team.has_admin_permissions(&current_user_email);
-                                if team.billing_metadata.can_upgrade_to_higher_tier_plan() {
-                                    if has_admin_permissions {
-                                        pane.display_upgrade_error(Some(team.uid), current_user_id, ctx);
-                                    } else {
-                                        pane.display_error_toast(
-                                            "Looks like you're out of AI credits. Contact a team admin to upgrade for more credits.".to_string(),
-                                            ctx,
-                                        );
-                                    }
-                                } else {
-                                    pane.display_error_toast(
-                                        message.clone(),
-                                        ctx,
-                                    );
-                                }
-                            } else {
-                                pane.display_upgrade_error(None, current_user_id, ctx);
-                            }
+                            // Simplified: just show error toast for local version
+                            pane.display_error_toast(
+                                "Looks like you're out of AI credits.".to_string(),
+                                ctx,
+                            );
                         } else {
                             pane.display_error_toast(
                                 message.clone(),
@@ -2674,12 +2643,6 @@ impl WorkflowView {
                             );
                         }
 
-                        send_telemetry_from_ctx!(
-                            TelemetryEvent::AutoGenerateMetadataError {
-                                error_payload: serde_json::json!(err)
-                            },
-                            ctx
-                        );
 
                         pane.ai_metadata_assist_state = AiAssistState::PreRequest;
                         pane.enable_editors(ctx);
@@ -2697,6 +2660,7 @@ impl WorkflowView {
         ctx.notify();
     }
 
+    #[allow(dead_code)]
     fn display_upgrade_error(
         &mut self,
         team_uid: Option<ServerId>,
@@ -2963,9 +2927,7 @@ impl View for WorkflowView {
             .finish(),
         );
 
-        let editability = if FeatureFlag::SharedWithMe.is_enabled() {
-            self.editability(app)
-        } else {
+        let editability = {
             ContentEditability::Editable
         };
         let mode_toggleable = match (ContextFlag::RunWorkflow.is_enabled(), editability) {
@@ -3139,21 +3101,11 @@ impl TypedActionView for WorkflowView {
             WorkflowAction::AiAssist => self.issue_request(ctx),
             WorkflowAction::Duplicate => self.duplicate_object(ctx),
             WorkflowAction::CopyLink(link) => {
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::ObjectLinkCopied { link: link.clone() },
-                    ctx
-                );
                 ctx.clipboard()
                     .write(ClipboardContent::plain_text(link.to_owned()));
             }
             #[cfg(target_family = "wasm")]
             WorkflowAction::OpenLinkOnDesktop(url) => {
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::WebCloudObjectOpenedOnDesktop {
-                        object_metadata: self.telemetry_metadata(ctx)
-                    },
-                    ctx
-                );
                 open_url_on_desktop(url);
             }
             #[cfg(not(target_family = "wasm"))]
@@ -3221,7 +3173,7 @@ impl BackingView for WorkflowView {
         // Add "Trash" to menu
         let access_level = self.access_level(ctx);
         if self.is_online(ctx)
-            && (!FeatureFlag::SharedWithMe.is_enabled() || access_level.can_trash())
+            && (!false || access_level.can_trash())
         {
             menu_items.push(
                 MenuItemFields::new("Trash")

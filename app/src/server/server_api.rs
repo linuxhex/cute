@@ -6,7 +6,7 @@ pub mod integrations;
 pub mod managed_secrets;
 pub mod object;
 pub(crate) mod presigned_upload;
-pub mod referral;
+// pub mod referral; // Removed: referral feature
 pub mod team;
 pub mod workspace;
 
@@ -30,20 +30,17 @@ use instant::Instant;
 use object::ObjectClient;
 use parking_lot::{Mutex, RwLock};
 use prost::Message;
-use referral::ReferralsClient;
+// use referral::ReferralsClient; // Removed: referral feature
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use team::TeamClient;
 use url::Url;
-use warp_core::context_flag::ContextFlag;
 use warp_core::errors::{register_error, AnyhowErrorExt, ErrorExt};
-use warp_core::telemetry::TelemetryEvent;
 use warp_managed_secrets::client::ManagedSecretsClient;
 use warpui::r#async::BoxFuture;
 use warpui::{Entity, ModelContext, SingletonEntity};
 use workspace::WorkspaceClient;
 
-use super::experiments::{ServerExperiment, ServerExperiments};
 use super::graphql::GraphQLError;
 use crate::ai::ambient_agents::AmbientAgentTaskId;
 use crate::ai::get_relevant_files::api::{GetRelevantFiles, GetRelevantFilesResponse};
@@ -58,9 +55,8 @@ use crate::auth::UserUid;
 use crate::server::graphql::default_request_options;
 use crate::server::iap::{IapManager, IapState};
 use crate::server::server_api::presigned_upload::HttpStatusError;
-use crate::server::telemetry::TelemetryApi;
 use crate::settings::PrivacySettingsSnapshot;
-use crate::{settings_view, ChannelState};
+use crate::ChannelState;
 
 pub const FETCH_CHANNEL_VERSIONS_TIMEOUT: std::time::Duration = Duration::from_secs(60);
 
@@ -422,8 +418,6 @@ pub struct ServerApi {
     client: Arc<http_client::Client>,
     auth_state: Arc<AuthState>,
     event_sender: async_channel::Sender<ServerApiEvent>,
-    // TODO(jeff): Make `TelemetryApi` another type of client, and move it off `ServerApi`.
-    telemetry_api: TelemetryApi,
     last_server_time: Arc<Mutex<Option<ServerTime>>>,
     // We technically use OAuth2 for headless device authentication.
     oauth_client: self::auth::OAuth2Client,
@@ -480,7 +474,6 @@ impl ServerApi {
             client,
             auth_state,
             event_sender,
-            telemetry_api: TelemetryApi::new(),
             last_server_time: Arc::new(Mutex::new(None)),
             oauth_client,
             ambient_workload_token: Arc::new(Mutex::new(None)),
@@ -633,6 +626,7 @@ impl ServerApi {
             .collect())
     }
 
+    /// Returns ambient agent headers for a specific task ID.
     async fn ambient_agent_headers_for_task(
         &self,
         task_id: &AmbientAgentTaskId,
@@ -641,6 +635,80 @@ impl ServerApi {
         headers.retain(|(name, _)| *name != CLOUD_AGENT_ID_HEADER);
         headers.push((CLOUD_AGENT_ID_HEADER, task_id.to_string()));
         Ok(headers)
+    }
+
+    /// Sends a POST request to a public API endpoint for a specific task.
+    async fn post_public_api_response_for_task<B>(
+        &self,
+        task_id: &AmbientAgentTaskId,
+        path: &str,
+        body: &B,
+    ) -> Result<http_client::Response>
+    where
+        B: Serialize,
+    {
+        let auth_token = self
+            .get_or_refresh_access_token()
+            .await
+            .context("Failed to get access token for API request")?;
+
+        let url = format!("{}/api/v1/{}", ChannelState::server_root_url(), path);
+
+        let mut request = self.client.post(&url).json(body);
+        if let Some(token) = auth_token.as_bearer_token() {
+            request = request.bearer_auth(token);
+        }
+
+        for (name, value) in self.ambient_agent_headers_for_task(task_id).await? {
+            request = request.header(name, value);
+        }
+
+        let response = request
+            .send()
+            .await
+            .with_context(|| format!("Failed to send API request to {url}"))?;
+
+        if response.status().is_success() {
+            Ok(response)
+        } else {
+            self.check_for_iap_challenge(&response);
+            Err(Self::error_from_response(response).await)
+        }
+    }
+
+    /// Sends a GET request to a public API endpoint for a specific task.
+    async fn get_public_api_response_for_task(
+        &self,
+        task_id: &AmbientAgentTaskId,
+        path: &str,
+    ) -> Result<http_client::Response> {
+        let auth_token = self
+            .get_or_refresh_access_token()
+            .await
+            .context("Failed to get access token for API request")?;
+
+        let url = format!("{}/api/v1/{}", ChannelState::server_root_url(), path);
+
+        let mut request = self.client.get(&url);
+        if let Some(token) = auth_token.as_bearer_token() {
+            request = request.bearer_auth(token);
+        }
+
+        for (name, value) in self.ambient_agent_headers_for_task(task_id).await? {
+            request = request.header(name, value);
+        }
+
+        let response = request
+            .send()
+            .await
+            .with_context(|| format!("Failed to send API request to {url}"))?;
+
+        if response.status().is_success() {
+            Ok(response)
+        } else {
+            self.check_for_iap_challenge(&response);
+            Err(Self::error_from_response(response).await)
+        }
     }
 
     fn create_oauth_client() -> self::auth::OAuth2Client {
@@ -1209,57 +1277,39 @@ impl ServerApi {
         }
     }
 
-    /// Synchronously sends a [`TelemetryEvent`] to the Rudderstack API. Prefer not to call this
-    /// directly, use the macros defined in crate::server::telemetry::macros. If telemetry is
-    /// disabled, this is a no-op.
+    /// Telemetry has been disabled - this is a no-op stub.
     pub async fn send_telemetry_event(
         &self,
-        event: impl TelemetryEvent,
-        settings_snapshot: PrivacySettingsSnapshot,
+        _event: impl warp_core::telemetry::TelemetryEvent + Send,
+        _settings_snapshot: PrivacySettingsSnapshot,
     ) -> Result<()> {
-        let user_id = self.user_id();
-        let anonymous_id = self.anonymous_id();
-        self.telemetry_api
-            .send_telemetry_event(user_id, anonymous_id, event, settings_snapshot)
-            .await
+        Ok(())
     }
 
-    /// Drains all queued [`TelemetryEvent`]s into Rudderstack requests containing the corresponding
-    /// batch of events. Events are queued using the [`send_telemetry_from_ctx`] or
-    /// [`send_telemetry_from_app_ctx`] macros. If telemetry is disabled for the user, this flushes
-    /// the UI framework event queue and does nothing with them (no request is made).
-    ///
-    /// Returns the number of events that were flushed.
+    /// Telemetry has been disabled - this is a no-op stub.
     pub async fn flush_telemetry_events(
         &self,
-        settings_snapshot: PrivacySettingsSnapshot,
+        _settings_snapshot: PrivacySettingsSnapshot,
     ) -> Result<usize> {
-        self.telemetry_api.flush_events(settings_snapshot).await
+        Ok(0)
     }
 
-    /// Sends a batched Rudder request containing events written to the file at `path`. This is a
-    /// no-op if telemetry is disabled.
+    /// Telemetry has been disabled - this is a no-op stub.
     pub async fn flush_persisted_events_to_rudder(
         &self,
-        path: &Path,
-        settings_snapshot: PrivacySettingsSnapshot,
+        _path: &Path,
+        _settings_snapshot: PrivacySettingsSnapshot,
     ) -> Result<()> {
-        self.telemetry_api
-            .flush_persisted_events_to_rudder(path, settings_snapshot)
-            .await
+        Ok(())
     }
 
-    /// Writes all queued [`TelemetryEvent`]s to a file, limiting the number of written
-    /// events to `max_events`. Events are queued using the [`send_telemetry_from_ctx`] or
-    /// [`send_telemetry_from_app_ctx`] macros. If telemetry is disabled, no events are written to
-    /// disk.
+    /// Telemetry has been disabled - this is a no-op stub.
     pub fn persist_telemetry_events(
         &self,
-        max_event_count: usize,
-        settings_snapshot: PrivacySettingsSnapshot,
+        _max_event_count: usize,
+        _settings_snapshot: PrivacySettingsSnapshot,
     ) -> Result<()> {
-        self.telemetry_api
-            .flush_and_persist_events(max_event_count, settings_snapshot)
+        Ok(())
     }
 
     /// Hits the /ai/generate_input_suggestions endpoint to get the predicted next action, based on past context.
@@ -1652,19 +1702,8 @@ impl ServerApiProvider {
     ) -> Self {
         let (event_sender, event_receiver) = async_channel::bounded(10);
 
-        let mut server_api =
+        let server_api =
             ServerApi::new(auth_state.clone(), event_sender, agent_source, iap_state);
-
-        if ContextFlag::NetworkLogConsole.is_enabled() {
-            super::network_logging::init(
-                [
-                    Arc::get_mut(&mut server_api.client)
-                        .expect("guaranteed there is only one copy of client"),
-                    &mut server_api.telemetry_api.client,
-                ],
-                ctx,
-            );
-        }
 
         ctx.spawn_stream_local(
             event_receiver,
@@ -1703,19 +1742,6 @@ impl ServerApiProvider {
         }
     }
 
-    /// Handles fetching server-side experiments by updating the appropriate app state.
-    pub fn handle_experiments_fetched(
-        &self,
-        experiments: Vec<ServerExperiment>,
-        ctx: &mut ModelContext<Self>,
-    ) {
-        ServerExperiments::handle(ctx).update(ctx, |state, ctx| {
-            state.apply_latest_state(experiments, ctx);
-        });
-
-        settings_view::handle_experiment_change(ctx);
-    }
-
     /// Constructs a new SeverApiProvider for tests.
     #[cfg(test)]
     pub fn new_for_test() -> Self {
@@ -1734,9 +1760,9 @@ impl ServerApiProvider {
         self.server_api.clone()
     }
 
-    pub fn get_referrals_client(&self) -> Arc<dyn ReferralsClient> {
-        self.server_api.clone()
-    }
+    // pub fn get_referrals_client(&self) -> Arc<dyn ReferralsClient> {
+    //     self.server_api.clone()
+    // } // Removed: referral feature
 
     pub fn get_block_client(&self) -> Arc<dyn BlockClient> {
         self.server_api.clone()

@@ -34,7 +34,7 @@ use warp_core::ui::color::contrast::{
 };
 use warp_core::ui::theme::color::internal_colors;
 use warp_core::ui::theme::Fill as ThemeFill;
-use warp_core::{report_error, send_telemetry_from_ctx};
+use warp_core::report_error;
 use warp_terminal::model::escape_sequences::{BRACKETED_PASTE_END, BRACKETED_PASTE_START};
 use warpify_footer::{WarpifyFooterView, WarpifyFooterViewEvent};
 use warpui::elements::{
@@ -53,7 +53,7 @@ use crate::ai::blocklist::block::cli_controller::CLISubagentEvent;
 use crate::cmd_or_ctrl_shift;
 use crate::code_review::diff_state::GitDeltaPreference;
 use crate::code_review::telemetry_event::CodeReviewPaneEntrypoint;
-use crate::server::telemetry::{CLIAgentType, CLISubagentControlState, TelemetryEvent};
+use crate::server::telemetry::CLIAgentType;
 use crate::settings::{
     AISettings, AISettingsChangedEvent, CompiledCommandsForCodingAgentToolbar, InputModeSettings,
 };
@@ -138,6 +138,7 @@ fn rich_input_submit_strategy(agent: CLIAgent) -> RichInputSubmitStrategy {
         | CLIAgent::Goose
         | CLIAgent::Hermes
         | CLIAgent::Vibe
+        | CLIAgent::Qoder
         | CLIAgent::Unknown => RichInputSubmitStrategy::Inline,
     }
 }
@@ -214,7 +215,6 @@ impl TerminalView {
         match event {
             UseAgentToolbarEvent::Dismiss => {
                 self.hide_use_agent_footer_in_blocklist(ctx);
-                send_telemetry_from_ctx!(TelemetryEvent::AgentToolbarDismissed, ctx);
                 ctx.notify();
             }
             UseAgentToolbarEvent::WriteToPty(text) => {
@@ -278,12 +278,6 @@ impl TerminalView {
                         self.handle_action(&TerminalAction::TriggerSubshellBootstrap, ctx);
                     }
                 }
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::WarpifyFooterAcceptedWarpify {
-                        is_ssh: mode.is_ssh()
-                    },
-                    ctx
-                );
             }
             UseAgentToolbarEvent::UseAgent => {
                 self.hide_use_agent_footer_in_blocklist(ctx);
@@ -449,16 +443,8 @@ impl TerminalView {
 
         let model = self.model.lock();
         let active_block = model.block_list().active_block();
-        let conversation_id = active_block.ai_conversation_id();
-        let block_id = active_block.id().clone();
-        send_telemetry_from_ctx!(
-            TelemetryEvent::CLISubagentControlStateChanged {
-                conversation_id,
-                block_id,
-                control_state: CLISubagentControlState::AgentTaggedIn,
-            },
-            ctx
-        );
+        let _conversation_id = active_block.ai_conversation_id();
+        let _block_id = active_block.id().clone();
     }
 
     /// Tags the agent "out". See docs on `tag_in_agent_for_user_long_running_command` for
@@ -498,16 +484,8 @@ impl TerminalView {
 
         let model = self.model.lock();
         let active_block = model.block_list().active_block();
-        let conversation_id = active_block.ai_conversation_id();
-        let block_id = active_block.id().clone();
-        send_telemetry_from_ctx!(
-            TelemetryEvent::CLISubagentControlStateChanged {
-                conversation_id,
-                block_id,
-                control_state: CLISubagentControlState::AgentTaggedOut,
-            },
-            ctx
-        );
+        let _conversation_id = active_block.ai_conversation_id();
+        let _block_id = active_block.id().clone();
     }
 
     pub(super) fn maybe_show_use_agent_footer_in_blocklist(&mut self, ctx: &mut ViewContext<Self>) {
@@ -529,13 +507,7 @@ impl TerminalView {
 
         // Send telemetry when showing CLI agent footer
         if let Some(session) = CLIAgentSessionsModel::as_ref(ctx).session(self.view_id) {
-            let cli_agent_type: CLIAgentType = session.agent.into();
-            send_telemetry_from_ctx!(
-                TelemetryEvent::CLIAgentToolbarShown {
-                    cli_agent: cli_agent_type,
-                },
-                ctx
-            );
+            let _cli_agent_type: CLIAgentType = session.agent.into();
         }
 
         self.insert_rich_content(
@@ -577,7 +549,7 @@ impl TerminalView {
     fn close_cli_agent_rich_input_impl(
         &mut self,
         should_auto_toggle_input: bool,
-        reason: CLIAgentRichInputCloseReason,
+        _reason: CLIAgentRichInputCloseReason,
         ctx: &mut ViewContext<Self>,
     ) {
         if !self.has_active_cli_agent_input_session(ctx) {
@@ -596,11 +568,7 @@ impl TerminalView {
         let cli_agent_type: Option<CLIAgentType> = CLIAgentSessionsModel::as_ref(ctx)
             .session(self.view_id)
             .map(|s| s.agent.into());
-        if let Some(cli_agent) = cli_agent_type {
-            send_telemetry_from_ctx!(
-                TelemetryEvent::CLIAgentRichInputClosed { cli_agent, reason },
-                ctx
-            );
+        if let Some(_cli_agent) = cli_agent_type {
         }
 
         self.redetermine_terminal_focus(ctx);
@@ -647,18 +615,11 @@ impl TerminalView {
             return;
         }
 
-        let prompt_length = text.chars().count();
+        let _prompt_length = text.chars().count();
         let cli_agent: Option<CLIAgentType> = CLIAgentSessionsModel::as_ref(ctx)
             .session(self.view_id)
             .map(|s| s.agent.into());
-        if let Some(cli_agent) = cli_agent {
-            send_telemetry_from_ctx!(
-                TelemetryEvent::CLIAgentRichInputSubmitted {
-                    cli_agent,
-                    prompt_length,
-                },
-                ctx
-            );
+        if let Some(_cli_agent) = cli_agent {
         }
 
         // Clear any saved draft so submitted text isn't restored on the next open.
@@ -1006,7 +967,7 @@ impl TerminalView {
 
         // The Ctrl-G binding and footer button are both gated on an active CLI
         // agent session, so the session should always exist here.
-        let Some(cli_agent) = CLIAgentSessionsModel::as_ref(ctx)
+        let Some(_cli_agent) = CLIAgentSessionsModel::as_ref(ctx)
             .session(self.view_id)
             .map(|session| session.agent)
         else {
@@ -1030,13 +991,6 @@ impl TerminalView {
             );
         });
 
-        send_telemetry_from_ctx!(
-            TelemetryEvent::CLIAgentRichInputOpened {
-                cli_agent: cli_agent.into(),
-                entrypoint,
-            },
-            ctx
-        );
 
         // Input mode switch, buffer clear, draft restoration, and hint text
         // are handled reactively by Input's subscription to InputSessionChanged.

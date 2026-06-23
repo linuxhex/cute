@@ -7,21 +7,17 @@ use warp_core::settings::{ChangeEventReason, Setting};
 use warp_graphql::workspace::FeatureModelChoice;
 use warpui::{AppContext, Entity, ModelContext, SingletonEntity, Tracked};
 
-use super::team::{DiscoverableTeam, MembershipRole, Team};
+use super::workspace::{DiscoverableTeam, MembershipRole, Team};
 #[cfg(test)]
 use super::workspace::WorkspaceMemberUsageInfo;
 use super::workspace::{
-    AdminEnablementSetting, CustomerType, EnterpriseSecretRegex, HostEnablementSetting,
+    AdminEnablementSetting, EnterpriseSecretRegex, HostEnablementSetting,
     UgcCollectionEnablementSetting, Workspace, WorkspaceUid,
 };
 use crate::ai::llms::LLMModelHost;
 use crate::auth::{AuthStateProvider, UserUid};
-use crate::channel::ChannelState;
-use crate::cloud_object::model::persistence::CloudModel;
 use crate::cloud_object::{CloudObjectEventEntrypoint, ObjectType, Owner, Space};
-use crate::pricing::PricingInfoModel;
 use crate::report_error;
-use crate::server::experiments::{ServerExperiment, ServerExperiments, ServerExperimentsEvent};
 use crate::server::ids::ServerId;
 use crate::server::server_api::team::TeamClient;
 use crate::server::server_api::workspace::WorkspaceClient;
@@ -35,10 +31,11 @@ use crate::workspaces::workspace::{
     AIAutonomyPolicy, BillingMetadata, WorkspaceMember, WorkspaceSettings,
 };
 use crate::workspaces::workspace::{
-    AiAutonomySettings, AiOverages, SandboxedAgentSettings, UsageBasedPricingSettings,
+    AiAutonomySettings, AiOverages, SandboxedAgentSettings,
 };
 
-const STRIPE_SUBSCRIPTION_INTERVAL_PAGE_PREFIX: &str = "/upgrade";
+// Simplified: local version has no upgrade
+// const STRIPE_SUBSCRIPTION_INTERVAL_PAGE_PREFIX: &str = "/upgrade";
 
 #[derive(Debug)]
 pub enum UserWorkspacesEvent {
@@ -99,8 +96,6 @@ pub struct WorkspacesMetadataResponse {
     pub workspaces: Vec<Workspace>,
     /// The list of discoverable teams that the user can join.
     pub joinable_teams: Vec<DiscoverableTeam>,
-    /// The list of experiments applicable to the user.
-    pub experiments: Option<Vec<ServerExperiment>>,
     /// TODO(Tyler): Post-workspaces, move this into the workspace object.
     /// Feature model choices may change from user to user and while the app is open, so we need to periodically update this list.
     /// It makes most sense to fetch this in workspaces which is queried every 10 minutes.
@@ -116,6 +111,7 @@ pub struct WorkspacesMetadataWithPricing {
     pub pricing_info: Option<warp_graphql::billing::PricingInfo>,
 }
 
+// Simplified: team creation not supported, but keep struct for compatibility
 pub struct CreateTeamResponse {
     pub workspace: Workspace,
     pub team: Team,
@@ -158,11 +154,6 @@ impl UserWorkspaces {
         current_workspace_uid: Option<WorkspaceUid>,
         ctx: &mut ModelContext<Self>,
     ) -> Self {
-        ctx.subscribe_to_model(&ServerExperiments::handle(ctx), |me, event, ctx| {
-            let ServerExperimentsEvent::ExperimentsUpdated = event;
-            me.update_session_sharing_enablement(ctx);
-        });
-
         ctx.subscribe_to_model(&CodeSettings::handle(ctx), |_, code_settings_event, ctx| {
             match code_settings_event {
                 CodeSettingsChangedEvent::CodebaseContextEnabled { .. }
@@ -188,23 +179,14 @@ impl UserWorkspaces {
         }
     }
 
-    pub fn upgrade_link(user_id: UserUid) -> String {
-        format!(
-            "{}{}/{}/{}",
-            ChannelState::server_root_url(),
-            STRIPE_SUBSCRIPTION_INTERVAL_PAGE_PREFIX,
-            "user",
-            user_id.as_str()
-        )
+    pub fn upgrade_link(_user_id: UserUid) -> String {
+        // Simplified: no cloud billing
+        String::new()
     }
 
-    pub fn upgrade_link_for_team(team_uid: ServerId) -> String {
-        format!(
-            "{}{}/{}",
-            ChannelState::server_root_url(),
-            STRIPE_SUBSCRIPTION_INTERVAL_PAGE_PREFIX,
-            team_uid
-        )
+    pub fn upgrade_link_for_team(_team_uid: ServerId) -> String {
+        // Simplified: no cloud billing
+        String::new()
     }
 
     pub fn team_from_uid(&self, team_uid: ServerId) -> Option<&Team> {
@@ -257,76 +239,24 @@ impl UserWorkspaces {
 
     // Checks if the team has capacity for another shared notebook for their current
     // billing tier, given their current notebook count and delinquency status.
+    // Simplified: always returns true for local version.
     pub fn has_capacity_for_shared_notebooks(
-        team_uid: ServerId,
-        ctx: &AppContext,
-        new_shared_notebooks: usize,
+        _team_uid: ServerId,
+        _ctx: &AppContext,
+        _new_shared_notebooks: usize,
     ) -> bool {
-        let current_shared_notebooks = CloudModel::as_ref(ctx)
-            .active_notebooks_in_space(Space::Team { team_uid }, ctx)
-            .count();
-
-        let team = UserWorkspaces::as_ref(ctx).team_from_uid(team_uid);
-        if let Some(team) = team {
-            // If the team is past due or unpaid, then don't allow new notebooks.
-            if team.billing_metadata.is_delinquent_due_to_payment_issue() {
-                return false;
-            }
-
-            if let Some(policy) = team.billing_metadata.tier.shared_notebooks_policy {
-                // Allow new notebooks if policy is unlimited or if the number of notebooks
-                // is less than the limit.
-                policy.is_unlimited
-                    || current_shared_notebooks + new_shared_notebooks
-                        <= policy
-                            .limit
-                            .try_into()
-                            .expect("shared notebooks limit should be within max i64 range")
-            } else {
-                // If no policy is set, then allow it to go through by default (should still be enforced server-side)
-                true
-            }
-        } else {
-            // If the team is not found, then allow it to go through by default (should still be enforced server-side)
-            true
-        }
+        true
     }
 
     // Checks if the team has capacity for another shared workflow for their current
     // billing tier, given their current workflow count and delinquency status.
+    // Simplified: always returns true for local version.
     pub fn has_capacity_for_shared_workflows(
-        team_uid: ServerId,
-        ctx: &AppContext,
-        new_shared_workflows: usize,
+        _team_uid: ServerId,
+        _ctx: &AppContext,
+        _new_shared_workflows: usize,
     ) -> bool {
-        let current_shared_workflows = CloudModel::as_ref(ctx)
-            .active_workflows_in_space(Space::Team { team_uid }, ctx)
-            .count();
-
-        let team = UserWorkspaces::as_ref(ctx).team_from_uid(team_uid);
-        if let Some(team) = team {
-            // If the team is past due or unpaid, then don't allow new workflows.
-            if team.billing_metadata.is_delinquent_due_to_payment_issue() {
-                return false;
-            }
-
-            if let Some(policy) = team.billing_metadata.tier.shared_workflows_policy {
-                // Allow new workflows if policy is unlimited or if the number of workflows
-                // is less than the limit.
-                policy.is_unlimited
-                    || current_shared_workflows + new_shared_workflows
-                        <= policy
-                            .limit
-                            .try_into()
-                            .expect("shared workflows limit should be within max i64 range")
-            } else {
-                // If no policy is set, then allow it to go through by default (should still be enforced server-side)
-                true
-            }
-        } else {
-            // If the team is not found, then allow it to go through by default (should still be enforced server-side)
-            true
-        }
+        true
     }
 
     /// Return the uid of user's current team (if any) without refreshing.
@@ -376,103 +306,39 @@ impl UserWorkspaces {
     }
 
     /// Returns `true` if active AI is allowed for the current workspace, based on billing config.
-    ///
-    /// In the future, we should store active AI enablement on the policy directly. For now, we
-    /// proxy whether active AI by checking whether any active AI feature is enabled.
+    /// Simplified: always returns true for local version.
     pub fn is_active_ai_allowed(&self) -> bool {
-        self.current_team().is_none_or(|team| {
-            team.billing_metadata
-                .tier
-                .warp_ai_policy
-                .is_none_or(|policy| {
-                    policy.is_prompt_suggestions_toggleable
-                        || policy.is_next_command_enabled
-                        || policy.is_code_suggestions_toggleable
-                        || policy.is_git_operations_ai_enabled
-                })
-        })
+        true
     }
 
-    /// Returns `true` if the current team's enterprise status allows AI features that have an
-    /// enterprise gate. Non-enterprise teams always pass; enterprise teams pass only if they
-    /// are on the Warp Plan or the build is dogfood (both our internal Warp team and dogfood
-    /// team are billed as enterprise).
+    /// Simplified: always returns true for local version.
     pub fn ai_allowed_for_current_team(&self) -> bool {
-        !self
-            .current_team()
-            .is_some_and(|team| team.billing_metadata.customer_type == CustomerType::Enterprise)
-            || self
-                .current_team()
-                .is_some_and(|team| team.billing_metadata.is_warp_plan())
-            || ChannelState::channel().is_dogfood()
+        true
     }
 
-    /// Whether Prompt Suggestions should be toggleable for the current user, based on the active policies.
-    /// Note that the value may be incorrect if called before the team's billing metadata has been fetched.
+    /// Simplified: always returns true for local version.
     pub fn is_prompt_suggestions_toggleable(&self) -> bool {
-        self.current_team()
-            // If the user has no team, they can toggle prompt suggestions (no restrictions).
-            .is_none_or(|team| {
-                team.billing_metadata
-                    .tier
-                    .warp_ai_policy
-                    .is_some_and(|policy| policy.is_prompt_suggestions_toggleable)
-            })
+        true
     }
 
-    /// Whether Code Suggestions should be toggleable for the current user, based on the active policies.
-    /// Note that the value may be incorrect if called before the team's billing metadata has been fetched.
+    /// Simplified: always returns true for local version.
     pub fn is_code_suggestions_toggleable(&self) -> bool {
-        self.current_team()
-            // If the user has no team, they can toggle code suggestions (no restrictions).
-            .is_none_or(|team| {
-                team.billing_metadata
-                    .tier
-                    .warp_ai_policy
-                    .is_some_and(|policy| policy.is_code_suggestions_toggleable)
-            })
+        true
     }
 
-    /// Whether Next Command should be toggleable for the current user, based on the active policies.
-    /// Note that the value may be incorrect if called before the team's billing metadata has been fetched.
+    /// Simplified: always returns true for local version.
     pub fn is_next_command_enabled(&self) -> bool {
-        self.current_team()
-            // If the user has no team, they can toggle Next Command (no restrictions).
-            .is_none_or(|team| {
-                team.billing_metadata
-                    .tier
-                    .warp_ai_policy
-                    .is_some_and(|policy| policy.is_next_command_enabled)
-            })
+        true
     }
 
-    /// Whether Git Operations AI is enabled for the current user, based on the active policies.
-    /// Note that the value may be incorrect if called before the team's billing metadata has been fetched.
+    /// Simplified: always returns true for local version.
     pub fn is_git_operations_ai_enabled(&self) -> bool {
-        self.current_team()
-            // If the user has no team, they can toggle Git Operations AI (no restrictions).
-            .is_none_or(|team| {
-                team.billing_metadata
-                    .tier
-                    .warp_ai_policy
-                    .is_some_and(|policy| policy.is_git_operations_ai_enabled)
-            })
+        true
     }
 
-    /// Whether voice input should be toggleable for the current user, based on the active policies.
-    /// Note that the value may be incorrect if called before the team's billing metadata has been fetched.
-    /// If voice input support is not compiled into this build, always returns `false`.
+    /// Simplified: returns true if voice_input feature is enabled.
     pub fn is_voice_enabled(&self) -> bool {
         cfg!(feature = "voice_input")
-            && self
-                .current_team()
-                // If the user has no team, they can toggle Voice (no restrictions).
-                .is_none_or(|team| {
-                    team.billing_metadata
-                        .tier
-                        .warp_ai_policy
-                        .is_some_and(|policy| policy.is_voice_enabled)
-                })
     }
 
     /// Whether BYO API key is enabled for the current user, based on the active policies.
@@ -490,24 +356,9 @@ impl UserWorkspaces {
             .map(|workspace| workspace.is_byo_api_key_enabled())
             .unwrap_or(FeatureFlag::SoloUserByok.is_enabled())
     }
-    /// Whether custom inference endpoints are enabled for the current user.
-    /// Anonymous or logged-out users are not allowed to use custom inference.
-    /// Enterprise workspaces require the enterprise custom inference flag, Warp Plan, or dogfood.
-    pub fn is_custom_inference_enabled(&self, app: &AppContext) -> bool {
-        if AuthStateProvider::as_ref(app)
-            .get()
-            .is_anonymous_or_logged_out()
-        {
-            return false;
-        }
-
-        self.current_workspace()
-            .map(|workspace| {
-                workspace.billing_metadata.customer_type != CustomerType::Enterprise
-                    || FeatureFlag::CustomInferenceEndpointsEnterprise.is_enabled()
-                    || ChannelState::channel().is_dogfood()
-            })
-            .unwrap_or(true)
+    /// Simplified: always returns true for local version.
+    pub fn is_custom_inference_enabled(&self, _app: &AppContext) -> bool {
+        true
     }
 
     pub fn aws_bedrock_host_settings(&self) -> Option<&super::workspace::LlmHostSettings> {
@@ -571,31 +422,9 @@ impl UserWorkspaces {
     }
 
     /// Returns true iff AI autonomy features are allowed for this client.
-    /// TODO: This should be deleted soon. AI autonomy settings have been moved into organization
-    /// settings (see `ai_autonomy_settings` above), but there could be an interim time where we
-    /// have not set up the org settings yet for an enterprise that previously had the entire
-    /// feature set disabled. To capture that case, we'll see if all the settings are `None`;
-    /// if so, we'll fall back to their billing metadata's value. Once we've migrated everyone
-    /// into org settings, we should remove `is_enabled` from the policy and delete this function.
+    /// Simplified: local version always allows AI autonomy
     pub fn is_ai_autonomy_allowed(&self) -> bool {
-        self.current_team().is_none_or(|team| {
-            let settings = &team.organization_settings.ai_autonomy_settings;
-            let all_settings_none = settings.apply_code_diffs_setting.is_none()
-                && settings.read_files_setting.is_none()
-                && settings.read_files_allowlist.is_none()
-                && settings.execute_commands_setting.is_none()
-                && settings.execute_commands_allowlist.is_none()
-                && settings.execute_commands_denylist.is_none();
-
-            if all_settings_none {
-                team.billing_metadata
-                    .tier
-                    .ai_autonomy_policy
-                    .is_some_and(|policy| policy.is_enabled)
-            } else {
-                true
-            }
-        })
+        true
     }
 
     // Returns a Vec of the user's active spaces, based on their
@@ -638,11 +467,6 @@ impl UserWorkspaces {
         let mut spaces = Vec::new();
         spaces.extend(self.team_spaces().iter());
 
-        if FeatureFlag::SharedWithMe.is_enabled()
-            && CloudModel::as_ref(ctx).has_directly_shared_objects(self, ctx)
-        {
-            spaces.push(Space::Shared);
-        }
         spaces.push(Space::Personal);
 
         spaces
@@ -671,22 +495,9 @@ impl UserWorkspaces {
     // This is always possible, as unknown owners imply the shared space.
     pub fn owner_to_space(&self, owner: Owner, ctx: &AppContext) -> Space {
         match owner {
-            Owner::User { user_uid } => {
-                if !FeatureFlag::SharedWithMe.is_enabled() {
-                    return Space::Personal;
-                }
-
-                let current_user = AuthStateProvider::as_ref(ctx).get().user_id();
-                if Some(user_uid) == current_user {
-                    Space::Personal
-                } else {
-                    Space::Shared
-                }
-            }
+            Owner::User { user_uid: _ } => Space::Personal,
             Owner::Team { team_uid } => {
-                if !FeatureFlag::SharedWithMe.is_enabled()
-                    || self.team_from_uid_across_all_workspaces(team_uid).is_some()
-                {
+                if self.team_from_uid_across_all_workspaces(team_uid).is_some() {
                     Space::Team { team_uid }
                 } else {
                     Space::Shared
@@ -707,6 +518,17 @@ impl UserWorkspaces {
         !self.workspaces.is_empty()
     }
 
+    // Simplified: team_created not supported, but keep stub for compatibility
+    pub fn team_created(
+        &mut self,
+        create_team_response: &CreateTeamResponse,
+        ctx: &mut ModelContext<Self>,
+    ) {
+        self.workspaces.push(create_team_response.workspace.clone());
+        self.set_current_workspace_uid(create_team_response.workspace.uid, ctx);
+        self.notify_and_emit_teams_changed(ctx);
+    }
+
     pub fn update_workspaces(&mut self, workspaces: Vec<Workspace>, ctx: &mut ModelContext<Self>) {
         // Check if sunsetted_to_build_ts changed for any workspace
         let sunsetted_to_build_changed = self.has_sunsetted_to_build_data_changed(&workspaces);
@@ -720,37 +542,8 @@ impl UserWorkspaces {
     }
 
     /// Checks if any workspace's service agreement sunsetted_to_build_ts field has changed.
-    fn has_sunsetted_to_build_data_changed(&self, new_workspaces: &[Workspace]) -> bool {
-        for new_workspace in new_workspaces {
-            // Find the corresponding old workspace
-            let old_workspace = self.workspaces.iter().find(|w| w.uid == new_workspace.uid);
-
-            if let Some(old_workspace) = old_workspace {
-                // Check if any team's service agreement sunsetted_to_build_ts changed
-                for new_team in &new_workspace.teams {
-                    let old_team = old_workspace.teams.iter().find(|t| t.uid == new_team.uid);
-
-                    if let Some(old_team) = old_team {
-                        let old_sunsetted = old_team
-                            .billing_metadata
-                            .service_agreements
-                            .first()
-                            .and_then(|sa| sa.sunsetted_to_build_ts);
-
-                        let new_sunsetted = new_team
-                            .billing_metadata
-                            .service_agreements
-                            .first()
-                            .and_then(|sa| sa.sunsetted_to_build_ts);
-
-                        // Detect if it changed from None to Some or changed value
-                        if old_sunsetted != new_sunsetted {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
+    /// Simplified: local version has no build plan migration
+    fn has_sunsetted_to_build_data_changed(&self, _new_workspaces: &[Workspace]) -> bool {
         false
     }
 
@@ -796,12 +589,6 @@ impl UserWorkspaces {
     ) {
         match result {
             Ok(response) => {
-                if let Some(pricing_info) = response.pricing_info {
-                    PricingInfoModel::handle(ctx).update(ctx, |model, ctx| {
-                        model.update_pricing_info(pricing_info, ctx);
-                    });
-                }
-
                 let workspaces = response.metadata.workspaces;
                 let joinable_teams = response.metadata.joinable_teams;
 
@@ -828,16 +615,6 @@ impl UserWorkspaces {
                 report_error!(e.context("Failed to load user workspaces"));
             }
         }
-    }
-
-    pub fn team_created(
-        &mut self,
-        create_team_response: &CreateTeamResponse,
-        ctx: &mut ModelContext<Self>,
-    ) {
-        self.workspaces.push(create_team_response.workspace.clone());
-        self.set_current_workspace_uid(create_team_response.workspace.uid, ctx);
-        self.notify_and_emit_teams_changed(ctx);
     }
 
     pub fn remove_user_from_team(
@@ -1236,28 +1013,6 @@ impl UserWorkspaces {
         );
     }
 
-    pub fn update_usage_based_pricing_settings(
-        &mut self,
-        team_uid: ServerId,
-        usage_based_pricing_enabled: bool,
-        max_monthly_spend_cents: Option<u32>,
-        ctx: &mut ModelContext<Self>,
-    ) {
-        let workspace_client = self.workspace_client.clone();
-        let _ = ctx.spawn(
-            async move {
-                workspace_client
-                    .update_usage_based_pricing_settings(
-                        team_uid,
-                        usage_based_pricing_enabled,
-                        max_monthly_spend_cents,
-                    )
-                    .await
-            },
-            Self::on_update_workspace_metadata,
-        );
-    }
-
     fn on_update_workspace_metadata(
         &mut self,
         result: Result<WorkspacesMetadataResponse>,
@@ -1323,12 +1078,9 @@ impl UserWorkspaces {
         ctx.notify();
     }
 
-    pub fn refresh_ai_overages(&mut self, ctx: &mut ModelContext<Self>) {
-        let workspace_client = self.workspace_client.clone();
-        let _ = ctx.spawn(
-            async move { workspace_client.refresh_ai_overages().await },
-            Self::on_refresh_ai_overages,
-        );
+    // Simplified: local version has no AI overages refresh
+    pub fn refresh_ai_overages(&mut self, _ctx: &mut ModelContext<Self>) {
+        // No-op for local version
     }
 
     pub fn update_addon_credits_settings(
@@ -1355,30 +1107,10 @@ impl UserWorkspaces {
         );
     }
 
-    fn on_refresh_ai_overages(&mut self, result: Result<AiOverages>, ctx: &mut ModelContext<Self>) {
-        match result {
-            Ok(fresh_ai_overages) => {
-                // TODO: We really need to stop having duplicate billing metadata...
-                if let Some(workspace) = self.current_workspace_mut() {
-                    workspace.billing_metadata.ai_overages = Some(fresh_ai_overages.clone());
-                }
-                if let Some(team) = self.current_team_mut() {
-                    team.billing_metadata.ai_overages = Some(fresh_ai_overages);
-                }
-
-                ctx.emit(UserWorkspacesEvent::AiOveragesUpdated);
-                ctx.notify();
-            }
-            Err(e) => {
-                log::warn!("Failed to refresh AI overages for workspace: {e:?}");
-            }
-        }
-    }
-
-    pub fn usage_based_pricing_settings(&self) -> UsageBasedPricingSettings {
-        self.current_workspace()
-            .map(|workspace| workspace.settings.usage_based_pricing_settings.clone())
-            .unwrap_or_default()
+    // Simplified: local version has no AI overages
+    #[allow(dead_code)]
+    fn on_refresh_ai_overages(&mut self, _result: Result<AiOverages>, _ctx: &mut ModelContext<Self>) {
+        // No-op for local version
     }
 
     pub fn is_telemetry_force_enabled(&self) -> bool {
@@ -1415,15 +1147,9 @@ impl UserWorkspaces {
             .unwrap_or_default()
     }
 
+    /// Simplified: local version has no cloud conversation storage.
     pub fn get_cloud_conversation_storage_enablement_setting(&self) -> AdminEnablementSetting {
-        self.current_team()
-            .map(|team| {
-                team.organization_settings
-                    .cloud_conversation_storage_settings
-                    .setting
-                    .clone()
-            })
-            .unwrap_or_default()
+        AdminEnablementSetting::default()
     }
 
     pub fn is_ai_allowed_in_remote_sessions(&self) -> bool {
@@ -1517,25 +1243,15 @@ impl UserWorkspaces {
     }
 
     /// Updates whether or not session sharing is enabled based on the current team's tier policy.
-    fn update_session_sharing_enablement(&self, ctx: &AppContext) {
+    fn update_session_sharing_enablement(&self, _ctx: &AppContext) {
         if cfg!(any(test, feature = "integration_tests")) {
             return;
         }
 
         // If we have experiment state to unconditionally enable / disable the feature,
         // then we defer to that.
-        let server_experiments = ServerExperiments::as_ref(ctx);
-        if server_experiments.is_experiment_enabled(&ServerExperiment::SessionSharingControl)
-            || server_experiments.is_experiment_enabled(&ServerExperiment::SessionSharingExperiment)
-        {
-            return;
-        }
-
-        let is_session_sharing_enabled_via_tier_policy = self
-            .current_team()
-            .and_then(|t| t.billing_metadata.tier.session_sharing_policy)
-            .map(|policy| policy.is_enabled)
-            .unwrap_or(true);
+        // Simplified: local version always enables session sharing
+        let is_session_sharing_enabled_via_tier_policy = true;
         FeatureFlag::CreatingSharedSessions.set_enabled(is_session_sharing_enabled_via_tier_policy);
     }
 }
@@ -1565,7 +1281,6 @@ impl UserWorkspaces {
                 invite_link_domain_restrictions: vec![],
                 stripe_customer_id: None,
                 is_eligible_for_discovery: false,
-                has_billing_history: false,
             }],
             members: vec![WorkspaceMember {
                 uid: owner_uid,
@@ -1580,8 +1295,6 @@ impl UserWorkspaces {
             }],
             billing_metadata: BillingMetadata::default(),
             bonus_grants_purchased_this_month: Default::default(),
-            billing_cycle_usage: None,
-            has_billing_history: false,
             settings: workspace_settings,
             invite_code: None,
             invite_link_domain_restrictions: vec![],
@@ -1649,22 +1362,9 @@ impl UserWorkspaces {
         );
     }
 
-    pub fn update_ai_autonomy_policy_flag(&mut self, enabled: bool, ctx: &mut ModelContext<Self>) {
-        self.update_current_workspace(
-            |workspace| {
-                if let Some(team) = workspace.teams.first_mut() {
-                    team.billing_metadata.tier.ai_autonomy_policy = Some(AIAutonomyPolicy {
-                        is_enabled: enabled,
-                        toggleable: true,
-                    });
-                } else {
-                    panic!(
-                        "No team found in current workspace. Did you call setup_test_workspace()?"
-                    );
-                }
-            },
-            ctx,
-        );
+    // Simplified: local version has no AI autonomy policy from billing
+    pub fn update_ai_autonomy_policy_flag(&mut self, _enabled: bool, _ctx: &mut ModelContext<Self>) {
+        // No-op for local version
     }
 }
 

@@ -32,6 +32,7 @@ use crate::ui_components::blended_colors;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DisplayMode {
+    #[allow(dead_code)]
     Settings,
     Footer,
 }
@@ -109,6 +110,7 @@ pub struct ConversationUsageView {
 }
 
 impl ConversationUsageView {
+    #[allow(dead_code)]
     pub fn new(
         usage_info: ConversationUsageInfo,
         display_mode: DisplayMode,

@@ -1,6 +1,5 @@
 use settings::Setting as _;
 use voice_input::{StartListeningError, VoiceInput, VoiceSessionResult};
-use warp_core::send_telemetry_from_ctx;
 use warp_core::ui::theme::color::internal_colors;
 use warp_core::ui::theme::AnsiColorIdentifier;
 use warpui::elements::{Container, CornerRadius, Icon, Radius};
@@ -303,15 +302,6 @@ impl EditorView {
                     } else {
                         InputType::Shell
                     };
-                    send_telemetry_from_ctx!(
-                        TelemetryEvent::VoiceInputUsed {
-                            action: "start".to_string(),
-                            session_duration_ms: None,
-                            is_udi_enabled,
-                            current_input_mode,
-                        },
-                        ctx
-                    );
 
                     // Spawn future to await the session result
                     ctx.spawn(
@@ -426,15 +416,6 @@ impl EditorView {
                 wav_base64,
                 session_duration_ms,
             } => {
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::VoiceInputUsed {
-                        action: "stop".to_string(),
-                        session_duration_ms: Some(session_duration_ms),
-                        is_udi_enabled,
-                        current_input_mode,
-                    },
-                    ctx
-                );
 
                 // Start transcription
                 let voice_transcriber = VoiceTranscriber::handle(ctx).as_ref(ctx);
@@ -463,15 +444,6 @@ impl EditorView {
             } => {
                 log::info!("Aborted listening for voice input");
 
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::VoiceInputUsed {
-                        action: "cancel".to_string(),
-                        session_duration_ms,
-                        is_udi_enabled,
-                        current_input_mode,
-                    },
-                    ctx
-                );
 
                 self.set_voice_input_state(VoiceInputState::Stopped, ctx);
             }

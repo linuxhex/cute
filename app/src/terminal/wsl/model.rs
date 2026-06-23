@@ -4,7 +4,6 @@ use warpui_extras::user_preferences::registry_backed::KEY_NOT_FOUND_ERR;
 use windows_registry::CURRENT_USER;
 use windows_result::Error as WindowsError;
 
-use crate::send_telemetry_from_ctx;
 use crate::server::telemetry::TelemetryEvent;
 
 const DOCKER_DESKTOP_WSL_DISTRO_PREFIX: &str = "docker-desktop";
@@ -35,7 +34,6 @@ impl WslInfo {
                 // This error merely occurs when user doesn't have WSL installed/enabled.
                 Error::MainKey(err) => {
                     log::info!("{err:#}");
-                    send_telemetry_from_ctx!(TelemetryEvent::WSLRegistryError, ctx);
                 }
                 _ => {
                     log::error!("{err:#}");

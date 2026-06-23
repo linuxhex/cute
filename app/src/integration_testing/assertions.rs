@@ -9,7 +9,7 @@ use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::ids::ClientId;
 use crate::util::bindings::keybinding_name_to_display_string;
 use crate::workflows::workflow::Workflow;
-use crate::workspaces::team::Team;
+use crate::workspaces::workspace::Team;
 use crate::workspaces::user_workspaces::UserWorkspaces;
 use crate::workspaces::workspace::Workspace;
 
@@ -58,7 +58,6 @@ pub fn join_a_workspace() -> TestStep {
                     stripe_customer_id: None,
                     organization_settings: Default::default(),
                     is_eligible_for_discovery: false,
-                    has_billing_history: false,
                 }];
                 let workspaces: Vec<Workspace> = vec![Workspace {
                     uid: workspace_uid,
@@ -67,8 +66,6 @@ pub fn join_a_workspace() -> TestStep {
                     teams: teams.clone(),
                     billing_metadata: Default::default(),
                     bonus_grants_purchased_this_month: Default::default(),
-                    billing_cycle_usage: None,
-                    has_billing_history: false,
                     settings: Default::default(),
                     invite_code: Default::default(),
                     invite_link_domain_restrictions: Default::default(),

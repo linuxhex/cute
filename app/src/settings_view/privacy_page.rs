@@ -7,8 +7,6 @@ use std::time::Duration;
 use pathfinder_geometry::vector::vec2f;
 use regex::Regex;
 use settings::Setting as _;
-use warp_core::context_flag::ContextFlag;
-use warp_core::features::FeatureFlag;
 use warp_core::ui::theme::color::internal_colors;
 use warp_core::ui::theme::WarpTheme;
 use warpui::elements::{
@@ -40,8 +38,7 @@ use crate::appearance::Appearance;
 use crate::auth::auth_manager::AuthManager;
 use crate::channel::ChannelState;
 use crate::modal::{Modal, ModalEvent, ModalViewState};
-use crate::server::telemetry::TelemetryEvent;
-use crate::settings::{AISettings, CustomSecretRegex, PrivacySettings, RegexDisplayInfo};
+use crate::settings::{CustomSecretRegex, PrivacySettings, RegexDisplayInfo};
 use crate::settings_view::privacy::AddRegexModalViewState;
 use crate::settings_view::render_body_item_label;
 use crate::settings_view::settings_page::CONTENT_FONT_SIZE;
@@ -55,9 +52,9 @@ use crate::util::links::PRIVACY_POLICY_URL;
 use crate::view_components::{Dropdown, DropdownItem};
 use crate::workspaces::user_workspaces::UserWorkspaces;
 use crate::workspaces::workspace::{
-    AdminEnablementSetting, CustomerType, UgcCollectionEnablementSetting,
+    AdminEnablementSetting, UgcCollectionEnablementSetting,
 };
-use crate::{report_if_error, send_telemetry_from_ctx};
+use crate::report_if_error;
 
 const FONT_SIZE: f32 = 12.;
 
@@ -124,7 +121,6 @@ pub struct PrivacyPageView {
 
 #[derive(Clone, Copy)]
 pub enum PrivacyPageViewEvent {
-    LaunchNetworkLogging,
     ShowAddRegexModal,
     HideAddRegexModal,
 }
@@ -231,9 +227,6 @@ impl PrivacyPageView {
             Box::new(CrashReportsWidget::default()),
             Box::new(CloudConversationStorageWidget::default()),
         ];
-        if ContextFlag::NetworkLogConsole.is_enabled() {
-            widgets.push(Box::new(NetworkLogWidget::default()));
-        }
         widgets.push(Box::new(DataManagementWidget::default()));
         widgets.push(Box::new(PrivacyPolicyWidget::default()));
         PageType::new_uncategorized(widgets, Some("Privacy"))
@@ -256,10 +249,6 @@ impl PrivacyPageView {
         let safe_mode_settings = SafeModeSettings::handle(ctx);
         let new_value = { !*safe_mode_settings.as_ref(ctx).safe_mode_enabled.value() };
 
-        send_telemetry_from_ctx!(
-            TelemetryEvent::ToggleSecretRedaction { enabled: new_value },
-            ctx
-        );
 
         ctx.update_model(&safe_mode_settings, move |safe_mode_settings, ctx| {
             report_if_error!(safe_mode_settings
@@ -390,10 +379,6 @@ impl PrivacyPageView {
         ctx.notify();
     }
 
-    fn launch_network_logging(&mut self, ctx: &mut ViewContext<Self>) {
-        ctx.emit(PrivacyPageViewEvent::LaunchNetworkLogging);
-    }
-
     fn show_add_regex_modal(&mut self, ctx: &mut ViewContext<Self>) {
         self.add_regex_modal_state.open(ctx);
         ctx.emit(PrivacyPageViewEvent::ShowAddRegexModal);
@@ -492,7 +477,6 @@ pub enum PrivacyPageAction {
     ToggleTelemetry,
     ToggleCrashReporting,
     ToggleCloudConversationStorage,
-    LaunchNetworkLogging,
     RemoveCustomRegex(usize),
     OpenDataManagementWebpage,
     AddAllRecommendedRegexes,
@@ -575,7 +559,6 @@ impl TypedActionView for PrivacyPageView {
             PrivacyPageAction::ToggleCloudConversationStorage => {
                 self.toggle_cloud_conversation_storage(ctx)
             }
-            PrivacyPageAction::LaunchNetworkLogging => self.launch_network_logging(ctx),
             PrivacyPageAction::RemoveCustomRegex(idx) => {
                 self.queue_regex_removal(*idx, ctx);
             }
@@ -1450,9 +1433,8 @@ impl SettingsWidget for AppAnalyticsWidget {
         let ui_builder = appearance.ui_builder();
         let description_text_color = description_text_color(appearance.theme()).into_solid();
 
-        let is_enterprise = UserWorkspaces::as_ref(app)
-            .current_workspace()
-            .is_some_and(|w| w.billing_metadata.customer_type == CustomerType::Enterprise);
+        // Simplified: local version is not enterprise
+        let is_enterprise = false;
         // Keep the old description for enterprise users because we do not collect block input/output for them.
         let description = if is_enterprise {
             TELEMETRY_DESCRIPTION_OLD
@@ -1519,10 +1501,8 @@ impl SettingsWidget for AppAnalyticsWidget {
 
         // Check if user is on free tier to show the AI requirement note
         // Fail safe: if billing status is unknown, assume paid (don't show free tier note)
-        let is_on_paid_plan = UserWorkspaces::as_ref(app)
-            .current_workspace()
-            .map(|w| w.billing_metadata.is_user_on_paid_plan())
-            .unwrap_or(true);
+        // Simplified: local version always treats as paid plan
+        let is_on_paid_plan = true;
 
         let mut column = Flex::column();
         column.add_child(super::settings_page::build_toggle_element(
@@ -1673,20 +1653,9 @@ impl SettingsWidget for CloudConversationStorageWidget {
         "sync cloud conversation store storage ai agent"
     }
 
-    fn should_render(&self, app: &AppContext) -> bool {
-        if !FeatureFlag::CloudConversations.is_enabled() {
-            return false;
-        }
-
-        // Hide the toggle entirely when AI is disabled: the setting has no
-        // effect without AI (no agent conversations are produced), so showing
-        // it is confusing.
-        if !AISettings::as_ref(app).is_any_ai_enabled(app) {
-            return false;
-        }
-
-        let privacy_settings = PrivacySettings::as_ref(app);
-        !privacy_settings.is_telemetry_force_enabled()
+    fn should_render(&self, _app: &AppContext) -> bool {
+        // Simplified: local version has no cloud conversation storage
+        false
     }
 
     fn render(
@@ -1770,84 +1739,6 @@ impl SettingsWidget for CloudConversationStorageWidget {
                     })
                     .build()
                     .finish(),
-            )
-            .finish()
-    }
-}
-
-#[derive(Default)]
-struct NetworkLogWidget {
-    link_mouse_state: MouseStateHandle,
-}
-
-impl SettingsWidget for NetworkLogWidget {
-    type View = PrivacyPageView;
-
-    fn search_terms(&self) -> &str {
-        "network log audit console data collection"
-    }
-
-    fn render(
-        &self,
-        _view: &Self::View,
-        appearance: &Appearance,
-        _app: &AppContext,
-    ) -> Box<dyn Element> {
-        let ui_builder = appearance.ui_builder();
-        Flex::column()
-            .with_child(render_body_item::<PrivacyPageAction>(
-                "Network log console".into(),
-                None,
-                // Not rendering a setting, so no need to show local only icon state.
-                LocalOnlyIconState::Hidden,
-                ToggleState::Enabled,
-                appearance,
-                Empty::new().finish(),
-                None,
-            ))
-            .with_child(
-                ui_builder
-                    .paragraph(
-                        "We've built a native console that allows you to view all communications \
-                        from Warp to external servers to ensure you feel comfortable that your \
-                        work is always kept safe."
-                            .to_owned(),
-                    )
-                    .with_style(UiComponentStyles {
-                        font_color: Some(
-                            appearance
-                                .theme()
-                                .sub_text_color(appearance.theme().surface_2())
-                                .into_solid(),
-                        ),
-                        margin: Some(
-                            Coords::default()
-                                .top(styles::DESCRIPTION_NEGATIVE_MARGIN_OFFSET)
-                                .bottom(styles::DESCRIPTION_LINE_MARGIN_BOTTOM),
-                        ),
-                        ..Default::default()
-                    })
-                    .build()
-                    .finish(),
-            )
-            .with_child(
-                Align::new(
-                    ui_builder
-                        .link(
-                            "View network logging".to_owned(),
-                            None,
-                            Some(Box::new(|ctx| {
-                                ctx.dispatch_typed_action(PrivacyPageAction::LaunchNetworkLogging);
-                            })),
-                            self.link_mouse_state.clone(),
-                        )
-                        .soft_wrap(false)
-                        .build()
-                        .with_margin_bottom(styles::DESCRIPTION_MARGIN_BOTTOM)
-                        .finish(),
-                )
-                .left()
-                .finish(),
             )
             .finish()
     }
@@ -2024,7 +1915,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
                 & id!(flags::CLOUD_CONVERSATION_STORAGE_EDITABLE_FLAG)),
             flags::CLOUD_CONVERSATION_STORAGE_FLAG,
         )
-        .with_enabled(|| FeatureFlag::CloudConversations.is_enabled()),
+        .with_enabled(|| false),
     );
 
     ToggleSettingActionPair::add_toggle_setting_action_pairs_as_bindings(toggle_binding_pairs, app);

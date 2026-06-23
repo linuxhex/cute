@@ -13,14 +13,12 @@ use instant::Instant;
 use warp_core::features::FeatureFlag;
 use warpui::{AppContext, Entity, ModelContext, SingletonEntity};
 
-#[cfg(not(target_family = "wasm"))]
-use crate::ai::agent::SearchCodebaseFailureReason;
 use crate::ai::agent::{AIAgentActionId, SearchCodebaseResult};
 use crate::ai::blocklist::SessionContext;
 use crate::ai::get_relevant_files::api::{FileContext as FileContextRequest, GetRelevantFiles};
 use crate::ai::outline::{OutlineStatus, RepoOutlines};
 use crate::server::server_api::{AIApiError, ServerApiProvider};
-use crate::{report_error, send_telemetry_from_ctx, TelemetryEvent};
+use crate::report_error;
 #[cfg_attr(not(target_family = "wasm"), path = "remote_search/native.rs")]
 #[cfg_attr(target_family = "wasm", path = "remote_search/wasm.rs")]
 mod remote_search;
@@ -155,13 +153,6 @@ impl GetRelevantFilesController {
                 else {
                     return;
                 };
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::FullEmbedCodebaseContextSearchFailed {
-                        action_id: action_id.clone(),
-                        error: error.to_string(),
-                    },
-                    ctx
-                );
 
                 self.handle_relevant_file_paths_result(
                     Err(anyhow!(error.to_owned())),
@@ -172,25 +163,17 @@ impl GetRelevantFilesController {
             CodebaseIndexManagerEvent::RetrievalRequestCompleted {
                 retrieval_id,
                 fragments,
-                out_of_sync_delay,
+                out_of_sync_delay: _out_of_sync_delay,
             } => {
-                let Some((action_id, search_start)) =
+                let Some((_action_id, _search_start)) =
                     self.pending_request_details_for_retrieval_id(retrieval_id)
                 else {
                     return;
                 };
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::FullEmbedCodebaseContextSearchSuccess {
-                        action_id: action_id.clone(),
-                        total_search_duration: search_start.elapsed(),
-                        out_of_sync_delay: *out_of_sync_delay,
-                    },
-                    ctx
-                );
 
                 self.handle_relevant_file_paths_result(
                     Ok(fragments.clone()),
-                    action_id.clone(),
+                    _action_id.clone(),
                     ctx,
                 );
             }
@@ -395,27 +378,6 @@ impl GetRelevantFilesController {
                 ctx.emit(GetRelevantFilesControllerEvent::Error { action_id });
             }
         };
-    }
-
-    #[cfg(not(target_family = "wasm"))]
-    fn handle_remote_search_result(
-        &mut self,
-        search_result: anyhow::Result<SearchCodebaseResult>,
-        action_id: AIAgentActionId,
-        ctx: &mut ModelContext<Self>,
-    ) {
-        if self.pending_requests.remove(&action_id).is_none() {
-            return;
-        }
-
-        let result = search_result.unwrap_or_else(|e| SearchCodebaseResult::Failed {
-            reason: SearchCodebaseFailureReason::ClientError,
-            message: e.to_string(),
-        });
-        ctx.emit(GetRelevantFilesControllerEvent::Success {
-            action_id,
-            result: GetRelevantFilesControllerResult::SearchResult(result),
-        });
     }
 
     /// Returns the path to the root directory for a codebase search where pwd is `directory`.

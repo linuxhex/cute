@@ -1,5 +1,4 @@
 use pathfinder_geometry::vector::{vec2f, Vector2F};
-use warp_core::features::FeatureFlag;
 use warpui::clipboard::ClipboardContent;
 use warpui::elements::{
     Align, AnchorPair, ChildAnchor, Clipped, ClippedScrollStateHandle, ClippedScrollable,
@@ -55,7 +54,7 @@ use crate::util::bindings::CustomAction;
 use crate::view_components::alert::AlertConfig;
 use crate::view_components::{Alert, DismissibleToast, ToastType};
 use crate::workspace::ToastStack;
-use crate::{send_telemetry_from_ctx, Appearance, CloudObjectTypeAndId, TelemetryEvent};
+use crate::{Appearance, CloudObjectTypeAndId};
 
 // Universal
 pub(super) const CORE_HORIZONATAL_MARGIN: f32 = 24.;
@@ -1202,7 +1201,7 @@ impl EnvVarCollectionView {
                         ),
                     });
 
-                if !FeatureFlag::SharedWithMe.is_enabled() || editability.can_edit() {
+                if editability.can_edit() {
                     row_contents.add_child(
                         Container::new(
                             icon_button(
@@ -1333,7 +1332,7 @@ impl View for EnvVarCollectionView {
                 .with_main_axis_size(MainAxisSize::Max)
                 .with_main_axis_alignment(MainAxisAlignment::End)
                 .with_cross_axis_alignment(CrossAxisAlignment::Center);
-            if !FeatureFlag::SharedWithMe.is_enabled() || editability.can_edit() {
+            if editability.can_edit() {
                 buttons_row.add_child(
                     Container::new(self.render_save_button(appearance, app))
                         .with_margin_left(BUTTON_SPACING)
@@ -1489,10 +1488,6 @@ impl TypedActionView for EnvVarCollectionView {
             }
             EnvVarCollectionAction::Untrash => self.untrash_env_var_collection(ctx),
             EnvVarCollectionAction::CopyLink(link) => {
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::ObjectLinkCopied { link: link.clone() },
-                    ctx
-                );
                 ctx.clipboard()
                     .write(ClipboardContent::plain_text(link.to_owned()));
             }

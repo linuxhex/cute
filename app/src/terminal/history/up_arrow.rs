@@ -12,7 +12,7 @@ use crate::terminal::model::session::SessionId;
 
 /// Controls which item types are included in up-arrow history results.
 #[derive(Copy, Clone, Debug)]
-pub(crate) struct UpArrowHistoryConfig {
+pub struct UpArrowHistoryConfig {
     pub include_commands: bool,
     pub include_prompts: bool,
 }

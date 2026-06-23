@@ -11,7 +11,7 @@ use crate::terminal::local_tty::shell::is_valid_path_or_command_for_supported_sh
 use crate::terminal::session_settings::{SessionSettings, SessionSettingsChangedEvent};
 use crate::view_components::dropdown::TOP_MENU_BAR_HEIGHT;
 use crate::view_components::{Dropdown, DropdownItem};
-use crate::{report_if_error, send_telemetry_from_ctx};
+use crate::report_if_error;
 
 /// A view for configuring the initial shell for new sessions. This can be the
 /// user's login shell, the default installed version of zsh, bash, or fish,
@@ -264,6 +264,5 @@ impl TypedActionView for StartupShellView {
                 });
             }
         }
-        send_telemetry_from_ctx!(action.telemetry_event(), ctx);
     }
 }

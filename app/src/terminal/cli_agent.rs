@@ -127,7 +127,15 @@ const MISTRAL_ORANGE: ColorU = ColorU {
     a: 255,
 };
 
-/// Represents a CLI agent (e.g., Claude Code, Gemini CLI, Codex, Amp, Droid, OpenCode, Copilot, Pi, Auggie, Cursor, Goose, Hermes, Mistral Vibe)
+/// Qoder brand color (green #00C853)
+const QODER_GREEN: ColorU = ColorU {
+    r: 0,
+    g: 200,
+    b: 83,
+    a: 255,
+};
+
+/// Represents a CLI agent (e.g., Claude Code, Gemini CLI, Codex, Amp, Droid, OpenCode, Copilot, Pi, Auggie, Cursor, Goose, Hermes, Mistral Vibe, Qoder)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Sequence, Serialize, Deserialize)]
 pub enum CLIAgent {
     Claude,
@@ -143,6 +151,7 @@ pub enum CLIAgent {
     Goose,
     Hermes,
     Vibe,
+    Qoder,
     /// Represents an unknown/custom CLI agent matched by user-configured regex patterns.
     Unknown,
 }
@@ -164,6 +173,7 @@ impl CLIAgent {
             CLIAgent::Goose => "goose",
             CLIAgent::Hermes => "hermes",
             CLIAgent::Vibe => "vibe",
+            CLIAgent::Qoder => "qoder",
             CLIAgent::Unknown => "",
         }
     }
@@ -211,6 +221,7 @@ impl CLIAgent {
             CLIAgent::Goose => "Goose",
             CLIAgent::Hermes => "Hermes",
             CLIAgent::Vibe => "Mistral Vibe",
+            CLIAgent::Qoder => "Qoder",
             CLIAgent::Unknown => "CLI Agent",
         }
     }
@@ -234,6 +245,7 @@ impl CLIAgent {
             // still drives the toolbar tile; an `Icon::MistralLogo` can be wired
             // up in a follow-up once an officially licensed SVG is available.
             CLIAgent::Vibe => None,
+            CLIAgent::Qoder => Some(Icon::QoderLogo),
             CLIAgent::Unknown => None,
         }
     }
@@ -264,6 +276,7 @@ impl CLIAgent {
             CLIAgent::Goose => &[SkillProvider::Agents],
             CLIAgent::Hermes => &[SkillProvider::Agents],
             CLIAgent::Vibe => &[SkillProvider::Agents],
+            CLIAgent::Qoder => &[SkillProvider::Agents],
             CLIAgent::Unknown => &[],
         }
     }
@@ -306,6 +319,7 @@ impl CLIAgent {
             CLIAgent::Goose => Some(GOOSE_COLOR),
             CLIAgent::Hermes => Some(HERMES_PURPLE),
             CLIAgent::Vibe => Some(MISTRAL_ORANGE),
+            CLIAgent::Qoder => Some(QODER_GREEN),
             CLIAgent::Unknown => None,
         }
     }
@@ -569,6 +583,7 @@ impl From<CLIAgent> for CLIAgentType {
             CLIAgent::Goose => CLIAgentType::Goose,
             CLIAgent::Hermes => CLIAgentType::Hermes,
             CLIAgent::Vibe => CLIAgentType::Vibe,
+            CLIAgent::Qoder => CLIAgentType::Qoder,
             CLIAgent::Unknown => CLIAgentType::Unknown,
         }
     }

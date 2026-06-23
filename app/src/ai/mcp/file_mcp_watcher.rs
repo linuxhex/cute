@@ -19,8 +19,8 @@ use watcher::HomeDirectoryWatcherEvent;
 
 use crate::ai::mcp::parsing::normalize_codex_toml_to_json;
 use crate::ai::mcp::{home_config_file_path, MCPProvider, ParsedTemplatableMCPServerResult};
-use crate::warp_managed_paths_watcher::{
-    warp_managed_mcp_config_path, WarpManagedPathsWatcher, WarpManagedPathsWatcherEvent,
+use crate::cute_managed_paths_watcher::{
+    cute_managed_mcp_config_path, CuteManagedPathsWatcher, CuteManagedPathsWatcherEvent,
 };
 use crate::HomeDirectoryWatcher;
 
@@ -172,12 +172,12 @@ impl FileMCPWatcher {
         ctx.subscribe_to_model(&HomeDirectoryWatcher::handle(ctx), |me, event, ctx| {
             me.handle_home_directory_watcher_event(event, ctx);
         });
-        ctx.subscribe_to_model(&WarpManagedPathsWatcher::handle(ctx), |me, event, ctx| {
-            me.handle_warp_managed_paths_event(event, ctx);
+        ctx.subscribe_to_model(&CuteManagedPathsWatcher::handle(ctx), |me, event, ctx| {
+            me.handle_cute_managed_paths_event(event, ctx);
         });
 
         let mut home_provider_watchers = HashMap::new();
-        if let Some(mcp_config_path) = warp_managed_mcp_config_path() {
+        if let Some(mcp_config_path) = cute_managed_mcp_config_path() {
             Self::spawn_config_parse(
                 mcp_config_path.config_path,
                 mcp_config_path.root_path,
@@ -415,13 +415,13 @@ impl FileMCPWatcher {
         }
     }
 
-    fn handle_warp_managed_paths_event(
+    fn handle_cute_managed_paths_event(
         &mut self,
-        event: &WarpManagedPathsWatcherEvent,
+        event: &CuteManagedPathsWatcherEvent,
         ctx: &mut ModelContext<Self>,
     ) {
-        let WarpManagedPathsWatcherEvent::FilesChanged(update) = event;
-        let Some(mcp_config_path) = warp_managed_mcp_config_path() else {
+        let CuteManagedPathsWatcherEvent::FilesChanged(update) = event;
+        let Some(mcp_config_path) = cute_managed_mcp_config_path() else {
             return;
         };
         let config_path = mcp_config_path.config_path;

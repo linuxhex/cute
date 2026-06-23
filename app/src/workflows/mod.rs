@@ -3,7 +3,6 @@ use std::sync::Arc;
 pub use cloud_object_models::{CloudWorkflow, CloudWorkflowModel, WorkflowId};
 use serde::{Deserialize, Serialize};
 use warp_core::context_flag::ContextFlag;
-use warp_core::features::FeatureFlag;
 use warpui::{AppContext, SingletonEntity};
 
 pub mod categories;
@@ -26,7 +25,7 @@ pub use categories::{CategoriesView, CategoriesViewEvent, WorkflowsViewAction};
 use crate::appearance::Appearance;
 use crate::cloud_object::model::view::CloudViewModel;
 use crate::cloud_object::{
-    CloudModelType, CloudObjectEventEntrypoint, CloudObjectUpsertParams, CreateCloudObjectResult,
+    CloudModelType, CloudObjectUpsertParams, CreateCloudObjectResult,
     CreateObjectRequest, GenericServerObject, ObjectType, Revision, UpdateCloudObjectResult,
 };
 use crate::drive::items::workflow::WarpDriveWorkflow;
@@ -34,10 +33,8 @@ use crate::drive::items::WarpDriveItem;
 use crate::drive::CloudObjectTypeAndId;
 use crate::notebooks::{NotebookId, NotebookLocation};
 use crate::persistence::ModelEvent;
-use crate::server::cloud_objects::update_manager::InitiatedBy;
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::server_api::object::ObjectClient;
-use crate::server::sync_queue::{QueueItem, SerializedModel};
 
 pub fn init(app: &mut AppContext) {
     categories::init(app);
@@ -70,7 +67,6 @@ pub enum WorkflowSelectionSource {
     WarpDrive,
     CommandPalette,
     UniversalSearch,
-    Voltron,
     WarpAI,
     Notebook,
     SlashMenu,
@@ -101,7 +97,7 @@ impl WorkflowViewMode {
             })
             .unwrap_or(true);
 
-        if !FeatureFlag::SharedWithMe.is_enabled() || can_edit {
+        if can_edit {
             Self::Edit
         } else {
             Self::View
@@ -121,9 +117,7 @@ impl WorkflowViewMode {
             })
             .unwrap_or(true);
 
-        if FeatureFlag::SharedWithMe.is_enabled() && !can_edit {
-            Self::View
-        } else if ContextFlag::RunWorkflow.is_enabled() {
+        if ContextFlag::RunWorkflow.is_enabled() {
             Self::Edit
         } else {
             Self::View
@@ -250,48 +244,8 @@ impl CloudModelType for CloudWorkflowModel {
         ModelEvent::UpsertWorkflows(objects.into_iter().map(CloudWorkflow::from).collect())
     }
 
-    fn create_object_queue_item(
-        &self,
-        workflow: &CloudWorkflow,
-        entrypoint: CloudObjectEventEntrypoint,
-        initiated_by: InitiatedBy,
-    ) -> Option<QueueItem> {
-        if let SyncId::ClientId(client_id) = workflow.id {
-            return Some(QueueItem::CreateWorkflow {
-                object_type: self.object_type(),
-                owner: workflow.permissions.owner,
-                model: Arc::new(workflow.model().clone()),
-                initial_folder_id: workflow.metadata.folder_id,
-                entrypoint,
-                id: client_id,
-                initiated_by,
-            });
-        }
-        None
-    }
-
-    fn update_object_queue_item(
-        &self,
-        revision_ts: Option<Revision>,
-        workflow: &CloudWorkflow,
-    ) -> QueueItem {
-        QueueItem::UpdateWorkflow {
-            // Note that this is intentionally a deep clone of the model because we are grabbing
-            // a snapshot to update at a moment in time.
-            model: workflow.model().clone().into(),
-            id: workflow.id,
-            revision: revision_ts.or_else(|| workflow.metadata.revision.clone()),
-        }
-    }
-
     fn should_update_after_server_conflict(&self) -> bool {
         true
-    }
-
-    fn serialized(&self) -> SerializedModel {
-        SerializedModel::new(
-            serde_json::to_string(&self.data).expect("failed to serialize workflow"),
-        )
     }
 
     async fn send_create_request(

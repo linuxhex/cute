@@ -1,4 +1,3 @@
-use itertools::Itertools;
 use pathfinder_geometry::vector::vec2f;
 use serde::Serialize;
 use settings::Setting as _;
@@ -22,7 +21,7 @@ use crate::context_chips::renderer::Renderer as ContextChipRenderer;
 use crate::context_chips::{
     available_chips, ChipAvailability, ChipRuntimeCapabilities, ContextChipKind,
 };
-use crate::server::telemetry::{PromptChoice, TelemetryEvent};
+use crate::server::telemetry::PromptChoice;
 use crate::settings::{FontSettings, WarpPromptSeparator};
 use crate::terminal::blockgrid_element::BlockGridElement;
 use crate::terminal::model::blockgrid::BlockGrid;
@@ -30,7 +29,7 @@ use crate::terminal::model::ObfuscateSecrets;
 use crate::terminal::session_settings::SessionSettings;
 use crate::terminal::SizeInfo;
 use crate::view_components::{Dropdown, DropdownItem};
-use crate::{report_if_error, send_telemetry_from_ctx, Appearance};
+use crate::{report_if_error, Appearance};
 
 const MODAL_WIDTH: f32 = 700.;
 const BORDER_WIDTH: f32 = 1.;
@@ -328,12 +327,6 @@ impl EditorModal {
                     let current_same_line_prompt_enabled =
                         session_settings.saved_prompt.same_line_prompt_enabled();
                     if self.same_line_prompt_enabled != current_same_line_prompt_enabled {
-                        send_telemetry_from_ctx!(
-                            TelemetryEvent::ToggleSameLinePrompt {
-                                enabled: self.same_line_prompt_enabled,
-                            },
-                            ctx
-                        );
                     }
 
                     // Updating the `Prompt` handles turning off PS1.
@@ -348,25 +341,11 @@ impl EditorModal {
                 }
             }
 
-            let prompt_info = match self.prompt_type {
+            let _prompt_info = match self.prompt_type {
                 PromptType::PS1 => PromptChoice::PS1,
                 PromptType::WarpDefault => PromptChoice::Default,
-                PromptType::Warp => PromptChoice::Custom {
-                    builtin_chips: self
-                        .chip_configurator
-                        .used_chips
-                        .iter()
-                        .filter_map(|r| r.chip_kind().and_then(|k| k.telemetry_name()))
-                        .collect_vec(),
-                },
+                PromptType::Warp => PromptChoice::Custom,
             };
-            send_telemetry_from_ctx!(
-                TelemetryEvent::PromptEdited {
-                    prompt: prompt_info,
-                    entrypoint: "prompt_editor".to_string()
-                },
-                ctx
-            );
         }
     }
 

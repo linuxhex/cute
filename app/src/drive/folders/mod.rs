@@ -12,14 +12,12 @@ use super::items::WarpDriveItem;
 use super::CloudObjectTypeAndId;
 use crate::appearance::Appearance;
 use crate::cloud_object::{
-    CloudModelType, CloudObjectEventEntrypoint, CloudObjectUpsertParams, CreateCloudObjectResult,
+    CloudModelType, CloudObjectUpsertParams, CreateCloudObjectResult,
     CreateObjectRequest, GenericServerObject, ObjectType, Revision, Space, UpdateCloudObjectResult,
 };
 use crate::persistence::ModelEvent;
-use crate::server::cloud_objects::update_manager::InitiatedBy;
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::server_api::object::ObjectClient;
-use crate::server::sync_queue::{QueueItem, SerializedModel};
 
 #[cfg_attr(not(target_family = "wasm"), async_trait)]
 #[cfg_attr(target_family = "wasm", async_trait(?Send))]
@@ -53,44 +51,8 @@ impl CloudModelType for CloudFolderModel {
         ModelEvent::UpsertFolders(objects.into_iter().map(CloudFolder::from).collect())
     }
 
-    fn create_object_queue_item(
-        &self,
-        folder: &CloudFolder,
-        entrypoint: CloudObjectEventEntrypoint,
-        initiated_by: InitiatedBy,
-    ) -> Option<QueueItem> {
-        if let SyncId::ClientId(client_id) = folder.id {
-            return Some(QueueItem::CreateObject {
-                object_type: self.object_type(),
-                serialized_model: Some(Arc::new(folder.model().name.clone().into())),
-                title: None,
-                owner: folder.permissions.owner,
-                id: client_id,
-                initial_folder_id: folder.metadata.folder_id,
-                entrypoint,
-                initiated_by,
-            });
-        }
-        None
-    }
-
-    fn update_object_queue_item(
-        &self,
-        _revision_ts: Option<Revision>,
-        folder: &CloudFolder,
-    ) -> QueueItem {
-        QueueItem::UpdateFolder {
-            id: folder.id,
-            model: folder.model().clone().into(),
-        }
-    }
-
     fn should_update_after_server_conflict(&self) -> bool {
         false
-    }
-
-    fn serialized(&self) -> SerializedModel {
-        SerializedModel::new(self.name.to_owned())
     }
 
     fn can_move_to_space(&self, current_space: Space, new_space: Space) -> bool {

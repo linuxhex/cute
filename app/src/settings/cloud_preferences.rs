@@ -1,3 +1,7 @@
+//! Cloud preferences settings.
+//!
+//! Note: Cloud-specific logic has been removed. Simplified stub.
+
 pub use cloud_object_models::{CloudPreference, CloudPreferenceModel, Platform, Preference};
 use settings::macros::define_settings_group;
 use settings::{RespectUserSyncSetting, SupportedPlatforms, SyncToCloud};
@@ -5,9 +9,9 @@ use settings::{RespectUserSyncSetting, SupportedPlatforms, SyncToCloud};
 use crate::cloud_object::model::generic_string_model::StringModel;
 use crate::cloud_object::model::json_model::JsonModel;
 use crate::cloud_object::{
-    GenericStringObjectFormat, GenericStringObjectUniqueKey, JsonObjectType, Revision, UniquePer,
+    GenericStringObjectFormat, GenericStringObjectUniqueKey, JsonObjectType, UniquePer,
 };
-use crate::server::sync_queue::QueueItem;
+
 define_settings_group!(CloudPreferencesSettings, settings: [
    settings_sync_enabled: IsSettingsSyncEnabled {
        type: bool,
@@ -20,7 +24,7 @@ define_settings_group!(CloudPreferencesSettings, settings: [
    },
 ]);
 
-/// Defines a based model for syncing cloud preferences.
+/// Defines a based model for syncing cloud preferences (simplified stub).
 impl StringModel for Preference {
     type CloudObjectType = CloudPreference;
 
@@ -29,17 +33,14 @@ impl StringModel for Preference {
     }
 
     fn should_enforce_revisions() -> bool {
-        // Last write wins for cloud prefs
         false
     }
 
     fn should_show_activity_toasts() -> bool {
-        // No update toasts for cloud prefs
         false
     }
 
     fn warn_if_unsaved_at_quit() -> bool {
-        // Don't block quitting on unsaved cloud prefs changes
         false
     }
 
@@ -49,18 +50,6 @@ impl StringModel for Preference {
 
     fn display_name(&self) -> String {
         self.model_type_name().to_owned()
-    }
-
-    fn update_object_queue_item(
-        &self,
-        revision_ts: Option<Revision>,
-        object: &CloudPreference,
-    ) -> QueueItem {
-        QueueItem::UpdateCloudPreferences {
-            model: object.model().clone().into(),
-            id: object.id,
-            revision: revision_ts.or_else(|| object.metadata.revision.clone()),
-        }
     }
 
     fn should_clear_on_unique_key_conflict(&self) -> bool {

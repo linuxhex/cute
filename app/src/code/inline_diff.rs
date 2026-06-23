@@ -6,6 +6,7 @@ use warp_files::{FileModel, FileModelEvent};
 use warp_util::file::FileId;
 #[cfg(not(target_family = "wasm"))]
 use warp_util::file::FileSaveError;
+use warp_util::remote_path::RemotePath;
 use warp_util::standardized_path::StandardizedPath;
 use warpui::elements::ChildView;
 #[cfg(not(target_family = "wasm"))]
@@ -144,10 +145,12 @@ impl InlineDiffView {
                 })
             }
             DiffSessionType::Remote(host_id) => {
-                let host_id = host_id.clone();
-                let remote_path = file_path.clone();
+                let remote_path = RemotePath::new(host_id.clone(), file_path.clone());
                 file_model.update(ctx, |file_model, _ctx| {
-                    file_model.register_remote_file(host_id, remote_path)
+                    // register_remote_file returns Result<(), Error> in stub mode
+                    // We just use a placeholder FileId since this is stub
+                    let _ = file_model.register_remote_file(remote_path);
+                    FileId::new()
                 })
             }
         };

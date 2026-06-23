@@ -261,7 +261,7 @@ impl CodeReviewState {
         update_dropdown: bool,
         ctx: &mut ViewContext<RightPanelView>,
     ) {
-        if repo_path.is_remote() && !FeatureFlag::RemoteCodeReview.is_enabled() {
+        if repo_path.is_remote() && !false {
             return;
         }
         if self.selected_repo_path.as_ref() == Some(&repo_path) {
@@ -660,7 +660,7 @@ impl RightPanelView {
         else {
             return;
         };
-        if repo_path.is_remote() && !FeatureFlag::RemoteCodeReview.is_enabled() {
+        if repo_path.is_remote() && !false {
             return;
         }
         let pane_group_id = active_pane_group.id();
@@ -826,7 +826,7 @@ impl RightPanelView {
 
         let selected_repo_path = state.selected_repo_path.as_ref().filter(|repo_path| {
             if repo_path.is_remote() {
-                FeatureFlag::RemoteCodeReview.is_enabled()
+                false
             } else {
                 state.available_repos.contains(repo_path)
             }
@@ -1164,7 +1164,7 @@ impl RightPanelView {
         // Remote repos require the RemoteCodeReview feature flag; local repos go
         // through the active-repos check.
         let has_active_repos = if repo_path.is_remote() {
-            FeatureFlag::RemoteCodeReview.is_enabled()
+            false
         } else {
             self.working_directories_model
                 .as_ref(ctx)
@@ -1651,7 +1651,7 @@ impl RightPanelView {
         repo_path: &LocalOrRemotePath,
         ctx: &mut ViewContext<Self>,
     ) {
-        if repo_path.is_remote() && !FeatureFlag::RemoteCodeReview.is_enabled() {
+        if repo_path.is_remote() && !false {
             return;
         }
         let Some(pane_group) = &self.active_pane_group else {

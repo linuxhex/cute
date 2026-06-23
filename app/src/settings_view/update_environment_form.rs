@@ -4,7 +4,6 @@ use std::collections::HashMap;
 use instant::{Duration, Instant};
 use log::debug;
 use url::Url;
-use warp_core::send_telemetry_from_ctx;
 use warp_editor::editor::NavigationKey;
 use warp_graphql::queries::user_github_info::UserGithubInfoResult;
 use warpui::elements::{
@@ -30,7 +29,6 @@ use super::editor_text_colors;
 use super::settings_page::{render_input_list, InputListItem};
 use crate::ai::ambient_agents::github_auth_notifier::{GitHubAuthEvent, GitHubAuthNotifier};
 use crate::ai::ambient_agents::github_auth_url::{self, AuthSource, GithubAuthRedirectTarget};
-use crate::ai::ambient_agents::telemetry::CloudAgentTelemetryEvent;
 use crate::ai::cloud_environments::{AmbientAgentEnvironment, GithubRepo};
 use crate::appearance::Appearance;
 use crate::editor::{
@@ -1469,13 +1467,6 @@ impl UpdateEnvironmentForm {
             reason,
         };
 
-        send_telemetry_from_ctx!(
-            CloudAgentTelemetryEvent::ImageSuggested {
-                image,
-                needs_custom_image,
-            },
-            ctx
-        );
     }
 
     #[cfg(not(target_family = "wasm"))]
@@ -1555,12 +1546,6 @@ impl UpdateEnvironmentForm {
                         }
                         warp_graphql::queries::suggest_cloud_environment_image::SuggestCloudEnvironmentImageResult::UserFacingError(_) => {
                             let error_message = "Failed to suggest a Docker image".to_string();
-                            send_telemetry_from_ctx!(
-                                CloudAgentTelemetryEvent::ImageSuggestionFailed {
-                                    error: error_message.clone(),
-                                },
-                                ctx
-                            );
                             me.suggest_image_state = SuggestImageState::Error {
                                 key: key.clone(),
                                 message: error_message,
@@ -1568,12 +1553,6 @@ impl UpdateEnvironmentForm {
                         }
                         warp_graphql::queries::suggest_cloud_environment_image::SuggestCloudEnvironmentImageResult::Unknown => {
                             let error_message = "Unknown response from suggestCloudEnvironmentImage".to_string();
-                            send_telemetry_from_ctx!(
-                                CloudAgentTelemetryEvent::ImageSuggestionFailed {
-                                    error: error_message.clone(),
-                                },
-                                ctx
-                            );
                             me.suggest_image_state = SuggestImageState::Error {
                                 key: key.clone(),
                                 message: error_message,
@@ -1582,12 +1561,6 @@ impl UpdateEnvironmentForm {
                     },
                     Err(e) => {
                         let error_message = format!("Failed to suggest a Docker image: {}", e);
-                        send_telemetry_from_ctx!(
-                            CloudAgentTelemetryEvent::ImageSuggestionFailed {
-                                error: error_message.clone(),
-                            },
-                            ctx
-                        );
                         me.suggest_image_state = SuggestImageState::Error {
                             key: key.clone(),
                             message: error_message,
@@ -3285,19 +3258,12 @@ impl TypedActionView for UpdateEnvironmentForm {
                 let environment = self.form_state.to_ambient_agent_environment();
                 match &self.mode {
                     EnvironmentFormMode::Create => {
-                        send_telemetry_from_ctx!(CloudAgentTelemetryEvent::EnvironmentCreated, ctx);
                         ctx.emit(UpdateEnvironmentFormEvent::Created {
                             environment,
                             share_with_team: self.share_with_team,
                         });
                     }
                     EnvironmentFormMode::Edit { env_id } => {
-                        send_telemetry_from_ctx!(
-                            CloudAgentTelemetryEvent::EnvironmentUpdated {
-                                environment_id: env_id.into_server(),
-                            },
-                            ctx
-                        );
                         ctx.emit(UpdateEnvironmentFormEvent::Updated {
                             env_id: *env_id,
                             environment,
@@ -3307,12 +3273,6 @@ impl TypedActionView for UpdateEnvironmentForm {
             }
             UpdateEnvironmentFormAction::Delete => {
                 if let EnvironmentFormMode::Edit { env_id } = &self.mode {
-                    send_telemetry_from_ctx!(
-                        CloudAgentTelemetryEvent::EnvironmentDeleted {
-                            environment_id: env_id.into_server(),
-                        },
-                        ctx
-                    );
                     ctx.emit(UpdateEnvironmentFormEvent::DeleteRequested { env_id: *env_id });
                 }
             }
@@ -3435,10 +3395,6 @@ impl TypedActionView for UpdateEnvironmentForm {
                 self.suggest_image(ctx);
             }
             UpdateEnvironmentFormAction::LaunchAgentForSelectedRepos => {
-                send_telemetry_from_ctx!(
-                    CloudAgentTelemetryEvent::LaunchedAgentFromEnvironmentForm,
-                    ctx
-                );
 
                 let repos = self.selected_repos_as_remote_repo_args();
                 if repos.is_empty() {
@@ -3470,10 +3426,6 @@ impl TypedActionView for UpdateEnvironmentForm {
                 self.fetch_github_repos(ctx);
             }
             UpdateEnvironmentFormAction::StartGithubAuth => {
-                send_telemetry_from_ctx!(
-                    CloudAgentTelemetryEvent::GitHubAuthFromEnvironmentForm,
-                    ctx
-                );
                 self.start_github_auth(ctx);
             }
             UpdateEnvironmentFormAction::OpenUrl(url) => {

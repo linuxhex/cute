@@ -1,5 +1,4 @@
 use pathfinder_geometry::vector::vec2f;
-use warp_core::features::FeatureFlag;
 use warp_core::ui::appearance::Appearance;
 use warpui::elements::{
     ChildAnchor, ChildView, Clipped, ConstrainedBox, Container, Empty, Fill, MainAxisAlignment,
@@ -201,10 +200,6 @@ impl EnvVarCollectionView {
             .with_style(default_button_styles)
             .with_hovered_styles(hovered_styles)
             .with_text_and_icon_label(text_and_icon);
-
-        if FeatureFlag::SharedWithMe.is_enabled() && !editability.can_edit() {
-            button = button.disabled();
-        }
 
         let button = button
             .build()

@@ -13,15 +13,12 @@ use futures::channel::oneshot;
 use futures::future::BoxFuture;
 use futures::FutureExt;
 use itertools::Itertools;
-pub(crate) use telemetry::MalformedFinalLineProxyEvent;
 #[allow(unused_imports)]
 pub use telemetry::{EditAcceptAndContinueClickedEvent, EditAcceptClickedEvent};
 pub use telemetry::{
-    EditReceivedEvent, EditResolvedEvent, EditStats, RequestFileEditsFormatKind,
-    RequestFileEditsTelemetryEvent,
+    RequestFileEditsFormatKind,
 };
 use vec1::{vec1, Vec1};
-use warp_core::send_telemetry_from_ctx;
 use warp_util::file::FileSaveError;
 use warpui::{Entity, EntityId, ModelContext, ModelHandle, SingletonEntity as _, ViewHandle};
 
@@ -35,7 +32,7 @@ use crate::ai::agent::{
 use crate::ai::blocklist::inline_action::code_diff_view::{
     CodeDiffView, CodeDiffViewEvent, DiffSessionType, FileDiff,
 };
-use crate::ai::blocklist::{BlocklistAIPermissions, RequestedEditResolution};
+use crate::ai::blocklist::BlocklistAIPermissions;
 use crate::ai::paths::host_native_absolute_path;
 use crate::terminal::model::session::active_session::ActiveSession;
 use crate::terminal::model::session::SessionType;
@@ -159,7 +156,7 @@ impl RequestFileEditsExecutor {
             ));
         }
 
-        let identifiers = self
+        let _identifiers = self
             .generate_ai_identifiers(&input.conversation_id, id, ctx)
             .unwrap_or_else(|| AIIdentifiers {
                 client_conversation_id: Some(input.conversation_id),
@@ -204,21 +201,8 @@ impl RequestFileEditsExecutor {
                     return;
                 }
 
-                let passive_diff = BlocklistAIHistoryModel::as_ref(ctx)
+                let _passive_diff = BlocklistAIHistoryModel::as_ref(ctx)
                     .is_entirely_passive_conversation(&input.conversation_id);
-                send_telemetry_from_ctx!(
-                    RequestFileEditsTelemetryEvent::EditResolved(EditResolvedEvent {
-                        identifiers: identifiers.clone(),
-                        response: RequestedEditResolution::Accept,
-                        stats: EditStats {
-                            files_edited: updated_files.len(),
-                            lines_added: diff.lines_added,
-                            lines_removed: diff.lines_removed,
-                        },
-                        passive_diff,
-                    },),
-                    ctx
-                );
 
                 // Build a map of file path → content from the editor buffers.
                 // This avoids re-reading files from disk or the remote server.
@@ -296,15 +280,6 @@ impl RequestFileEditsExecutor {
         let passive_diff = BlocklistAIHistoryModel::as_ref(ctx)
             .is_entirely_passive_conversation(&input.conversation_id);
 
-        send_telemetry_from_ctx!(
-            RequestFileEditsTelemetryEvent::EditReceived(EditReceivedEvent {
-                identifiers: ai_identifiers.clone(),
-                unique_files: file_edits.iter().map(|file| file.file()).unique().count(),
-                diffs: file_edits.len(),
-                passive_diff,
-            }),
-            ctx
-        );
 
         let (tx, rx) = oneshot::channel();
         let files = file_edits.clone();

@@ -14,7 +14,6 @@ use warpui::{App, AppContext, Entity, ModelContext, SingletonEntity};
 use crate::server::telemetry;
 use crate::system::memory_footprint;
 use crate::terminal::TerminalView;
-use crate::{send_telemetry_from_app_ctx, send_telemetry_sync_from_ctx, TelemetryEvent};
 
 /// The threshold at which we emit a memory usage warning.
 const MEMORY_USAGE_WARNING_THRESHOLD: Option<Byte> = byte_unit::Byte::GIGABYTE.multiply(10);
@@ -187,7 +186,7 @@ impl SystemInfo {
         }
 
         // Collect a detailed memory breakdown for diagnostics.
-        let memory_breakdown = memory_footprint::memory_breakdown();
+        let _memory_breakdown = memory_footprint::memory_breakdown();
 
         // If we're tracking heap usage and detect excessive memory usage,
         // dump and upload the current heap profiling data.
@@ -202,14 +201,7 @@ impl SystemInfo {
 
         // Send a telemetry event indicating that memory usage is extreme.
         // Report RSS here to keep Rudderstack dashboards consistent.
-        let total_application_usage_bytes = rss.as_u64();
-        send_telemetry_sync_from_ctx!(
-            TelemetryEvent::MemoryUsageHigh {
-                total_application_usage_bytes,
-                memory_breakdown,
-            },
-            ctx
-        );
+        let _total_application_usage_bytes = rss.as_u64();
 
         ctx.emit(SystemInfoEvent::MemoryUsageHigh);
         self.has_emitted_memory_warning_event = true;
@@ -334,8 +326,8 @@ impl ResourceUsageReporter {
         samples: impl Iterator<Item = &'a Sample>,
         ctx: &mut AppContext,
     ) {
-        let cpu_usage_stats = Self::compute_cpu_usage_stats(samples);
-        let memory_usage_stats = Self::compute_memory_usage_stats(total_application_usage, ctx);
+        let _cpu_usage_stats = Self::compute_cpu_usage_stats(samples);
+        let _memory_usage_stats = Self::compute_memory_usage_stats(total_application_usage, ctx);
 
         // We send two different events at the moment, as one contains general
         // resource usage information, and one contains more detailed info
@@ -343,20 +335,12 @@ impl ResourceUsageReporter {
         //
         // TODO(vorporeal): Clean up the memory usage one, either eliminating it
         // or merging it into the general resource usage telemetry event.
-        send_telemetry_from_app_ctx!(
-            TelemetryEvent::ResourceUsageStats {
-                cpu: cpu_usage_stats.into(),
-                mem: memory_usage_stats.into(),
-            },
-            ctx
-        );
 
         // Only send detailed memory usage reports in dogfood, for the time being.
         if ChannelState::channel().is_dogfood() {
             // Only send the detailed memory usage report if the user has created
             // enough blocks since the last detailed memory usage report.
             if self.blocks_created_since_last_report >= Self::MIN_BLOCKS_CREATED_PER_MEMORY_REPORT {
-                send_telemetry_from_app_ctx!(TelemetryEvent::from(memory_usage_stats), ctx);
                 self.blocks_created_since_last_report = 0;
             }
         }
@@ -439,7 +423,7 @@ struct CpuUsageStats {
 impl From<CpuUsageStats> for telemetry::CpuUsageStats {
     fn from(value: CpuUsageStats) -> Self {
         Self {
-            num_cpus: value.num_cpus,
+            num_cpus: value.num_cpus as u32,
             max_usage: value.max_usage,
             avg_usage: value.avg_usage,
         }
@@ -509,26 +493,12 @@ impl MemoryUsageStats {
     }
 }
 
-impl From<MemoryUsageStats> for TelemetryEvent {
-    fn from(value: MemoryUsageStats) -> Self {
-        TelemetryEvent::MemoryUsageStats {
-            total_application_usage_bytes: value.total_application_usage_bytes,
-            total_blocks: value.total_blocks,
-            total_lines: value.total_lines,
-            active_block_stats: value.active_block_stats.into(),
-            inactive_5m_stats: value.inactive_5m_stats.into(),
-            inactive_1h_stats: value.inactive_1h_stats.into(),
-            inactive_24h_stats: value.inactive_24h_stats.into(),
-        }
-    }
-}
-
 impl From<MemoryUsageStats> for telemetry::MemoryUsageStats {
     fn from(value: MemoryUsageStats) -> Self {
         Self {
-            total_application_usage_bytes: value.total_application_usage_bytes,
-            total_blocks: value.total_blocks,
-            total_lines: value.total_lines,
+            total_application_usage_bytes: value.total_application_usage_bytes as u64,
+            total_blocks: value.total_blocks as u64,
+            total_lines: value.total_lines as u64,
             active_block_stats: value.active_block_stats.into(),
             inactive_5m_stats: value.inactive_5m_stats.into(),
             inactive_1h_stats: value.inactive_1h_stats.into(),
@@ -561,9 +531,9 @@ impl std::fmt::Debug for BlockMemoryStats {
 impl From<BlockMemoryStats> for telemetry::BlockMemoryUsageStats {
     fn from(value: BlockMemoryStats) -> Self {
         Self {
-            num_blocks: value.num_blocks,
-            num_lines: value.num_lines,
-            estimated_memory_usage_bytes: value.estimated_memory_usage_bytes,
+            num_blocks: value.num_blocks as u64,
+            num_lines: value.num_lines as u64,
+            estimated_memory_usage_bytes: value.estimated_memory_usage_bytes as u64,
         }
     }
 }

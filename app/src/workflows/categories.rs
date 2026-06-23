@@ -8,7 +8,6 @@ use fuzzy_match::{match_indices_case_insensitive, FuzzyMatchResult};
 use itertools::Itertools;
 use warp_core::ui::builder::UiBuilder;
 use warp_core::ui::theme::color::internal_colors;
-use warp_editor::editor::NavigationKey;
 use warp_workflows::workflows as global_workflows;
 use warpui::accessibility::{AccessibilityContent, WarpA11yRole};
 use warpui::color::ColorU;
@@ -30,13 +29,8 @@ use super::workflow::Workflow;
 use super::WorkflowSource;
 use crate::appearance::Appearance;
 use crate::cloud_object::model::persistence::CloudModel;
-use crate::editor::Event as EditorEvent;
-use crate::send_telemetry_from_ctx;
-use crate::server::telemetry::TelemetryEvent;
 use crate::themes::theme::{self, Blend, WarpTheme};
 use crate::user_config::{WarpConfig, WarpConfigUpdateEvent};
-use crate::util::bindings::CustomAction;
-use crate::voltron::{VoltronFeatureViewMeta, VoltronMetadata};
 use crate::workflows::WorkflowType;
 use crate::workspaces::user_workspaces::UserWorkspaces;
 
@@ -498,7 +492,7 @@ impl CategoriesView {
         for space in user_workspaces.all_user_spaces(ctx) {
             let workflows_in_space = cloud_model.active_workflows_in_space(space, ctx);
             let new_workflows_in_space = Self::categorize_workflows(
-                // Don't include AI workflows in Voltron.
+                // Don't include AI workflows.
                 workflows_in_space
                     .into_iter()
                     .filter(|workflow| !workflow.model().data.is_agent_mode_workflow())
@@ -1239,58 +1233,6 @@ impl View for CategoriesView {
                 .finish(),
             )
             .finish()
-    }
-}
-
-impl VoltronFeatureViewMeta for CategoriesView {
-    fn editor_placeholder_text(&self) -> &'static str {
-        "Search workflows"
-    }
-
-    fn custom_action() -> Option<CustomAction> {
-        Some(CustomAction::Workflows)
-    }
-
-    // Unused variables allowed when no local filesystem as `metadata` arg
-    // is unused.
-    #[cfg_attr(not(feature = "local_fs"), allow(unused_variables))]
-    fn on_load(&mut self, metadata: VoltronMetadata, ctx: &mut ViewContext<Self>) {
-        #[cfg(feature = "local_fs")]
-        if let Some(active_path) = metadata.active_session_path_if_local {
-            self.load_project_workflows(active_path, ctx);
-        }
-
-        self.load_cloud_workflows(ctx);
-
-        send_telemetry_from_ctx!(TelemetryEvent::OpenWorkflowSearch, ctx);
-        self.search_term = String::new();
-        ctx.notify();
-    }
-
-    fn handle_editor_event(
-        &mut self,
-        event: &EditorEvent,
-        current_editor_text: &str,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        self.search_term = current_editor_text.to_string();
-        match event {
-            EditorEvent::Edited(_) => {
-                self.selected_workflow_index = 0;
-                self.workflow_highlighted(ctx);
-                self.workflow_list_state.list_state.scroll_to(0);
-                ctx.notify();
-            }
-            EditorEvent::Navigate(NavigationKey::Up) => self.editor_up(ctx),
-            EditorEvent::Navigate(NavigationKey::Down) => self.editor_down(ctx),
-            EditorEvent::Enter => self.editor_enter(ctx),
-            EditorEvent::Escape => self.close(ctx),
-            EditorEvent::Activate => {
-                self.focus_state = WorkflowsFocusState::Editor;
-                ctx.notify();
-            }
-            _ => {}
-        }
     }
 }
 

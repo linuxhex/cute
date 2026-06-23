@@ -64,7 +64,6 @@ use crate::auth::auth_manager::{AuthManager, AuthManagerEvent};
 use crate::auth::AuthStateProvider;
 use crate::cloud_object::model::persistence::CloudModel;
 use crate::cloud_object::CloudObjectLookup as _;
-use crate::send_telemetry_sync_from_app_ctx;
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::server_api::ai::{AIClient, AgentConfigSnapshot};
 use crate::server::server_api::ServerApiProvider;
@@ -124,8 +123,7 @@ pub fn run(
     command: CliCommand,
     global_options: GlobalOptions,
 ) -> anyhow::Result<()> {
-    let event = command_to_telemetry_event(&command);
-    send_telemetry_sync_from_app_ctx!(event, ctx);
+    let _event = command_to_telemetry_event(&command);
 
     launch_command(ctx, command, global_options)
 }
@@ -250,7 +248,7 @@ fn run_agent(
             if args.environment.is_some() && !FeatureFlag::CloudEnvironments.is_enabled() {
                 return Err(anyhow::anyhow!("unexpected argument '--environment' found"));
             }
-            if args.conversation.is_some() && !FeatureFlag::CloudConversations.is_enabled() {
+            if args.conversation.is_some() && !false {
                 return Err(anyhow::anyhow!(
                     "unexpected argument '--conversation' found"
                 ));
@@ -297,7 +295,7 @@ fn run_agent(
             {
                 return Err(anyhow::anyhow!("unexpected argument '--environment' found"));
             }
-            if args.conversation.is_some() && !FeatureFlag::CloudConversations.is_enabled() {
+            if args.conversation.is_some() && !false {
                 return Err(anyhow::anyhow!(
                     "unexpected argument '--conversation' found"
                 ));
@@ -578,13 +576,10 @@ fn run_task(
                 }
             }
         }
-        TaskCommand::Message(message_cmd) => {
-            if !FeatureFlag::OrchestrationV2.is_enabled() {
-                return Err(anyhow::anyhow!(
-                    "The 'message' subcommand is not available in this build"
-                ));
-            }
-            ambient::run_message(ctx, global_options, message_cmd)
+        TaskCommand::Message(_message_cmd) => {
+            Err(anyhow::anyhow!(
+                "The 'message' subcommand is not available in this build"
+            ))
         }
     }
 }

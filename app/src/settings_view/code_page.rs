@@ -13,7 +13,7 @@ use lsp::supported_servers::LSPServerType;
 use lsp::{LspManagerModel, LspManagerModelEvent, LspServerModel, LspState};
 use pathfinder_color::ColorU;
 #[cfg(not(target_family = "wasm"))]
-use remote_server::codebase_index_proto::{RemoteCodebaseIndexState, RemoteCodebaseIndexStatus};
+use crate::remote_server::codebase_index_proto::{RemoteCodebaseIndexState, RemoteCodebaseIndexStatus};
 use warp_core::features::FeatureFlag;
 use warp_core::report_if_error;
 use warp_core::settings::ToggleableSetting as _;
@@ -53,7 +53,6 @@ use crate::ai::persisted_workspace::{
 };
 use crate::appearance::Appearance;
 use crate::code::buffer_location::LocalOrRemotePath;
-use crate::code::lsp_telemetry::{LspControlActionType, LspEnablementSource, LspTelemetryEvent};
 #[cfg(not(target_family = "wasm"))]
 use crate::remote_server::codebase_index_model::{
     RemoteCodebaseIndexModel, RemoteCodebaseIndexModelEvent, RemoteCodebaseIndexSettingsEntry,
@@ -70,7 +69,6 @@ use crate::workspace::ToastStack;
 use crate::workspaces::update_manager::TeamUpdateManager;
 use crate::workspaces::user_workspaces::UserWorkspaces;
 use crate::workspaces::workspace::AdminEnablementSetting;
-use crate::{send_telemetry_from_ctx, TelemetryEvent};
 
 const MAIN_SECTION_MARGIN: f32 = 12.;
 const SUB_SECTION_MARGIN: f32 = 8.;
@@ -129,7 +127,7 @@ fn remote_codebase_index_limit_reached(status: &RemoteCodebaseIndexStatus) -> bo
 
 #[cfg(all(test, not(target_family = "wasm")))]
 mod tests {
-    use remote_server::codebase_index_proto::{
+    use crate::remote_server::codebase_index_proto::{
         RemoteCodebaseIndexState, RemoteCodebaseIndexStatus,
     };
 
@@ -274,6 +272,9 @@ impl CodeSettingsPageView {
                         me.remote_codebase_delete_mouse_states
                             .resize_with(remote_codebase_count, Default::default);
                     }
+                    ctx.notify();
+                }
+                RemoteCodebaseIndexModelEvent::IndexUpdated | RemoteCodebaseIndexModelEvent::IndexRemoved => {
                     ctx.notify();
                 }
             });
@@ -688,13 +689,7 @@ impl TypedActionView for CodeSettingsPageView {
 
                 CodeSettings::handle(ctx).update(ctx, |settings, ctx| {
                     match settings.codebase_context_enabled.toggle_and_save_value(ctx) {
-                        Ok(new_value) => {
-                            send_telemetry_from_ctx!(
-                                TelemetryEvent::ToggleCodebaseContext {
-                                    is_codebase_context_enabled: new_value
-                                },
-                                ctx
-                            );
+                        Ok(_new_value) => {
                         }
                         Err(e) => {
                             log::warn!("Failed to set value for Codebase Context: {e:?}");
@@ -707,13 +702,7 @@ impl TypedActionView for CodeSettingsPageView {
             CodeSettingsPageAction::ToggleAutoIndexing => {
                 CodeSettings::handle(ctx).update(ctx, |settings, ctx| {
                     match settings.auto_indexing_enabled.toggle_and_save_value(ctx) {
-                        Ok(new_value) => {
-                            send_telemetry_from_ctx!(
-                                TelemetryEvent::ToggleAutoIndexing {
-                                    is_autoindexing_enabled: new_value
-                                },
-                                ctx
-                            );
+                        Ok(_new_value) => {
                         }
                         Err(e) => {
                             log::warn!("Failed to set value for auto indexing: {e:?}");
@@ -764,13 +753,6 @@ impl TypedActionView for CodeSettingsPageView {
             } => {
                 if *currently_enabled {
                     // Toggling OFF: stop and disable
-                    send_telemetry_from_ctx!(
-                        LspTelemetryEvent::ServerRemoved {
-                            server_type: server_type.binary_name().to_string(),
-                            source: LspEnablementSource::Settings,
-                        },
-                        ctx
-                    );
                     LspManagerModel::handle(ctx).update(ctx, |manager, ctx| {
                         manager.remove_server(workspace_path, *server_type, ctx);
                     });
@@ -779,14 +761,6 @@ impl TypedActionView for CodeSettingsPageView {
                     });
                 } else {
                     // Toggling ON: enable and spawn
-                    send_telemetry_from_ctx!(
-                        LspTelemetryEvent::ServerEnabled {
-                            server_type: server_type.binary_name().to_string(),
-                            source: LspEnablementSource::Settings,
-                            needed_install: false,
-                        },
-                        ctx
-                    );
                     let workspace_path = workspace_path.clone();
                     PersistedWorkspace::handle(ctx).update(ctx, |workspace, _ctx| {
                         workspace.enable_lsp_server_for_path(&workspace_path, *server_type);
@@ -802,26 +776,12 @@ impl TypedActionView for CodeSettingsPageView {
                 ctx.notify();
             }
             CodeSettingsPageAction::RestartLspServer { server } => {
-                let server_name = server.as_ref(ctx).server_name();
-                send_telemetry_from_ctx!(
-                    LspTelemetryEvent::ControlAction {
-                        action: LspControlActionType::Restart,
-                        server_type: Some(server_name),
-                    },
-                    ctx
-                );
+                let _server_name = server.as_ref(ctx).server_name();
                 server.update(ctx, |server, ctx| {
                     server.restart(ctx);
                 });
             }
             CodeSettingsPageAction::OpenLspLogs { log_path } => {
-                send_telemetry_from_ctx!(
-                    LspTelemetryEvent::ControlAction {
-                        action: LspControlActionType::OpenLogs,
-                        server_type: None,
-                    },
-                    ctx
-                );
                 ctx.emit(CodeSettingsPageEvent::OpenLspLogs {
                     log_path: log_path.clone(),
                 });
@@ -863,31 +823,12 @@ impl TypedActionView for CodeSettingsPageView {
                         .auto_open_code_review_pane_on_first_agent_change
                         .toggle_and_save_value(ctx));
                 });
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::FeaturesPageAction {
-                        action: "ToggleAutoOpenCodeReviewPane".to_string(),
-                        value: format!(
-                            "{}",
-                            *GeneralSettings::as_ref(ctx)
-                                .auto_open_code_review_pane_on_first_agent_change
-                        )
-                    },
-                    ctx
-                );
                 ctx.notify();
             }
             CodeSettingsPageAction::InstallAndEnableLspServer {
                 workspace_path,
                 server_type,
             } => {
-                send_telemetry_from_ctx!(
-                    LspTelemetryEvent::ServerEnabled {
-                        server_type: server_type.binary_name().to_string(),
-                        source: LspEnablementSource::Settings,
-                        needed_install: true,
-                    },
-                    ctx
-                );
                 #[cfg(feature = "local_fs")]
                 {
                     let workspace_path = workspace_path.clone();
@@ -911,14 +852,6 @@ impl TypedActionView for CodeSettingsPageView {
                 workspace_path,
                 server_type,
             } => {
-                send_telemetry_from_ctx!(
-                    LspTelemetryEvent::ServerEnabled {
-                        server_type: server_type.binary_name().to_string(),
-                        source: LspEnablementSource::Settings,
-                        needed_install: false,
-                    },
-                    ctx
-                );
                 let workspace_path = workspace_path.clone();
                 let server_type = *server_type;
                 PersistedWorkspace::handle(ctx).update(ctx, |workspace, _ctx| {
@@ -1373,11 +1306,7 @@ impl CodePageWidget {
         let workspaces: Vec<WorkspaceMetadata> =
             PersistedWorkspace::as_ref(app).workspaces().collect();
         #[cfg(not(target_family = "wasm"))]
-        let remote_entries = if FeatureFlag::RemoteCodebaseIndexing.is_enabled() {
-            RemoteCodebaseIndexModel::as_ref(app).entries_for_settings()
-        } else {
-            Vec::new()
-        };
+        let remote_entries = Vec::new();
 
         let codebase_manager = CodebaseIndexManager::as_ref(app);
         let lsp_manager = LspManagerModel::as_ref(app);
@@ -1607,16 +1536,21 @@ impl CodePageWidget {
     ) -> Box<dyn Element> {
         let mut workspace_content = Flex::column().with_spacing(MAIN_SECTION_MARGIN);
 
-        let remote_path_label = format!("{}:{}", entry.host_label, entry.remote_path.path.as_str());
+        let remote_path_label = if let Some(ref remote_path) = entry.remote_path {
+            format!("{}:{}", entry.host_label.as_deref().unwrap_or(""), remote_path.path.as_str())
+        } else {
+            entry.repo_path.clone()
+        };
         workspace_content.add_child(self.render_workspace_header(
             remote_path_label,
             None,
             appearance,
         ));
 
+        let action_target = entry.remote_path.clone().map(LocalOrRemotePath::Remote);
         workspace_content.add_child(self.render_indexing_subsection_for_target(
             self.remote_indexing_status_presentation(&entry.status, appearance),
-            Some(LocalOrRemotePath::Remote(entry.remote_path.clone())),
+            action_target,
             resync_mouse,
             delete_mouse,
             appearance,
@@ -1906,6 +1840,13 @@ impl CodePageWidget {
                 icon: Some(Icon::AlertTriangle),
                 refresh_action: Some(IndexingRefreshAction::Resync),
                 show_delete: true,
+            },
+            RemoteCodebaseIndexState::NotIndexed | RemoteCodebaseIndexState::Indexed | RemoteCodebaseIndexState::Error => IndexingStatusPresentation {
+                text: Cow::from("Unknown"),
+                color: theme.disabled_ui_text_color().into_solid(),
+                icon: None,
+                refresh_action: None,
+                show_delete: false,
             },
         }
     }

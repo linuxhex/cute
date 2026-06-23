@@ -148,7 +148,6 @@ fn new_command_executor_for_local_tty_session(
     ctx: &mut ModelContext<Sessions>,
 ) -> Arc<dyn CommandExecutor> {
     use msys2_command_executor::MSYS2CommandExecutor;
-    use remote_server_executor::RemoteServerCommandExecutor;
     use settings::Setting as _;
     use tmux_executor::TmuxCommandExecutor;
     use warpui::SingletonEntity as _;
@@ -156,7 +155,6 @@ fn new_command_executor_for_local_tty_session(
 
     use super::IsLegacySSHSession;
     use crate::features::FeatureFlag;
-    use crate::remote_server::manager::RemoteServerManager;
     use crate::settings::DebugSettings;
     use crate::terminal::available_shells::AvailableShells;
     use crate::terminal::model::session::{BootstrapSessionType, ShellLaunchData};
@@ -175,21 +173,6 @@ fn new_command_executor_for_local_tty_session(
     // fall through to the existing ControlMaster-based
     // `RemoteCommandExecutor` below. This preserves the fallback behavior
     // described in specs/APP-3797.
-    if FeatureFlag::SshRemoteServer.is_enabled() {
-        if let IsLegacySSHSession::Yes { .. } = &session_info.is_legacy_ssh_session {
-            let session_id = session_info.session_id;
-            let maybe_client = RemoteServerManager::handle(ctx)
-                .read(ctx, |mgr, _| mgr.client_for_session(session_id).cloned());
-            if let Some(client) = maybe_client {
-                log::info!("creating a remote server executor for session {session_id:?}");
-                return Arc::new(RemoteServerCommandExecutor::new(session_id, client));
-            }
-            log::info!(
-                "SshRemoteServer flag on but no connected client for session {session_id:?}; \
-                 falling back to ControlMaster executor"
-            );
-        }
-    }
 
     if FeatureFlag::SSHTmuxWrapper.is_enabled()
         && session_info.tmux_control_mode

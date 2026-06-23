@@ -1,18 +1,23 @@
 use std::collections::HashMap;
+use std::env;
 use std::fmt;
+use std::fs::read_to_string;
 use std::sync::Arc;
 
-use channel_versions::{Changelog, MarkdownSection};
+use anyhow::{Context as _, Result};
+use channel_versions::{Changelog, ChannelVersions, MarkdownSection};
 use itertools::Itertools;
 use markdown_parser::{parse_markdown, FormattedText};
+use rand::distributions::Alphanumeric;
+use rand::{thread_rng, Rng as _};
 use warpui::assets::asset_cache::{AssetCache, AssetSource};
 use warpui::image_cache::ImageType;
 use warpui::{Entity, ModelContext, SingletonEntity};
 
-use crate::autoupdate::{self};
 use crate::channel::{Channel, ChannelState};
 use crate::features::{FeatureFlag, PREVIEW_FLAGS};
-use crate::server::server_api::ServerApi;
+use crate::report_error;
+use crate::server::server_api::{ServerApi, FETCH_CHANNEL_VERSIONS_TIMEOUT};
 
 pub struct ChangelogModel {
     pub changelog: ChangelogState,
@@ -57,13 +62,102 @@ impl ChangelogModel {
                     async move {
                         (
                             request_type,
-                            autoupdate::get_current_changelog(server_api).await,
+                            Self::get_current_changelog(server_api).await,
                         )
                     },
                     Self::handle_changelog_check,
                 );
             }
         }
+    }
+
+    /// Fetches the changelog for the current version
+    async fn get_current_changelog(server_api: Arc<ServerApi>) -> Result<Option<Changelog>> {
+        let rand: String = {
+            let mut rng = thread_rng();
+            std::iter::repeat(())
+                .map(|()| rng.sample(Alphanumeric))
+                .map(char::from)
+                .take(7)
+                .collect()
+        };
+
+        let channel = ChannelState::channel();
+
+        // Fetch channel versions
+        let versions: ChannelVersions = Self::fetch_channel_versions(rand.as_str(), &server_api, true, false).await?;
+
+        let res = versions.changelogs.and_then(|changelogs| {
+            match channel {
+                Channel::Stable => Some(changelogs.stable),
+                Channel::Preview => Some(changelogs.preview),
+                Channel::Dev | Channel::Local => Some(changelogs.dev),
+                Channel::Integration | Channel::Oss => None,
+            }
+            .and_then(|versions| {
+                ChannelState::app_version()
+                    .and_then(|running_version| versions.get(running_version))
+                    .cloned()
+            })
+        });
+        Ok(res)
+    }
+
+    /// Fetches channel versions from the server or local file
+    async fn fetch_channel_versions(
+        nonce: &str,
+        server_api: &ServerApi,
+        include_changelogs: bool,
+        is_daily: bool,
+    ) -> Result<ChannelVersions> {
+        if let Ok(path) = env::var("WARP_CHANNEL_VERSIONS_PATH") {
+            // Load channel versions from local filesystem. Used for testing.
+            let path = shellexpand::tilde(&path);
+            let channel_versions_string = read_to_string::<&str>(&path)?;
+            return serde_json::from_str(channel_versions_string.as_str())
+                .context("Failed to parse channel versions JSON");
+        }
+
+        let channel_versions = server_api
+            .fetch_channel_versions(include_changelogs, is_daily)
+            .await
+            .context("Failed to retrieve channel versions from Warp server");
+        match channel_versions {
+            channel_versions @ Ok(_) => channel_versions,
+            Err(err) => {
+                match ChannelState::channel() {
+                    Channel::Dev | Channel::Preview => report_error!(err),
+                    _ => log::warn!(
+                        "Failed to retrieve channel versions from Warp server, falling \
+                    back to GCP JSON storage."
+                    ),
+                }
+                Self::fetch_channel_versions_from_json_storage(server_api.http_client(), nonce).await
+            }
+        }
+    }
+
+    /// Fetches channel versions from GCP JSON storage as fallback
+    async fn fetch_channel_versions_from_json_storage(
+        client: &http_client::Client,
+        nonce: &str,
+    ) -> Result<ChannelVersions> {
+        log::info!("Fetching channel versions from GCP JSON storage");
+        let res = client
+            .get(
+                format!(
+                    "{}/channel_versions.json?r={}",
+                    ChannelState::releases_base_url(),
+                    nonce
+                )
+                .as_str(),
+            )
+            .timeout(FETCH_CHANNEL_VERSIONS_TIMEOUT)
+            .send()
+            .await?;
+        let versions: ChannelVersions = res.json().await?;
+        log::info!("Received channel versions from GCP JSON storage: {versions}");
+        Ok(versions)
     }
 
     fn handle_changelog_check(

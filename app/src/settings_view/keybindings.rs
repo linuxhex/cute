@@ -18,7 +18,7 @@ use warpui::{
 };
 
 use super::settings_page::{
-    render_sub_header, LocalOnlyIconState, MatchData, PageType, SettingsPageMeta,
+    render_sub_header, MatchData, PageType, SettingsPageMeta,
     SettingsPageViewHandle, SettingsWidget,
 };
 use super::SettingsSection;
@@ -29,12 +29,11 @@ use crate::editor::{
 };
 use crate::keyboard::{write_custom_keybinding, UserDefinedKeybinding};
 use crate::search_bar::SearchBar;
-use crate::settings::CloudPreferencesSettings;
 use crate::util::bindings::{
     filter_bindings_including_keystroke, reset_keybinding_to_default, set_custom_keybinding,
     CommandBinding,
 };
-use crate::{send_telemetry_from_ctx, themes, TelemetryEvent};
+use crate::themes;
 
 const FONT_DELTA: f32 = 2.;
 const CANCEL_SAVE_BUTTONS_SPACING: f32 = 4.0;
@@ -601,12 +600,6 @@ impl KeybindingsView {
             update_binding_list(&row.binding.name, None, &mut self.bindings);
             row.binding.trigger = None;
 
-            send_telemetry_from_ctx!(
-                TelemetryEvent::KeybindingRemoved {
-                    action: row.binding.name.clone(),
-                },
-                ctx
-            );
             self.modifying_row = None;
             row.editor_open = false;
             ctx.enable_key_bindings_dispatching();
@@ -626,12 +619,6 @@ impl KeybindingsView {
             );
             row.binding.trigger = default_trigger;
 
-            send_telemetry_from_ctx!(
-                TelemetryEvent::KeybindingResetToDefault {
-                    action: row.binding.name.clone(),
-                },
-                ctx
-            );
 
             self.modifying_row = None;
             row.editor_open = false;
@@ -678,13 +665,6 @@ impl KeybindingsView {
                             &mut self.bindings,
                         );
                         row.binding.trigger = Some(key.clone());
-                        send_telemetry_from_ctx!(
-                            TelemetryEvent::KeybindingChanged {
-                                action: row.binding.name.clone(),
-                                keystroke: key,
-                            },
-                            ctx
-                        );
                     }
 
                     row.editor_open = false;
@@ -959,6 +939,7 @@ fn trigger_keybinding_notifier(
 
 #[derive(Default)]
 struct KeybindingsWidget {
+    #[allow(dead_code)]
     local_only_icon_mouse_state: MouseStateHandle,
 }
 
@@ -1099,17 +1080,19 @@ impl SettingsWidget for KeybindingsWidget {
         &self,
         view: &Self::View,
         appearance: &Appearance,
-        app: &AppContext,
+        _app: &AppContext,
     ) -> Box<dyn Element> {
-        let local_only_icon_state = if *CloudPreferencesSettings::as_ref(app).settings_sync_enabled
-        {
-            Some(LocalOnlyIconState::Visible {
-                mouse_state: self.local_only_icon_mouse_state.clone(),
-                custom_tooltip: Some("Keyboard shortcuts are not synced to the cloud".to_string()),
-            })
-        } else {
-            None
-        };
+        // Simplified: local version has no settings sync
+        let local_only_icon_state = None;
+        // if *CloudPreferencesSettings::as_ref(app).settings_sync_enabled
+        // {
+        //     Some(LocalOnlyIconState::Visible {
+        //         mouse_state: self.local_only_icon_mouse_state.clone(),
+        //         custom_tooltip: Some("Keyboard shortcuts are not synced to the cloud".to_string()),
+        //     })
+        // } else {
+        //     None
+        // };
 
         let subheader = render_sub_header(
             appearance,

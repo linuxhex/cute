@@ -1,411 +1,490 @@
-mod collector;
-mod context;
-pub mod context_provider;
-mod events;
-mod macros;
-pub mod rudder_message;
+//! Telemetry module stub - telemetry functionality has been removed.
+//! This module provides stub types to maintain compatibility.
+
 pub mod secret_redaction;
 
-use std::fs::File;
-#[cfg(not(target_family = "wasm"))]
-use std::fs::OpenOptions;
-use std::future::Future;
-use std::path::{Path, PathBuf};
+use serde::{Deserialize, Serialize};
+use strum_macros::{EnumDiscriminants, EnumIter};
 
-use anyhow::Result;
-use chrono::Utc;
-pub use collector::*;
-pub use context::telemetry_context;
-pub use events::*;
-use futures::FutureExt;
-use rudder_message::{
-    Batch as RudderBatch, BatchMessage as RudderBatchMessageWithMetadata,
-    BatchMessageItem as RudderBatchMessage, Message as RudderMessage,
-};
-use warp_core::channel::RudderStackDestination;
-use warpui::telemetry::Event;
+// Stub types for compatibility
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct LaunchConfigUiLocation;
 
-use crate::auth::UserUid;
-use crate::features::FeatureFlag;
-use crate::server::telemetry::context::AttachContext;
-use crate::server::telemetry_ext::TelemetryExt;
-use crate::settings::PrivacySettingsSnapshot;
-use crate::ChannelState;
-
-/// Filename for file where telemetry events are written on app quit.
-const RUDDER_TELEMETRY_EVENTS_FILE_NAME: &str = "rudder_telemetry_events.json";
-
-/// Filepath where the Rudder events should be written on app quit.
-fn rudder_event_file_path() -> PathBuf {
-    warp_core::paths::secure_state_dir()
-        .unwrap_or_else(warp_core::paths::state_dir)
-        .join(RUDDER_TELEMETRY_EVENTS_FILE_NAME)
+impl LaunchConfigUiLocation {
+    pub const AppMenu: Self = Self;
+    pub const CommandPalette: Self = Self;
+    pub const Uri: Self = Self;
+    pub const TabMenu: Self = Self;
 }
 
-/// Removes all telemetry events from the app telemetry event queue.
-pub fn clear_event_queue() {
-    let _ = warpui::telemetry::flush_events();
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct AnonymousUserSignupEntrypoint;
+
+impl AnonymousUserSignupEntrypoint {
+    pub const SignUpButton: Self = Self;
+    pub const SignUpAIPrompt: Self = Self;
+    pub const LoginGatedFeature: Self = Self;
+    pub const HitDriveObjectLimit: Self = Self;
+    pub const Unknown: Self = Self;
+    pub const RenotificationBlock: Self = Self;
 }
 
-pub struct TelemetryApi {
-    pub(super) client: http_client::Client,
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum PaletteSource {
+    LogOutModal,
+    QuitModal,
+    IntegrationTest,
+    Keybinding,
+    CtrlTab { shift_pressed_initially: bool },
+    TitleBarSearchBar,
+    ConversationManager,
+    WarpDrive,
+    ContextChip,
+    AgentTip,
 }
 
-impl Default for TelemetryApi {
-    fn default() -> Self {
-        Self::new()
-    }
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct AgentModeEntrypoint;
+
+impl AgentModeEntrypoint {
+    pub const AgentManagementView: Self = Self;
+    pub const NewPaneBinding: Self = Self;
 }
 
-impl TelemetryApi {
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct CodeContextDestination;
+
+impl CodeContextDestination {
+    pub const RichInput: Self = Self;
+    pub const Pty: Self = Self;
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct PtySpawnMode;
+
+impl PtySpawnMode {
+    pub const FallbackToDirect: Self = Self;
+    pub const Direct: Self = Self;
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ImageProtocol;
+
+impl ImageProtocol {
+    pub const Kitty: Self = Self;
+    pub const ITerm: Self = Self;
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct InteractionSource;
+
+impl InteractionSource {
+    pub const Keybinding: Self = Self;
+    pub const Button: Self = Self;
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ToggleBlockFilterSource;
+
+impl ToggleBlockFilterSource {
+    pub const Binding: Self = Self;
+    pub const ContextMenu: Self = Self;
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct AgentModeRewindEntrypoint;
+
+impl AgentModeRewindEntrypoint {
+    pub const ContextMenu: Self = Self;
+    pub const Button: Self = Self;
+    pub const SlashCommand: Self = Self;
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct CLIAgentType;
+
+impl CLIAgentType {
+    pub const Claude: Self = Self;
+    pub const Gemini: Self = Self;
+    pub const Codex: Self = Self;
+    pub const Amp: Self = Self;
+    pub const Droid: Self = Self;
+    pub const OpenCode: Self = Self;
+    pub const Copilot: Self = Self;
+    pub const Pi: Self = Self;
+    pub const Cursor: Self = Self;
+    pub const Auggie: Self = Self;
+    pub const Goose: Self = Self;
+    pub const Hermes: Self = Self;
+    pub const Qoder: Self = Self;
+    pub const Unknown: Self = Self;
+    pub const Vibe: Self = Self;
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct DownloadSource;
+
+impl DownloadSource {
+    pub const Homebrew: Self = Self;
+    pub const Website: Self = Self;
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct CloseTarget;
+
+impl CloseTarget {
+    pub const Pane: Self = Self;
+    pub const Tab: Self = Self;
+    pub const Window: Self = Self;
+    pub const App: Self = Self;
+    pub const EditorTab: Self = Self;
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct OpenedWarpAISource;
+
+impl OpenedWarpAISource {
+    pub const FromAICommandSearch: Self = Self;
+    pub const HelpWithBlock: Self = Self;
+    pub const HelpWithTextSelection: Self = Self;
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct PromptChoice;
+
+impl PromptChoice {
+    pub const PS1: Self = Self;
+    pub const Default: Self = Self;
+    pub const Custom: Self = Self;
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct PluginChipTelemetryKind;
+
+impl PluginChipTelemetryKind {
+    pub const Install: Self = Self;
+    pub const Update: Self = Self;
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct PromptSuggestionFallbackReason;
+
+impl PromptSuggestionFallbackReason {
+    pub const NoReadFilesPermission: Self = Self;
+    pub const SSHRemoteSession: Self = Self;
+    pub const MissingFile: Self = Self;
+    pub const FailedToRetrieveFile: Self = Self;
+    pub const FileTooManyLines: Self = Self;
+    pub const FileTooManyBytes: Self = Self;
+    pub const FailedToSendAIRequest: Self = Self;
+    pub const AIQueryTimeout: Self = Self;
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct NotebookTelemetryMetadata;
+
+impl NotebookTelemetryMetadata {
     pub fn new() -> Self {
-        cfg_if::cfg_if! {
-            if #[cfg(test)] {
-                let client = http_client::Client::new_for_test();
-            } else if #[cfg(target_family = "wasm")] {
-                let client = http_client::Client::default();
-            } else {
-                use std::time::Duration;
-
-                let client = http_client::Client::from_client_builder(
-                    // We use our own http client directly instead of the Rudderstack SDK's because using
-                    // our own client gives us the ability to have universal hooks for pre/post
-                    // request/response logic.
-                    reqwest::Client::builder()
-                        // Don't allow insecure connections; they will be rejected by
-                        // the server with a 403 Forbidden.
-                        .https_only(true)
-                        // Keep idle connections in the pool for up to 55s. AWS
-                        // Application Load Balancers will drop idle connections after
-                        // 60s and the default pool idle timeout is 90s; a pool idle
-                        // timeout longer than the server timeout can lead to errors
-                        // upon trying to use an idle connection.
-                        .pool_idle_timeout(Duration::from_secs(55))
-                        .connect_timeout(Duration::from_secs(10)),
-                ).expect("Client should be constructed since we use a compatibility layer to use reqwest::Client");
-            }
-        }
-
-        Self { client }
-    }
-
-    // Batches up telemetry events from the global queue and sends a Message to the Rudderstack API.
-    // Returns the number of events that were flushed.
-    pub async fn flush_events(&self, settings_snapshot: PrivacySettingsSnapshot) -> Result<usize> {
-        let events = warpui::telemetry::flush_events();
-        let event_count = events.len();
-
-        #[cfg(not(target_family = "wasm"))]
-        if FeatureFlag::SendTelemetryToFile.is_enabled() {
-            self.persist_events_to_telemetry_log_file(events.clone())?;
-        }
-
-        if ChannelState::is_release_bundle() || FeatureFlag::WithSandboxTelemetry.is_enabled() {
-            self.send_batch_messages_to_rudder(
-                events
-                    .into_iter()
-                    .map(Event::to_rudder_batch_message)
-                    .collect(),
-                settings_snapshot,
-            )
-            .await?;
-        }
-
-        Ok(event_count)
-    }
-
-    /// Flushes events directly to Rudder that were previously written into a file at `path`
-    /// (likely via a call to `write_events_to_disk`).
-    pub async fn flush_persisted_events_to_rudder(
-        &self,
-        path: &Path,
-        settings_snapshot: PrivacySettingsSnapshot,
-    ) -> Result<()> {
-        if path.exists() {
-            let file = File::open(path)?;
-            let events: Vec<RudderBatchMessage> = serde_json::from_reader(file)?;
-            if !events.is_empty() {
-                let rudder_batch_messages = events
-                    .into_iter()
-                    .map(|message| RudderBatchMessageWithMetadata {
-                        message,
-                        // We don't persist any events that contain sensitive user data.
-                        contains_ugc: false,
-                    })
-                    .collect();
-                self.send_batch_messages_to_rudder(rudder_batch_messages, settings_snapshot)
-                    .await?;
-                log::info!("Successfully flushed events to rudder from disk");
-            }
-        }
-        Ok(())
-    }
-
-    /// Writes the last `max_event_count` events into disk. This is useful for persisting events
-    /// where we can't make a network call to Rudder (such as when the app quits). To flush these
-    /// events to Rudder, call `flush_events_to_rudder_from_disk`.
-    pub fn flush_and_persist_events(
-        &self,
-        max_event_count: usize,
-        settings_snapshot: PrivacySettingsSnapshot,
-    ) -> Result<()> {
-        self.flush_and_persist_events_at_path(
-            max_event_count,
-            settings_snapshot,
-            rudder_event_file_path(),
-        )
-    }
-
-    fn flush_and_persist_events_at_path(
-        &self,
-        max_event_count: usize,
-        settings_snapshot: PrivacySettingsSnapshot,
-        path: impl AsRef<Path>,
-    ) -> Result<()> {
-        if settings_snapshot.should_disable_telemetry() {
-            log::info!("Not writing queued events to disk because telemetry is disabled.");
-            return Result::Ok(());
-        }
-        log::info!("Writing queued events to disk because telemetry is enabled.");
-
-        let file = File::create(path)?;
-
-        let events = warpui::telemetry::flush_events();
-        if events.len() > max_event_count {
-            log::error!("More telemetry events in queue than the limit to persist")
-        }
-
-        self.persist_events_at_path(&file, max_event_count, events)?;
-
-        Ok(())
-    }
-
-    fn persist_events_at_path(
-        &self,
-        file: &File,
-        max_event_count: usize,
-        events: Vec<Event>,
-    ) -> Result<()> {
-        let rudder_events_to_persist: Vec<_> = events
-            .into_iter()
-            .rev()
-            .take(max_event_count)
-            .map(TelemetryExt::to_rudder_batch_message)
-            .filter_map(|message| (!message.contains_ugc).then_some(message.message))
-            .collect();
-        serde_json::to_writer(file, &rudder_events_to_persist)?;
-        Ok(())
-    }
-
-    #[cfg(not(target_family = "wasm"))]
-    fn persist_events_to_telemetry_log_file(&self, events: Vec<Event>) -> Result<()> {
-        let log_directory = warp_logging::log_directory()?;
-        let telemetry_file_path = log_directory.join(&*ChannelState::telemetry_file_name());
-
-        let file = OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(&telemetry_file_path)?;
-
-        self.persist_events_at_path(&file, events.len(), events)
-    }
-
-    /// Sends a `TelemetryEvent` to the Rudderstack API.
-    pub async fn send_telemetry_event(
-        &self,
-        user_id: Option<UserUid>,
-        anonymous_id: String,
-        event: impl warp_core::telemetry::TelemetryEvent,
-        settings_snapshot: PrivacySettingsSnapshot,
-    ) -> Result<()> {
-        let event = warpui::telemetry::create_event(
-            user_id.map(|uid| uid.as_string()),
-            anonymous_id,
-            event.name().into(),
-            event.payload(),
-            event.contains_ugc(),
-            warpui::time::get_current_time(),
-        );
-
-        self.send_telemetry_event_internal(event, settings_snapshot)
-            .await
-    }
-
-    /// Internal implementation for sending telemetry events. This reduces code size, since
-    // we:
-    // 1. Return a boxed future, so calling `async` functions don't need to inline this one.
-    // 2. Don't have to monomorphize for each telemetry event implementation.
-    fn send_telemetry_event_internal(
-        &self,
-        event: Event,
-        settings_snapshot: PrivacySettingsSnapshot,
-    ) -> impl Future<Output = Result<()>> + '_ {
-        let work = async move {
-            if settings_snapshot.should_disable_telemetry() {
-                log::info!("Not sending telemetry event because telemetry is disabled.");
-                return Result::Ok(());
-            }
-
-            #[cfg(not(target_family = "wasm"))]
-            if FeatureFlag::SendTelemetryToFile.is_enabled() {
-                self.persist_events_to_telemetry_log_file(vec![event.clone()])?;
-            }
-
-            if !(ChannelState::is_release_bundle()
-                || FeatureFlag::WithSandboxTelemetry.is_enabled())
-            {
-                return Result::Ok(());
-            }
-
-            let rudder_batch = vec![event.to_rudder_batch_message()];
-
-            let result = self
-                .send_batch_messages_to_rudder(rudder_batch, settings_snapshot)
-                .await;
-
-            // This is only conditionally compiled because `is_connect` is not
-            // available on wasm.  If additional checks are made against the
-            // `reqwest::Error`, this condition should be performed specifically
-            // against `is_connect` and not the whole loop.
-            #[cfg(not(target_family = "wasm"))]
-            if let Err(error) = &result {
-                for cause in error.chain() {
-                    if let Some(err) = cause.downcast_ref::<reqwest::Error>() {
-                        if err.is_connect() {
-                            log::warn!("Failed to send telemetry event: {error}");
-                            return Ok(());
-                        }
-                    }
-                }
-            }
-
-            result
-        };
-
-        // On WASM, the work future is non-Send, because the HTTP request future contains a reference to a JS
-        // value (which is fine, since our WASM executor is single-threaded). On all other platforms, we must
-        // return a Send future in order to use the background executor.
-        cfg_if::cfg_if! {
-            if #[cfg(target_family = "wasm")] {
-                work.boxed_local()
-            } else {
-                work.boxed()
-            }
-        }
-    }
-
-    /// Send a batch of RudderStack messages to their HTTP API.
-    /// Note that the rudderanalytics SDK provides a client, but we don't
-    /// use it for a few reasons:
-    /// 1. It only supports a blocking HTTP client instead of an async one
-    /// 2. We want to use our own HTTP client which has before/after request logging hooks
-    #[cfg_attr(target_family = "wasm", allow(clippy::question_mark))]
-    async fn send_batch_messages_to_rudder(
-        &self,
-        messages: Vec<RudderBatchMessageWithMetadata>,
-        settings_snapshot: PrivacySettingsSnapshot,
-    ) -> Result<()> {
-        if messages.is_empty() {
-            log::debug!("Dropping empty RudderStack telemetry batch");
-            return Ok(());
-        }
-
-        if settings_snapshot.should_disable_telemetry() {
-            log::info!("Not sending batched messages because telemetry is disabled.");
-            return Ok(());
-        }
-
-        log::info!("Start to send telemetry events to RudderStack");
-
-        let (mut messages_with_ugc, messages_without_ugc): (Vec<_>, Vec<_>) = messages
-            .into_iter()
-            .partition(|message| message.contains_ugc);
-
-        // If we shouldn't collect UGC telemetry, forcibly clear any messages with UGC before trying to send.
-        if !settings_snapshot.should_collect_ai_ugc_telemetry() {
-            messages_with_ugc.clear();
-        }
-
-        for (messages, rudder_stack_destination) in [
-            (
-                messages_with_ugc,
-                ChannelState::rudderstack_ugc_destination(),
-            ),
-            (
-                messages_without_ugc,
-                ChannelState::rudderstack_non_ugc_destination(),
-            ),
-        ] {
-            if messages.is_empty() {
-                continue;
-            }
-
-            // Note that timestamp and context are already included in the individual RudderBatchMessages
-            // and these are the most important ones,
-            // but we also add them to the RudderMessage::Batch wrapper.
-            let rudder_message = RudderMessage::Batch(RudderBatch {
-                batch: messages
-                    .into_iter()
-                    .map(|message| message.message)
-                    .collect(),
-                original_timestamp: Some(Utc::now()),
-                ..Default::default()
-            });
-            if let Err(e) = self
-                .send_rudder_request(rudder_message, rudder_stack_destination)
-                .await
-            {
-                // Don't treat a connection issue as an error as these are outside of our control.
-                //
-                // This is only conditionally compiled because `is_connect` is not
-                // available on wasm.  If additional checks are made against the
-                // `reqwest::Error`, this condition should be performed specifically
-                // against `is_connect` and not the whole loop.
-                #[cfg(not(target_family = "wasm"))]
-                for cause in e.chain() {
-                    if let Some(err) = cause.downcast_ref::<reqwest::Error>() {
-                        if err.is_connect() {
-                            log::warn!("Failed to send event to RudderStack: {e}");
-                            return Ok(());
-                        }
-                    }
-                }
-                return Err(e);
-            }
-        }
-        Ok(())
-    }
-
-    /// Sends a POST request to the RudderStack HTTP API.
-    async fn send_rudder_request(
-        &self,
-        mut msg: RudderMessage,
-        rudder_stack_destination: RudderStackDestination,
-    ) -> Result<()> {
-        msg.attach_context();
-
-        let path = match msg {
-            RudderMessage::Identify(_) => "/v1/identify",
-            RudderMessage::Track(_) => "/v1/track",
-            RudderMessage::Page(_) => "/v1/page",
-            RudderMessage::Screen(_) => "/v1/screen",
-            RudderMessage::Group(_) => "/v1/group",
-            RudderMessage::Alias(_) => "/v1/alias",
-            RudderMessage::Batch(_) => "/v1/batch",
-        };
-
-        self.client
-            .post(&format!("{}{}", rudder_stack_destination.root_url, path))
-            .basic_auth(rudder_stack_destination.write_key, Some(""))
-            .json(&msg)
-            .send()
-            .await?
-            .error_for_status()?;
-
-        Ok(())
+        Self
     }
 }
 
-#[cfg(test)]
-#[path = "mod_tests.rs"]
-mod tests;
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct AddTabWithShellSource;
+
+impl AddTabWithShellSource {
+    pub const CommandPalette: Self = Self;
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct MCPTemplateInstallationSource;
+
+impl MCPTemplateInstallationSource {
+    pub const Shared: Self = Self;
+    pub const Local: Self = Self;
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct BlockLatencyInfo {
+    pub command: Option<String>,
+    pub shell: Option<String>,
+    pub is_ssh: bool,
+    pub execution_ms: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct EnvVarTelemetryMetadata {
+    pub object_id: Option<String>,
+    pub team_uid: Option<String>,
+    pub space: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct WorkflowTelemetryMetadata {
+    pub workflow_source: Option<String>,
+    pub workflow_categories: Option<Vec<String>>,
+    pub workflow_selection_source: Option<String>,
+    pub workflow_id: Option<String>,
+    pub workflow_space: Option<String>,
+    pub enum_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct CloudObjectTelemetryMetadata {
+    pub team_uid: Option<String>,
+    pub space: Option<String>,
+    pub object_uid: Option<String>,
+    pub object_type: Option<String>,
+}
+
+// Additional stub types
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub enum AgentModeCitation {
+    WarpDriveObject {
+        object_type: String,
+        uid: String,
+    },
+    WarpDocs {
+        page: String,
+    },
+    WebPage {
+        url: String,
+    },
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct AICommandSearchEntrypoint;
+
+impl AICommandSearchEntrypoint {
+    pub const ShortHandTrigger: Self = Self;
+    pub const Keybinding: Self = Self;
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct LinkOpenMethod;
+
+impl LinkOpenMethod {
+    pub const CmdClick: Self = Self;
+    pub const MiddleClick: Self = Self;
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct NotificationAgentVariant;
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct PromptSuggestionViewType;
+
+impl PromptSuggestionViewType {
+    pub const AgentView: Self = Self;
+    pub const TerminalView: Self = Self;
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub struct SaveAsWorkflowModalSource;
+
+impl SaveAsWorkflowModalSource {
+    pub const Block: Self = Self;
+    pub const Input: Self = Self;
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Default)]
+pub struct CpuUsageStats {
+    pub num_cpus: u32,
+    pub max_usage: f32,
+    pub avg_usage: f32,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct MemoryUsageStats {
+    pub total_application_usage_bytes: u64,
+    pub total_blocks: u64,
+    pub total_lines: u64,
+    pub active_block_stats: BlockMemoryUsageStats,
+    pub inactive_5m_stats: BlockMemoryUsageStats,
+    pub inactive_1h_stats: BlockMemoryUsageStats,
+    pub inactive_24h_stats: BlockMemoryUsageStats,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct BlockMemoryUsageStats {
+    pub num_blocks: u64,
+    pub num_lines: u64,
+    pub estimated_memory_usage_bytes: u64,
+}
+
+// Stub enum for TelemetryEvent
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, EnumDiscriminants, EnumIter)]
+#[strum_discriminants(derive(Serialize, Deserialize))]
+pub enum CommandXRayTrigger {
+    Keystroke,
+    Hover,
+}
+
+// Stub enum for TelemetryEvent
+#[derive(Debug, Clone, Serialize, Deserialize, EnumDiscriminants, EnumIter)]
+#[strum_discriminants(derive(Serialize, Deserialize))]
+pub enum AgentModeAutoDetectionFalsePositivePayload {
+    InternalDogfoodUsers {
+        input_text: String,
+    },
+    ExternalUsers,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, EnumDiscriminants, EnumIter)]
+#[strum_discriminants(derive(Serialize, Deserialize, EnumIter))]
+pub enum TelemetryEvent {
+    // Stub variant
+    Stub,
+    // Features page action
+    FeaturesPageAction {
+        action: String,
+        value: String,
+    },
+    // Palette search events
+    PaletteSearchResultAccepted {
+        result_type: &'static str,
+        filter: &'static str,
+        buffer_length: usize,
+    },
+    PaletteSearchExited {
+        filter: &'static str,
+        buffer_length: usize,
+    },
+    // Toggle restore session
+    ToggleRestoreSession(bool),
+    // Show subshell banner
+    ShowSubshellBanner,
+    // SSH tmux warpify banner
+    SshTmuxWarpifyBannerDisplayed,
+    // Baseline command latency
+    BaselineCommandLatency(BlockLatencyInfo),
+    // Session abandoned before bootstrap
+    SessionAbandonedBeforeBootstrap {
+        pending_shell: bool,
+        has_pending_ssh_session: bool,
+        was_ever_visible: bool,
+        duration_since_start: std::time::Duration,
+    },
+    // Autoupdate relaunch attempt
+    AutoupdateRelaunchAttempt {
+        version: String,
+    },
+    // Page up/down in editor
+    PageUpDownInEditorPressed {
+        is_empty_editor: bool,
+        is_down: bool,
+    },
+}
+
+impl warp_core::telemetry::TelemetryEvent for TelemetryEvent {
+    fn name(&self) -> &'static str {
+        match self {
+            TelemetryEvent::Stub => "Stub",
+            TelemetryEvent::FeaturesPageAction { .. } => "FeaturesPageAction",
+            TelemetryEvent::PaletteSearchResultAccepted { .. } => "PaletteSearchResultAccepted",
+            TelemetryEvent::PaletteSearchExited { .. } => "PaletteSearchExited",
+            TelemetryEvent::ToggleRestoreSession(_) => "ToggleRestoreSession",
+            TelemetryEvent::ShowSubshellBanner => "ShowSubshellBanner",
+            TelemetryEvent::SshTmuxWarpifyBannerDisplayed => "SshTmuxWarpifyBannerDisplayed",
+            TelemetryEvent::BaselineCommandLatency(_) => "BaselineCommandLatency",
+            TelemetryEvent::SessionAbandonedBeforeBootstrap { .. } => "SessionAbandonedBeforeBootstrap",
+            TelemetryEvent::AutoupdateRelaunchAttempt { .. } => "AutoupdateRelaunchAttempt",
+            TelemetryEvent::PageUpDownInEditorPressed { .. } => "PageUpDownInEditorPressed",
+        }
+    }
+
+    fn description(&self) -> &'static str {
+        match self {
+            TelemetryEvent::Stub => "Stub event",
+            TelemetryEvent::FeaturesPageAction { .. } => "Features page action",
+            TelemetryEvent::PaletteSearchResultAccepted { .. } => "Palette search result accepted",
+            TelemetryEvent::PaletteSearchExited { .. } => "Palette search exited",
+            TelemetryEvent::ToggleRestoreSession(_) => "Toggle restore session",
+            TelemetryEvent::ShowSubshellBanner => "Show subshell banner",
+            TelemetryEvent::SshTmuxWarpifyBannerDisplayed => "SSH tmux warpify banner displayed",
+            TelemetryEvent::BaselineCommandLatency(_) => "Baseline command latency",
+            TelemetryEvent::SessionAbandonedBeforeBootstrap { .. } => "Session abandoned before bootstrap",
+            TelemetryEvent::AutoupdateRelaunchAttempt { .. } => "Autoupdate relaunch attempt",
+            TelemetryEvent::PageUpDownInEditorPressed { .. } => "Page up/down in editor pressed",
+        }
+    }
+
+    fn enablement_state(&self) -> warp_core::telemetry::EnablementState {
+        warp_core::telemetry::EnablementState::Always
+    }
+
+    fn payload(&self) -> Option<serde_json::Value> {
+        None
+    }
+
+    fn contains_ugc(&self) -> bool {
+        false
+    }
+
+    fn event_descs() -> impl Iterator<Item = Box<dyn warp_core::telemetry::TelemetryEventDesc>> {
+        warp_core::telemetry::enum_events::<Self>()
+    }
+}
+
+impl warp_core::telemetry::TelemetryEventDesc for TelemetryEventDiscriminants {
+    fn name(&self) -> &'static str {
+        match self {
+            TelemetryEventDiscriminants::Stub => "Stub",
+            TelemetryEventDiscriminants::FeaturesPageAction => "FeaturesPageAction",
+            TelemetryEventDiscriminants::PaletteSearchResultAccepted => "PaletteSearchResultAccepted",
+            TelemetryEventDiscriminants::PaletteSearchExited => "PaletteSearchExited",
+            TelemetryEventDiscriminants::ToggleRestoreSession => "ToggleRestoreSession",
+            TelemetryEventDiscriminants::ShowSubshellBanner => "ShowSubshellBanner",
+            TelemetryEventDiscriminants::SshTmuxWarpifyBannerDisplayed => "SshTmuxWarpifyBannerDisplayed",
+            TelemetryEventDiscriminants::BaselineCommandLatency => "BaselineCommandLatency",
+            TelemetryEventDiscriminants::SessionAbandonedBeforeBootstrap => "SessionAbandonedBeforeBootstrap",
+            TelemetryEventDiscriminants::AutoupdateRelaunchAttempt => "AutoupdateRelaunchAttempt",
+            TelemetryEventDiscriminants::PageUpDownInEditorPressed => "PageUpDownInEditorPressed",
+        }
+    }
+
+    fn description(&self) -> &'static str {
+        match self {
+            TelemetryEventDiscriminants::Stub => "Stub event",
+            TelemetryEventDiscriminants::FeaturesPageAction => "Features page action",
+            TelemetryEventDiscriminants::PaletteSearchResultAccepted => "Palette search result accepted",
+            TelemetryEventDiscriminants::PaletteSearchExited => "Palette search exited",
+            TelemetryEventDiscriminants::ToggleRestoreSession => "Toggle restore session",
+            TelemetryEventDiscriminants::ShowSubshellBanner => "Show subshell banner",
+            TelemetryEventDiscriminants::SshTmuxWarpifyBannerDisplayed => "SSH tmux warpify banner displayed",
+            TelemetryEventDiscriminants::BaselineCommandLatency => "Baseline command latency",
+            TelemetryEventDiscriminants::SessionAbandonedBeforeBootstrap => "Session abandoned before bootstrap",
+            TelemetryEventDiscriminants::AutoupdateRelaunchAttempt => "Autoupdate relaunch attempt",
+            TelemetryEventDiscriminants::PageUpDownInEditorPressed => "Page up/down in editor pressed",
+        }
+    }
+
+    fn enablement_state(&self) -> warp_core::telemetry::EnablementState {
+        warp_core::telemetry::EnablementState::Always
+    }
+}
+
+warp_core::register_telemetry_event!(TelemetryEvent);
+
+pub mod context_provider {
+    //! Context provider stub
+    use warpui::{Entity, SingletonEntity};
+
+    pub struct AppTelemetryContextProvider;
+
+    impl Entity for AppTelemetryContextProvider {
+        type Event = ();
+    }
+
+    impl SingletonEntity for AppTelemetryContextProvider {}
+
+    impl AppTelemetryContextProvider {
+        pub fn new_context_provider(_ctx: &mut warpui::AppContext) -> Self {
+            Self
+        }
+    }
+}
+
+pub fn telemetry_context() -> serde_json::Value {
+    serde_json::json!({})
+}

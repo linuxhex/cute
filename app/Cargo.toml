@@ -4,13 +4,13 @@ default-run = "cute"
 description = "The cloud-backed terminal for individuals and teams"
 edition = "2021"
 autobins = false
-name = "warp"
+name = "cute"
 version = "0.1.0"
 publish.workspace = true
 license.workspace = true
 
 [lib]
-name = "warp"
+name = "cute"
 path = "src/lib.rs"
 
 # We define separate targets for each channel (stable, preview, dev) so that we can
@@ -255,7 +255,6 @@ typed-path.workspace = true
 urlencoding = "2.1.3"
 mime_guess = "2.0"
 warp_multi_agent_api.workspace = true
-remote_server.workspace = true
 repo_metadata.workspace = true
 vim.workspace = true
 rmcp = { workspace = true, features = ["client"] }
@@ -611,7 +610,6 @@ default = [
     "inline_model_selector",
     "oz_launch_modal",
     "open_warp_launch_modal",
-    "orchestration_launch_modal",
     "new_tab_styling",
     "richtext_multiselect",
     "inline_profile_selector",
@@ -660,9 +658,6 @@ default = [
     "configurable_context_window",
     "oz_handoff",
     "handoff_local_cloud",
-    "orchestration_v2",
-    "orchestration_pill_bar",
-    "orchestration_viewer_pill_bar",
     "run_agents_tool",
     "pending_user_query_indicator",
     "cloud_mode_input_v2",
@@ -950,15 +945,11 @@ oz_platform_skills = []
 oz_identity_federation = []
 oz_launch_modal = []
 open_warp_launch_modal = []
-orchestration_launch_modal = []
 new_tab_styling = []
 file_based_mcp = []
 skill_arguments = []
 active_conversation_requires_interaction = []
 incremental_auto_reload = []
-orchestration_v2 = []
-orchestration_pill_bar = []
-orchestration_viewer_pill_bar = []
 run_agents_tool = []
 pending_user_query_indicator = []
 queue_slash_command = []

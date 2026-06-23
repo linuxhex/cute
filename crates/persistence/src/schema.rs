@@ -441,7 +441,6 @@ diesel::table! {
         quake_mode -> Bool,
         universal_search_width -> Nullable<Float>,
         warp_ai_width -> Nullable<Float>,
-        voltron_width -> Nullable<Float>,
         warp_drive_index_width -> Nullable<Float>,
         fullscreen_state -> Integer,
         agent_management_filters -> Nullable<Text>,

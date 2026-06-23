@@ -15,7 +15,7 @@ use warp_util::{
 };
 use warpui::AppContext;
 
-use crate::warp_managed_paths_watcher::warp_managed_skill_dirs;
+use crate::cute_managed_paths_watcher::cute_managed_skill_dirs;
 
 fn local_or_remote_path_for_repo_path(
     repo_id: &RepositoryIdentifier,
@@ -207,7 +207,7 @@ pub fn extract_skill_parent_directory(
             .to_local_path()
             .and_then(Path::parent)
             .and_then(Path::parent)
-            .is_some_and(|parent| warp_managed_skill_dirs().iter().any(|dir| parent == dir));
+            .is_some_and(|parent| cute_managed_skill_dirs().iter().any(|dir| parent == dir));
     if is_warp_home_skill {
         return dirs::home_dir()
             .map(LocalOrRemotePath::Local)
@@ -268,7 +268,7 @@ pub fn is_home_skill_directory(path: &Path) -> bool {
 pub fn is_home_provider_path(path: &Path) -> bool {
     SKILL_PROVIDER_DEFINITIONS.iter().any(|provider| {
         if provider.provider == SkillProvider::Warp {
-            return warp_managed_skill_dirs().iter().any(|dir| path == dir);
+            return cute_managed_skill_dirs().iter().any(|dir| path == dir);
         }
         home_skills_path(provider.provider)
             .as_ref()

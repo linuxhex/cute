@@ -17,7 +17,6 @@ use crate::cloud_object::{
 use crate::drive::items::env_var_collection::WarpDriveEnvVarCollection;
 use crate::drive::items::WarpDriveItem;
 use crate::server::ids::SyncId;
-use crate::server::sync_queue::QueueItem;
 use crate::terminal::shell::ShellType;
 use crate::{Appearance, CloudObjectTypeAndId};
 
@@ -119,16 +118,12 @@ impl StringModel for EnvVarCollection {
         }
     }
 
-    fn update_object_queue_item(
+    fn _update_object_queue_item(
         &self,
-        revision_ts: Option<Revision>,
-        object: &CloudEnvVarCollection,
-    ) -> QueueItem {
-        QueueItem::UpdateEnvVarCollection {
-            model: object.model().clone().into(),
-            id: object.id,
-            revision: revision_ts.or_else(|| object.metadata.revision.clone()),
-        }
+        _revision_ts: Option<Revision>,
+        _object: &CloudEnvVarCollection,
+    ) {
+        // No-op for local version
     }
 
     fn uniqueness_key(&self) -> Option<GenericStringObjectUniqueKey> {

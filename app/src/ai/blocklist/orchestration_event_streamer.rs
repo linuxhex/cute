@@ -7,7 +7,6 @@ use async_trait::async_trait;
 use futures::channel::mpsc;
 use uuid::Uuid;
 use warp_cli::agent::Harness;
-use warp_core::features::FeatureFlag;
 use warp_multi_agent_api as api;
 use warpui::r#async::{SpawnedFutureHandle, Timer};
 use warpui::{
@@ -1251,66 +1250,13 @@ impl OrchestrationEventStreamer {
     /// a consumer registers and the conversation has a role in the tree.
     fn on_restored_conversations(
         &mut self,
-        conversation_ids: Vec<AIConversationId>,
-        ctx: &mut ModelContext<Self>,
+        _conversation_ids: Vec<AIConversationId>,
+        _ctx: &mut ModelContext<Self>,
     ) {
         // Orchestration v2 owns the events endpoints and the cursor model.
         // V1 conversations may carry a run_id but the v2-only event APIs
         // would return spurious 4xx responses, so skip restore entirely
         // when V2 is disabled.
-        if !FeatureFlag::OrchestrationV2.is_enabled() {
-            return;
-        }
-
-        for conv_id in conversation_ids {
-            let (run_id, cursor, is_remote_view) = {
-                let history = BlocklistAIHistoryModel::as_ref(ctx);
-                let Some(conversation) = history.conversation(&conv_id) else {
-                    continue;
-                };
-                let is_remote_view =
-                    conversation.is_viewing_shared_session() || conversation.is_remote_child();
-                let run_id = conversation.run_id();
-                let cursor = conversation.last_event_sequence().unwrap_or(0);
-                (run_id, cursor, is_remote_view)
-            };
-
-            // Passive views of remote runs (shared-session viewers,
-            // remote-child placeholders) must not subscribe — the actual
-            // agent in another process owns the inbox.
-            if is_remote_view {
-                continue;
-            }
-
-            // Initialize the in-memory cursor from the persisted SQLite
-            // value, and register the conversation's own run_id so
-            // lifecycle events for self are correctly filtered. A later
-            // server `GET /agent/runs/{run_id}` response may advance the
-            // cursor to `max(SQLite, server)` before delivery starts.
-            let stream = self.streams.entry(conv_id).or_default();
-            stream.event_cursor = cursor;
-            if let Some(ref own) = run_id {
-                stream.watched_run_ids.insert(own.clone());
-            }
-
-            // No run_id means we can't query the server for children or
-            // for the canonical cursor. Re-evaluate eligibility based on
-            // current state; a run_id assigned later flows through
-            // `on_server_token_assigned`.
-            let Some(run_id) = run_id else {
-                self.reevaluate_eligibility(conv_id, ctx);
-                continue;
-            };
-
-            let Ok(task_id) = run_id.parse::<crate::ai::ambient_agents::AmbientAgentTaskId>()
-            else {
-                log::warn!("could not parse run_id {run_id:?} for {conv_id:?}");
-                self.reevaluate_eligibility(conv_id, ctx);
-                continue;
-            };
-
-            self.spawn_restore_fetch(conv_id, task_id, cursor, ctx);
-        }
     }
 
     /// Issues `GET /agent/runs/{task_id}` and routes the result through
@@ -2205,34 +2151,22 @@ fn build_pending_events(
 /// Registers a consumer of orchestration agent events for
 /// `conversation_id`. No-op when `OrchestrationV2` is disabled.
 pub fn register_agent_event_consumer<C>(
-    conversation_id: AIConversationId,
-    consumer_id: EntityId,
-    ctx: &mut C,
+    _conversation_id: AIConversationId,
+    _consumer_id: EntityId,
+    _ctx: &mut C,
 ) where
     C: GetSingletonModelHandle + UpdateModel,
 {
-    if !FeatureFlag::OrchestrationV2.is_enabled() {
-        return;
-    }
-    OrchestrationEventStreamer::handle(ctx).update(ctx, |streamer, ctx| {
-        streamer.register_consumer(conversation_id, consumer_id, ctx);
-    });
 }
 
 /// Pair to [`register_agent_event_consumer`].
 pub fn unregister_agent_event_consumer<C>(
-    conversation_id: AIConversationId,
-    consumer_id: EntityId,
-    ctx: &mut C,
+    _conversation_id: AIConversationId,
+    _consumer_id: EntityId,
+    _ctx: &mut C,
 ) where
     C: GetSingletonModelHandle + UpdateModel,
 {
-    if !FeatureFlag::OrchestrationV2.is_enabled() {
-        return;
-    }
-    OrchestrationEventStreamer::handle(ctx).update(ctx, |streamer, ctx| {
-        streamer.unregister_consumer(conversation_id, consumer_id, ctx);
-    });
 }
 
 #[cfg(test)]

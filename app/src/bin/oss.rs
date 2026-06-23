@@ -29,7 +29,7 @@ fn main() -> Result<()> {
         .with_additional_features(&[warp_core::features::FeatureFlag::SkipFirebaseAnonymousUser]);
     ChannelState::set(state);
 
-    warp::run()
+    cute::run()
 }
 
 // If we're not using an external plist, embed the following as the Info.plist.

@@ -3,24 +3,22 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use cloud_objects::cloud_object::CloudObjectUpsertParams;
+use cloud_objects::cloud_object::{CloudObjectUpsertParams, SerializedModel};
 // Re-exported from cloud_objects.
 pub use cloud_objects::cloud_object::{GenericStringModel, Serializer};
 pub use warp_server_client::ids::GenericStringObjectId;
 
 use crate::appearance::Appearance;
 use crate::cloud_object::{
-    CloudModelType, CloudObject, CloudObjectEventEntrypoint, CreateCloudObjectResult,
+    CloudModelType, CloudObject, CreateCloudObjectResult,
     CreateObjectRequest, GenericCloudObject, GenericServerObject, GenericStringObjectFormat,
     GenericStringObjectUniqueKey, ObjectType, Revision, UpdateCloudObjectResult,
 };
 use crate::drive::items::WarpDriveItem;
 use crate::drive::CloudObjectTypeAndId;
 use crate::persistence::ModelEvent;
-use crate::server::cloud_objects::update_manager::InitiatedBy;
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::server_api::object::ObjectClient;
-use crate::server::sync_queue::{QueueItem, SerializedModel};
 
 /// A trait that generic string-based objects should implement.
 pub trait CloudStringObject: CloudObject + Send + Sync {
@@ -103,11 +101,13 @@ pub trait StringModel: Clone + Debug + PartialEq + Send + Sync + 'static {
     /// Returns a sync queue item of this object that would allow it to be updated
     /// properly on the server.  Takes an optional revision_ts to set as the revision
     /// in the sync queue item.
-    fn update_object_queue_item(
+    fn _update_object_queue_item(
         &self,
-        revision_ts: Option<Revision>,
-        object: &Self::CloudObjectType,
-    ) -> QueueItem;
+        _revision_ts: Option<Revision>,
+        _object: &Self::CloudObjectType,
+    ) {
+        // No-op for local version
+    }
 
     /// Returns whether this model type should clear on a unique key conflict.
     fn should_clear_on_unique_key_conflict(&self) -> bool {
@@ -136,7 +136,7 @@ where
     }
 
     fn serialized(&self) -> SerializedModel {
-        self.model().serialized()
+        S::serialize(&self.model().string_model)
     }
 
     fn clone_box(&self) -> Box<dyn CloudStringObject> {
@@ -221,46 +221,12 @@ where
         )
     }
 
-    fn create_object_queue_item(
-        &self,
-        object: &GenericCloudObject<GenericStringObjectId, Self>,
-        entrypoint: CloudObjectEventEntrypoint,
-        initiated_by: InitiatedBy,
-    ) -> Option<QueueItem> {
-        if let SyncId::ClientId(client_id) = object.id {
-            return Some(QueueItem::CreateObject {
-                object_type: self.object_type(),
-                owner: object.permissions.owner,
-                id: client_id,
-                title: None,
-                serialized_model: Some(object.model().serialized().into()),
-                initial_folder_id: object.metadata.folder_id,
-                entrypoint,
-                initiated_by,
-            });
-        }
-        None
-    }
-
-    fn update_object_queue_item(
-        &self,
-        revision_ts: Option<Revision>,
-        object: &GenericCloudObject<GenericStringObjectId, Self>,
-    ) -> QueueItem {
-        self.string_model
-            .update_object_queue_item(revision_ts, object)
-    }
-
     fn should_clear_on_unique_key_conflict(&self) -> bool {
         self.string_model.should_clear_on_unique_key_conflict()
     }
 
     fn should_update_after_server_conflict(&self) -> bool {
         true
-    }
-
-    fn serialized(&self) -> SerializedModel {
-        S::serialize(&self.string_model)
     }
 
     async fn send_create_request(
@@ -293,7 +259,7 @@ where
                 None
             };
         let res = object_client
-            .update_generic_string_object(server_id.into(), self.serialized(), revision)
+            .update_generic_string_object(server_id.into(), S::serialize(&self.string_model), revision)
             .await;
         res.and_then(|update_result| match update_result {
             UpdateCloudObjectResult::Success {

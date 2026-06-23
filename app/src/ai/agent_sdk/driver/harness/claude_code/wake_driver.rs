@@ -13,13 +13,10 @@ use super::super::claude_transcript::{
     claude_config_dir, write_envelope, write_session_index_entry, ClaudeTranscriptEnvelope,
 };
 use super::super::{remove_claude_externally_managed_listener_env_vars, task_env_vars};
-use super::parent_bridge::{
-    ensure_parent_bridge_state_dir, parent_bridge_root,
-    prime_parent_bridge_staged_for_self_managed_wake,
-};
+use super::parent_bridge::{ensure_parent_bridge_state_dir, parent_bridge_root};
 use super::{claude_command, prepare_claude_environment_config, ClaudeHarness};
 use crate::ai::agent::conversation::{AIConversation, ConversationStatus};
-use crate::ai::agent_events::{AgentMessageEventMetadata, MessageHydrator};
+use crate::ai::agent_events::AgentMessageEventMetadata;
 use crate::ai::ambient_agents::{AmbientAgentTaskId, AmbientAgentTaskState};
 use crate::server::server_api::ai::AIClient;
 use crate::server::server_api::harness_support::ResolvePromptRequest;
@@ -206,13 +203,6 @@ impl ClaudeHarness {
 
         let state_dir = parent_bridge_root()?.join(remote.session_id.to_string());
         ensure_parent_bridge_state_dir(&state_dir)?;
-        let hydrator = MessageHydrator::for_task(server_api, task_id);
-        prime_parent_bridge_staged_for_self_managed_wake(
-            &hydrator,
-            &state_dir,
-            wake_message.as_ref(),
-        )
-        .await?;
         let prompt_path = state_dir.join(CLAUDE_WAKE_PROMPT_FILE_NAME);
         std::fs::write(&prompt_path, remote.wake_prompt.as_bytes())
             .with_context(|| format!("Failed to write {}", prompt_path.display()))?;

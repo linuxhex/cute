@@ -34,10 +34,8 @@ use super::agent_view::{AgentViewController, AgentViewControllerEvent, AgentView
 use super::context_model::BlocklistAIContextModel;
 use super::history_model::BlocklistAIHistoryModel;
 use super::input_model::InputConfig;
-use super::orchestration_event_streamer::{
-    OrchestrationEventStreamer, OrchestrationEventStreamerEvent,
-};
-use super::orchestration_events::{OrchestrationEventService, OrchestrationEventServiceEvent};
+use super::orchestration_event_streamer::OrchestrationEventStreamer;
+use super::orchestration_events::OrchestrationEventService;
 use super::{BlocklistAIInputModel, InputType, ResponseStreamId};
 use crate::ai::agent::api::{self, ServerConversationToken};
 use crate::ai::agent::conversation::{AIConversation, AIConversationId, ConversationStatus};
@@ -65,11 +63,9 @@ use crate::global_resource_handles::GlobalResourceHandlesProvider;
 use crate::network::NetworkStatus;
 use crate::notebooks::editor::model::FileLinkResolutionContext;
 use crate::persistence::ModelEvent;
-use crate::send_telemetry_from_ctx;
 use crate::server::server_api::AIApiError;
 #[cfg(not(target_family = "wasm"))]
 use crate::server::server_api::ServerApiProvider;
-use crate::server::telemetry::TelemetryEvent;
 use crate::terminal::model::block::{
     formatted_terminal_contents_for_input, BlockId, CURSOR_MARKER,
 };
@@ -581,35 +577,6 @@ impl BlocklistAIController {
             }
         });
 
-        // Subscribe to the orchestration event service to inject events
-        // (e.g. MessagesReceivedFromAgents) into conversations that receive inter-agent messages.
-        if FeatureFlag::OrchestrationV2.is_enabled() {
-            // TODO(QUALITY-733): Remove the legacy v1 orchestration event-service path once
-            // v2 event streaming no longer drains through OrchestrationEventService.
-            let svc = OrchestrationEventService::handle(ctx);
-            ctx.subscribe_to_model(&svc, move |me, event, ctx| {
-                let OrchestrationEventServiceEvent::EventsReady { conversation_id } = event;
-                me.handle_pending_events_ready(*conversation_id, ctx);
-            });
-        }
-        if FeatureFlag::OrchestrationV2.is_enabled() {
-            let streamer = OrchestrationEventStreamer::handle(ctx);
-            ctx.subscribe_to_model(&streamer, move |me, event, ctx| match event {
-                OrchestrationEventStreamerEvent::DormantClaudeWakeReady {
-                    conversation_id,
-                    wake_message,
-                } => {
-                    me.handle_dormant_claude_wake_ready(
-                        *conversation_id,
-                        wake_message.clone(),
-                        ctx,
-                    );
-                }
-                // Viewer-mode events are handled by `OrchestrationViewerModel`.
-                OrchestrationEventStreamerEvent::ChildSpawned { .. }
-                | OrchestrationEventStreamerEvent::ChildStatusChanged { .. } => {}
-            });
-        }
         Self {
             input_model,
             context_model,
@@ -691,17 +658,6 @@ impl BlocklistAIController {
 
         // Attribute /orchestrate queries to the slash-command entry surface.
         if matches!(user_query_mode, UserQueryMode::Orchestrate) {
-            send_telemetry_from_ctx!(
-                super::telemetry::BlocklistOrchestrationTelemetryEvent::OrchestrationEntered(
-                    super::telemetry::OrchestrationEnteredEvent {
-                        conversation_id,
-                        plan_id: None,
-                        entry_source:
-                            super::telemetry::OrchestrationEntrySource::SlashCommandOrchestrate,
-                    }
-                ),
-                ctx
-            );
         }
 
         let should_prepend_finished_action_results = matches!(
@@ -1525,34 +1481,6 @@ impl BlocklistAIController {
         // than waiting for a separate idle injection turn. Skip when a server
         // subagent is or will be active — events will be delivered via the idle
         // path once the subagent session ends.
-        let mut has_piggybacked_events = false;
-        if FeatureFlag::OrchestrationV2.is_enabled() {
-            // TODO(QUALITY-733): Remove the legacy event-service piggyback path once v2 event
-            // delivery no longer reuses OrchestrationEventService queues.
-            if will_trigger_server_subagent || has_active_subagent {
-                log::debug!(
-                    "Skipping event piggyback for conversation {conversation_id:?}: \
-                     {}",
-                    if will_trigger_server_subagent {
-                        "results will trigger a server-side subagent"
-                    } else {
-                        "a subagent is currently active"
-                    }
-                );
-            } else if let Some((event_inputs, task_id)) = OrchestrationEventService::handle(ctx)
-                .update(ctx, |svc, ctx| {
-                    svc.drain_events_for_request(conversation_id, ctx)
-                })
-            {
-                has_piggybacked_events = true;
-                request_input
-                    .input_messages
-                    .entry(task_id)
-                    .or_default()
-                    .extend(event_inputs);
-            }
-        }
-
         let result = self.send_request_input(
             request_input,
             None,
@@ -1561,12 +1489,6 @@ impl BlocklistAIController {
             /*is_queued_prompt*/ false,
             ctx,
         );
-
-        if has_piggybacked_events && result.is_err() {
-            OrchestrationEventService::handle(ctx).update(ctx, |svc, ctx| {
-                svc.requeue_awaiting_events(conversation_id, ctx);
-            });
-        }
 
         self.pending_passive_follow_ups.remove(&conversation_id);
     }
@@ -2267,19 +2189,6 @@ impl BlocklistAIController {
             .in_flight_response_streams
             .has_active_stream_for_conversation(conversation_id, ctx)
         {
-            send_telemetry_from_ctx!(
-                TelemetryEvent::AIInputNotSent {
-                    entrypoint: query_metadata.map(|metadata| metadata.entrypoint),
-                    inputs: request_input
-                        .all_inputs()
-                        .cloned()
-                        .map(|input| input.into())
-                        .collect(),
-                    active_server_conversation_id: conversation_server_token.clone(),
-                    active_client_conversation_id: Some(conversation_id),
-                },
-                ctx
-            );
             const AI_INPUT_NOT_SENT_ERROR_STR: &str =
                 "Not sending AI input because there is an in-flight request";
             safe_assert!(false, "{}", AI_INPUT_NOT_SENT_ERROR_STR);
@@ -2802,12 +2711,6 @@ impl BlocklistAIController {
                 // Cancelled streams will handle pending_response_stream updates synchronously.
                 if cancellation.is_none() {
                     self.in_flight_response_streams.cleanup_stream(&stream_id);
-
-                    // Now that the stream is cleaned up, re-check for pending
-                    // orchestration events that couldn't be drained earlier.
-                    if FeatureFlag::OrchestrationV2.is_enabled() {
-                        self.handle_pending_events_ready(conversation_id, ctx);
-                    }
                 }
 
                 // Before cleaning up the response stream, check if we should attempt to resume.

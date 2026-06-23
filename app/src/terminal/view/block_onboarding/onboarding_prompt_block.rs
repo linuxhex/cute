@@ -12,7 +12,6 @@ use warpui::{AppContext, Element, Entity, SingletonEntity, TypedActionView, View
 
 use crate::appearance::Appearance;
 use crate::context_chips::prompt::Prompt;
-use crate::server::telemetry::{PromptChoice, TelemetryEvent};
 use crate::settings::EnforceMinimumContrast;
 use crate::terminal::blockgrid_element::BlockGridElement;
 use crate::terminal::model::blockgrid::BlockGrid;
@@ -20,7 +19,7 @@ use crate::terminal::model::ObfuscateSecrets;
 use crate::terminal::session_settings::SessionSettings;
 use crate::terminal::view::block_onboarding::util;
 use crate::terminal::SizeInfo;
-use crate::{report_if_error, send_telemetry_from_ctx};
+use crate::report_if_error;
 
 const CONFIRM_MARGIN_TOP: f32 = 16.;
 
@@ -484,13 +483,6 @@ impl TypedActionView for OnboardingPromptBlock {
                             report_if_error!(prompt.reset(ctx));
                         });
                         ctx.notify();
-                        send_telemetry_from_ctx!(
-                            TelemetryEvent::PromptEdited {
-                                prompt: PromptChoice::Default,
-                                entrypoint: "setup_guide".to_string()
-                            },
-                            ctx
-                        );
                     }
                     OnboardingPromptType::PS1 => {
                         self.selected_prompt = Some(OnboardingPromptType::PS1);
@@ -498,13 +490,6 @@ impl TypedActionView for OnboardingPromptBlock {
                             report_if_error!(settings.honor_ps1.set_value(true, ctx));
                         });
                         ctx.notify();
-                        send_telemetry_from_ctx!(
-                            TelemetryEvent::PromptEdited {
-                                prompt: PromptChoice::PS1,
-                                entrypoint: "setup_guide".to_string()
-                            },
-                            ctx
-                        );
                     }
                 }
             }

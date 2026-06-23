@@ -11,7 +11,6 @@ use ai::agent::action_result::{RunAgentsAgentOutcomeKind, RunAgentsResult};
 use ai::agent::orchestration_config::{OrchestrationConfig, OrchestrationConfigStatus};
 use ai::skills::SkillReference;
 use pathfinder_geometry::vector::vec2f;
-use warp_core::send_telemetry_from_ctx;
 use warpui::elements::{
     Border, ChildAnchor, ChildView, Container, CornerRadius, CrossAxisAlignment, Empty, Flex,
     MainAxisSize, OffsetPositioning, ParentAnchor, ParentElement, ParentOffsetBounds, Radius,
@@ -46,10 +45,7 @@ use crate::ai::blocklist::inline_action::requested_action::{
     render_requested_action_row_for_text, CTRL_C_KEYSTROKE, ENTER_KEYSTROKE,
 };
 use crate::ai::blocklist::telemetry::{
-    orchestration_modified_field, BlocklistOrchestrationTelemetryEvent,
-    OrchestrationApprovalStatus, OrchestrationEnteredEvent, OrchestrationEntrySource,
-    OrchestrationExecutionModeKind, OrchestrationHarnessKind, RunAgentsCardDecision,
-    RunAgentsCardDecisionEvent,
+    orchestration_modified_field, OrchestrationApprovalStatus, RunAgentsCardDecision,
 };
 use crate::ai::connected_self_hosted_workers::{
     ConnectedSelfHostedWorkersEvent, ConnectedSelfHostedWorkersModel,
@@ -581,35 +577,27 @@ impl RunAgentsCardView {
     /// per card instance.
     fn emit_orchestration_entered_once(
         &mut self,
-        conversation_id: AIConversationId,
-        ctx: &mut ViewContext<Self>,
+        _conversation_id: AIConversationId,
+        _ctx: &mut ViewContext<Self>,
     ) {
         if self.entered_event_emitted {
             return;
         }
         self.entered_event_emitted = true;
-        send_telemetry_from_ctx!(
-            BlocklistOrchestrationTelemetryEvent::OrchestrationEntered(OrchestrationEnteredEvent {
-                conversation_id,
-                plan_id: (!self.state.plan_id.is_empty()).then(|| self.state.plan_id.clone()),
-                entry_source: OrchestrationEntrySource::RunAgentsCardShown,
-            }),
-            ctx
-        );
     }
 
     /// Emits `RunAgentsCardDecision` at most once per card instance.
-    fn emit_decision(&mut self, decision: RunAgentsCardDecision, ctx: &mut ViewContext<Self>) {
+    fn emit_decision(&mut self, _decision: RunAgentsCardDecision, ctx: &mut ViewContext<Self>) {
         if self.decision_event_emitted {
             return;
         }
         self.decision_event_emitted = true;
-        let Some(conversation_id) = self.block_model.conversation_id(ctx) else {
+        let Some(_conversation_id) = self.block_model.conversation_id(ctx) else {
             return;
         };
-        let modified_fields_from_tool_call =
+        let _modified_fields_from_tool_call =
             diverged_orch_fields(&self.state.orch, &self.original_tool_call_request);
-        let (had_active_config, active_config_status, modified_fields_from_active_config) =
+        let (_had_active_config, _active_config_status, _modified_fields_from_active_config) =
             match &self.active_config {
                 Some((cfg, status)) => {
                     let status_enum = if status.is_approved() {
@@ -628,25 +616,6 @@ impl RunAgentsCardView {
                 }
                 None => (false, None, Vec::new()),
             };
-        send_telemetry_from_ctx!(
-            BlocklistOrchestrationTelemetryEvent::RunAgentsCardDecision(
-                RunAgentsCardDecisionEvent {
-                    conversation_id,
-                    plan_id: (!self.state.plan_id.is_empty()).then(|| self.state.plan_id.clone()),
-                    decision,
-                    agent_count: self.state.agent_run_configs.len(),
-                    harness: OrchestrationHarnessKind::from_str(&self.state.orch.harness_type),
-                    execution_mode: OrchestrationExecutionModeKind::from_run_agents(
-                        &self.state.orch.execution_mode,
-                    ),
-                    modified_fields_from_tool_call,
-                    modified_fields_from_active_config,
-                    had_active_config,
-                    active_config_status,
-                }
-            ),
-            ctx
-        );
     }
 
     /// Auto-pops the create-key modal once per card per harness/mode

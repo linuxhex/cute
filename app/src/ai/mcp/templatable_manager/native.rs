@@ -53,14 +53,11 @@ use crate::persistence::{
 };
 use crate::server::cloud_objects::update_manager::{InitiatedBy, UpdateManager};
 use crate::server::ids::{ClientId, ServerId, SyncId};
-use crate::server::telemetry::{
-    MCPServerModel, MCPServerTelemetryTransportType, MCPTemplateCreationSource, TelemetryEvent,
-};
 use crate::settings::AISettings;
 use crate::view_components::DismissibleToast;
 use crate::workspace::ToastStack;
 use crate::workspaces::user_workspaces::UserWorkspaces;
-use crate::{send_telemetry_from_ctx, GlobalResourceHandlesProvider};
+use crate::GlobalResourceHandlesProvider;
 
 /// Controls the behavior of `spawn_server_impl`.
 enum SpawnMode {
@@ -849,7 +846,7 @@ impl TemplatableMCPServerManager {
 
         // Extract values from mode before moving it into the closure.
         let should_persist = mode.should_persist_running_state_to_sqlite();
-        let should_send_telemetry = mode.should_send_telemetry();
+        let _should_send_telemetry = mode.should_send_telemetry();
         let is_reconnect = mode.is_reconnect();
 
         self.change_server_state(installation_uuid, MCPServerState::Starting, ctx);
@@ -867,7 +864,7 @@ impl TemplatableMCPServerManager {
                 me.spawned_servers.remove(&installation_uuid);
                 me.pending_oauth_csrf.retain(|_, v| *v != installation_uuid);
 
-                let error = match server_info {
+                let _error: Option<rmcp::RmcpError> = match server_info {
                     Ok(info) => {
                         let peer = info.service.clone();
                         me.active_servers.insert(installation_uuid, info);
@@ -913,22 +910,6 @@ impl TemplatableMCPServerManager {
                         Some(e.into())
                     }
                 };
-
-                if should_send_telemetry {
-                    send_telemetry_from_ctx!(
-                        TelemetryEvent::MCPServerSpawned {
-                            transport_type: match server.transport_type {
-                                TransportType::CLIServer { .. } =>
-                                    MCPServerTelemetryTransportType::CLIServer,
-                                TransportType::ServerSentEvents { .. } =>
-                                    MCPServerTelemetryTransportType::ServerSentEvents,
-                            },
-                            server_model: MCPServerModel::Templatable,
-                            error
-                        },
-                        ctx
-                    );
-                }
             },
         );
 
@@ -1434,15 +1415,7 @@ impl TemplatableMCPServerManager {
                 ctx,
             );
             match result {
-                Ok(result) => {
-                    send_telemetry_from_ctx!(
-                        TelemetryEvent::MCPTemplateCreated {
-                            source: MCPTemplateCreationSource::Conversion,
-                            variables: result.templatable_mcp_server.template.variables,
-                            name: result.templatable_mcp_server.name,
-                        },
-                        ctx
-                    );
+                Ok(_result) => {
                 }
                 Err(e) => log::error!("{e}"),
             }
@@ -1468,13 +1441,24 @@ impl TemplatableMCPServerManager {
                     id: sync_id,
                 };
                 UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
+                    let (destination_folder_id, space) = match CloudObjectLocation::Space(Space::Team { team_uid }) {
+                        CloudObjectLocation::Space(space) => (None, space),
+                        CloudObjectLocation::Folder(folder_id) => {
+                            let server_id = match folder_id {
+                                SyncId::ClientId(_) => None,
+                                SyncId::ServerId(id) => Some(id),
+                            };
+                            (server_id, Space::Personal)
+                        },
+                        CloudObjectLocation::Trash => (None, Space::Personal),
+                    };
                     update_manager.move_object_to_location(
                         object_type_and_id,
-                        CloudObjectLocation::Space(Space::Team { team_uid }),
+                        destination_folder_id,
+                        space,
                         ctx,
                     );
                 });
-                send_telemetry_from_ctx!(TelemetryEvent::MCPTemplateShared, ctx);
             }
         }
     }
@@ -1505,9 +1489,21 @@ impl TemplatableMCPServerManager {
                 id: sync_id,
             };
             UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
+                let (destination_folder_id, space) = match CloudObjectLocation::Space(Space::Personal) {
+                    CloudObjectLocation::Space(space) => (None, space),
+                    CloudObjectLocation::Folder(folder_id) => {
+                        let server_id = match folder_id {
+                            SyncId::ClientId(_) => None,
+                            SyncId::ServerId(id) => Some(id),
+                        };
+                        (server_id, Space::Personal)
+                    },
+                    CloudObjectLocation::Trash => (None, Space::Personal),
+                };
                 update_manager.move_object_to_location(
                     object_type_and_id,
-                    CloudObjectLocation::Space(Space::Personal),
+                    destination_folder_id,
+                    space,
                     ctx,
                 );
             });

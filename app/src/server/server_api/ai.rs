@@ -15,7 +15,6 @@ use itertools::Itertools;
 use mockall::automock;
 use prost::Message;
 use warp_core::channel::ChannelState;
-use warp_core::features::FeatureFlag;
 use warp_core::report_error;
 use warp_graphql::ai::{AgentTaskState, PlatformErrorCode};
 use warp_graphql::client::Operation;
@@ -107,7 +106,7 @@ use warp_graphql::queries::task_git_credentials::{
 use warp_multi_agent_api::ConversationData;
 
 use super::auth::AuthClient;
-use super::harness_support::{UploadField, UploadFieldValue, UploadTarget};
+use super::harness_support::{ResolvePromptRequest, ResolvedHarnessPrompt, UploadField, UploadFieldValue, UploadTarget};
 use super::ServerApi;
 use crate::ai::agent::api::ServerConversationToken;
 use crate::ai::agent::conversation::{
@@ -2022,45 +2021,9 @@ impl AIClient for ServerApi {
 
     async fn list_ai_conversation_metadata(
         &self,
-        conversation_ids: Option<Vec<String>>,
+        _conversation_ids: Option<Vec<String>>,
     ) -> anyhow::Result<Vec<ServerAIConversationMetadata>> {
-        if !FeatureFlag::CloudConversations.is_enabled() {
-            return Ok(vec![]);
-        }
-        use warp_graphql::queries::list_ai_conversations::{
-            ListAIConversationMetadata, ListAIConversationMetadataResult,
-            ListAIConversationMetadataVariables, ListAIConversationsInput,
-        };
-
-        let input = ListAIConversationsInput {
-            conversation_ids: conversation_ids
-                .map(|ids| ids.into_iter().map(cynic::Id::new).collect()),
-        };
-
-        let variables = ListAIConversationMetadataVariables {
-            input,
-            request_context: get_request_context(),
-        };
-
-        let operation = ListAIConversationMetadata::build(variables);
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.list_ai_conversations {
-            ListAIConversationMetadataResult::ListAIConversationsOutput(output) => {
-                let metadata_vec: Result<Vec<_>, _> = output
-                    .conversations
-                    .into_iter()
-                    .map(|conv| conv.try_into())
-                    .collect();
-                metadata_vec
-            }
-            ListAIConversationMetadataResult::UserFacingError(e) => {
-                Err(anyhow!(get_user_facing_error_message(e)))
-            }
-            ListAIConversationMetadataResult::Unknown => {
-                Err(anyhow!("Failed to list AI conversations metadata"))
-            }
-        }
+        Ok(vec![])
     }
 
     async fn get_ai_conversation_format(
@@ -2563,6 +2526,7 @@ impl AIClient for ServerApi {
         .await?;
         Ok(response)
     }
+
 }
 
 impl TryFrom<warp_graphql::queries::get_feature_model_choices::FeatureModelChoice>
@@ -3164,6 +3128,23 @@ impl StoreClient for ServerApi {
                 Err(anyhow!("failed to retrieve codebase context config").into())
             }
         }
+    }
+}
+
+impl ServerApi {
+    pub async fn resolve_prompt_for_task(
+        &self,
+        _task_id: &AmbientAgentTaskId,
+        _request: ResolvePromptRequest,
+    ) -> anyhow::Result<ResolvedHarnessPrompt> {
+        anyhow::bail!("resolve_prompt_for_task not implemented")
+    }
+
+    pub async fn fetch_transcript_for_task(
+        &self,
+        _task_id: &AmbientAgentTaskId,
+    ) -> anyhow::Result<Vec<u8>> {
+        anyhow::bail!("fetch_transcript_for_task not implemented")
     }
 }
 

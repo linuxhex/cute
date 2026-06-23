@@ -7,7 +7,7 @@ use crate::cloud_object::model::json_model::JsonModel;
 use crate::cloud_object::{
     GenericStringObjectFormat, GenericStringObjectUniqueKey, JsonObjectType, Revision,
 };
-use crate::server::sync_queue::QueueItem;
+// sync_queue removed for local version
 
 impl StringModel for WorkflowEnum {
     type CloudObjectType = CloudWorkflowEnum;
@@ -36,16 +36,12 @@ impl StringModel for WorkflowEnum {
         self.model_type_name().to_owned()
     }
 
-    fn update_object_queue_item(
+    fn _update_object_queue_item(
         &self,
-        revision_ts: Option<Revision>,
-        object: &Self::CloudObjectType,
-    ) -> QueueItem {
-        QueueItem::UpdateWorkflowEnum {
-            model: object.model().clone().into(),
-            id: object.id,
-            revision: revision_ts.or_else(|| object.metadata.revision.clone()),
-        }
+        _revision_ts: Option<Revision>,
+        _object: &Self::CloudObjectType,
+    ) {
+        // No-op for local version
     }
 
     fn uniqueness_key(&self) -> Option<GenericStringObjectUniqueKey> {

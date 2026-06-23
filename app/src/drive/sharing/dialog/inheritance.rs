@@ -10,7 +10,7 @@ use crate::cloud_object::model::persistence::CloudModel;
 use crate::cloud_object::ServerObjectContainer;
 use crate::drive::CloudObjectTypeAndId;
 use crate::server::ids::SyncId;
-use crate::server::telemetry::SharingDialogSource;
+use crate::drive::sharing::dialog::SharingDialogSource;
 use crate::workspace::WorkspaceAction;
 
 /// UI state for inherited permissions.

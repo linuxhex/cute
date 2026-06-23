@@ -15,6 +15,5 @@ pub(crate) mod requested_script;
 pub(crate) mod run_agents_card_view;
 pub(super) mod search_codebase;
 pub(crate) mod search_results_common;
-pub(crate) mod suggested_unit_tests;
 pub(super) mod web_fetch;
 pub(super) mod web_search;

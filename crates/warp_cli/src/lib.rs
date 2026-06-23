@@ -65,15 +65,6 @@ pub struct ParentOpts {
     pub handle: Option<process_handle::ProcessHandle>,
 }
 
-/// Hidden worker args used to scope remote-server proxy/daemon sockets by
-/// Warp identity without exposing credentials.
-#[derive(Debug, Clone, Default, clap::Args)]
-pub struct RemoteServerIdentityArgs {
-    /// Non-secret identity partition key for the remote-server daemon.
-    #[arg(long = "identity-key", hide = true)]
-    pub identity_key: String,
-}
-
 /// Global options that apply to all CLI commands.
 #[derive(Debug, Default, Clone, clap::Args)]
 pub struct GlobalOptions {
@@ -292,7 +283,7 @@ impl Args {
         }
 
         // Hide the --conversation flag from help text
-        if !FeatureFlag::CloudConversations.is_enabled() {
+        if !false {
             command = command.mut_subcommand("agent", |agent_cmd| {
                 agent_cmd
                     .mut_subcommand("run", |run_cmd| {
@@ -351,7 +342,7 @@ impl Args {
             });
         }
         // Hide the message subcommand from help text.
-        if !FeatureFlag::OrchestrationV2.is_enabled() {
+        if true {
             command = command.mut_subcommand("run", |run_cmd| {
                 run_cmd.mut_subcommand("message", |c| c.hide(true))
             });
@@ -462,20 +453,6 @@ pub enum WorkerCommand {
         /// Socket name for the minidump server.
         socket_name: std::path::PathBuf,
     },
-
-    /// Run the remote development server proxy over SSH stdio.
-    /// Ensures the daemon is running, then bridges its stdin/stdout
-    /// to the daemon via a Unix domain socket.
-    #[cfg(not(target_family = "wasm"))]
-    #[clap(hide = true)]
-    RemoteServerProxy(RemoteServerIdentityArgs),
-
-    /// Run the long-lived remote development server daemon.
-    /// Listens on a Unix domain socket and accepts multiple concurrent
-    /// connections from proxy processes.
-    #[cfg(not(target_family = "wasm"))]
-    #[clap(hide = true)]
-    RemoteServerDaemon(RemoteServerIdentityArgs),
 
     /// Run a headless ripgrep search worker.
     #[cfg(not(target_family = "wasm"))]

@@ -1,3 +1,8 @@
+//! Scheduled ambient agent management.
+//!
+//! Note: Cloud-specific logic has been removed. Only type definitions remain
+//! for local agent use.
+
 use std::collections::HashMap;
 use std::future::Future;
 
@@ -23,7 +28,6 @@ use crate::server::cloud_objects::update_manager::{
 };
 use crate::server::ids::{ClientId, SyncId};
 use crate::server::server_api::ServerApiProvider;
-use crate::server::sync_queue::QueueItem;
 
 impl StringModel for ScheduledAmbientAgent {
     type CloudObjectType = CloudScheduledAmbientAgent;
@@ -44,16 +48,12 @@ impl StringModel for ScheduledAmbientAgent {
         self.name.clone()
     }
 
-    fn update_object_queue_item(
+    fn _update_object_queue_item(
         &self,
-        revision_ts: Option<Revision>,
-        object: &CloudScheduledAmbientAgent,
-    ) -> QueueItem {
-        QueueItem::UpdateScheduledAmbientAgent {
-            model: object.model().clone().into(),
-            id: object.id,
-            revision: revision_ts.or_else(|| object.metadata.revision.clone()),
-        }
+        _revision_ts: Option<Revision>,
+        _object: &CloudScheduledAmbientAgent,
+    ) {
+        // No-op for local version
     }
 
     fn uniqueness_key(&self) -> Option<GenericStringObjectUniqueKey> {
@@ -76,6 +76,7 @@ impl JsonModel for ScheduledAmbientAgent {
 }
 
 /// Parameters for updating a scheduled ambient agent.
+#[allow(dead_code)]
 pub struct UpdateScheduleParams {
     /// The new name of the scheduled agent. If not provided, the name will not be updated.
     pub name: Option<String>,
@@ -206,7 +207,12 @@ impl ScheduledAgentManager {
         let create_future = UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
             update_manager.create_scheduled_ambient_agent_online(config, client_id, owner, ctx)
         });
-        async move { create_future.await.map(SyncId::ServerId) }
+        async move {
+            create_future
+                .await
+                .map(SyncId::ServerId)
+                .map_err(|_| anyhow::anyhow!("Canceled"))
+        }
     }
 
     /// Helper method to fetch a schedule, modify its model, update it, and wait for completion.

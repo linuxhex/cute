@@ -15,11 +15,12 @@ use warpui::{
     TypedActionView, View, ViewContext, WindowId,
 };
 
-use super::WELCOME_TIP_FEATURE_LENGTH;
 use crate::appearance::Appearance;
 use crate::resource_center::{Tip, TipAction, TipsCompleted};
 use crate::themes::theme::{Blend, Fill};
 use crate::util::bindings::trigger_to_keystroke;
+
+const WELCOME_TIP_FEATURE_LENGTH: usize = 5;
 
 const CHECK_MARK_WIDTH: f32 = 20.;
 const TIP_VIEW_WIDTH: f32 = 250.;

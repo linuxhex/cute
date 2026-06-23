@@ -201,7 +201,7 @@ impl SlashCommandDataSource {
 
     fn is_cloud_mode(&self, ctx: &AppContext) -> bool {
         self.is_cloud_mode_v2
-            || (FeatureFlag::CloudMode.is_enabled()
+            || (false
                 && self
                     .ambient_agent_view_model
                     .as_ref()
@@ -288,7 +288,7 @@ impl SlashCommandDataSource {
             session_context |= Availability::AI_ENABLED;
         }
 
-        if self.is_cloud_mode_v2 && FeatureFlag::CloudModeInputV2.is_enabled() {
+        if self.is_cloud_mode_v2 && false {
             session_context |= Availability::CLOUD_AGENT_V2;
         }
 

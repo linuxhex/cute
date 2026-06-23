@@ -396,7 +396,7 @@ impl Network {
                         user_id,
                         last_received_event_no: None,
                         latest_block_id: None,
-                        telemetry_context: Some(TelemetryContext(telemetry_context().as_value())),
+                        telemetry_context: Some(TelemetryContext(telemetry_context())),
                         feature_support: FeatureSupport {
                             supports_agent_view: FeatureFlag::AgentView.is_enabled(),
                             supports_full_role: true,
@@ -455,7 +455,7 @@ impl Network {
                         user_id,
                         last_received_event_no,
                         latest_block_id: Some(latest_block_id.into()),
-                        telemetry_context: Some(TelemetryContext(telemetry_context().as_value())),
+                        telemetry_context: Some(TelemetryContext(telemetry_context())),
                         feature_support: FeatureSupport {
                             supports_agent_view: FeatureFlag::AgentView.is_enabled(),
                             supports_full_role: true,

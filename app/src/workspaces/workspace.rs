@@ -1,16 +1,10 @@
 use std::cmp::Ordering;
 use std::path::PathBuf;
 
-use chrono::Utc;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use warp_graphql::billing::{AddonCreditAutoReloadStatus, ServiceAgreement, ServiceAgreementType};
-pub use warp_graphql::billing::{
-    AiCreditsUsageAndCostSubjectType, AiCreditsUsageAndCostType, AiCreditsUsageBucket,
-    AiCreditsUsageSource,
-};
+use warp_graphql::billing::ServiceAgreement;
 
-use super::team::{MembershipRole, Team};
 use crate::ai::execution_profiles::{
     ActionPermission, ComputerUsePermission, WriteToPtyPermission,
 };
@@ -18,6 +12,117 @@ use crate::ai::llms::LLMModelHost;
 use crate::auth::UserUid;
 use crate::server::ids::ServerId;
 use crate::settings::AgentModeCommandExecutionPredicate;
+
+// Minimal MembershipRole type for local use
+#[derive(Clone, Copy, Eq, PartialEq, Debug, Serialize, Deserialize)]
+pub enum MembershipRole {
+    Owner,
+    Admin,
+    User,
+}
+
+impl MembershipRole {
+    pub fn is_admin_or_owner(&self) -> bool {
+        matches!(self, MembershipRole::Admin | MembershipRole::Owner)
+    }
+
+    pub fn is_owner(&self) -> bool {
+        matches!(self, MembershipRole::Owner)
+    }
+}
+
+// Minimal TeamMember type for local use
+#[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
+pub struct TeamMember {
+    pub uid: UserUid,
+    pub email: String,
+    pub role: MembershipRole,
+}
+
+impl PartialOrd for TeamMember {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for TeamMember {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.email.cmp(&other.email)
+    }
+}
+
+// Team type - moved from team.rs
+#[derive(Clone, Debug)]
+pub struct Team {
+    pub uid: ServerId,
+    pub name: String,
+    pub invite_code: Option<WorkspaceInviteCode>,
+    pub members: Vec<TeamMember>,
+    pub pending_email_invites: Vec<EmailInvite>,
+    pub invite_link_domain_restrictions: Vec<InviteLinkDomainRestriction>,
+    pub billing_metadata: BillingMetadata,
+    pub stripe_customer_id: Option<String>,
+    pub organization_settings: WorkspaceSettings,
+    /// If the team is eligible for discovery, then show toggle for setting discoverability to the team's admin
+    pub is_eligible_for_discovery: bool,
+}
+
+impl Team {
+    pub fn from_local_cache(
+        uid: ServerId,
+        name: String,
+        workspace_settings: Option<WorkspaceSettings>,
+        billing_metadata: Option<BillingMetadata>,
+        members: Option<Vec<TeamMember>>,
+    ) -> Self {
+        Self {
+            uid,
+            name,
+            invite_code: Default::default(),
+            members: members.unwrap_or_default(),
+            pending_email_invites: Default::default(),
+            invite_link_domain_restrictions: Default::default(),
+            billing_metadata: billing_metadata.unwrap_or_default(),
+            stripe_customer_id: Default::default(),
+            organization_settings: workspace_settings.unwrap_or_default(),
+            is_eligible_for_discovery: false,
+        }
+    }
+
+    fn get_member_by_email(&self, email: &str) -> Option<&TeamMember> {
+        self.members.iter().find(|member| member.email == email)
+    }
+
+    pub fn has_owner_permissions(&self, user_email: &str) -> bool {
+        self.get_member_by_email(user_email)
+            .is_some_and(|member| member.role.is_owner())
+    }
+
+    // Simplified: local version has no multi-admin policy
+    pub fn is_multi_admin_enabled(&self) -> bool {
+        false
+    }
+
+    pub fn has_admin_permissions(&self, user_email: &str) -> bool {
+        self.get_member_by_email(user_email).is_some_and(|member| {
+            member.role.is_owner()
+                || (member.role == MembershipRole::Admin && self.is_multi_admin_enabled())
+        })
+    }
+
+    pub fn is_custom_llm_enabled(&self) -> bool {
+        self.organization_settings.llm_settings.enabled
+    }
+}
+
+// Minimal DiscoverableTeam type for local use
+#[derive(Clone, Debug)]
+pub struct DiscoverableTeam {
+    pub team_uid: String,
+    pub num_members: i64,
+    pub name: String,
+    pub team_accepting_invites: bool,
+}
 
 #[derive(Clone, Copy, Hash, Debug, PartialEq, Eq)]
 pub struct WorkspaceUid(ServerId);
@@ -45,8 +150,6 @@ pub struct Workspace {
     pub teams: Vec<Team>,
     pub billing_metadata: BillingMetadata,
     pub bonus_grants_purchased_this_month: BonusGrantsPurchased,
-    pub billing_cycle_usage: Option<BillingCycleUsageData>,
-    pub has_billing_history: bool,
     pub settings: WorkspaceSettings,
     pub invite_code: Option<WorkspaceInviteCode>,
     pub invite_link_domain_restrictions: Vec<InviteLinkDomainRestriction>,
@@ -74,8 +177,6 @@ impl Workspace {
             teams: teams.unwrap_or_default(),
             billing_metadata,
             bonus_grants_purchased_this_month: Default::default(),
-            billing_cycle_usage: None,
-            has_billing_history: false,
             settings: Default::default(), // TODO: persistence wrapper instead of default
             invite_code: Default::default(),
             invite_link_domain_restrictions: Default::default(),
@@ -95,18 +196,9 @@ impl Workspace {
             .is_some_and(|member| member.role.is_admin_or_owner())
     }
 
-    pub fn resolve_usage_visibility(&self, is_admin: bool) -> UsageVisibility {
-        let Some(policy) = self.billing_metadata.tier.usage_visibility_policy else {
-            return UsageVisibility::default();
-        };
-        UsageVisibility {
-            granularity: if is_admin {
-                policy.admin_granularity
-            } else {
-                UsageVisibilityGranularity::OwnOnly
-            },
-            max_prior_cycles: policy.max_prior_cycles,
-        }
+    // Simplified: local version has no usage visibility policy
+    pub fn resolve_usage_visibility(&self, _is_admin: bool) -> UsageVisibility {
+        UsageVisibility::default()
     }
 
     pub fn can_be_deleted(&self, current_user_email: &str) -> bool {
@@ -123,39 +215,22 @@ impl Workspace {
         self.settings.llm_settings.enabled
     }
 
+    // Simplified: local version has no overages
     pub fn are_overages_toggleable(&self) -> bool {
-        self.billing_metadata
-            .tier
-            .usage_based_pricing_policy
-            .is_some_and(|policy| policy.toggleable)
-    }
-
-    pub fn are_overages_enabled(&self) -> bool {
-        self.settings.usage_based_pricing_settings.enabled
-    }
-
-    pub fn are_overages_remaining(&self) -> bool {
-        if self.settings.usage_based_pricing_settings.enabled {
-            if let Some(max_spend_cents) = self
-                .settings
-                .usage_based_pricing_settings
-                .max_monthly_spend_cents
-            {
-                if let Some(ai_overages) = &self.billing_metadata.ai_overages {
-                    return ai_overages.current_monthly_request_cost_cents < max_spend_cents as i32;
-                } else {
-                    // If they have the setting enabled but no overages usage so far,
-                    // that means they have no database entry, so they have overages remaining.
-                    return true;
-                }
-            }
-        }
-
         false
     }
 
+    pub fn are_overages_enabled(&self) -> bool {
+        false
+    }
+
+    pub fn are_overages_remaining(&self) -> bool {
+        false
+    }
+
+    // Simplified: local version has no BYO API key from billing
     pub fn is_byo_api_key_enabled(&self) -> bool {
-        self.billing_metadata.is_byo_api_key_enabled()
+        false
     }
 
     /// Returns true if the workspace has reached or exceeded its monthly addon credits spend limit.
@@ -508,234 +583,114 @@ pub struct AiOverages {
     pub current_period_end: chrono::DateTime<chrono::Utc>,
 }
 
-/// A single redacted usage entry from `Workspace.billingCycleUsageHistory`.
-///
-/// The shape of this entry depends on the viewer's resolved `UsageVisibility`:
-/// * `OwnOnly` viewers receive only their own entries with real `cost_type` /
-///   `usage_bucket` / `usage_source` values.
-/// * `TeamAggregate` viewers receive exactly one synthetic `TEAM` row per cycle
-///   carrying `Aggregate` sentinels for all three categorical fields.
-/// * `PerUserTotals` viewers receive one row per user / service account per
-///   cycle, also with `Aggregate` sentinels on the categorical fields.
-/// * `FullBreakdown` viewers receive every real row, one per
-///   `(subject, cost_type, bucket, source)` tuple. Categorical fields always
-///   carry real values — the server does **not** synthesize an aggregate team
-///   total at this granularity. Compute team-wide sums client-side if needed.
-#[derive(Clone, Debug)]
-pub struct BillingCycleUsageEntry {
-    pub subject_type: AiCreditsUsageAndCostSubjectType,
-    pub subject_uid: Option<String>,
-    pub subject_display_name: Option<String>,
-    pub cost_type: AiCreditsUsageAndCostType,
-    pub usage_bucket: AiCreditsUsageBucket,
-    pub usage_source: AiCreditsUsageSource,
-    pub credits_used: i32,
-    pub cost_cents: i32,
-}
-
-/// Per-cycle bucket of redacted usage entries with explicit period bounds.
-/// `period_end` is exclusive (e.g. a summary covering May 2026 has
-/// `period_end = 2026-06-01T00:00:00Z`).
-#[derive(Clone, Debug)]
-pub struct BillingCycleUsageSummary {
-    pub period_start: chrono::DateTime<chrono::Utc>,
-    pub period_end: chrono::DateTime<chrono::Utc>,
-    pub entries: Vec<BillingCycleUsageEntry>,
-}
-
-/// The full per-cycle usage history for a workspace, as redacted by the
-/// server's `USAGE_VISIBILITY` policy. `current_period_start` /
-/// `current_period_end` mark the cycle that's currently active; older
-/// summaries cover prior cycles and the number of them retained is governed
-/// by the policy's `max_prior_cycles`.
-#[derive(Clone, Debug)]
-pub struct BillingCycleUsageData {
-    pub current_period_start: chrono::DateTime<chrono::Utc>,
-    pub current_period_end: chrono::DateTime<chrono::Utc>,
-    pub summaries: Vec<BillingCycleUsageSummary>,
-}
+// Simplified: removed BillingCycleUsageEntry, BillingCycleUsageSummary, BillingCycleUsageData
 
 impl BillingMetadata {
     /// Returns whether the current tier has a usage-based pricing policy that can be toggled.
     pub fn is_usage_based_pricing_toggleable(&self) -> bool {
-        self.tier
-            .usage_based_pricing_policy
-            .as_ref()
-            .is_some_and(|policy| policy.toggleable)
+        false
     }
 
     /**
      * Returns whether customer can upgrade to the Build plan based on their current tier.
+     * Simplified: always returns false for local version.
      */
     pub fn can_upgrade_to_build_plan(&self) -> bool {
-        match self.customer_type {
-            CustomerType::Unknown
-            | CustomerType::Business
-            | CustomerType::Enterprise
-            | CustomerType::Build
-            | CustomerType::BuildMax => false,
-            CustomerType::Free
-            | CustomerType::Legacy
-            | CustomerType::Prosumer
-            | CustomerType::Turbo
-            | CustomerType::SelfServe
-            | CustomerType::Lightspeed => true,
-        }
+        false
     }
 
     /**
      * Returns whether customer can upgrade to the Build Max plan based on their current tier.
-     * Users on Build can upgrade to Build Max.
+     * Simplified: always returns false for local version.
      */
     pub fn can_upgrade_to_build_max_plan(&self) -> bool {
-        self.can_upgrade_to_build_plan() || self.customer_type == CustomerType::Build
+        false
     }
 
     /**
      * Returns whether customer can upgrade to a higher tier based on their current tier.
+     * Simplified: always returns false for local version.
      */
     pub fn can_upgrade_to_higher_tier_plan(&self) -> bool {
-        self.can_upgrade_to_build_plan()
+        false
     }
 
-    pub fn is_stripe_paid_plan(customer_type: CustomerType) -> bool {
-        match customer_type {
-            CustomerType::Turbo
-            | CustomerType::SelfServe
-            | CustomerType::Prosumer
-            | CustomerType::Business
-            | CustomerType::Lightspeed
-            | CustomerType::Build
-            | CustomerType::BuildMax => true,
-            CustomerType::Free
-            | CustomerType::Enterprise
-            | CustomerType::Legacy
-            | CustomerType::Unknown => false,
-        }
+    pub fn is_stripe_paid_plan(_customer_type: CustomerType) -> bool {
+        false
     }
 
+    /// Simplified: always returns true for local version (assume paid plan).
     pub fn is_user_on_paid_plan(&self) -> bool {
-        match self.customer_type {
-            CustomerType::Turbo
-            | CustomerType::SelfServe
-            | CustomerType::Prosumer
-            | CustomerType::Business
-            | CustomerType::Lightspeed
-            | CustomerType::Enterprise
-            | CustomerType::Legacy
-            | CustomerType::Build
-            | CustomerType::BuildMax => true,
-            CustomerType::Free | CustomerType::Unknown => false,
-        }
+        true
     }
 
     pub fn is_on_stripe_paid_plan(&self) -> bool {
-        BillingMetadata::is_stripe_paid_plan(self.customer_type)
+        false
     }
 
     pub fn is_on_build_plan(&self) -> bool {
-        self.customer_type == CustomerType::Build
+        false
     }
 
     pub fn is_on_build_max_plan(&self) -> bool {
-        self.customer_type == CustomerType::BuildMax
+        false
     }
 
     pub fn is_on_build_business_plan(&self) -> bool {
-        self.customer_type == CustomerType::Business
-            && matches!(
-                self.service_agreements.first().map(|sa| &sa.type_),
-                Some(ServiceAgreementType::SelfServe)
-            )
+        false
     }
 
     pub fn is_on_legacy_business_plan(&self) -> bool {
-        self.customer_type == CustomerType::Business && !self.is_on_build_business_plan()
+        false
     }
 
     pub fn is_enterprise_plan(&self) -> bool {
-        self.customer_type == CustomerType::Enterprise
+        false
     }
 
     pub fn is_free_plan(&self) -> bool {
-        self.customer_type == CustomerType::Free
+        false
     }
 
     pub fn is_on_legacy_paid_plan(&self) -> bool {
-        match self.customer_type {
-            CustomerType::Prosumer
-            | CustomerType::Turbo
-            | CustomerType::Lightspeed
-            | CustomerType::SelfServe => true,
-            CustomerType::Business => self.is_on_legacy_business_plan(),
-            CustomerType::Free
-            | CustomerType::Legacy
-            | CustomerType::Enterprise
-            | CustomerType::Build
-            | CustomerType::BuildMax
-            | CustomerType::Unknown => false,
-        }
+        false
     }
 
     pub fn is_delinquent_due_to_payment_issue(&self) -> bool {
-        self.delinquency_status == DelinquencyStatus::PastDue
-            || self.delinquency_status == DelinquencyStatus::Unpaid
+        false
     }
 
     // Whether the enterprise customer is our Stable Warp Enterprise team (internal team of Warpers).
     pub fn is_warp_plan(&self) -> bool {
-        self.tier.name == "Warp Plan"
+        false
     }
 
     pub fn has_active_subscription(&self) -> bool {
-        if let Some(newest_service_agreement) = self.service_agreements.first() {
-            let not_expired = Utc::now() < newest_service_agreement.current_period_end.utc();
-            let not_delinquent = !self.is_delinquent_due_to_payment_issue();
-            not_expired && not_delinquent
-        } else {
-            false
-        }
+        false
     }
 
     pub fn is_byo_api_key_enabled(&self) -> bool {
-        self.tier
-            .byo_api_key_policy
-            .is_some_and(|policy| policy.enabled)
+        false
     }
 
     pub fn has_overages_used(&self) -> bool {
-        self.ai_overages
-            .as_ref()
-            .is_some_and(|ai_overages| ai_overages.current_monthly_requests_used > 0)
+        false
     }
 
     pub fn has_failed_addon_credit_auto_reload_status(&self) -> bool {
-        self.service_agreements
-            .first()
-            .and_then(|sa| sa.addon_credit_auto_reload_status)
-            .is_some_and(|status| matches!(status, AddonCreditAutoReloadStatus::Failed))
+        false
     }
 
     pub fn is_enterprise_pay_as_you_go_enabled(&self) -> bool {
-        self.customer_type == CustomerType::Enterprise
-            && self
-                .tier
-                .enterprise_pay_as_you_go_policy
-                .is_some_and(|policy| policy.enabled)
+        false
     }
 
     pub fn is_enterprise_auto_reload_enabled(&self) -> bool {
-        self.customer_type == CustomerType::Enterprise
-            && self
-                .tier
-                .enterprise_credits_auto_reload_policy
-                .is_some_and(|policy| policy.enabled)
+        false
     }
 
     pub fn is_purchase_add_on_credits_policy_enabled(&self) -> bool {
-        self.tier
-            .purchase_add_on_credits_policy
-            .is_some_and(|policy| policy.enabled)
+        false
     }
 }
 
@@ -870,12 +825,6 @@ pub struct SecretRedactionSettings {
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct UsageBasedPricingSettings {
-    pub enabled: bool,
-    pub max_monthly_spend_cents: Option<u32>,
-}
-
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct AddonCreditsSettings {
     pub auto_reload_enabled: bool,
     pub max_monthly_spend_cents: Option<i32>,
@@ -904,7 +853,6 @@ pub struct WorkspaceSettings {
     pub ai_autonomy_settings: AiAutonomySettings,
     pub is_invite_link_enabled: bool,
     pub is_discoverable: bool,
-    pub usage_based_pricing_settings: UsageBasedPricingSettings,
     pub addon_credits_settings: AddonCreditsSettings,
     pub codebase_context_settings: CodebaseContextSettings,
     pub sandboxed_agent_settings: Option<SandboxedAgentSettings>,
