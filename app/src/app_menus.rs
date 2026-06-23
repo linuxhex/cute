@@ -145,11 +145,13 @@ fn make_new_app_menu(ctx: &AppContext) -> Menu {
         ))
     }
 
-    menu_items.extend([
-        MenuItem::Separator,
-        updateable_custom_item_without_checkmark(CustomAction::ReferAFriend, ctx),
-        MenuItem::Separator,
-    ]);
+    // TODO: Add ReferAFriend binding registration if needed in the future
+    // For now, skip it since it doesn't have a binding description registered
+    // menu_items.extend([
+    //     MenuItem::Separator,
+    //     updateable_custom_item_without_checkmark(CustomAction::ReferAFriend, ctx),
+    //     MenuItem::Separator,
+    // ]);
 
     let preferences_menu_items = vec![
         updateable_custom_item_without_checkmark(CustomAction::ShowSettings, ctx),
@@ -368,7 +370,8 @@ fn make_new_view_menu(ctx: &AppContext) -> Menu {
         MenuItem::Separator,
         updateable_custom_item_without_checkmark(CustomAction::History, ctx),
         updateable_custom_item_without_checkmark(CustomAction::CommandSearch, ctx),
-        updateable_custom_item_without_checkmark(CustomAction::Workflows, ctx),
+        // TODO: Add Workflows binding registration if needed
+        // updateable_custom_item_without_checkmark(CustomAction::Workflows, ctx),
         MenuItem::Separator,
         MenuItem::Custom(CustomMenuItem::new(
             "Toggle Mouse Reporting",

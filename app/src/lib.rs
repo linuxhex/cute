@@ -1049,6 +1049,9 @@ pub(crate) fn initialize_app(
 
     PrivacySettings::register_singleton(ctx);
 
+    // Register the stub RemoteCodebaseIndexModel
+    ctx.add_singleton_model(|_ctx| remote_server::codebase_index_model::RemoteCodebaseIndexModel::default());
+
     // If any part of sqlite initialization fails, we just don't do session restoration (i.e.
     // feature degradation).
     let persistence_scope = persistence::PersistenceScope::App;

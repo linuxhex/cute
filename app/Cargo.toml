@@ -4,13 +4,13 @@ default-run = "cute"
 description = "The cloud-backed terminal for individuals and teams"
 edition = "2021"
 autobins = false
-name = "warp"
+name = "cute"
 version = "0.1.0"
 publish.workspace = true
 license.workspace = true
 
 [lib]
-name = "warp"
+name = "cute"
 path = "src/lib.rs"
 
 # We define separate targets for each channel (stable, preview, dev) so that we can

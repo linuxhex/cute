@@ -10,6 +10,14 @@ pub struct RemoteCodebaseIndexModel {
     _phantom: (),
 }
 
+impl Default for RemoteCodebaseIndexModel {
+    fn default() -> Self {
+        Self {
+            _phantom: (),
+        }
+    }
+}
+
 /// Stub event enum for RemoteCodebaseIndexModel.
 #[derive(Clone, Debug)]
 pub enum RemoteCodebaseIndexModelEvent {
