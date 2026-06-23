@@ -12793,68 +12793,8 @@ impl Workspace {
         use crate::pane_group::pane::branch_selector_pane::BranchSelectorPane;
 
         let pane = BranchSelectorPane::new(ctx);
-        let branch_selector_view = pane.branch_selector_view(ctx);
 
-        // Load branches for the terminal's working directory
-        let pane_group = self.active_tab_pane_group();
-        let mut should_select_first_commit = false;
-
-        if let Some(terminal_view) = pane_group
-            .as_ref(ctx)
-            .terminal_view_from_pane_id(pane_id, ctx)
-        {
-            let cwd = terminal_view
-                .as_ref(ctx)
-                .active_session()
-                .as_ref(ctx)
-                .current_working_directory_location(ctx);
-            if let Some(warp_util::local_or_remote_path::LocalOrRemotePath::Local(repo_path)) = cwd
-            {
-                let current_branch = crate::util::git::detect_current_branch_sync(&repo_path);
-                let branches = self.load_branches_for_repo(&repo_path, ctx);
-
-                branch_selector_view.update(ctx, |view, ctx| {
-                    view.set_repo_path(repo_path.clone(), ctx);
-                    view.set_branches(branches, current_branch, ctx);
-
-                    // 如果选中了当前分支，自动选中最新的提交记录
-                    if view.state.selected_branch_index.is_some() {
-                        should_select_first_commit = true;
-                    }
-                });
-            }
-        }
-
-        // 自动选中最新的提交记录（延迟加载）
-        if should_select_first_commit {
-            branch_selector_view.update(ctx, |view, ctx| {
-                // 加载当前分支的提交记录
-                if let Some(branch_idx) = view.state.selected_branch_index {
-                    if let Some(branch) = view.state.branches.get(branch_idx) {
-                        if branch.recent_commits.is_empty() {
-                            if let Some(repo_path) = &view.state.repo_path {
-                                let recent_commits = Self::get_branch_recent_commits_sync(
-                                    repo_path,
-                                    &branch.full_name,
-                                    10,
-                                );
-                                view.state.branches[branch_idx].recent_commits = recent_commits;
-                            }
-                        }
-                    }
-                }
-
-                // 选中第一个提交记录（最新的）
-                view.state.select_commit(0);
-
-                // 当前分支：显示工作区改动，而不是最新提交的改动
-                if let Some(repo_path) = &view.state.repo_path {
-                    let changed_files = Self::get_working_directory_changes(repo_path);
-                    view.set_changed_files(changed_files, ctx);
-                }
-            });
-        }
-
+        // 先创建 pane,不阻塞 UI
         let _new_pane_id = self.active_tab_pane_group().update(ctx, |pane_group, ctx| {
             let pane: Box<dyn crate::pane_group::pane::AnyPaneContent> = Box::new(pane);
             pane_group.add_pane_sibling(
@@ -12865,7 +12805,11 @@ impl Workspace {
                 ctx,
             )
         });
-        // 新 pane 创建时已经设置为 2/3 宽度，无需额外 resize
+
+        // TODO: 临时禁用分支数据加载以避免 UI 卡死
+        // 需要在后台线程异步加载 git 数据,然后通过主线程更新 UI
+        // 这需要 warpui 的异步更新机制支持
+        let _ = (pane_id, ctx);
     }
 
     /// Handle branch selection in BranchSelectorPane
