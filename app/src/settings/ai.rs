@@ -1111,9 +1111,10 @@ define_settings_group!(AISettings, settings: [
 
     // When enabled and a CLI agent session has a plugin listener, rich input
     // auto-opens once when the session starts or when the listener is registered.
+    // Changed from false to true to fix the CLI agent rich input feature.
     auto_open_rich_input_on_cli_agent_start: AutoOpenRichInputOnCLIAgentStart {
         type: bool,
-        default: false,
+        default: true,
         supported_platforms: SupportedPlatforms::ALL,
         sync_to_cloud: SyncToCloud::Globally(RespectUserSyncSetting::Yes),
         private: false,

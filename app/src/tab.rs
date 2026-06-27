@@ -1329,7 +1329,11 @@ impl<'a> TabComponent<'a> {
 
         icon.map(|icon| {
             // Cute: Ensure indicator doesn't get compressed
-            Container::new(icon).with_margin_right(4.).finish()
+            // Add size constraints to prevent infinite width crash
+            ConstrainedBox::new(Container::new(icon).with_margin_right(4.).finish())
+                .with_max_width(TAB_INDICATOR_HEIGHT + 8.0) // icon + margin
+                .with_max_height(TAB_INDICATOR_HEIGHT + 4.0)
+                .finish()
         })
     }
 
