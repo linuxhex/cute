@@ -1,6 +1,5 @@
 use settings::Setting;
 use warp_core::report_if_error;
-use warp_core::ui::Icon;
 use warpui::elements::{
     ChildAnchor, Container, CrossAxisAlignment, Flex, MainAxisSize, OffsetPositioning,
     ParentAnchor, ParentElement, ParentOffsetBounds, Shrinkable, Stack, Text,
@@ -143,33 +142,14 @@ impl View for TerminalViewZeroStateBlock {
         let theme = appearance.theme();
 
         let title_font_size = appearance.monospace_font_size() + 6.;
-        let title = Flex::row()
-            .with_cross_axis_alignment(CrossAxisAlignment::Center)
-            .with_child(
-                Container::new(
-                    ConstrainedBox::new(
-                        Icon::Warp
-                            .to_warpui_icon(theme.main_text_color(theme.background()))
-                            .finish(),
-                    )
-                    .with_height(title_font_size)
-                    .with_width(title_font_size)
-                    .finish(),
-                )
-                .with_margin_right(8.)
-                .finish(),
-            )
-            .with_child(
-                Text::new(
-                    "New terminal session",
-                    appearance.ui_font_family(),
-                    title_font_size,
-                )
-                .with_color(theme.main_text_color(theme.background()).into_solid())
-                .with_style(Properties::default().weight(Weight::Bold))
-                .finish(),
-            )
-            .finish();
+        let title = Text::new(
+            "New terminal session",
+            appearance.ui_font_family(),
+            title_font_size,
+        )
+        .with_color(theme.main_text_color(theme.background()).into_solid())
+        .with_style(Properties::default().weight(Weight::Bold))
+        .finish();
 
         let mut content = Flex::column()
             .with_cross_axis_alignment(CrossAxisAlignment::Stretch)

@@ -4335,33 +4335,23 @@ fn render_summary_pane_kind_icon_circle(
     let icon_size = total_size * SUMMARY_INLINE_ICON_RATIO;
     let padding = total_size * SUMMARY_INLINE_PADDING_RATIO;
     let (icon_element, background): (Box<dyn Element>, ElementFill) = match kind {
+        SummaryPaneKind::CLIAgent { agent, .. } => {
+            return render_icon_with_status(
+                IconWithStatusVariant::CLIAgent {
+                    agent,
+                    status: None,
+                    is_ambient: false,
+                },
+                total_size,
+                0.,
+                theme,
+                theme.background(),
+            );
+        }
         SummaryPaneKind::OzAgent { .. } => (
             WarpIcon::Oz.to_warpui_icon(oz_icon_fill(theme)).finish(),
             theme.background().into(),
         ),
-        SummaryPaneKind::CLIAgent { agent, .. } => {
-            let icon_color = agent.brand_icon_color();
-            let icon_element = agent
-                .icon()
-                .map(|icon| {
-                    icon.to_warpui_icon(WarpThemeFill::Solid(icon_color))
-                        .finish()
-                })
-                .unwrap_or_else(|| {
-                    WarpIcon::Terminal
-                        .to_warpui_icon(theme.sub_text_color(theme.background()))
-                        .finish()
-                });
-            (
-                icon_element,
-                ThemeFill::Solid(
-                    agent
-                        .brand_color()
-                        .unwrap_or(ColorU::new(100, 100, 100, 255)),
-                )
-                .into(),
-            )
-        }
         SummaryPaneKind::Code { title } => (
             icon_from_file_path(&title, appearance).unwrap_or_else(|| {
                 WarpIcon::Code2

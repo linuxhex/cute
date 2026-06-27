@@ -3,9 +3,10 @@ use pathfinder_geometry::vector::vec2f;
 use warp_core::ui::icons::Icon as WarpIcon;
 use warp_core::ui::theme::color::internal_colors;
 use warp_core::ui::theme::{Fill as WarpThemeFill, WarpTheme};
+use warpui::assets::asset_cache::AssetSource;
 use warpui::elements::{
-    ChildAnchor, ConstrainedBox, Container, CornerRadius, Element, Empty, OffsetPositioning,
-    ParentAnchor, ParentElement, ParentOffsetBounds, Radius, Stack,
+    CacheOption, ChildAnchor, ConstrainedBox, Container, CornerRadius, Element, Empty, Image,
+    OffsetPositioning, ParentAnchor, ParentElement, ParentOffsetBounds, Radius, Stack,
 };
 
 use crate::ai::agent::conversation::{ConversationStatus, StatusColorStyle};
@@ -268,34 +269,47 @@ pub(crate) fn render_icon_with_status_with_animation(
             status,
             is_ambient,
         } => {
-            let brand_color = agent
-                .brand_color()
-                .unwrap_or(ColorU::new(100, 100, 100, 255));
-            let icon_color = agent.brand_icon_color();
-            let icon_element = agent
-                .icon()
-                .map(|icon| {
-                    icon.to_warpui_icon(WarpThemeFill::Solid(icon_color))
-                        .finish()
-                })
-                .unwrap_or_else(|| WarpIcon::Terminal.to_warpui_icon(sub_text).finish());
-            // Cute: Use animation for running agents
-            let circle = render_circle_with_animation(
-                icon_element,
-                ThemeFill::Solid(brand_color),
-                total_size,
-                animation_phase,
-            );
-            attach_status_overlay(
-                circle,
-                status.as_ref(),
-                is_ambient,
-                total_size,
-                overlay_extra_overhang_ratio,
-                badge_style,
-                theme,
-                status_container_background,
-            )
+            if agent.uses_full_color_icon() {
+                let icon = render_full_color_cli_agent_icon(agent, total_size);
+                attach_status_overlay(
+                    icon,
+                    status.as_ref(),
+                    is_ambient,
+                    total_size,
+                    overlay_extra_overhang_ratio,
+                    badge_style,
+                    theme,
+                    status_container_background,
+                )
+            } else {
+                let brand_color = agent
+                    .brand_color()
+                    .unwrap_or(ColorU::new(100, 100, 100, 255));
+                let icon_color = agent.brand_icon_color();
+                let icon_element = agent
+                    .icon()
+                    .map(|icon| {
+                        icon.to_warpui_icon(WarpThemeFill::Solid(icon_color))
+                            .finish()
+                    })
+                    .unwrap_or_else(|| WarpIcon::Terminal.to_warpui_icon(sub_text).finish());
+                let circle = render_circle_with_animation(
+                    icon_element,
+                    ThemeFill::Solid(brand_color),
+                    total_size,
+                    animation_phase,
+                );
+                attach_status_overlay(
+                    circle,
+                    status.as_ref(),
+                    is_ambient,
+                    total_size,
+                    overlay_extra_overhang_ratio,
+                    badge_style,
+                    theme,
+                    status_container_background,
+                )
+            }
         }
         IconWithStatusVariant::CustomAvatar {
             avatar,
@@ -312,6 +326,21 @@ pub(crate) fn render_icon_with_status_with_animation(
             status_container_background,
         ),
     }
+}
+
+/// Qoder / Trae 等 SVG 自带品牌色，不走单色 tint 与圆底。
+fn render_full_color_cli_agent_icon(agent: CLIAgent, total_size: f32) -> Box<dyn Element> {
+    let path = match agent {
+        CLIAgent::Qoder => "bundled/svg/qoder.svg",
+        CLIAgent::Trae => "bundled/svg/trae.svg",
+        _ => unreachable!("uses_full_color_icon"),
+    };
+    ConstrainedBox::new(
+        Image::new(AssetSource::Bundled { path }, CacheOption::BySize).finish(),
+    )
+    .with_width(total_size)
+    .with_height(total_size)
+    .finish()
 }
 
 /// Builds the brand-circle container around `icon_element`. The circle's diameter is
