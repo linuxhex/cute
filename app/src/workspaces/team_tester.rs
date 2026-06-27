@@ -19,6 +19,9 @@ impl TeamTesterStatus {
     /// Emit an event to start or force-refresh the cloud object and workspace metadata pollers.
     /// In the local version, this is a no-op as there's no cloud to poll.
     pub fn initiate_data_pollers(&mut self, force_refresh: bool, ctx: &mut ModelContext<Self>) {
+        if cfg!(feature = "skip_login") {
+            return;
+        }
         ctx.emit(TeamTesterStatusEvent::InitiateDataPollers { force_refresh })
     }
 }

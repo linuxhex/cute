@@ -80,6 +80,10 @@ impl TeamUpdateManager {
         network_status: &NetworkStatusEvent,
         ctx: &mut ModelContext<Self>,
     ) {
+        // Cute OMJF-11111: 本地模式不轮询团队/workspace 元数据
+        if cfg!(feature = "skip_login") {
+            return;
+        }
         match network_status {
             NetworkStatusEvent::NetworkStatusChanged { new_status } => match new_status {
                 NetworkStatusKind::Online => {
@@ -97,6 +101,9 @@ impl TeamUpdateManager {
         event: &TeamTesterStatusEvent,
         ctx: &mut ModelContext<Self>,
     ) {
+        if cfg!(feature = "skip_login") {
+            return;
+        }
         let TeamTesterStatusEvent::InitiateDataPollers { force_refresh } = event;
         if *force_refresh {
             std::mem::drop(self.refresh_workspace_metadata(ctx));
@@ -130,6 +137,9 @@ impl TeamUpdateManager {
     /// Starts a periodic poll for workspace metadata changes, if there isn't already
     /// an existing poll queued up.
     pub fn start_polling_for_workspace_metadata_updates(&mut self, ctx: &mut ModelContext<Self>) {
+        if cfg!(feature = "skip_login") {
+            return;
+        }
         let is_online = NetworkStatus::as_ref(ctx).is_online();
         if !self.should_poll_for_workspace_metadata_updates && is_online {
             self.should_poll_for_workspace_metadata_updates = true;

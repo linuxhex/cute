@@ -993,6 +993,9 @@ fn open_linear_issue_work_in_new_window(args: &LinearIssueWork, ctx: &mut AppCon
 }
 
 fn open_warp_drive_object(arg: &OpenWarpDriveObjectArgs, ctx: &mut AppContext) {
+    if cfg!(feature = "skip_login") {
+        return;
+    }
     match arg.object_type {
         ObjectType::Notebook => open_new_workspace_with_notebook_open(
             SyncId::ServerId(arg.server_id),
@@ -1020,6 +1023,9 @@ fn open_new_workspace_with_notebook_open(
     settings: OpenWarpDriveObjectSettings,
     ctx: &mut AppContext,
 ) {
+    if cfg!(feature = "skip_login") {
+        return;
+    }
     open_new_with_workspace_source(
         NewWorkspaceSource::NotebookById {
             id: notebook_id,
@@ -1034,6 +1040,9 @@ fn open_new_workspace_with_workflow_open(
     settings: OpenWarpDriveObjectSettings,
     ctx: &mut AppContext,
 ) {
+    if cfg!(feature = "skip_login") {
+        return;
+    }
     open_new_with_workspace_source(
         NewWorkspaceSource::WorkflowById {
             id: workflow_id,
@@ -1641,9 +1650,10 @@ impl RootView {
                             onboarding_view,
                             target: AuthOnboardingTarget::Workspace(workspace_args_box),
                         }
-                    } else if FeatureFlag::SkipFirebaseAnonymousUser.is_enabled() {
-                        // When SkipFirebaseAnonymousUser is enabled, skip the login screen
-                        // entirely and go directly into the workspace.
+                    } else if cfg!(feature = "skip_login")
+                        || FeatureFlag::SkipFirebaseAnonymousUser.is_enabled()
+                    {
+                        // Cute: skip_login 或 SkipFirebaseAnonymousUser 时直接进入 workspace
                         AuthOnboardingState::Terminal(workspace_args.create_workspace(ctx))
                     } else {
                         AuthOnboardingState::Auth(workspace_args.into())

@@ -2035,7 +2035,7 @@ impl SettingsPageMeta for EnvironmentsPageView {
     }
 
     fn should_render(&self, _ctx: &AppContext) -> bool {
-        true
+        !cfg!(feature = "skip_login")
     }
 
     fn update_filter(&mut self, query: &str, ctx: &mut ViewContext<Self>) -> MatchData {

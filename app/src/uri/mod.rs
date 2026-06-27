@@ -1073,7 +1073,9 @@ impl Action {
                 );
             }
             Action::AutoHandoffToCloud { trigger } => {
-                trigger_auto_handoff_to_cloud(*trigger, ctx);
+                if !cfg!(feature = "skip_login") {
+                    trigger_auto_handoff_to_cloud(*trigger, ctx);
+                }
             }
         }
     }

@@ -6922,6 +6922,10 @@ impl Workspace {
         ctx: &mut ViewContext<Self>,
         default_to_new_pane: bool,
     ) {
+        // Cute OMJF-11111: 本地模式不支持云 Notebook
+        if cfg!(feature = "skip_login") {
+            return;
+        }
         let notebook_manager = NotebookManager::handle(ctx);
         let mut notebook_already_open = false;
         if let Some((window_id, locator)) = notebook_manager.as_ref(ctx).find_pane(source) {
@@ -7004,6 +7008,9 @@ impl Workspace {
         settings: &OpenWarpDriveObjectSettings,
         ctx: &mut ViewContext<Self>,
     ) {
+        if cfg!(feature = "skip_login") {
+            return;
+        }
         // If running workflows is supported, do so. Otherwise, or if the workflow isn't in memory,
         // fall back to the workflow pane.
         // We don't want to run the workflow if the invitee email is set, as we want to open the share dialog instead with the
@@ -7047,6 +7054,9 @@ impl Workspace {
         mode: WorkflowViewMode,
         ctx: &mut ViewContext<Self>,
     ) {
+        if cfg!(feature = "skip_login") {
+            return;
+        }
         let workflow_manager = WorkflowManager::handle(ctx);
 
         if let Some((window_id, locator)) = workflow_manager.as_ref(ctx).find_pane(source) {
@@ -7084,6 +7094,9 @@ impl Workspace {
         reload: bool,
         ctx: &mut ViewContext<Self>,
     ) {
+        if cfg!(feature = "skip_login") {
+            return;
+        }
         let env_var_collection_manager = EnvVarCollectionManager::handle(ctx);
 
         if let Some((window_id, locator)) = env_var_collection_manager.as_ref(ctx).find_pane(source)
@@ -7589,6 +7602,9 @@ impl Workspace {
         mode: EnvironmentsPage,
         ctx: &mut ViewContext<Self>,
     ) {
+        if cfg!(feature = "skip_login") {
+            return;
+        }
         let direction = direction.unwrap_or(Direction::Right);
         let environments_page_view = self.active_tab_pane_group().update(ctx, |pane_group, ctx| {
             let pane = EnvironmentManagementPane::new(ctx);
@@ -7789,6 +7805,9 @@ impl Workspace {
         explicit_user_action: bool,
         ctx: &mut ViewContext<Self>,
     ) {
+        if cfg!(feature = "skip_login") {
+            return;
+        }
         // Closing all left panels will also close warp drive so we need to retrieve
         // whether warp drive was open first, and toggle based on the initial value.
         let was_warp_drive_open = self.current_workspace_state.is_warp_drive_open;

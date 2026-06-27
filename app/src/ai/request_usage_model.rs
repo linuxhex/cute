@@ -225,6 +225,9 @@ impl AIRequestUsageModel {
 
     /// Spawns a task to refresh the latest AI request usage and bonus grants, fetching from the server.
     pub fn refresh_request_usage_async(&mut self, ctx: &mut ModelContext<Self>) {
+        if cfg!(feature = "skip_login") {
+            return;
+        }
         if !AuthStateProvider::as_ref(ctx).get().is_logged_in() {
             return;
         }

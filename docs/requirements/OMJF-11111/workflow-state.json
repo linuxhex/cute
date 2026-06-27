@@ -1,0 +1,8 @@
+{
+  "requirement_id": "OMJF-11111",
+  "requirement_key": "OMJF-11111",
+  "phase": "commit",
+  "implement_subphase": "completed",
+  "multi_service_mode": false,
+  "main_service": "cute"
+}

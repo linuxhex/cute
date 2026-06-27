@@ -49,7 +49,7 @@ impl OneTimeModalModel {
         );
 
         // Subscribe to auth manager events to automatically trigger modal when user becomes onboarded
-        ctx.subscribe_to_model(&AuthManager::handle(ctx), |_, event, ctx| {
+        ctx.subscribe_to_model(&AuthManager::handle(ctx), |me, event, ctx| {
             let AuthManagerEvent::AuthComplete = event else {
                 return;
             };
@@ -57,18 +57,23 @@ impl OneTimeModalModel {
             let auth_state = crate::auth::AuthStateProvider::as_ref(ctx).get().clone();
             let is_existing_user = auth_state.is_onboarded().unwrap_or_default();
             if is_existing_user {
-                // Settings modals settings are synced to the cloud, not respecting the user's sync setting, so they
-                // must all await initial load to be triggered, else we risk reading a stale triggered value.
-                ctx.subscribe_to_model(
-                    &CloudPreferencesSyncer::handle(ctx),
-                    move |me, event, ctx| {
-                        if let CloudPreferencesSyncerEvent::InitialLoadCompleted = event {
-                            ctx.unsubscribe_from_model(&CloudPreferencesSyncer::handle(ctx));
-                            me.check_and_trigger_all_modals(ctx);
-                            maybe_ensure_handoff_chip_in_toolbar(ctx);
-                        }
-                    },
-                );
+                if cfg!(feature = "skip_login") {
+                    me.check_and_trigger_all_modals(ctx);
+                    maybe_ensure_handoff_chip_in_toolbar(ctx);
+                } else {
+                    // Settings modals settings are synced to the cloud, not respecting the user's sync setting, so they
+                    // must all await initial load to be triggered, else we risk reading a stale triggered value.
+                    ctx.subscribe_to_model(
+                        &CloudPreferencesSyncer::handle(ctx),
+                        move |me, event, ctx| {
+                            if let CloudPreferencesSyncerEvent::InitialLoadCompleted = event {
+                                ctx.unsubscribe_from_model(&CloudPreferencesSyncer::handle(ctx));
+                                me.check_and_trigger_all_modals(ctx);
+                                maybe_ensure_handoff_chip_in_toolbar(ctx);
+                            }
+                        },
+                    );
+                }
             } else {
                 AISettings::handle(ctx).update(ctx, |settings, ctx| {
                     if let Err(e) = settings

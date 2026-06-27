@@ -1380,7 +1380,8 @@ pub(crate) fn initialize_app(
     themes::theme_creator_modal::init(ctx);
     themes::theme_deletion_modal::init(ctx);
     root_view::init(ctx);
-    auth::init(ctx);
+    // Cute OMJF-11111: 本地模式不注册登录/注册 UI
+    // auth::init(ctx);
     crate::view_components::find::init(ctx);
     prompt::editor_modal::init(ctx);
     ai::blocklist::agent_view::editor::init(ctx);
@@ -1389,8 +1390,9 @@ pub(crate) fn initialize_app(
     tab_configs::params_modal::init(ctx);
     ai::blocklist::init(ctx);
     ai::blocklist::block::status_bar::init(ctx);
-    drive::index::init(ctx);
-    drive::sharing::dialog::init(ctx);
+    // Cute OMJF-11111: 移除 Warp Drive UI 初始化
+    // drive::index::init(ctx);
+    // drive::sharing::dialog::init(ctx);
     ai_assistant::panel::init(ctx);
     settings_view::update_environment_form::init(ctx);
     env_vars::env_var_collection_block::init(ctx);
@@ -1414,7 +1416,8 @@ pub(crate) fn initialize_app(
     ctx.add_singleton_model(|_| GitHubAuthNotifier::new());
     ctx.add_singleton_model(|_| NetworkStatus::new());
     ctx.add_singleton_model(|_| SystemStats::new());
-    workspace::auto_handoff::init(ctx);
+    // Cute OMJF-11111: 移除 cloud handoff
+    // workspace::auto_handoff::init(ctx);
     ctx.add_singleton_model(|_| KeybindingChangedNotifier::new());
     ctx.add_singleton_model(|_| search::command_palette::SelectedItems::new());
     ctx.add_singleton_model(search::files::model::FileSearchModel::new);
@@ -1553,6 +1556,7 @@ pub(crate) fn initialize_app(
     });
 
     let toml_file_path = settings::user_preferences_toml_file_path();
+    // Cute OMJF-11111: 注册 stub syncer（不向云端同步，仅满足订阅方 InitialLoadCompleted）
     ctx.add_singleton_model(move |ctx| {
         initialize_cloud_preferences_syncer(
             toml_file_path,
@@ -2205,8 +2209,8 @@ fn launch(ctx: &mut warpui::AppContext, app_state: Option<AppState>, launch_mode
                 timer.mark_interval_end("WINDOWS_CREATED");
             });
 
-            // TODO(ben): We should skip this for LaunchMode::Test.
-            #[cfg(any(target_os = "macos", target_os = "windows"))]
+            // Cute OMJF-11111: 本地模式不注册系统登录项
+            #[cfg(not(feature = "skip_login"))]
             {
                 use crate::login_item::maybe_register_app_as_login_item;
                 use crate::terminal::general_settings::GeneralSettingsChangedEvent;

@@ -110,6 +110,16 @@ impl CloudPreferencesSyncer {
             force_local_wins_on_startup: false,
             toml_file_path,
         }
+        .emit_initial_load_if_local(ctx)
+    }
+
+    /// 本地模式无云端同步，启动时立即通知订阅方。
+    fn emit_initial_load_if_local(mut self, ctx: &mut ModelContext<Self>) -> Self {
+        if cfg!(feature = "skip_login") {
+            self.has_completed_initial_load = true;
+            ctx.emit(CloudPreferencesSyncerEvent::InitialLoadCompleted);
+        }
+        self
     }
 
     /// Handler for when the user has been fetched (simplified stub).
