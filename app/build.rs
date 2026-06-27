@@ -339,10 +339,11 @@ fn embed_resource_file(target_dir: &Path) {
     let app_name = env::var("WARP_APP_NAME").unwrap_or("Warp".to_owned());
     let bin_name = env::var("CARGO_BIN_NAME").unwrap_or("local".to_owned());
 
+    // Cute 打包图标使用带 macOS 风格白边的版本，与 Cargo.toml bundle 配置一致
     let icon_path = Path::new("channels")
         .join(bin_name)
         .join("icon")
-        .join("no-padding")
+        .join("with-white-border")
         .join("icon.ico");
 
     fs::copy(icon_path, target_dir.join("icon.ico"))

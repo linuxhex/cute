@@ -113,7 +113,9 @@ if [ "${GENERATE_SCHEMA:-false}" != "true" ]; then
 fi
 NO_LICENSES=1 "${REPO_ROOT}/script/prepare_bundled_resources" "$WARP_APP_PATH/Contents/Resources" "$WARP_CHANNEL"
 
-"${REPO_ROOT}/script/compile_icon" "$WARP_CHANNEL" "$WARP_APP_PATH"
+# shellcheck source=script/cute_icon.sh
+source "${REPO_ROOT}/script/cute_icon.sh"
+apply_cute_app_icon "$WARP_APP_PATH"
 
 if [[ ",$FEATURES," =~ ",heap_usage_tracking," ]]; then
   echo "Bundling pprof..."

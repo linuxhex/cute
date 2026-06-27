@@ -140,7 +140,15 @@ export FEATURES
 export WARP_BIN_NAME
 export WARP_CHANNEL
 
+# Cute 图标固定使用 cute 渠道 + with-white-border 资源
+export CUTE_ICON_CHANNEL="cute"
+export CUTE_ICON_VARIANT="with-white-border"
+
 if [[ "$OS_TYPE" = "Darwin" ]]; then
+  # 打包前校验图标资源，避免误用 no-padding 或无 AppIcon.icon 的旧配置
+  # shellcheck source=script/cute_icon.sh
+  source "${REPO_ROOT}/script/cute_icon.sh"
+  verify_cute_icon_assets
   if [[ ${#WARP_ARGS[@]} -gt 0 ]]; then
     exec ./script/macos/run "${MAC_ARGS[@]}" -- "${WARP_ARGS[@]}"
   else

@@ -277,7 +277,10 @@ BUNDLED_RESOURCES_DIR="$BUNDLE_DIR/$WARP_APP_NAME.app/Contents/Resources"
 echo "Preparing bundled resources..."
 "$WORKSPACE_ROOT_DIR/script/prepare_bundled_resources" "$BUNDLED_RESOURCES_DIR" "cute" "$CARGO_PROFILE"
 
-"$WORKSPACE_ROOT_DIR/script/compile_icon" "cute" "$BUNDLE_DIR/$WARP_APP_NAME.app"
+REPO_ROOT="$WORKSPACE_ROOT_DIR"
+# shellcheck source=script/cute_icon.sh
+source "$WORKSPACE_ROOT_DIR/script/cute_icon.sh"
+apply_cute_app_icon "$BUNDLE_DIR/$WARP_APP_NAME.app"
 
 CLI_SCRIPT_PATH="$BUNDLED_RESOURCES_DIR/bin/cute"
 

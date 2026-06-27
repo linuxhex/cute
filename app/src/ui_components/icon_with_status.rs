@@ -342,26 +342,11 @@ fn render_circle_with_animation(
         .with_height(icon)
         .finish();
 
-    // Cute: Apply breathing animation with enhanced glow effect
+    // Cute: 呼吸动画只驱动外圈光晕，品牌色圆底保持不透明，避免 tab 上只剩白色 glyph
     let (animated_background, glow_alpha) = match (&background, animation_phase) {
-        (WarpThemeFill::Solid(color), Some(phase)) => {
-            // Breathing effect: alpha oscillates between 80 and 255 (wider range for visibility)
-            // phase 0.0 -> alpha 167, phase 0.5 -> alpha 255, phase 1.0 -> alpha 167
-            let alpha_range = 87.5; // (255 - 80) / 2
-            let base_alpha = 167.5; // (255 + 80) / 2
-            let alpha =
-                (base_alpha + alpha_range * (phase * std::f32::consts::PI * 2.0).sin()) as u8;
-            // Glow intensity peaks at phase 0.5 (when circle is brightest)
+        (WarpThemeFill::Solid(_color), Some(phase)) => {
             let glow = ((phase * std::f32::consts::PI * 2.0).sin().max(0.0) * 120.0) as u8;
-            (
-                WarpThemeFill::Solid(ColorU {
-                    r: color.r,
-                    g: color.g,
-                    b: color.b,
-                    a: alpha,
-                }),
-                glow,
-            )
+            (background, glow)
         }
         _ => (background, 0),
     };

@@ -100,6 +100,8 @@ use crate::terminal::view::TerminalAction;
 #[cfg(not(target_family = "wasm"))]
 use crate::terminal::ShellLaunchData;
 use crate::terminal::{CLIAgent, TerminalModel};
+use crate::themes::theme::Fill as ThemeFill;
+use crate::ui_components::icon_with_status::{render_icon_with_status, IconWithStatusVariant};
 use crate::ui_components::icons::Icon;
 use crate::view_components::action_button::{
     ActionButton, ActionButtonTheme, AdjoinedSide, ButtonSize, KeystrokeSource, NakedTheme,
@@ -1477,19 +1479,23 @@ impl AgentInputFooter {
             .with_spacing(4.);
 
         // CLI agent brand icon is always rendered (not configurable).
+        // 与 tab 栏一致：品牌色圆底 + brand_icon_color glyph，避免 alt screen 背景下
+        // on_background 对比度算法把图标染成白色。
         if let Some(agent) = self.cli_agent(app) {
-            if let Some(icon) = agent.icon() {
-                let icon_color = agent
-                    .brand_color()
-                    .map(|c| c.on_background(background_color, MinimumAllowedContrast::NonText))
-                    .unwrap_or_else(|| appearance.theme().foreground().into_solid());
+            if agent.icon().is_some() {
+                let variant = IconWithStatusVariant::CLIAgent {
+                    agent,
+                    status: None,
+                    is_ambient: false,
+                };
                 left_buttons.add_child(
-                    Container::new(
-                        ConstrainedBox::new(icon.to_warpui_icon(Fill::Solid(icon_color)).finish())
-                            .with_width(cli_icon_size)
-                            .with_height(cli_icon_size)
-                            .finish(),
-                    )
+                    Container::new(render_icon_with_status(
+                        variant,
+                        cli_icon_size,
+                        0.,
+                        appearance.theme(),
+                        ThemeFill::Solid(background_color),
+                    ))
                     .with_padding_right(8.)
                     .finish(),
                 );

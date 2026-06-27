@@ -9,22 +9,28 @@
 
 set -e
 
-if [ "$#" -ne 2 ]; then
-    echo "Usage: compile_icon <channel> <app_bundle_path>"
-    exit 1
-fi
-
-CHANNEL="$1"
-APP_BUNDLE_PATH="$2"
-
 # Determine the repository root directory
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+CHANNEL="${1:-cute}"
+APP_BUNDLE_PATH="$2"
+
+if [ "$#" -ne 2 ]; then
+    echo "Usage: compile_icon [channel] <app_bundle_path>"
+    echo "  Cute builds always use channel 'cute' and AppIcon.icon from app/channels/cute/icon/"
+    exit 1
+fi
+
 ICON_BUNDLE_PATH="$REPO_ROOT/app/channels/$CHANNEL/icon/AppIcon.icon"
 
-# Only compile if the .icon bundle exists for this channel.
+# Cute 必须使用 AppIcon.icon；缺失时直接失败，避免静默回退到错误图标
 if [[ ! -d "$ICON_BUNDLE_PATH" ]]; then
-    if [[ "$CHANNEL" = "oss" || "$CHANNEL" = "cute" ]]; then
+    if [[ "$CHANNEL" = "cute" ]]; then
+        echo "Error: Cute AppIcon.icon bundle required at $ICON_BUNDLE_PATH" >&2
+        echo "Run: python3 scripts/generate_macos_icons.py" >&2
+        exit 1
+    fi
+    if [[ "$CHANNEL" = "oss" ]]; then
         echo "Warning: no .icon bundle found for $CHANNEL channel at $ICON_BUNDLE_PATH; skipping adaptive icon compilation." >&2
         exit 0
     fi

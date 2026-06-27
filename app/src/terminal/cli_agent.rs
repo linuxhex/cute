@@ -338,6 +338,11 @@ impl CLIAgent {
         }
     }
 
+    /// SVG 自带品牌色/渐变背景（如 Qoder、Trae），渲染时不应再套单色 tint 或额外圆底。
+    pub fn uses_full_color_icon(&self) -> bool {
+        matches!(self, CLIAgent::Qoder | CLIAgent::Trae)
+    }
+
     /// Returns the icon color to use when rendered on the brand-colored circle background.
     /// Agents with light brand colors use a dark icon for contrast.
     pub fn brand_icon_color(&self) -> ColorU {

@@ -11672,6 +11672,22 @@ impl TerminalView {
                     }));
                 });
 
+                // Claude 等 agent 进入 alt screen 后应用原生 TUI 输入框；若 rich input
+                // 在 TUI 就绪前被 auto-open，此处关闭并交还 PTY 焦点。
+                if matches!(mode, TerminalMode::AltScreen)
+                    && CLIAgentSessionsModel::as_ref(ctx)
+                        .session(self.view_id)
+                        .is_some()
+                {
+                    if self.has_active_cli_agent_input_session(ctx) {
+                        self.close_cli_agent_rich_input(
+                            CLIAgentRichInputCloseReason::AutoToggle,
+                            ctx,
+                        );
+                    }
+                    self.focus_terminal(ctx);
+                }
+
                 // Close the find bar across the screen transition.
                 // We don't want to change focus unnecessarily, e.g. when
                 // using synced inputs and exiting `vim`.
@@ -12237,6 +12253,28 @@ impl TerminalView {
             .then_some(child_conversation_id)
     }
 
+    /// 判断按键是否应进入 CLI agent 原生 PTY 输入框，而非 Warp rich input composer。
+    ///
+    /// alt screen 已激活时始终走 PTY；Claude 等全屏 TUI agent 在启动后很快会
+    /// 进入 alt screen，若在 TUI 就绪前 auto-open composer 会抢走焦点。
+    fn cli_agent_prefers_native_pty_input(&self, agent: CLIAgent) -> bool {
+        if self.model.lock().is_alt_screen_active() {
+            return true;
+        }
+        matches!(
+            agent,
+            CLIAgent::Claude
+                | CLIAgent::OpenCode
+                | CLIAgent::Gemini
+                | CLIAgent::Qoder
+                | CLIAgent::Trae
+                | CLIAgent::Auggie
+                | CLIAgent::Pi
+                | CLIAgent::Hermes
+                | CLIAgent::Vibe
+        )
+    }
+
     /// If the startup auto-open setting is enabled, auto-opens rich input for a
     /// CLI agent session. Called after creating a command-detected session or
     /// registering a listener so rich input is shown immediately.
@@ -12255,6 +12293,13 @@ impl TerminalView {
             .session(self.view_id)
             .is_some_and(|s| s.should_auto_toggle_input);
         if should_open && !self.has_active_cli_agent_input_session(ctx) {
+            if CLIAgentSessionsModel::as_ref(ctx)
+                .session(self.view_id)
+                .is_some_and(|s| self.cli_agent_prefers_native_pty_input(s.agent))
+            {
+                self.focus_terminal(ctx);
+                return;
+            }
             self.open_cli_agent_rich_input(CLIAgentInputEntrypoint::AutoShow, ctx);
         }
     }
@@ -12368,7 +12413,14 @@ impl TerminalView {
                     CLIAgentSessionStatus::InProgress | CLIAgentSessionStatus::Success => {
                         // Auto-open rich input when the agent resumes or completes.
                         if !self.has_active_cli_agent_input_session(ctx) {
-                            self.open_cli_agent_rich_input(CLIAgentInputEntrypoint::AutoShow, ctx);
+                            if self.cli_agent_prefers_native_pty_input(*agent) {
+                                self.focus_terminal(ctx);
+                            } else {
+                                self.open_cli_agent_rich_input(
+                                    CLIAgentInputEntrypoint::AutoShow,
+                                    ctx,
+                                );
+                            }
                         }
                     }
                 }
