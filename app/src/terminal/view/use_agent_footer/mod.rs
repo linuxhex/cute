@@ -392,10 +392,11 @@ impl TerminalView {
             return Some((agent, None));
         }
 
-        CompiledCommandsForCodingAgentToolbar::matched_agent(ctx, &command).map(|agent| {
+        let matched = CompiledCommandsForCodingAgentToolbar::matched_agent(ctx, &command).map(|agent| {
             let prefix = command.split_whitespace().next().map(str::to_owned);
             (agent, prefix)
-        })
+        });
+        matched
     }
 
     /// Updates the UI during a long running command to agent "tagged-in state".

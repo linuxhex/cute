@@ -44,6 +44,7 @@ pub fn detect_possible_git_repo<V: View>(
     source: RepoDetectionSource,
     ctx: &mut ViewContext<V>,
 ) -> impl Future<Output = Option<LocalOrRemotePath>> {
+    log::info!("detect_possible_git_repo called dir={} source={:?}", active_directory, source);
     // Build the remote detection future if this is a remote session.
     // For local sessions, pass None so DetectedRepositories uses the local path.
     // For remote sessions without a connected server, pass a future that

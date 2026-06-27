@@ -4672,6 +4672,11 @@ impl TerminalView {
     #[cfg(feature = "local_fs")]
     fn update_git_status_subscription(&mut self, ctx: &mut ViewContext<Self>) {
         let should_subscribe = self.should_subscribe_to_git_status(ctx);
+        let repo_path = self.current_local_repo_path().map(|p| p.to_path_buf());
+        log::info!(
+            "update_git_status_subscription should_subscribe={} has_subscription={} repo_path={:?}",
+            should_subscribe, self.git_repo_status.is_some(), repo_path
+        );
         if should_subscribe {
             // Subscribe if we have a repo path but no active subscription.
             if self.git_repo_status.is_some() {
@@ -10525,6 +10530,13 @@ impl TerminalView {
             return;
         }
 
+        log::info!(
+            "apply_block_metadata_update source={:?} cwd={:?} is_done_bootstrapping={}",
+            source,
+            block_metadata.current_working_directory(),
+            is_done_bootstrapping
+        );
+
         if let Some(prev_block_metadata) = self.active_block_metadata.take() {
             // Only send event to save app state when the block is post bootstrap
             // and working directory has changed.
@@ -10600,6 +10612,7 @@ impl TerminalView {
                         );
 
                         ctx.spawn(fut, move |me, repo_path_opt, ctx| {
+                            log::info!("detect_possible_git_repo result={:?}", repo_path_opt);
                             let old_repo_path = me.current_repo_path.clone();
                             me.current_repo_path = repo_path_opt.clone();
 
@@ -11017,6 +11030,14 @@ impl TerminalView {
                     .active_block()
                     .agent_interaction_metadata()
                     .is_some();
+
+                log::info!(
+                    "on_preexec command={:?} is_compatible_subshell={} has_ai_metadata={} command_is_denylisted={}",
+                    command,
+                    is_compatible_subshell_command,
+                    has_ai_metadata,
+                    command_is_denylisted
+                );
 
                 if is_compatible_subshell_command {
                     if command_is_denylisted || has_ai_metadata {
@@ -12221,10 +12242,12 @@ impl TerminalView {
     /// registering a listener so rich input is shown immediately.
     fn maybe_auto_open_cli_agent_rich_input(&mut self, ctx: &mut ViewContext<Self>) {
         let ai_settings = AISettings::as_ref(ctx);
+        // Removed the is_rich_input_chip_in_cli_toolbar check to allow auto-open
+        // even when the RichInput chip is not in the toolbar configuration.
+        // Users can still manually open via Ctrl-G.
         if !*ai_settings.auto_open_rich_input_on_cli_agent_start
             || !ai_settings.is_any_ai_enabled(ctx)
             || !*ai_settings.should_render_cli_agent_footer
-            || !is_rich_input_chip_in_cli_toolbar(ctx)
         {
             return;
         }
@@ -12318,11 +12341,12 @@ impl TerminalView {
 
         // Auto-show/hide rich input based on the setting.
         // Only applies when the session has a plugin listener (rich status info).
+        // Removed is_rich_input_chip_in_cli_toolbar check to allow auto-toggle
+        // even when toolbar configuration changes.
         let ai_settings = AISettings::as_ref(ctx);
         if *ai_settings.auto_toggle_rich_input
             && ai_settings.is_any_ai_enabled(ctx)
             && *ai_settings.should_render_cli_agent_footer
-            && is_rich_input_chip_in_cli_toolbar(ctx)
         {
             let should_auto_toggle_input = CLIAgentSessionsModel::as_ref(ctx)
                 .session(self.view_id)

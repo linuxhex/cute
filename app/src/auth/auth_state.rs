@@ -18,7 +18,8 @@ use super::user::{
     AnonymousUserType, FirebaseAuthTokens, PersonalObjectLimits, PrincipalType, User,
 };
 use super::{UserUid, API_KEY_PREFIX};
-use crate::cloud_object::{GenericStringObjectFormat, JsonObjectType, ObjectType};
+// Cloud services removed
+// use crate::cloud_object::{GenericStringObjectFormat, JsonObjectType, ObjectType};
 use crate::report_error;
 
 const ANONYMOUS_USER_NOTIFICATION_BLOCK_TIMER: Duration = Duration::days(7);
@@ -405,29 +406,13 @@ impl AuthState {
     }
 
     /// Returns whether or not the anonymous user is past any of their Warp Drive object limits.
+    /// Cloud services removed - always returns false now.
     pub fn is_anonymous_user_past_object_limit(
         &self,
-        object_type: ObjectType,
-        num_objects: usize,
+        _object_type: (), // ObjectType removed with cloud services
+        _num_objects: usize,
     ) -> Option<bool> {
-        self.user.read().as_ref().map(|user| {
-            if !self.is_anonymous_user_feature_gated().unwrap_or_default() {
-                return false;
-            }
-
-            if let Some(limits) = user.personal_object_limits() {
-                match object_type {
-                    ObjectType::Notebook => num_objects > limits.notebook_limit,
-                    ObjectType::Workflow => num_objects > limits.workflow_limit,
-                    ObjectType::GenericStringObject(GenericStringObjectFormat::Json(
-                        JsonObjectType::EnvVarCollection,
-                    )) => num_objects > limits.env_var_limit,
-                    _ => false,
-                }
-            } else {
-                false
-            }
-        })
+        Some(false)
     }
 
     /// Returns the user's photo URL from Firebase,

@@ -270,9 +270,10 @@ impl AgentToolbarItemKind {
             items.push(Self::ShareSession);
         }
         items.push(Self::FileExplorer);
-        if FeatureFlag::CLIAgentRichInput.is_enabled() {
-            items.push(Self::RichInput);
-        }
+        // Always include RichInput in CLI agent toolbar for user convenience.
+        // Users can toggle rich input via Ctrl-G even without this button,
+        // but having it in the toolbar makes it more discoverable.
+        items.push(Self::RichInput);
         items
     }
 

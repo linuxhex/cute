@@ -26,7 +26,8 @@ use crate::ai::llms::LLMPreferences;
 use crate::ai::persisted_workspace::PersistedWorkspace;
 use crate::ai::AIRequestUsageModel;
 use crate::persistence::ModelEvent;
-use crate::server::cloud_objects::update_manager::UpdateManager;
+// Cloud services removed
+// use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::graphql::get_user_facing_error_message;
 use crate::server::server_api::auth::{
     AnonymousUserCreationError, AuthClient, FetchUserResult, MintCustomTokenError,
@@ -345,15 +346,12 @@ impl AuthManager {
                 });
 
                 // Reset the initial-load condition so that any cloud preference
-                // sync waits for the *new* user's cloud objects rather than
-                // resolving immediately against stale data from a prior session.
-                // Only do this for non-refresh fetches (login/signup), not for
-                // token refreshes where the user identity hasn't changed.
-                if !from_refresh {
-                    UpdateManager::handle(ctx).update(ctx, |manager, _| {
-                        manager.reset_initial_load();
-                    });
-                }
+                // Cloud object UpdateManager removed with cloud services
+                // if !from_refresh {
+                //     UpdateManager::handle(ctx).update(ctx, |manager, _| {
+                //         manager.reset_initial_load();
+                //     });
+                // }
 
                 // Now that we have a user, start polling for team and cloud object information.
                 // The polling loop's first tick fires immediately, so there is no need for a

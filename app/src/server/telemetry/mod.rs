@@ -468,20 +468,25 @@ impl warp_core::telemetry::TelemetryEventDesc for TelemetryEventDiscriminants {
 warp_core::register_telemetry_event!(TelemetryEvent);
 
 pub mod context_provider {
-    //! Context provider stub
-    use warpui::{Entity, SingletonEntity};
+    //! Context provider for telemetry
+    use warp_core::telemetry::TelemetryContextProvider;
+    use warpui::AppContext;
 
     pub struct AppTelemetryContextProvider;
 
-    impl Entity for AppTelemetryContextProvider {
-        type Event = ();
+    impl TelemetryContextProvider for AppTelemetryContextProvider {
+        fn user_id(&self, _ctx: &AppContext) -> Option<String> {
+            None
+        }
+
+        fn anonymous_id(&self, _ctx: &AppContext) -> String {
+            "cute-local".to_string()
+        }
     }
 
-    impl SingletonEntity for AppTelemetryContextProvider {}
-
     impl AppTelemetryContextProvider {
-        pub fn new_context_provider(_ctx: &mut warpui::AppContext) -> Self {
-            Self
+        pub fn new_context_provider(_ctx: &mut AppContext) -> Box<dyn TelemetryContextProvider> {
+            Box::new(Self)
         }
     }
 }

@@ -714,7 +714,7 @@ impl UpdateManager {
         if AuthStateProvider::handle(ctx).read(ctx, |auth_state_provider, _ctx| {
             auth_state_provider
                 .get()
-                .is_anonymous_user_past_object_limit(ObjectType::Notebook, count + 1)
+                .is_anonymous_user_past_object_limit((), count + 1)
                 .unwrap_or_default()
         }) {
             AuthManager::handle(ctx).update(ctx, |auth_manager: &mut AuthManager, ctx| {
@@ -778,7 +778,7 @@ impl UpdateManager {
         if AuthStateProvider::handle(ctx).read(ctx, |auth_state_provider, _ctx| {
             auth_state_provider
                 .get()
-                .is_anonymous_user_past_object_limit(ObjectType::Workflow, count + 1)
+                .is_anonymous_user_past_object_limit((), count + 1)
                 .unwrap_or_default()
         }) {
             AuthManager::handle(ctx).update(ctx, |auth_manager: &mut AuthManager, ctx| {
@@ -843,7 +843,7 @@ impl UpdateManager {
         if AuthStateProvider::handle(ctx).read(ctx, |auth_state_provider, _ctx| {
             auth_state_provider
                 .get()
-                .is_anonymous_user_past_object_limit(env_var_collection_type, count + 1)
+                .is_anonymous_user_past_object_limit((), count + 1)
                 .unwrap_or_default()
         }) {
             AuthManager::handle(ctx).update(ctx, |auth_manager: &mut AuthManager, ctx| {

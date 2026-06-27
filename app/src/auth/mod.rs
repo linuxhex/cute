@@ -33,12 +33,14 @@ use crate::ai::blocklist::agent_view::orchestration_pill_bar_model::Orchestratio
 use crate::ai::blocklist::BlocklistAIHistoryModel;
 use crate::ai::execution_profiles::profiles::AIExecutionProfilesModel;
 use crate::ai_assistant::requests::REQUEST_LIMIT_INFO_CACHE_KEY;
-use crate::cloud_object::model::persistence::CloudModel;
+// Cloud services removed
+// use crate::cloud_object::model::persistence::CloudModel;
 use crate::code::editor_management::{CodeEditorStatus, CodeEditorSummary};
 use crate::env_vars::manager::EnvVarCollectionManager;
 use crate::notebooks::manager::NotebookManager;
 use crate::palette::PaletteMode;
-use crate::server::cloud_objects::update_manager::UpdateManager;
+// Cloud services removed
+// use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::telemetry::PaletteSource;
 use crate::session_management::{RunningSessionSummary, SessionNavigationData};
 use crate::settings::{
@@ -73,8 +75,8 @@ pub fn maybe_log_out(app: &mut AppContext) {
         .long_running_cmds
         .len();
     let num_shared_sessions = crate::session_management::num_shared_sessions(app);
-    let num_unsaved_objects =
-        CloudModel::as_ref(app).num_unsaved_objects_to_warn_about_before_quitting();
+    let num_unsaved_objects = 0;
+        // CloudModel::as_ref(app).num_unsaved_objects_to_warn_about_before_quitting();
 
     let code_editors = CodeEditorStatus::all_editors(app).collect_vec();
     let code_editor_summary = CodeEditorSummary::new(&code_editors);
@@ -224,14 +226,15 @@ pub fn log_out(app: &mut AppContext) {
     AgentConversationsModel::handle(app).update(app, |agent_conversations_model, _| {
         agent_conversations_model.reset();
     });
-    CloudModel::handle(app).update(app, |cloud_model, _| {
-        cloud_model.reset();
-    });
+    // CloudModel removed with cloud services
+    // CloudModel::handle(app).update(app, |cloud_model, _| {
+    //     cloud_model.reset();
+    // });
 
-    // Stop the cloud object and workspace metadata polling loops that were started on login.
-    UpdateManager::handle(app).update(app, |manager, _| {
-        manager.stop_polling_for_updated_objects();
-    });
+    // Stop the workspace metadata polling loop (cloud objects polling removed)
+    // UpdateManager::handle(app).update(app, |manager, _| {
+    //     manager.stop_polling_for_updated_objects();
+    // });
     TeamUpdateManager::handle(app).update(app, |manager, _| {
         manager.stop_polling_for_workspace_metadata_updates();
     });

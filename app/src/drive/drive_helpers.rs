@@ -16,7 +16,7 @@ pub fn has_feature_gated_anonymous_user_reached_notebook_limit<V: warpui::View>(
     if AuthStateProvider::handle(ctx).read(ctx, |auth_state_provider, _ctx| {
         auth_state_provider
             .get()
-            .is_anonymous_user_past_object_limit(ObjectType::Notebook, count + 1)
+            .is_anonymous_user_past_object_limit((), count + 1)
             .unwrap_or_default()
     }) {
         AuthManager::handle(ctx).update(ctx, |auth_manager: &mut AuthManager, ctx| {
@@ -39,7 +39,7 @@ pub fn has_feature_gated_anonymous_user_reached_workflow_limit<V: warpui::View>(
     if AuthStateProvider::handle(ctx).read(ctx, |auth_state_provider, _ctx| {
         auth_state_provider
             .get()
-            .is_anonymous_user_past_object_limit(ObjectType::Workflow, count + 1)
+            .is_anonymous_user_past_object_limit((), count + 1)
             .unwrap_or_default()
     }) {
         AuthManager::handle(ctx).update(ctx, |auth_manager: &mut AuthManager, ctx| {
@@ -63,9 +63,7 @@ pub fn has_feature_gated_anonymous_user_reached_env_var_limit<V: warpui::View>(
         auth_state_provider
             .get()
             .is_anonymous_user_past_object_limit(
-                ObjectType::GenericStringObject(GenericStringObjectFormat::Json(
-                    JsonObjectType::EnvVarCollection,
-                )),
+                (),
                 count + 1,
             )
             .unwrap_or_default()
