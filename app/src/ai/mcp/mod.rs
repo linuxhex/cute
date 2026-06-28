@@ -53,10 +53,10 @@ pub mod gallery;
 pub use gallery::MCPGalleryManager;
 pub mod templatable;
 #[cfg(not(target_family = "wasm"))]
-pub use cloud_object_models::{
+pub use crate::cloud_object::models::{
     CLIServer, JSONMCPServer, JSONTransportType, ServerSentEvents, StaticEnvVar, StaticHeader,
 };
-pub use cloud_object_models::{
+pub use crate::cloud_object::models::{
     CloudMCPServer, CloudMCPServerModel, MCPServer, MCPServerState, TransportType,
 };
 pub use templatable::{JsonTemplate, TemplatableMCPServer, TemplateVariable};

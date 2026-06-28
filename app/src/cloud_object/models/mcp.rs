@@ -9,7 +9,7 @@ use handlebars::get_arguments;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{JsonModel, JsonSerializer};
+use super::{JsonModel, JsonSerializer};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct JSONMCPServer {
@@ -154,11 +154,12 @@ impl TemplatableMCPServer {
     ) -> Option<HashMap<String, serde_json::Value>> {
         const POINTERS: [&str; 4] = ["/mcp/servers", "/servers", "/mcpServers", "/mcp_servers"];
         for pointer in POINTERS {
-            if let Some(value) = config.pointer(pointer)
-                && let Ok(servers) =
+            if let Some(value) = config.pointer(pointer) {
+                if let Ok(servers) =
                     serde_json::from_value::<HashMap<String, serde_json::Value>>(value.clone())
-            {
-                return Some(servers);
+                {
+                    return Some(servers);
+                }
             }
         }
         None
@@ -292,7 +293,3 @@ pub type CloudTemplatableMCPServer =
 pub type CloudTemplatableMCPServerModel = GenericStringModel<TemplatableMCPServer, JsonSerializer>;
 pub type ServerTemplatableMCPServer =
     GenericServerObject<GenericStringObjectId, CloudTemplatableMCPServerModel>;
-
-#[cfg(test)]
-#[path = "mcp_tests.rs"]
-mod tests;

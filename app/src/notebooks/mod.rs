@@ -12,7 +12,7 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use async_trait::async_trait;
-pub use cloud_object_models::{CloudNotebook, CloudNotebookModel, NotebookId};
+pub use crate::cloud_object::models::{CloudNotebook, CloudNotebookModel, NotebookId};
 use serde::{Deserialize, Serialize};
 use warpui::AppContext;
 

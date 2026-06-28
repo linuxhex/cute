@@ -6,7 +6,7 @@ use core::fmt;
 use std::path::PathBuf;
 
 use anyhow::anyhow;
-pub use cloud_object_models::{ExternalSecret, LastPassSecret, OnePasswordSecret};
+pub use crate::cloud_object::models::{ExternalSecret, LastPassSecret, OnePasswordSecret};
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};

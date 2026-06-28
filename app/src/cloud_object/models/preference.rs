@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use settings::SyncToCloud;
 
-use crate::{JsonModel, JsonSerializer};
+use super::{JsonModel, JsonSerializer};
 
 /// Defines the platform that a preference was set on.
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]

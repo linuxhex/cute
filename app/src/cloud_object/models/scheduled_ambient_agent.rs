@@ -7,7 +7,7 @@ use cloud_objects::{
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use warp_cli::agent::Harness;
 
-use crate::{JsonModel, JsonSerializer};
+use super::{JsonModel, JsonSerializer};
 
 /// Runtime configuration snapshot for agent execution.
 ///

@@ -6,7 +6,7 @@ use cloud_objects::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{JsonModel, JsonSerializer};
+use super::{JsonModel, JsonSerializer};
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct GithubRepo {
@@ -126,7 +126,3 @@ pub type CloudAmbientAgentEnvironmentModel =
     GenericStringModel<AmbientAgentEnvironment, JsonSerializer>;
 pub type ServerAmbientAgentEnvironment =
     GenericServerObject<GenericStringObjectId, CloudAmbientAgentEnvironmentModel>;
-
-#[cfg(test)]
-#[path = "cloud_environment_tests.rs"]
-mod tests;

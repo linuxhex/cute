@@ -5,7 +5,7 @@ use cloud_objects::{
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
-use crate::{JsonModel, JsonSerializer};
+use super::{JsonModel, JsonSerializer};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum AIFact {

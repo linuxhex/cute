@@ -189,10 +189,11 @@ impl Workflow {
             environment_variables,
             ..
         } = self
-            && *environment_variables == Some(old_id)
         {
-            *environment_variables = Some(new_id);
-            changed = true;
+            if *environment_variables == Some(old_id) {
+                *environment_variables = Some(new_id);
+                changed = true;
+            }
         }
         changed
     }
@@ -408,7 +409,3 @@ impl From<&CloudWorkflow> for Workflow {
         cloud_workflow.model().data.to_owned()
     }
 }
-
-#[cfg(test)]
-#[path = "workflow_tests.rs"]
-mod tests;

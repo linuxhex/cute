@@ -3,8 +3,8 @@
 use anyhow::anyhow;
 use chrono::{DateTime, Duration as ChronoDuration, Utc};
 #[cfg(not(target_family = "wasm"))]
-pub use cloud_object_models::HarnessModelConfig;
-pub use cloud_object_models::{AgentConfigSnapshot, HarnessAuthSecretsConfig, HarnessConfig};
+pub use crate::cloud_object::models::HarnessModelConfig;
+pub use crate::cloud_object::models::{AgentConfigSnapshot, HarnessAuthSecretsConfig, HarnessConfig};
 use iso8601_duration::Duration as Iso8601Duration;
 use serde::{Deserialize, Serialize};
 use session_sharing_protocol::common::SessionId;

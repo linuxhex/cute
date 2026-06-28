@@ -2823,52 +2823,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cloud_object_client"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-channel",
- "async-trait",
- "chrono",
- "cloud_object_models",
- "cloud_objects",
- "mockall",
- "serde",
- "serde_json",
- "uuid",
- "warp_core",
- "warp_graphql",
-]
-
-[[package]]
-name = "cloud_object_models"
-version = "0.1.0"
-dependencies = [
- "ai",
- "anyhow",
- "cfg-if",
- "chrono",
- "cloud_objects",
- "handlebars",
- "lazy_static",
- "log",
- "regex",
- "schemars",
- "serde",
- "serde_json",
- "serde_regex",
- "session-sharing-protocol",
- "settings",
- "settings_value",
- "uuid",
- "warp-workflows",
- "warp_cli",
- "warp_core",
- "warp_graphql",
- "warp_util",
-]
-
-[[package]]
 name = "cloud_objects"
 version = "0.1.0"
 dependencies = [
@@ -3794,8 +3748,6 @@ dependencies = [
  "channel_versions",
  "chrono",
  "clap",
- "cloud_object_client",
- "cloud_object_models",
  "cloud_objects",
  "cocoa 0.26.0",
  "comfy-table",
@@ -3832,7 +3784,6 @@ dependencies = [
  "env_logger",
  "event-listener",
  "field_mask",
- "firebase",
  "flate2",
  "float-cmp",
  "freedesktop-desktop-entry",
@@ -5157,14 +5108,6 @@ dependencies = [
  "lazy_static",
  "libc",
  "winapi",
-]
-
-[[package]]
-name = "firebase"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "serde",
 ]
 
 [[package]]
@@ -15046,8 +14989,6 @@ dependencies = [
  "anyhow",
  "bincode",
  "chrono",
- "cloud_object_client",
- "cloud_object_models",
  "cloud_objects",
  "cynic",
  "derivative",

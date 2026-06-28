@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use chrono::{DateTime, Utc};
 #[cfg(test)]
-pub use cloud_object_client::GetCloudObjectResponse;
+pub use crate::server::server_api::object::GetCloudObjectResponse;
 use futures::channel::oneshot;
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -1842,7 +1842,7 @@ impl UpdateManager {
     /// Received message from server (stub for local version).
     pub fn received_message_from_server(
         &mut self,
-        _message: cloud_object_client::ObjectUpdateMessage,
+        _message: crate::server::server_api::object::ObjectUpdateMessage,
         _ctx: &mut ModelContext<Self>,
     ) {
         // Not supported in local version

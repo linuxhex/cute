@@ -10,7 +10,7 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use warp_core::{channel::ChannelState, features::FeatureFlag};
 
-use crate::{JsonModel, JsonSerializer};
+use super::{JsonModel, JsonSerializer};
 
 pub const PROFILE_NAME_MAX_LENGTH: usize = 50;
 

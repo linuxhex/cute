@@ -3,8 +3,45 @@ use std::sync::Arc;
 
 use anyhow::{anyhow, bail, Result};
 use async_trait::async_trait;
-use firebase::{FetchAccessTokenResponse, FirebaseError};
 use instant::Duration;
+use serde::{Deserialize, Serialize};
+
+// OMJF-11111: 内联 firebase crate 的类型定义，移除对 crates/firebase 的依赖
+/// Firebase REST API 错误响应格式
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FirebaseError {
+    pub code: i32,
+    pub message: String,
+}
+
+impl std::error::Error for FirebaseError {}
+
+impl std::fmt::Display for FirebaseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Firebase request failed with status {} and message: {}",
+            self.code, self.message
+        )
+    }
+}
+
+/// Firebase token 刷新接口的响应格式
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum FetchAccessTokenResponse {
+    Success {
+        #[serde(alias = "expiresIn")]
+        expires_in: String,
+        #[serde(alias = "idToken")]
+        id_token: String,
+        #[serde(alias = "refreshToken")]
+        refresh_token: String,
+    },
+    Error {
+        error: FirebaseError,
+    },
+}
 #[cfg(test)]
 use mockall::{automock, predicate::*};
 use thiserror::Error;

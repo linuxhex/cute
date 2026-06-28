@@ -1,4 +1,4 @@
-pub use cloud_object_models::{
+pub use crate::cloud_object::models::{
     CloudEnvVarCollection, CloudEnvVarCollectionModel, EnvVar, EnvVarCollection, EnvVarValue,
 };
 use itertools::Itertools;

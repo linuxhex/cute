@@ -4,7 +4,7 @@
 // Note: Cloud-specific logic has been removed. Only type definitions remain
 // for local agent use.
 #[cfg_attr(target_family = "wasm", expect(unused_imports))]
-pub use cloud_object_models::{
+pub use crate::cloud_object::models::{
     AmbientAgentEnvironment, AwsProviderConfig, BaseImage, CloudAmbientAgentEnvironment,
     CloudAmbientAgentEnvironmentModel, GcpProviderConfig, GithubRepo, ProvidersConfig,
 };

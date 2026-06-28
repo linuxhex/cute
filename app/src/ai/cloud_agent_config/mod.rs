@@ -1,4 +1,4 @@
-pub use cloud_object_models::{AgentConfig, CloudAgentConfig};
+pub use crate::cloud_object::models::{AgentConfig, CloudAgentConfig};
 
 use crate::cloud_object::model::generic_string_model::StringModel;
 use crate::cloud_object::model::json_model::JsonModel;

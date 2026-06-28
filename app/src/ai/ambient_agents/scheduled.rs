@@ -6,7 +6,7 @@
 use std::collections::HashMap;
 use std::future::Future;
 
-pub use cloud_object_models::{
+pub use crate::cloud_object::models::{
     CloudScheduledAmbientAgent, CloudScheduledAmbientAgentModel, ScheduledAmbientAgent,
 };
 use futures::channel::oneshot;

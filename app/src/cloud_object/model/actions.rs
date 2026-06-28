@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use chrono::{DateTime, Duration, Utc};
-pub use cloud_object_client::{
+pub use crate::server::server_api::object::{
     ObjectAction, ObjectActionHistory, ObjectActionSubtype, ObjectActionType,
 };
 use warpui::{Entity, ModelContext, SingletonEntity};

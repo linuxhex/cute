@@ -1,4 +1,4 @@
-pub use cloud_object_models::{
+pub use crate::cloud_object::models::{
     CloudWorkflowEnum, CloudWorkflowEnumModel, EnumVariants, WorkflowEnum,
 };
 

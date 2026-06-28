@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use warpui::{Entity, SingletonEntity};
 
 use crate::auth::UserUid;
-pub use cloud_object_models::UserProfileWithUID;
+pub use crate::cloud_object::models::UserProfileWithUID;
 
 pub enum UserProfilesEvent {}
 

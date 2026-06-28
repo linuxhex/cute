@@ -5,7 +5,7 @@ use cloud_objects::{
 use serde::{Deserialize, Serialize};
 use warp_util::path::ShellFamily;
 
-use crate::{JsonModel, JsonSerializer};
+use super::{JsonModel, JsonSerializer};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct EnvVarSecretCommand {

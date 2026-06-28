@@ -38,6 +38,7 @@ use crate::workspaces::user_workspaces::UserWorkspaces;
 
 pub mod breadcrumbs;
 pub mod model;
+pub mod models;
 pub mod toast_message;
 
 pub use cloud_objects::cloud_object::*;
@@ -943,10 +944,8 @@ fn get_top_folder_trashed_ts(
     None
 }
 
-pub use cloud_object_client::{
-    ObjectDeleteResult, ObjectMetadataUpdateResult,
-};
-pub use cloud_object_models::{
+pub use crate::server::server_api::object::{ObjectDeleteResult, ObjectMetadataUpdateResult};
+pub use models::{
     ServerAIExecutionProfile, ServerAIFact, ServerAmbientAgentEnvironment,
     ServerCloudObject, ServerEnvVarCollection, ServerFolder, ServerMCPServer, ServerNotebook,
     ServerPreference, ServerScheduledAmbientAgent, ServerTemplatableMCPServer, ServerWorkflow,

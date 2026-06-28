@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 use chrono::{DateTime, Utc};
-pub use cloud_object_models::{
+pub use crate::cloud_object::models::{
     AgentModeCommandExecutionPredicate, DEFAULT_COMMAND_EXECUTION_ALLOWLIST,
     DEFAULT_COMMAND_EXECUTION_DENYLIST,
 };

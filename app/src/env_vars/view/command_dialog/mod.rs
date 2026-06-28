@@ -1,4 +1,4 @@
-pub use cloud_object_models::EnvVarSecretCommand;
+pub use crate::cloud_object::models::EnvVarSecretCommand;
 use warpui::ViewContext;
 
 use super::env_var_collection::{EnvVarCollectionView, VariableRowIndex};

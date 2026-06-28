@@ -166,11 +166,25 @@
 
 ---
 
+## execution_phase3_physical_deletion 执行进度
+
+### 已删除 crate
+
+| crate | 引用次数 | 文件数 | 删除方式 | 状态 |
+|-------|---------|--------|---------|------|
+| firebase | 1处use导入 | 35个文件 | 内联2个类型到 auth.rs，删除crate | ✅ |
+| cloud_object_client | 12次引用 | 8个文件 | 在 object.rs 创建14个stub类型，删除crate | ✅ |
+| cloud_object_models | 33次引用 | 23个文件 | 内联15个源文件到 app/src/cloud_object/models/，删除crate | ✅ |
+
+### 编译验证
+- `cargo check --bin cute`：通过（0 errors, 332 warnings）
+- 检查时间：2026-06-27
+
+---
+
 ## 编译/构建检查
 
-- `cargo check --bin cute`：通过（0 errors, 328 warnings）
+- `cargo check --bin cute`：通过（0 errors, 332 warnings）
 - 检查时间：2026-06-27
-- 本次改动文件：
-  - `app/src/workspace/one_time_modal_model.rs` - 修复闭包参数名
   - `docs/requirements/OMJF-11111/changes.md` - 更新执行进度
   - `docs/requirements/OMJF-11111/workflow-state.json` - 更新阶段状态

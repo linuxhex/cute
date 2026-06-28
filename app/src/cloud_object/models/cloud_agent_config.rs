@@ -6,7 +6,7 @@ use cloud_objects::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{AgentConfigSnapshot, JsonModel, JsonSerializer};
+use super::{AgentConfigSnapshot, JsonModel, JsonSerializer};
 
 /// A CloudAgentConfig represents a saved agent configuration that can be referenced
 /// when running agents via `--agent-id`.
