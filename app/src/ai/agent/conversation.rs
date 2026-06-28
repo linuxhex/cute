@@ -50,7 +50,7 @@ use crate::ai::agent::{
     AIAgentOutputMessage, AIAgentOutputMessageType, AIIdentifiers, CancellationReason,
     MessageToAIAgentOutputMessageError,
 };
-use crate::ai::ambient_agents::AmbientAgentTaskId;
+use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::ai::artifacts::Artifact;
 use crate::ai::blocklist::{
     BlocklistAIHistoryEvent, ConversationStatusUpdate, RequestInput, ResponseStreamId,
@@ -4019,7 +4019,7 @@ pub struct ServerAIConversationMetadata {
     pub permissions: crate::cloud_object::ServerPermissions,
 
     /// The ID of the associated ambient agent task, if any.
-    pub ambient_agent_task_id: Option<crate::ai::ambient_agents::AmbientAgentTaskId>,
+    pub ambient_agent_task_id: Option<crate::ai::ambient_agent_types::AmbientAgentTaskId>,
 
     /// The server conversation token used to identify this conversation on the server.
     pub server_conversation_token: ServerConversationToken,

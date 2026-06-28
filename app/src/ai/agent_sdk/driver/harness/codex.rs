@@ -28,8 +28,8 @@ use super::{
 };
 use crate::ai::agent::conversation::AIConversationId;
 use crate::ai::agent_sdk::setup_observability::{SetupClientEventReporter, SetupStep};
-use crate::ai::ambient_agents::task::HarnessModelConfig;
-use crate::ai::ambient_agents::AmbientAgentTaskId;
+use crate::ai::ambient_agent_types::task::HarnessModelConfig;
+use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::ai::mcp::JSONTransportType;
 use crate::server::server_api::harness_support::{upload_to_target, HarnessSupportClient};
 use crate::server::server_api::ServerApi;

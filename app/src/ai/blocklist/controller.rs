@@ -51,7 +51,7 @@ use crate::ai::agent::{
 use crate::ai::agent_events::AgentMessageEventMetadata;
 #[cfg(not(target_family = "wasm"))]
 use crate::ai::agent_sdk::ClaudeHarness;
-use crate::ai::ambient_agents::AmbientAgentTaskId;
+use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::ai::document::ai_document_model::{
     AIDocumentId, AIDocumentModel, AIDocumentUserEditStatus,
 };

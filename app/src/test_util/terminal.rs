@@ -13,7 +13,7 @@ use super::settings::initialize_history_persistence_for_tests;
 use crate::ai::active_agent_views_model::ActiveAgentViewsModel;
 use crate::ai::agent_conversations_model::AgentConversationsModel;
 use crate::ai::agent_tips::AITipModel;
-use crate::ai::ambient_agents::github_auth_notifier::GitHubAuthNotifier;
+use crate::ai::ambient_agent_types::github_auth_notifier::GitHubAuthNotifier;
 use crate::ai::blocklist::agent_view::orchestration_pill_bar_model::OrchestrationPillBarModel;
 use crate::ai::blocklist::local_agent_task_sync_model::LocalAgentTaskSyncModel;
 use crate::ai::blocklist::orchestration_event_streamer::OrchestrationEventStreamer;

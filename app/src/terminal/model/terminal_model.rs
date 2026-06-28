@@ -52,7 +52,7 @@ use super::selection::ScrollDelta;
 use super::session::{BootstrapSessionType, InBandCommandOutputReceiver, SessionId};
 use super::tmux::commands::TmuxCommand;
 use super::{tmux, Secret, SecretHandle};
-use crate::ai::ambient_agents::AmbientAgentTaskId;
+use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::ai::blocklist::SerializedBlockListItem;
 use crate::terminal::available_shells::AvailableShell;
 use crate::terminal::block_filter::BlockFilterQuery;

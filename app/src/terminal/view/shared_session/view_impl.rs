@@ -31,7 +31,7 @@ use super::sharer::Sharer;
 use super::viewer::Viewer;
 use super::{ConversationEndedTombstoneEvent, ConversationEndedTombstoneView};
 use crate::ai::agent_conversations_model::AgentConversationsModel;
-use crate::ai::ambient_agents::AmbientAgentTaskId;
+use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::ai::blocklist::BlocklistAIHistoryModel;
 use crate::auth::UserUid;
 use crate::context_chips::ContextChipKind;
@@ -895,7 +895,7 @@ impl TerminalView {
 
     fn start_cloud_followup_from_tombstone(
         &mut self,
-        task_id: crate::ai::ambient_agents::AmbientAgentTaskId,
+        task_id: crate::ai::ambient_agent_types::AmbientAgentTaskId,
         ctx: &mut ViewContext<Self>,
     ) {
         let Some(ambient_agent_view_model) = self.ambient_agent_view_model.as_ref() else {

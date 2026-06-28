@@ -13,7 +13,7 @@ use warp_util::sync::Condition;
 use warpui::r#async::FutureId;
 use warpui::{AppContext, Entity, ModelContext, SingletonEntity};
 
-use crate::ai::ambient_agents::AmbientAgentTaskId;
+use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::ai::cloud_environments::CloudAmbientAgentEnvironmentModel;
 use crate::ai::execution_profiles::CloudAIExecutionProfileModel;
 use crate::ai::facts::{AIFact, CloudAIFactModel};
@@ -1665,7 +1665,7 @@ impl UpdateManager {
     /// Create a scheduled ambient agent (stub for local version).
     pub fn create_scheduled_ambient_agent_online(
         &mut self,
-        _config: crate::ai::ambient_agents::scheduled::ScheduledAmbientAgent,
+        _config: crate::ai::ambient_agent_types::scheduled::ScheduledAmbientAgent,
         _client_id: ClientId,
         _owner: Owner,
         _ctx: &mut ModelContext<Self>,
@@ -1678,7 +1678,7 @@ impl UpdateManager {
     /// Update a scheduled ambient agent (stub for local version).
     pub fn update_scheduled_ambient_agent_online(
         &mut self,
-        _config: crate::ai::ambient_agents::scheduled::ScheduledAmbientAgent,
+        _config: crate::ai::ambient_agent_types::scheduled::ScheduledAmbientAgent,
         _schedule_id: SyncId,
         _revision: Option<Revision>,
         _ctx: &mut ModelContext<Self>,

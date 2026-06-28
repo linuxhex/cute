@@ -25,7 +25,7 @@ use crate::ai::agent_events::{
     AgentEventDriverConfig, AgentEventFilter, AgentMessageEventMetadata, MessageHydrator,
     ServerApiAgentEventSource,
 };
-use crate::ai::ambient_agents::AmbientAgentTaskId;
+use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::server::retry_strategies::is_transient_http_error;
 use crate::server::server_api::ai::{AIClient, AgentRunEvent, TaskListFilter};
 use crate::server::server_api::{ServerApi, ServerApiProvider};
@@ -703,7 +703,7 @@ impl OrchestrationEventStreamer {
     fn finish_ancestor_seed_fetch(
         &mut self,
         parent_task_id: AmbientAgentTaskId,
-        result: anyhow::Result<Vec<crate::ai::ambient_agents::task::AmbientAgentTask>>,
+        result: anyhow::Result<Vec<crate::ai::ambient_agent_types::task::AmbientAgentTask>>,
         ctx: &mut ModelContext<Self>,
     ) {
         if !self.viewer_mode_orchestrators.contains_key(&parent_task_id) {
@@ -1052,7 +1052,7 @@ impl OrchestrationEventStreamer {
         let Some(run_id) = self.self_run_id(conversation_id, ctx) else {
             return;
         };
-        let Ok(task_id) = run_id.parse::<crate::ai::ambient_agents::AmbientAgentTaskId>() else {
+        let Ok(task_id) = run_id.parse::<crate::ai::ambient_agent_types::AmbientAgentTaskId>() else {
             return;
         };
         let local_cursor = self
@@ -1265,7 +1265,7 @@ impl OrchestrationEventStreamer {
     fn spawn_restore_fetch(
         &mut self,
         conv_id: AIConversationId,
-        task_id: crate::ai::ambient_agents::AmbientAgentTaskId,
+        task_id: crate::ai::ambient_agent_types::AmbientAgentTaskId,
         sqlite_cursor: i64,
         ctx: &mut ModelContext<Self>,
     ) {
@@ -1289,9 +1289,9 @@ impl OrchestrationEventStreamer {
     fn finish_restore_fetch(
         &mut self,
         conv_id: AIConversationId,
-        task_id: crate::ai::ambient_agents::AmbientAgentTaskId,
+        task_id: crate::ai::ambient_agent_types::AmbientAgentTaskId,
         sqlite_cursor: i64,
-        run_result: anyhow::Result<crate::ai::ambient_agents::task::AmbientAgentTask>,
+        run_result: anyhow::Result<crate::ai::ambient_agent_types::task::AmbientAgentTask>,
         ctx: &mut ModelContext<Self>,
     ) {
         match run_result {
@@ -1366,7 +1366,7 @@ impl OrchestrationEventStreamer {
     fn start_restore_fetch_retry_timer(
         &mut self,
         conv_id: AIConversationId,
-        task_id: crate::ai::ambient_agents::AmbientAgentTaskId,
+        task_id: crate::ai::ambient_agent_types::AmbientAgentTaskId,
         sqlite_cursor: i64,
         err: &anyhow::Error,
         ctx: &mut ModelContext<Self>,
@@ -1968,7 +1968,7 @@ async fn resolve_dormant_claude_wake_cursor(
     }
 }
 
-fn agent_task_harness(task: &crate::ai::ambient_agents::task::AmbientAgentTask) -> Option<Harness> {
+fn agent_task_harness(task: &crate::ai::ambient_agent_types::task::AmbientAgentTask) -> Option<Harness> {
     task.agent_config_snapshot
         .as_ref()
         .and_then(|snapshot| snapshot.harness.as_ref())

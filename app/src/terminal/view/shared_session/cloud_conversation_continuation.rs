@@ -6,7 +6,7 @@ use crate::ai::agent::conversation::{
     AIAgentHarness, AIConversationId, ServerAIConversationMetadata,
 };
 use crate::ai::agent_conversations_model::AgentConversationsModel;
-use crate::ai::ambient_agents::{
+use crate::ai::ambient_agent_types::{
     conversation_output_status_from_conversation, AmbientAgentTask, AmbientAgentTaskId,
     AmbientConversationStatus,
 };

@@ -143,7 +143,7 @@ use crate::ai::agent::{AIAgentContext, AIAgentExchangeId, CancellationReason, En
 use crate::ai::agent_conversations_model::{
     AgentConversationNavigationSubject, AgentConversationsModel,
 };
-use crate::ai::ambient_agents::telemetry::HandoffEntryPoint;
+use crate::ai::ambient_agent_types::telemetry::HandoffEntryPoint;
 use crate::ai::attachment_utils::MAX_ATTACHMENT_SIZE_BYTES;
 use crate::ai::block_context::BlockContext;
 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
@@ -12920,7 +12920,7 @@ impl Input {
     /// Uploads image and file attachments to GCS via presigned URLs, then emits `SendAgentPrompt`
     /// with the resulting `FileReference` attachments appended.
     fn upload_files_then_send_prompt(
-        task_id: crate::ai::ambient_agents::AmbientAgentTaskId,
+        task_id: crate::ai::ambient_agent_types::AmbientAgentTaskId,
         server_conversation_token: Option<
             session_sharing_protocol::common::ServerConversationToken,
         >,

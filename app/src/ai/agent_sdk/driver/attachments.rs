@@ -12,8 +12,8 @@ use tokio_util::io::StreamReader;
 use warp_core::features::FeatureFlag;
 
 use crate::ai::agent_sdk::retry::with_bounded_retry;
-use crate::ai::ambient_agents::task::{AttachmentInput, TaskAttachment};
-use crate::ai::ambient_agents::AmbientAgentTaskId;
+use crate::ai::ambient_agent_types::task::{AttachmentInput, TaskAttachment};
+use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::ai::attachment_utils::MAX_ATTACHMENT_SIZE_BYTES;
 use crate::server::server_api::ai::AIClient;
 use crate::server::server_api::presigned_upload::HttpStatusError;

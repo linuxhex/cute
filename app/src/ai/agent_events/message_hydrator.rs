@@ -12,7 +12,7 @@ use reqwest::Error as ReqwestError;
 use warpui::r#async::Timer;
 
 use crate::ai::agent::ReceivedMessageInput;
-use crate::ai::ambient_agents::AmbientAgentTaskId;
+use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::server::server_api::ai::{AIClient, AgentRunEvent, ReadAgentMessageResponse};
 #[cfg(not(target_family = "wasm"))]
 use crate::server::server_api::presigned_upload::HttpStatusError;

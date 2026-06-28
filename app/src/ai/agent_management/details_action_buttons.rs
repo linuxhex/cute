@@ -6,7 +6,7 @@ use warpui::{AppContext, Element, Entity, TypedActionView, View, ViewContext, Vi
 
 use crate::ai::agent::conversation::AIConversationId;
 use crate::ai::agent_conversations_model::{AgentConversationEntryId, AgentRunDisplayStatus};
-use crate::ai::ambient_agents::AmbientAgentTaskId;
+use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::ui_components::icons::Icon;
 use crate::view_components::action_button::{ActionButton, ButtonSize, SecondaryTheme};
 use crate::view_components::copyable_text_field::COPY_FEEDBACK_DURATION;

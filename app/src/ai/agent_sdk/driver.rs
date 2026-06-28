@@ -42,8 +42,8 @@ use crate::ai::agent_sdk::driver::harness::{
     ResumePayload, SavePoint, ThirdPartyHarness, ThirdPartyHarnessTelemetryEvent,
 };
 use crate::ai::agent_sdk::setup_observability::{SetupClientEventReporter, SetupStep};
-use crate::ai::ambient_agents::task::HarnessModelConfig;
-use crate::ai::ambient_agents::{
+use crate::ai::ambient_agent_types::task::HarnessModelConfig;
+use crate::ai::ambient_agent_types::{
     conversation_output_status_from_conversation, AmbientAgentTaskId, AmbientConversationStatus,
 };
 use crate::ai::blocklist::agent_view::AgentViewEntryOrigin;

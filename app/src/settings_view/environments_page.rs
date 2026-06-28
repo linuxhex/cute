@@ -38,7 +38,7 @@ use super::update_environment_form::{
     UpdateEnvironmentFormEvent,
 };
 use super::{editor_text_colors, SettingsSection};
-use crate::ai::ambient_agents::github_auth_url::GithubAuthRedirectTarget;
+use crate::ai::ambient_agent_types::github_auth_url::GithubAuthRedirectTarget;
 use crate::ai::cloud_environments::{self, CloudAmbientAgentEnvironment};
 use crate::appearance::Appearance;
 use crate::cloud_object::model::persistence::{CloudModel, CloudModelEvent};

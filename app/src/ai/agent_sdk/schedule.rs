@@ -14,10 +14,10 @@ use warpui::{AppContext, SingletonEntity};
 
 use super::common::{EnvironmentChoice, ResolveConfigurationError};
 use super::output::{self, TableFormat};
-use crate::ai::ambient_agents::scheduled::{
+use crate::ai::ambient_agent_types::scheduled::{
     CloudScheduledAmbientAgent, ScheduledAgentManager, ScheduledAmbientAgent, UpdateScheduleParams,
 };
-use crate::ai::ambient_agents::AgentConfigSnapshot;
+use crate::ai::ambient_agent_types::AgentConfigSnapshot;
 use crate::cloud_object::{CloudObject, CloudObjectLookup as _};
 use crate::server::ids::{ServerId, SyncId};
 use crate::util::time_format::format_approx_duration_from_now_utc;
@@ -110,7 +110,7 @@ fn create(ctx: &mut AppContext, args: CreateScheduleArgs) -> anyhow::Result<()> 
 
             let merged_config = super::config_file::merge_with_precedence(
                 loaded_file.as_ref(),
-                crate::ai::ambient_agents::AgentConfigSnapshot {
+                crate::ai::ambient_agent_types::AgentConfigSnapshot {
                     name: None,
                     environment_id,
                     model_id: args.model.model.clone(),

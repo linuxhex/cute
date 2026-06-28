@@ -14,7 +14,7 @@ use warpui::elements::{
 use warpui::fonts::{Properties, Weight};
 use warpui::{AppContext, Entity, SingletonEntity, TypedActionView, View, ViewContext, ViewHandle};
 
-use crate::ai::ambient_agents::github_auth_url::{AuthSource, GithubAuthRedirectTarget};
+use crate::ai::ambient_agent_types::github_auth_url::{AuthSource, GithubAuthRedirectTarget};
 use crate::ai::request_usage_model::AMBIENT_AGENT_TRIAL_CREDIT_THRESHOLD;
 use crate::ai::{cloud_environments, AIRequestUsageModel};
 use crate::appearance::Appearance;

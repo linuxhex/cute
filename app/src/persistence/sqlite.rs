@@ -50,10 +50,10 @@ use super::{
     StartedCommandMetadata, WriterHandles,
 };
 use crate::ai::agent::conversation::AIConversationId;
-use crate::ai::ambient_agents::scheduled::{
+use crate::ai::ambient_agent_types::scheduled::{
     CloudScheduledAmbientAgent, CloudScheduledAmbientAgentModel,
 };
-use crate::ai::ambient_agents::AmbientAgentTaskId;
+use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::ai::cloud_environments::{
     CloudAmbientAgentEnvironment, CloudAmbientAgentEnvironmentModel,
 };

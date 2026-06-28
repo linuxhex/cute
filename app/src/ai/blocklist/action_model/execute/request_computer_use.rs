@@ -7,7 +7,7 @@ use warpui::{Entity, EntityId, ModelContext, SingletonEntity};
 
 use super::{ActionExecution, AnyActionExecution, ExecuteActionInput, PreprocessActionInput};
 use crate::ai::agent::{AIAgentActionId, AIAgentActionType};
-use crate::ai::ambient_agents::AmbientAgentTaskId;
+use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::ai::blocklist::BlocklistAIHistoryModel;
 
 pub struct RequestComputerUseExecutor {

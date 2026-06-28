@@ -15,7 +15,7 @@ use warpui::{
 
 use super::cloud_conversation_continuation::TombstoneCta;
 use crate::ai::agent::conversation::AIConversationId;
-use crate::ai::ambient_agents::{
+use crate::ai::ambient_agent_types::{
     conversation_output_status_from_conversation, AmbientAgentTask, AmbientAgentTaskId,
     AmbientConversationStatus,
 };

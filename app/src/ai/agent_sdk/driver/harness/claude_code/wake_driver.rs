@@ -17,7 +17,7 @@ use super::parent_bridge::{ensure_parent_bridge_state_dir, parent_bridge_root};
 use super::{claude_command, prepare_claude_environment_config, ClaudeHarness};
 use crate::ai::agent::conversation::{AIConversation, ConversationStatus};
 use crate::ai::agent_events::AgentMessageEventMetadata;
-use crate::ai::ambient_agents::{AmbientAgentTaskId, AmbientAgentTaskState};
+use crate::ai::ambient_agent_types::{AmbientAgentTaskId, AmbientAgentTaskState};
 use crate::server::server_api::ai::AIClient;
 use crate::server::server_api::harness_support::ResolvePromptRequest;
 use crate::server::server_api::ServerApi;

@@ -11,7 +11,7 @@ use super::{
 use crate::ai::active_agent_views_model::{ActiveAgentViewsModel, ConversationOrTaskId};
 use crate::ai::agent::api::ServerConversationToken;
 use crate::ai::agent::conversation::AIConversationId;
-use crate::ai::ambient_agents::{AgentSource, AmbientAgentTask, AmbientAgentTaskId};
+use crate::ai::ambient_agent_types::{AgentSource, AmbientAgentTask, AmbientAgentTaskId};
 use crate::ai::artifacts::Artifact;
 use crate::ai::blocklist::history_model::{AIConversationMetadata, BlocklistAIHistoryModel};
 use crate::ai::conversation_navigation::ConversationNavigationData;

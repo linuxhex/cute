@@ -100,7 +100,7 @@ impl IntegrationCommandRunner {
 
             let mut merged_config = super::config_file::merge_with_precedence(
                 loaded_file.as_ref(),
-                crate::ai::ambient_agents::AgentConfigSnapshot {
+                crate::ai::ambient_agent_types::AgentConfigSnapshot {
                     name: None,
                     environment_id: args.environment.environment.clone(),
                     model_id: args.model.model.clone(),
@@ -412,7 +412,7 @@ impl IntegrationCommandRunner {
 
             let mut merged_config = super::config_file::merge_with_precedence(
                 loaded_file.as_ref(),
-                crate::ai::ambient_agents::AgentConfigSnapshot {
+                crate::ai::ambient_agent_types::AgentConfigSnapshot {
                     name: None,
                     environment_id: args.environment.environment.clone(),
                     model_id: args.model.model.clone(),

@@ -50,8 +50,8 @@ use crate::ai::agent_sdk::mcp_config::build_mcp_servers_from_specs;
 use crate::ai::agent_sdk::setup_observability::{
     SetupClientEventReporter, SetupStep, SetupTimelineEvent,
 };
-use crate::ai::ambient_agents::task::HarnessConfig;
-use crate::ai::ambient_agents::AmbientAgentTaskId;
+use crate::ai::ambient_agent_types::task::HarnessConfig;
+use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::ai::attachment_utils::attachments_download_dir;
 #[cfg(not(target_family = "wasm"))]
 use crate::ai::aws_credentials::refresh_aws_credentials;

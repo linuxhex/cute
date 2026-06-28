@@ -18,11 +18,11 @@ use crate::ai::agent::{extract_user_query_mode, UserQueryMode};
 use crate::ai::agent_sdk::driver::attachments::{
     process_attachment, MAX_ATTACHMENT_COUNT_FOR_CLOUD_QUERY,
 };
-use crate::ai::ambient_agents::spawn::{
+use crate::ai::ambient_agent_types::spawn::{
     spawn_task, AmbientAgentEvent, SessionJoinInfo, TASK_STATUS_POLLING_DURATION,
 };
-use crate::ai::ambient_agents::task::HarnessConfig;
-use crate::ai::ambient_agents::{
+use crate::ai::ambient_agent_types::task::HarnessConfig;
+use crate::ai::ambient_agent_types::{
     AgentConfigSnapshot, AmbientAgentTask, AmbientAgentTaskState,
 };
 use crate::ai::artifacts::Artifact;
@@ -374,7 +374,7 @@ impl AmbientAgentRunner {
                 reasoning_level: None,
             });
             let harness_auth_secrets = args.claude_auth_secret.clone().map(|name| {
-                crate::ai::ambient_agents::task::HarnessAuthSecretsConfig {
+                crate::ai::ambient_agent_types::task::HarnessAuthSecretsConfig {
                     claude_auth_secret_name: Some(name),
                     codex_auth_secret_name: None,
                 }

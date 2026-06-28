@@ -114,9 +114,9 @@ use crate::ai::agent::conversation::{
     ServerAIConversationMetadata,
 };
 pub use crate::ai::agent::UserQueryMode;
-use crate::ai::ambient_agents::AmbientAgentTaskId;
+use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 // Re-export ambient agent types for backwards compatibility
-pub use crate::ai::ambient_agents::{
+pub use crate::ai::ambient_agent_types::{
     task::{AttachmentInput, TaskAttachment},
     AgentConfigSnapshot, AgentSource, AmbientAgentTask, AmbientAgentTaskState, TaskStatusMessage,
 };

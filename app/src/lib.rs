@@ -132,7 +132,7 @@ pub use ai::agent::todos::AIAgentTodoList;
 pub use ai::agent::{AIAgentActionResultType, FileEdit, TodoOperation};
 use ai::agent_conversations_model::AgentConversationsModel;
 use ai::agent_management::AgentNotificationsModel;
-use ai::ambient_agents::scheduled::ScheduledAgentManager;
+use ai::ambient_agent_types::scheduled::ScheduledAgentManager;
 use ai::blocklist::{BlocklistAIHistoryModel, BlocklistAIPermissions};
 use ai::execution_profiles::editor::ExecutionProfileEditorManager;
 use ai::execution_profiles::profiles::AIExecutionProfilesModel;
@@ -216,7 +216,7 @@ use workspace::sync_inputs::SyncedInputState;
 
 use self::features::FeatureFlag;
 use crate::ai::agent::conversation::AIConversationId;
-use crate::ai::ambient_agents::github_auth_notifier::GitHubAuthNotifier;
+use crate::ai::ambient_agent_types::github_auth_notifier::GitHubAuthNotifier;
 use crate::ai::connected_self_hosted_workers::ConnectedSelfHostedWorkersModel;
 use crate::ai::document::ai_document_model::AIDocumentModel;
 use crate::ai::facts::manager::AIFactManager;
@@ -294,17 +294,17 @@ pub static ASSETS: warp_assets::Assets = warp_assets::Assets;
 
 fn determine_agent_source(
     launch_mode: &LaunchMode,
-) -> Option<crate::ai::ambient_agents::AgentSource> {
+) -> Option<crate::ai::ambient_agent_types::AgentSource> {
     match launch_mode {
         LaunchMode::CommandLine { .. } => {
             if std::env::var("GITHUB_ACTIONS").ok().as_deref() == Some("true") {
-                Some(crate::ai::ambient_agents::AgentSource::GitHubAction)
+                Some(crate::ai::ambient_agent_types::AgentSource::GitHubAction)
             } else {
-                Some(crate::ai::ambient_agents::AgentSource::Cli)
+                Some(crate::ai::ambient_agent_types::AgentSource::Cli)
             }
         }
         LaunchMode::App { .. } | LaunchMode::Test { .. } => {
-            Some(crate::ai::ambient_agents::AgentSource::CloudMode)
+            Some(crate::ai::ambient_agent_types::AgentSource::CloudMode)
         }
     }
 }

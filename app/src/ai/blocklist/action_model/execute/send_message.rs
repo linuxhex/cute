@@ -6,7 +6,7 @@ use super::{ActionExecution, AnyActionExecution, ExecuteActionInput, PreprocessA
 use crate::ai::agent::{
     AIAgentAction, AIAgentActionResultType, AIAgentActionType, SendMessageToAgentResult,
 };
-use crate::ai::ambient_agents::AmbientAgentTaskId;
+use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::ai::blocklist::orchestration_events::{OrchestrationEventService, SendMessageResult};
 
 pub struct SendMessageToAgentExecutor {

@@ -22,8 +22,8 @@ use super::{
 };
 use crate::ai::agent::conversation::AIConversationId;
 use crate::ai::agent_sdk::setup_observability::{SetupClientEventReporter, SetupStep};
-use crate::ai::ambient_agents::task::HarnessModelConfig;
-use crate::ai::ambient_agents::AmbientAgentTaskId;
+use crate::ai::ambient_agent_types::task::HarnessModelConfig;
+use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::server::server_api::harness_support::HarnessSupportClient;
 use crate::server::server_api::ServerApi;
 use crate::terminal::model::block::BlockId;

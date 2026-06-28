@@ -22,8 +22,8 @@ use super::{
 use crate::ai::active_agent_views_model::ActiveAgentViewsModel;
 use crate::ai::agent::conversation::{AIConversationId, ConversationStatus};
 use crate::ai::agent::StartAgentExecutionMode;
-use crate::ai::ambient_agents::task::{normalize_orchestrator_agent_name, HarnessConfig};
-use crate::ai::ambient_agents::{AgentConfigSnapshot, AmbientAgentTaskId};
+use crate::ai::ambient_agent_types::task::{normalize_orchestrator_agent_name, HarnessConfig};
+use crate::ai::ambient_agent_types::{AgentConfigSnapshot, AmbientAgentTaskId};
 use crate::ai::blocklist::agent_view::{AgentViewControllerEvent, AgentViewEntryOrigin};
 use crate::ai::blocklist::orchestration_events::OrchestrationEventService;
 #[cfg(feature = "local_fs")]
@@ -776,9 +776,9 @@ fn cancel_cloud_agent_task(
         return false;
     };
     if show_toast {
-        crate::ai::ambient_agents::cancel_task_with_toast(task_id, ctx);
+        crate::ai::ambient_agent_types::cancel_task_with_toast(task_id, ctx);
     } else {
-        crate::ai::ambient_agents::cancel_task_silently(task_id, ctx);
+        crate::ai::ambient_agent_types::cancel_task_silently(task_id, ctx);
     }
     true
 }
@@ -2068,11 +2068,11 @@ fn launch_remote_child(
         .as_ref()
         .filter(|name| !name.trim().is_empty())
         .and_then(|name| match orchestration_harness {
-            Harness::Claude => Some(crate::ai::ambient_agents::task::HarnessAuthSecretsConfig {
+            Harness::Claude => Some(crate::ai::ambient_agent_types::task::HarnessAuthSecretsConfig {
                 claude_auth_secret_name: Some(name.clone()),
                 codex_auth_secret_name: None,
             }),
-            Harness::Codex => Some(crate::ai::ambient_agents::task::HarnessAuthSecretsConfig {
+            Harness::Codex => Some(crate::ai::ambient_agent_types::task::HarnessAuthSecretsConfig {
                 claude_auth_secret_name: None,
                 codex_auth_secret_name: Some(name.clone()),
             }),

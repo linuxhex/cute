@@ -180,6 +180,15 @@
 - `cargo check --bin cute`：通过（0 errors, 332 warnings）
 - 检查时间：2026-06-27
 
+### ambient_agents 模块物理删除（重定位）
+
+- **操作**：物理删除 `app/src/ai/ambient_agents/` 目录路径，内容重定位至 `app/src/ai/ambient_agent_types/`（7 个文件结构保留：mod.rs / task.rs / spawn.rs / scheduled.rs / telemetry.rs / github_auth_notifier.rs / github_auth_url.rs）。
+- **`app/src/ai/mod.rs`**：`pub mod ambient_agents;` → `pub mod ambient_agent_types;`。
+- **引用更新**：批量替换 73 个源文件中的 `ai::ambient_agents` → `ai::ambient_agent_types`（仅模块路径，未触碰 feature 名 `ambient_agents_command_line` / `scheduled_ambient_agents` / `ambient_agents_rtc` 及 GraphQL 字段 `ambient_agents_policy`）。
+- **重定位原因**：`terminal/view/ambient_agent/`（Cloud Mode UI，本次不删除）默认参与编译且依赖 `spawn_task` / `GitHubAuthNotifier` / `AmbientAgentTask` / `AgentSource` 等类型，真正的语义删除被阻塞，故先重定位。云端逻辑（`ScheduledAgentManager` / `spawn_task` / cloud telemetry）的最终删除留待后续删除 `terminal/view/ambient_agent/` 时进行。
+- **`ScheduledAgentManager::new`**（lib.rs:1648）：已由 `FeatureFlag::ScheduledAmbientAgents.is_enabled()` 门控，default build 不初始化，保留不动。
+- **编译验证**：`cargo check --bin cute` 通过（0 errors, 332 warnings，与基线一致）。
+
 ---
 
 ## 编译/构建检查

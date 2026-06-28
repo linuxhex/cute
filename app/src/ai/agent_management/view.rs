@@ -51,7 +51,7 @@ use crate::ai::agent_management::details_action_buttons::{
     ActionButtonsConfig, AgentDetailsButtonEvent, ConversationActionButtonsRow,
 };
 use crate::server::telemetry::AgentModeEntrypoint;
-use crate::ai::ambient_agents::{cancel_task_with_toast, AgentSource};
+use crate::ai::ambient_agent_types::{cancel_task_with_toast, AgentSource};
 use crate::ai::artifacts::{Artifact, ArtifactButtonsRow, ArtifactButtonsRowEvent};
 use crate::ai::blocklist::format_credits;
 use crate::ai::conversation_details_panel::{

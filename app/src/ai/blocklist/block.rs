@@ -101,7 +101,7 @@ use crate::ai::agent::{
 };
 use crate::ai::agent_conversations_model::{AgentConversationsModel, AgentConversationsModelEvent};
 use crate::ai::ai_document_view::DEFAULT_PLANNING_DOCUMENT_TITLE;
-use crate::ai::ambient_agents::AmbientAgentTaskId;
+use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::ai::blocklist::action_model::NewConversationDecision;
 use crate::ai::blocklist::agent_view::{AgentViewController, AgentViewEntryOrigin};
 use crate::ai::blocklist::block::keyboard_navigable_buttons::{

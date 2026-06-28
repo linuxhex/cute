@@ -31,7 +31,7 @@ use warpui::{
 use crate::ai::active_agent_views_model::ActiveAgentViewsModel;
 use crate::ai::agent::api::ServerConversationToken;
 use crate::ai::agent::conversation::{AIConversationId, ConversationStatus};
-use crate::ai::ambient_agents::{
+use crate::ai::ambient_agent_types::{
     AgentSource, AmbientAgentLiveSessionState, AmbientAgentTask, AmbientAgentTaskId,
     AmbientAgentTaskState,
 };

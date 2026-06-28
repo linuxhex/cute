@@ -15,7 +15,7 @@ use warpui::platform::TerminationMode;
 use warpui::{AppContext, ModelHandle, SingletonEntity};
 
 use super::common::set_ambient_task_context_from_run_id;
-use crate::ai::ambient_agents::AmbientAgentTaskId;
+use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::ai::artifacts::Artifact;
 use crate::server::server_api::ServerApiProvider;
 

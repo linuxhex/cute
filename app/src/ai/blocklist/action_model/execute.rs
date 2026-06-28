@@ -83,7 +83,7 @@ use crate::ai::agent::{
     AIAgentActionType, AIAgentActionTypeDiscriminants, CancellationReason, FileContext,
     FileLocations, ServerOutputId,
 };
-use crate::ai::ambient_agents::AmbientAgentTaskId;
+use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::ai::get_relevant_files::controller::GetRelevantFilesController;
 #[cfg(feature = "local_fs")]
 use crate::ai::{agent::AnyFileContent, paths::host_native_absolute_path};

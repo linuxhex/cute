@@ -230,7 +230,7 @@ use crate::ai::agent::{
 #[cfg(feature = "local_fs")]
 use crate::ai::agent::{CurrentHead, DiffBase};
 use crate::ai::agent_conversations_model::{AgentConversationsModel, AgentConversationsModelEvent};
-use crate::ai::ambient_agents::{
+use crate::ai::ambient_agent_types::{
     conversation_output_status_from_conversation, AmbientAgentTaskId,
 };
 use crate::ai::blocklist::agent_view::agent_input_footer::toolbar_item::AgentToolbarItemKind;

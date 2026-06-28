@@ -24,7 +24,7 @@ use warpui::{AppContext, EntityId, SingletonEntity as _};
 
 use super::{AIAgentInput, MCPContext, MCPServer, RequestMetadata, Suggestions};
 use crate::ai::agent::conversation::AIConversationId;
-use crate::ai::ambient_agents::AmbientAgentTaskId;
+use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::ai::blocklist::{BlocklistAIPermissions, RequestInput, SessionContext};
 use crate::ai::execution_profiles::profiles::AIExecutionProfilesModel;
 use crate::ai::execution_profiles::AIExecutionProfileAppExt;
