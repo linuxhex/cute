@@ -1,7 +1,7 @@
 //! Supporting types for persisting cloud objects to SQLite.
 
 use anyhow::anyhow;
-use cloud_objects::cloud_object::{CloudLinkSharing, CloudObjectGuest, ServerObjectContainer};
+use crate::cloud_object::{CloudLinkSharing, CloudObjectGuest, ServerObjectContainer};
 use serde::{Deserialize, Serialize};
 
 use crate::auth::UserUid;

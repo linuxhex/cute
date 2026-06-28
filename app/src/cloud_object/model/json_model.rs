@@ -1,4 +1,4 @@
-use cloud_objects::cloud_object::{GenericStringObjectFormat, SerializedModel};
+use warp_server_client::cloud_object::{GenericStringObjectFormat, SerializedModel};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 

@@ -20,9 +20,9 @@ use crate::ai::ambient_agent_types::{
     SERVER_OVERLOADED_TASK_FAILURE_MESSAGE,
 };
 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-use crate::ai::blocklist::handoff::touched_repos::TouchedWorkspace;
+use crate::ai::blocklist::TouchedWorkspace;
 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-use crate::ai::blocklist::handoff::PendingCloudLaunch;
+use crate::ai::blocklist::PendingCloudLaunch;
 use crate::ai::blocklist::BlocklistAIHistoryModel;
 use crate::ai::cloud_environments::CloudAmbientAgentEnvironment;
 use crate::ai::execution_profiles::{

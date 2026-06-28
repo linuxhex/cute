@@ -16,7 +16,7 @@ pub mod workflows;
 use std::cmp::Ordering;
 use std::fmt;
 
-pub use cloud_objects::drive::CloudObjectTypeAndId;
+pub use warp_server_client::drive::CloudObjectTypeAndId;
 pub use index::DriveIndexVariant;
 pub use panel::{DrivePanel, DrivePanelEvent};
 use serde::{Deserialize, Serialize};

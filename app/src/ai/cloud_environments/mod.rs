@@ -8,7 +8,7 @@ pub use crate::cloud_object::models::{
     AmbientAgentEnvironment, AwsProviderConfig, BaseImage, CloudAmbientAgentEnvironment,
     CloudAmbientAgentEnvironmentModel, GcpProviderConfig, GithubRepo, ProvidersConfig,
 };
-use cloud_objects::cloud_object::Owner;
+use warp_server_client::cloud_object::Owner;
 use warpui::{AppContext, SingletonEntity as _};
 
 use crate::auth::AuthStateProvider;

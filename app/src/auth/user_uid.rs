@@ -1,2 +1,2 @@
 // Cloud objects crate still exists, just re-export from it
-pub use cloud_objects::auth::user_uid::*;
+pub use warp_server_client::auth::user_uid::*;

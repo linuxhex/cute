@@ -1,7 +1,7 @@
 use std::any::Any;
 
 use anyhow::Result;
-use cloud_objects::{
+use warp_server_client::{
     cloud_object::{GenericServerObject, GenericStringModel, Serializer, ServerMetadata},
     ids::{GenericStringObjectId, ObjectUid, ServerId, SyncId},
 };

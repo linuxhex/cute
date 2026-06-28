@@ -30,7 +30,7 @@ use crate::ai::blocklist::agent_view::{
     AgentViewEntryOrigin, DismissalStrategy, EphemeralMessage, ENTER_OR_EXIT_CONFIRMATION_WINDOW,
 };
 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-use crate::ai::blocklist::handoff::PendingCloudLaunch;
+use crate::ai::blocklist::PendingCloudLaunch;
 use crate::ai::blocklist::{
     BlocklistAIHistoryModel, InputTypeAutoDetectionSource, QueuedQuery, QueuedQueryModel,
     QueuedQueryOrigin, SlashCommandRequest,

@@ -1,6 +1,6 @@
 use std::fmt;
 
-use cloud_objects::{
+use warp_server_client::{
     cloud_object::{GenericCloudObject, GenericServerObject, GenericStringModel, JsonObjectType},
     ids::GenericStringObjectId,
 };

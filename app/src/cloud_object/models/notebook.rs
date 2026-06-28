@@ -1,5 +1,5 @@
 use ai::document::AIDocumentId;
-use cloud_objects::{
+use warp_server_client::{
     cloud_object::{GenericCloudObject, GenericServerObject, ObjectType, ServerObjectModel},
     ids::{ServerId, SyncId},
 };
@@ -33,7 +33,7 @@ impl ServerObjectModel for CloudNotebookModel {
 /// This is the notebook_id in the database associated with this notebook.
 #[derive(Clone, Copy, Default, Debug, PartialEq, Eq, Serialize, Deserialize, Hash)]
 pub struct NotebookId(ServerId);
-cloud_objects::server_id_traits! { NotebookId, "Notebook" }
+warp_server_client::server_id_traits! { NotebookId, "Notebook" }
 
 impl From<NotebookId> for SyncId {
     fn from(id: NotebookId) -> Self {

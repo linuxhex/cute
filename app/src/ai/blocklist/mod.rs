@@ -5,7 +5,6 @@ pub mod block;
 pub mod code_block;
 mod context_model;
 mod controller;
-pub(crate) mod handoff;
 
 pub(crate) mod local_agent_task_sync_model;
 pub(crate) mod orchestration_event_streamer;
@@ -84,3 +83,64 @@ pub(crate) use view_util::{
 };
 
 pub use crate::ai::blocklist::block::{secret_redaction, AIBlockResponseRating, TextLocation};
+
+// ---------------------------------------------------------------------------
+// Handoff stubs (OMJF-11111 de-cloudification)
+//
+// The `handoff` module was physically removed as part of de-cloudification.
+// These stub types preserve the API surface for callers that still reference
+// handoff types (e.g. `terminal::view::ambient_agent`). Function stubs are
+// no-ops that disable the cloud-handoff behavior paths.
+// ---------------------------------------------------------------------------
+
+#[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+mod handoff_stubs {
+    use std::path::{Path, PathBuf};
+
+    use crate::ai::cloud_environments::{CloudAmbientAgentEnvironment, GithubRepo};
+    use crate::server::ids::SyncId;
+    use crate::server::server_api::ai::AttachmentInput;
+
+    use super::PendingAttachment;
+
+    #[derive(Debug, Clone, Default)]
+    pub(crate) struct HandoffLaunchAttachments {
+        pub(crate) request_attachments: Vec<AttachmentInput>,
+        pub(crate) display_attachments: Vec<PendingAttachment>,
+    }
+
+    #[derive(Debug, Clone)]
+    pub(crate) struct PendingCloudLaunch {
+        pub(crate) prompt: String,
+        pub(crate) attachments: HandoffLaunchAttachments,
+    }
+
+    #[derive(Clone, Debug, Default)]
+    pub(crate) struct TouchedWorkspace {
+        pub repos: Vec<TouchedRepo>,
+        pub orphan_files: Vec<PathBuf>,
+    }
+
+    #[derive(Clone, Debug)]
+    pub(crate) struct TouchedRepo {
+        pub git_root: PathBuf,
+        pub repo_id: Option<GithubRepo>,
+    }
+
+    pub(crate) fn pick_handoff_overlap_env(
+        _workspace: &TouchedWorkspace,
+        _envs: Vec<CloudAmbientAgentEnvironment>,
+    ) -> Option<SyncId> {
+        None
+    }
+
+    pub(crate) async fn resolve_repo_for_path(_path: &Path) -> Option<TouchedRepo> {
+        None
+    }
+}
+
+#[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+pub(crate) use handoff_stubs::{
+    HandoffLaunchAttachments, PendingCloudLaunch, TouchedRepo, TouchedWorkspace,
+    pick_handoff_overlap_env, resolve_repo_for_path,
+};

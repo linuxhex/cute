@@ -166,11 +166,7 @@ use crate::ai::blocklist::agent_view::agent_input_footer::editor::AgentToolbarEd
 use crate::ai::blocklist::agent_view::editor::{AgentToolbarEditorEvent, AgentToolbarEditorModal};
 use crate::ai::blocklist::agent_view::AgentViewEntryOrigin;
 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-use crate::ai::blocklist::handoff;
-#[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-use crate::ai::blocklist::handoff::touched_repos::extract_paths_from_conversation;
-#[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-use crate::ai::blocklist::handoff::{HandoffLaunchAttachments, PendingCloudLaunch};
+use crate::ai::blocklist::{HandoffLaunchAttachments, PendingCloudLaunch};
 use crate::ai::blocklist::history_model::{load_conversation_from_server, CloudConversationData};
 use crate::ai::blocklist::inline_action::code_diff_view::CodeDiffView;
 use crate::ai::blocklist::suggested_agent_mode_workflow_modal::{
@@ -14828,20 +14824,6 @@ impl Workspace {
         model_handle.update(ctx, |model, ctx| {
             model.queue_handoff_auto_submit(ctx);
         });
-
-        let source_pwd = source_view.as_ref(ctx).pwd();
-        let session_id = source_view
-            .as_ref(ctx)
-            .active_block_session_id()
-            .unwrap_or_default();
-        let mut paths: Vec<StandardizedPath> = Vec::new();
-        if let Some(ref pwd) = source_pwd {
-            if let Ok(sp) = StandardizedPath::try_new(pwd) {
-                paths.push(sp);
-            }
-        }
-        let upload_target = handoff::snapshot::resolve_upload_target(session_id, ctx);
-        handoff::snapshot::spawn_handoff_snapshot_upload(paths, upload_target, model_handle, ctx);
     }
 
     /// Opens a local-to-cloud handoff pane in place over the active local pane.
@@ -15245,20 +15227,6 @@ impl Workspace {
         model_handle.update(ctx, |model, ctx| {
             model.queue_handoff_auto_submit(ctx);
         });
-
-        let source_pwd = source_view.as_ref(ctx).pwd();
-        let session_id = source_view
-            .as_ref(ctx)
-            .active_block_session_id()
-            .unwrap_or_default();
-        let mut paths = extract_paths_from_conversation(&source_conversation);
-        if let Some(ref pwd) = source_pwd {
-            if let Ok(sp) = StandardizedPath::try_new(pwd) {
-                paths.push(sp);
-            }
-        }
-        let upload_target = handoff::snapshot::resolve_upload_target(session_id, ctx);
-        handoff::snapshot::spawn_handoff_snapshot_upload(paths, upload_target, model_handle, ctx);
     }
 
     pub(crate) fn handle_file_tree_event(

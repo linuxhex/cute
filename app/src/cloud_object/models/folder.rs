@@ -1,4 +1,4 @@
-use cloud_objects::{
+use warp_server_client::{
     cloud_object::{GenericCloudObject, GenericServerObject, ObjectType, ServerObjectModel},
     ids::FolderId,
 };

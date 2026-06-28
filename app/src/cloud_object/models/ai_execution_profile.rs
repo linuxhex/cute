@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use ai::LLMId;
-use cloud_objects::{
+use warp_server_client::{
     cloud_object::{GenericCloudObject, GenericServerObject, GenericStringModel, JsonObjectType},
     ids::GenericStringObjectId,
 };

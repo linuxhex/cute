@@ -156,11 +156,10 @@ use crate::ai::blocklist::agent_view::{
 use crate::ai::blocklist::block::cli_controller::CLISubagentController;
 use crate::ai::blocklist::block::status_bar::BlocklistAIStatusBar;
 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-use crate::ai::blocklist::handoff::touched_repos::{
-    pick_handoff_overlap_env, resolve_repo_for_path, TouchedWorkspace,
+use crate::ai::blocklist::{
+    pick_handoff_overlap_env, resolve_repo_for_path, HandoffLaunchAttachments, PendingCloudLaunch,
+    TouchedWorkspace,
 };
-#[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-use crate::ai::blocklist::handoff::{HandoffLaunchAttachments, PendingCloudLaunch};
 use crate::ai::blocklist::prompt::prompt_alert::{PromptAlertEvent, PromptAlertView};
 use crate::ai::blocklist::telemetry_banner::should_collect_ai_ugc_telemetry;
 use crate::ai::blocklist::{

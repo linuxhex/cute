@@ -1,4 +1,4 @@
-use cloud_objects::{UserUid, ids::ServerId};
+use warp_server_client::{UserUid, ids::ServerId};
 use session_sharing_protocol::common::ProfileData;
 
 /// Public struct for storing all the UserProfile data that's fed in from either sqlite or the server.

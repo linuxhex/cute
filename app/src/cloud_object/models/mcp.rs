@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use chrono::Utc;
-use cloud_objects::{
+use warp_server_client::{
     cloud_object::{GenericCloudObject, GenericServerObject, GenericStringModel, JsonObjectType},
     ids::GenericStringObjectId,
 };

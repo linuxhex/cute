@@ -7,8 +7,8 @@ use chrono::{DateTime, Utc};
 #[cfg(test)]
 use mockall::automock;
 
-use cloud_objects::cloud_object::{SerializedModel, ServerMetadata};
-use cloud_objects::ids::{GenericStringObjectId, HashedSqliteId, ObjectUid, ServerId, SyncId};
+use warp_server_client::cloud_object::{SerializedModel, ServerMetadata};
+use warp_server_client::ids::{GenericStringObjectId, HashedSqliteId, ObjectUid, ServerId, SyncId};
 
 use super::ServerApi;
 use crate::cloud_object::{

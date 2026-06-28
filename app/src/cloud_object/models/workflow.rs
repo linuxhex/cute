@@ -1,4 +1,4 @@
-use cloud_objects::{
+use warp_server_client::{
     cloud_object::{GenericCloudObject, GenericServerObject, ObjectType, ServerObjectModel},
     ids::{GenericStringObjectId, ServerId, SyncId},
 };
@@ -392,7 +392,7 @@ impl ServerObjectModel for CloudWorkflowModel {
 
 #[derive(Clone, Debug, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
 pub struct WorkflowId(ServerId);
-cloud_objects::server_id_traits! { WorkflowId, "Workflow" }
+warp_server_client::server_id_traits! { WorkflowId, "Workflow" }
 
 /// `CloudWorkflow` is a workflow retrieved from the server.
 pub type CloudWorkflow = GenericCloudObject<WorkflowId, CloudWorkflowModel>;

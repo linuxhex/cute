@@ -1,7 +1,7 @@
-// Re-export types from cloud_objects.
+// Re-export types from warp_server_client.
 #[allow(unused_imports)]
-pub use cloud_objects::ids::GenericStringObjectId;
-pub use cloud_objects::ids::{
+pub use warp_server_client::ids::GenericStringObjectId;
+pub use warp_server_client::ids::{
     parse_sqlite_id_to_uid, ApiKeyUid, ClientId, HashableId, HashedSqliteId, ObjectUid, ServerId, SyncId, ToServerId,
 };
 
@@ -10,7 +10,7 @@ pub use cloud_objects::ids::{
 /// Takes type and desired prefix for HashableId.
 ///
 /// Note: This macro uses `$crate::server::ids::*` paths, so it only works within the warp crate.
-/// For types defined in cloud_objects, use `cloud_objects::server_id_traits!` instead.
+/// For types defined in warp_server_client, use `warp_server_client::server_id_traits!` instead.
 #[macro_export]
 macro_rules! server_id_traits {
     ($t:ty, $prefix:literal) => {

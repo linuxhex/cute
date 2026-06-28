@@ -527,7 +527,7 @@ pub enum WorkspaceAction {
     /// active conversation at all).
     OpenLocalToCloudHandoffPane {
         #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-        launch: Option<crate::ai::blocklist::handoff::PendingCloudLaunch>,
+        launch: Option<crate::ai::blocklist::PendingCloudLaunch>,
         #[cfg(not(all(feature = "local_fs", not(target_family = "wasm"))))]
         launch: Option<()>,
         environment_id: Option<crate::server::ids::SyncId>,
