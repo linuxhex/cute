@@ -9,15 +9,15 @@ use std::hash::{Hash, Hasher};
 
 use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::vec2f;
-use warp_cli::agent::Harness;
-use warp_core::channel::ChannelState;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::color::blend::Blend;
-use warp_core::ui::color::coloru_with_opacity;
-use warp_core::ui::theme::color::internal_colors;
-use warp_core::ui::theme::{Fill, WarpTheme};
-use warpui::elements::new_scrollable::{NewScrollable, ScrollableAppearance, SingleAxisConfig};
-use warpui::elements::{
+use cute_cli::agent::Harness;
+use cute_core::channel::ChannelState;
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::color::blend::Blend;
+use cute_core::ui::color::coloru_with_opacity;
+use cute_core::ui::theme::color::internal_colors;
+use cute_core::ui::theme::{Fill, WarpTheme};
+use cuteui::elements::new_scrollable::{NewScrollable, ScrollableAppearance, SingleAxisConfig};
+use cuteui::elements::{
     Align, AnchorPair, ChildAnchor, ChildView, ConstrainedBox, Container,
     CornerRadius, CrossAxisAlignment, Element, Empty, Fill as ElementFill, Flex, Hoverable,
     MainAxisAlignment, MainAxisSize, MouseStateHandle, OffsetPositioning, OffsetType, ParentAnchor,
@@ -25,12 +25,12 @@ use warpui::elements::{
     SavePosition, ScrollbarWidth, Stack, Text, XAxisAnchor, YAxisAnchor,
     DEFAULT_UI_LINE_HEIGHT_RATIO,
 };
-use warpui::fonts::{Properties, Weight};
-use warpui::platform::{Cursor, LineStyle};
-use warpui::text_layout::{
+use cuteui::fonts::{Properties, Weight};
+use cuteui::platform::{Cursor, LineStyle};
+use cuteui::text_layout::{
     ClipConfig, ClipDirection, ClipStyle, StyleAndFont, TextStyle, DEFAULT_TOP_BOTTOM_RATIO,
 };
-use warpui::{
+use cuteui::{
     AppContext, Entity, ModelHandle, SingletonEntity, TypedActionView, View, ViewContext,
     ViewHandle,
 };
@@ -1417,7 +1417,7 @@ fn render_hover_card(
     //
     // Use `dirs::home_dir()` (cross-platform: `$HOME` on unix,
     // `%USERPROFILE%` on Windows) to find the home prefix, then defer to
-    // the shared `warp_util::path::user_friendly_path` helper so the cwd
+    // the shared `cute_util::path::user_friendly_path` helper so the cwd
     // displays as `~/foo` regardless of OS — and matches the same
     // tilde-substitution behaviour used by the tab title, prompt header,
     // and pwd chip.
@@ -1429,7 +1429,7 @@ fn render_hover_card(
         .filter(|s| !s.is_empty())
         .map(|cwd| {
             Text::new(
-                warp_util::path::user_friendly_path(&cwd, home_dir_str).into_owned(),
+                cute_util::path::user_friendly_path(&cwd, home_dir_str).into_owned(),
                 appearance.ui_font_family(),
                 appearance.monospace_font_size() - 1.,
             )
@@ -1556,7 +1556,7 @@ fn render_hover_card(
         .with_padding_top(HOVER_CARD_VERTICAL_PADDING)
         .with_padding_bottom(HOVER_CARD_VERTICAL_PADDING)
         .with_background(bg)
-        .with_border(warpui::elements::Border::all(1.).with_border_fill(outline))
+        .with_border(cuteui::elements::Border::all(1.).with_border_fill(outline))
         .with_corner_radius(CornerRadius::with_all(Radius::Pixels(8.)))
         .finish();
 
@@ -1578,7 +1578,7 @@ fn render_status_badge(
     appearance: &Appearance,
 ) -> Box<dyn Element> {
     let (icon, color) = status.status_icon_and_color(theme, StatusColorStyle::Standard);
-    let icon_el = ConstrainedBox::new(icon.to_warpui_icon(color.into()).finish())
+    let icon_el = ConstrainedBox::new(icon.to_cuteui_icon(color.into()).finish())
         .with_width(12.)
         .with_height(12.)
         .finish();
@@ -1623,7 +1623,7 @@ fn render_chip(
     theme: &WarpTheme,
     appearance: &Appearance,
 ) -> Box<dyn Element> {
-    let icon_el = ConstrainedBox::new(icon.to_warpui_icon(icon_color.into()).finish())
+    let icon_el = ConstrainedBox::new(icon.to_cuteui_icon(icon_color.into()).finish())
         .with_width(12.)
         .with_height(12.)
         .finish();
@@ -1696,7 +1696,7 @@ fn render_pin_glyph_centered(is_pinned: bool, icon_color: ColorU) -> Box<dyn Ele
         Icon::Pin
     };
     let glyph: Box<dyn Element> =
-        ConstrainedBox::new(icon_variant.to_warpui_icon(icon_color.into()).finish())
+        ConstrainedBox::new(icon_variant.to_cuteui_icon(icon_color.into()).finish())
             .with_width(PILL_ICON_SIZE)
             .with_height(PILL_ICON_SIZE)
             .finish();
@@ -1726,7 +1726,7 @@ fn render_pill(
     overflow_mouse_state: MouseStateHandle,
     pin_button_mouse_state: MouseStateHandle,
     menu_is_open_for_this: bool,
-    self_terminal_view_id: warpui::EntityId,
+    self_terminal_view_id: cuteui::EntityId,
     app: &AppContext,
 ) -> Box<dyn Element> {
     let appearance = Appearance::as_ref(app);
@@ -1768,7 +1768,7 @@ fn render_pill(
     let pill_text_color = internal_colors::fg_overlay_6(theme).into_solid();
 
     // `Hoverable::new`'s build closure is `FnOnce` (see
-    // `crates/warpui_core/src/elements/hoverable.rs`). We can therefore move
+    // `crates/cuteui_core/src/elements/hoverable.rs`). We can therefore move
     // `label` into the closure by value rather than cloning it on every
     // build.
     let pill_body = Hoverable::new(mouse_state, move |hover_state| {
@@ -2051,7 +2051,7 @@ fn render_overflow_button(
         } else {
             None
         };
-        let icon = ConstrainedBox::new(Icon::DotsVertical.to_warpui_icon(text_color).finish())
+        let icon = ConstrainedBox::new(Icon::DotsVertical.to_cuteui_icon(text_color).finish())
             .with_width(PILL_ICON_SIZE)
             .with_height(PILL_ICON_SIZE)
             .finish();
@@ -2169,7 +2169,7 @@ fn render_avatar_disc(
                 .finish()
         }
         AvatarGlyph::Icon(icon) => {
-            ConstrainedBox::new(icon.to_warpui_icon(theme.background()).finish())
+            ConstrainedBox::new(icon.to_cuteui_icon(theme.background()).finish())
                 .with_width(glyph_size)
                 .with_height(glyph_size)
                 .finish()

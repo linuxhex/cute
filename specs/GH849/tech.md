@@ -28,7 +28,7 @@ Relevant code:
 - `app/src/ai/blocklist/block/view_impl/common_tests.rs` — block-list section renderer tests.
 - `app/src/ai/blocklist/block.rs (360-430, 2291-2316)` — `AIBlockStateHandles` and the per-section handle-allocation fold where new image tooltip handles must also be pre-allocated so they persist across frames.
 - `app/src/ai/blocklist/block/view_impl/output.rs (278-317)` — the `TextSectionsProps` construction that threads the pre-allocated handles into the renderer.
-- `crates/ui_components/src/tooltip.rs` — reusable tooltip primitive to wrap rendered images. Backed by `warp_core::ui::builder::tool_tip_on_element`, which constructs a `Hoverable::new(mouse_state_handle, ...)` that reads `state.is_hovered()`. The mouse state handle must therefore live across frames; passing a fresh `MouseStateHandle::default()` per render causes `is_hovered()` to always return `false` and the tooltip to never appear.
+- `crates/ui_components/src/tooltip.rs` — reusable tooltip primitive to wrap rendered images. Backed by `cute_core::ui::builder::tool_tip_on_element`, which constructs a `Hoverable::new(mouse_state_handle, ...)` that reads `state.is_hovered()`. The mouse state handle must therefore live across frames; passing a fresh `MouseStateHandle::default()` per render causes `is_hovered()` to always return `false` and the tooltip to never appear.
 - `app/src/ai/agent_sdk/driver/output.rs (1260-1290)` — image section plumbing used by the agent SDK driver (needs field parity).
 
 ## Proposed changes

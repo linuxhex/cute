@@ -1,5 +1,5 @@
 // The code in this file is adapted from the alacritty_terminal crate under the
-// Apache license; see: crates/warp_terminal/src/model/LICENSE-ALACRITTY.
+// Apache license; see: crates/cute_terminal/src/model/LICENSE-ALACRITTY.
 
 // path attribute needed due to current non-fs-based nesting of ansi_handler
 // under grid_handler.
@@ -18,12 +18,12 @@ use pathfinder_geometry::vector::Vector2F;
 use rand::Rng;
 use tab_stops::TabStops;
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
-use warp_core::channel::ChannelState;
-use warp_core::features::FeatureFlag;
-use warp_terminal::model::ansi::CharsetIndex;
-use warp_terminal::model::grid::cell;
-use warp_terminal::model::{KeyboardModes, KeyboardModesApplyBehavior};
-use warpui::image_cache::{resize_dimensions, FitType};
+use cute_core::channel::ChannelState;
+use cute_core::features::FeatureFlag;
+use cute_terminal::model::ansi::CharsetIndex;
+use cute_terminal::model::grid::cell;
+use cute_terminal::model::{KeyboardModes, KeyboardModesApplyBehavior};
+use cuteui::image_cache::{resize_dimensions, FitType};
 
 use super::{AbsolutePoint, FullGridClearBehavior, GridHandler, PerformResetGridChecks, TermMode};
 use crate::server::telemetry::ImageProtocol;
@@ -1136,7 +1136,7 @@ impl ansi::Handler for GridHandler {
         self.grid.cursor.charsets[index] = charset;
     }
 
-    fn set_color(&mut self, _: usize, _: warpui::color::ColorU) {
+    fn set_color(&mut self, _: usize, _: cuteui::color::ColorU) {
         log::error!("Handler method GridHandler::set_color should never be called. This should be handled by TerminalModel.");
     }
 
@@ -1371,7 +1371,7 @@ impl ansi::Handler for GridHandler {
             .send_terminal_event(Event::ImageReceived {
                 image_id,
                 image_data: image.data,
-                image_protocol: ImageProtocol::ITerm,
+                image_protocol: ImageProtocol::ITERM,
             });
 
         self.images.add_image_placement_data(
@@ -1770,7 +1770,7 @@ impl GridHandler {
                     .send_terminal_event(Event::ImageReceived {
                         image_id: action.image_id,
                         image_data: action.image.data,
-                        image_protocol: ImageProtocol::Kitty,
+                        image_protocol: ImageProtocol::KITTY,
                     });
             }
             KittyAction::StoreAndDisplay(action) => {
@@ -1831,7 +1831,7 @@ impl GridHandler {
                     .send_terminal_event(Event::ImageReceived {
                         image_id: action.image_id,
                         image_data: action.image.data,
-                        image_protocol: ImageProtocol::Kitty,
+                        image_protocol: ImageProtocol::KITTY,
                     });
 
                 self.images.add_image_placement_data(

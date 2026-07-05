@@ -9,17 +9,17 @@ use session_sharing_protocol::common::{
 use session_sharing_protocol::sharer::{RoleUpdateReason, SessionEndedReason, SessionSourceType};
 use session_sharing_protocol::viewer::RoleUpdatedReason;
 use settings::Setting as _;
-use warp_core::features::FeatureFlag;
-use warp_core::semantic_selection::SemanticSelection;
-use warp_core::ui::appearance::Appearance;
-use warpui::clipboard::ClipboardContent;
-use warpui::elements::MouseStateHandle;
-use warpui::platform::Cursor;
-use warpui::r#async::Timer;
-use warpui::ui_components::button::ButtonVariant;
-use warpui::ui_components::components::UiComponent;
-use warpui::units::IntoLines;
-use warpui::{AppContext, Element, ModelHandle, SingletonEntity, ViewContext};
+use cute_core::features::FeatureFlag;
+use cute_core::semantic_selection::SemanticSelection;
+use cute_core::ui::appearance::Appearance;
+
+use cuteui::elements::MouseStateHandle;
+use cuteui::platform::Cursor;
+use cuteui::r#async::Timer;
+use cuteui::ui_components::button::ButtonVariant;
+use cuteui::ui_components::components::UiComponent;
+use cuteui::units::IntoLines;
+use cuteui::{AppContext, Element, ModelHandle, SingletonEntity, ViewContext};
 
 use super::adapter::{Adapter, Kind, Participant};
 use super::cloud_conversation_continuation::{
@@ -43,30 +43,21 @@ use crate::settings::InputModeSettings;
 use crate::terminal::block_list_viewport::ScrollPositionUpdate;
 use crate::terminal::model::blocks::BlockListPoint;
 use crate::terminal::model::index::Point;
-use crate::terminal::model::terminal_model::WithinBlock;
+use crate::terminal::model::terminal_model::{BlockIndex, WithinBlock};
 use crate::terminal::session_settings::SessionSettings;
-use crate::terminal::shared_session::manager::Manager;
-use crate::terminal::shared_session::participant_avatar_view::{
-    ParticipantAvatarEvent, ParticipantAvatarView,
-};
-use crate::terminal::shared_session::presence_manager::{
-    Event as PresenceManagerEvent, PresenceManager,
-};
-use crate::terminal::shared_session::role_change_modal::{
-    RoleChangeCloseSource, RoleChangeOpenSource,
+use crate::terminal::shared_session::{
+    ParticipantAvatarEvent, ParticipantAvatarView, PresenceManager, PresenceManagerEvent,
+    RoleChangeCloseSource, RoleChangeOpenSource, SharedSessionActionSource,
+    SharedSessionScrollbackType, SharedSessionSource, SharedSessionStatus,
 };
 use crate::terminal::shared_session::settings::SharedSessionSettings;
-use crate::terminal::shared_session::{
-    join_link, SharedSessionActionSource, SharedSessionScrollbackType, SharedSessionSource,
-    SharedSessionStatus, COPY_LINK_TEXT,
-};
 use crate::terminal::view::{
     ContextMenuAction, Event, InlineBannerItem, InlineBannerType, PendingUserQueryKind,
     RichContentInsertionPosition, SharedSessionBanners, SizeUpdateBuilder, TerminalAction,
     TerminalView,
 };
 use crate::terminal::TerminalModel;
-use crate::view_components::{DismissibleToast, ToastFlavor};
+use crate::view_components::ToastFlavor;
 
 impl TerminalView {
     pub fn sharer_session_kind(&self) -> Option<&Kind> {
@@ -185,8 +176,7 @@ impl TerminalView {
 
         AgentConversationsModel::as_ref(ctx)
             .get_task_data(&task_id)
-            .and_then(|task| task.creator.map(|creator| creator.uid))
-            .is_some_and(|creator_uid| creator_uid == current_user_uid)
+            .is_some_and(|task| task.creator.uid == current_user_uid)
     }
 
     pub(in crate::terminal::view) fn enable_cloud_followup_input(
@@ -410,7 +400,9 @@ impl TerminalView {
     }
 
     fn update_shared_session_pane_header(&mut self, ctx: &mut ViewContext<Self>) {
-        let self_handle = ctx.handle();
+        let Some(self_handle) = ctx.handle().upgrade(ctx) else {
+            return;
+        };
         let Some(shared_session) = &self.shared_session else {
             return;
         };
@@ -418,7 +410,7 @@ impl TerminalView {
             pane_config.set_shareable_object(
                 Some(ShareableObject::Session {
                     handle: self_handle,
-                    session_id: *shared_session.session_id(),
+                    session_id: shared_session.session_id().clone(),
                     started_at: *shared_session.started_at(),
                 }),
                 ctx,
@@ -595,11 +587,13 @@ impl TerminalView {
         ctx: &mut ViewContext<Self>,
     ) {
         let started_at = Local::now();
-        let self_handle = ctx.handle();
+        let Some(self_handle) = ctx.handle().upgrade(ctx) else {
+            return;
+        };
         let adapter = Adapter::new_for_sharer(
             sharer_id,
             firebase_uid,
-            session_id,
+            session_id.clone(),
             started_at,
             source_type,
             ctx,
@@ -627,7 +621,7 @@ impl TerminalView {
             pane_config.set_shareable_object(
                 Some(ShareableObject::Session {
                     handle: self_handle,
-                    session_id,
+                    session_id: session_id.clone(),
                     started_at,
                 }),
                 ctx,
@@ -684,12 +678,14 @@ impl TerminalView {
         ctx: &mut ViewContext<Self>,
     ) {
         let started_at = Local::now();
-        let self_handle = ctx.handle();
+        let Some(self_handle) = ctx.handle().upgrade(ctx) else {
+            return;
+        };
         let adapter = Adapter::new_for_viewer(
             viewer_id.clone(),
             firebase_uid,
             participant_list,
-            session_id,
+            session_id.clone(),
             started_at,
             source_type.clone(),
             ctx,
@@ -807,13 +803,14 @@ impl TerminalView {
         // For ambient agent tasks, preserve the shareable object so the share dialog remains visible
         let is_ambient_agent = self.is_ambient_agent_session(ctx);
         let shareable_object_to_keep = if is_ambient_agent {
+            let handle = ctx.handle().upgrade(ctx);
             self.shared_session
                 .as_ref()
-                .map(|session| ShareableObject::Session {
-                    handle: ctx.handle(),
-                    session_id: *session.session_id(),
+                .and_then(|session| handle.map(|h| ShareableObject::Session {
+                    handle: h,
+                    session_id: session.session_id().clone(),
                     started_at: *session.started_at(),
-                })
+                }))
         } else {
             None
         };
@@ -1078,17 +1075,19 @@ impl TerminalView {
             .block_list()
             .text_selection_range(semantic_selection, input_mode.is_inverted_blocklist())
         {
-            let Some(start) = start.to_session_sharing_block_point(model_lock.block_list()) else {
+            let Some(start_point) = start.to_session_sharing_block_point() else {
                 log::error!("Failed convert start of selection range to BlockPoint");
                 return session_sharing_protocol::common::Selection::None;
             };
-            let Some(end) = end.to_session_sharing_block_point(model_lock.block_list()) else {
+            let Some(end_point) = end.to_session_sharing_block_point() else {
                 log::error!("Failed convert end of selection range to BlockPoint");
                 return session_sharing_protocol::common::Selection::None;
             };
+            let block_id = start.block_index.to_string().into();
             return session_sharing_protocol::common::Selection::BlockText {
-                start,
-                end,
+                block_id,
+                start: start_point,
+                end: end_point,
                 is_reversed,
             };
         }
@@ -1153,7 +1152,7 @@ impl TerminalView {
                     let pane_header_avatar = ctx.add_typed_action_view(|ctx| {
                         ParticipantAvatarView::new(
                             is_self_sharer,
-                            viewer.info.clone(),
+                            viewer.clone(),
                             viewer.color,
                             is_reconnecting,
                             viewer.role,
@@ -1180,7 +1179,7 @@ impl TerminalView {
                         let pane_header_avatar = ctx.add_typed_action_view(|ctx| {
                             ParticipantAvatarView::new(
                                 is_self_sharer,
-                                sharer.info.clone(),
+                                sharer.clone(),
                                 sharer.color,
                                 is_reconnecting,
                                 None,
@@ -1230,26 +1229,26 @@ impl TerminalView {
         // Otherwise, if the participant has block text selected, scroll so the cursor is in view.
         if let Some(block_index) = {
             let index =
-                participant.get_selected_block_index_for_avatar(self.model.lock().block_list());
+                participant.get_selected_block_index_for_avatar(&session_sharing_protocol::cute_terminal::model::BlockList {});
             index
         } {
             self.update_scroll_position_locking(
                 ScrollPositionUpdate::ScrollToTopOfBlockWithBuffer {
-                    block_index,
+                    block_index: BlockIndex(block_index),
                     buffer_lines: 2.into_lines(),
                 },
                 ctx,
             );
         } else if let session_sharing_protocol::common::Selection::BlockText {
+            block_id: _,
             start,
             end,
             is_reversed,
-        } = &participant.info.selection
+        } = &participant.selection
         {
             let cursor_point = if *is_reversed { start } else { end };
             let Some(within_block_point) = WithinBlock::<Point>::from_session_sharing_block_point(
-                cursor_point.clone(),
-                self.model.lock().block_list(),
+                *cursor_point,
             ) else {
                 return;
             };
@@ -1381,20 +1380,6 @@ impl TerminalView {
         _source: SharedSessionActionSource,
         _ctx: &mut ViewContext<Self>,
     ) {
-        #[cfg(target_family = "wasm")]
-        {
-            let manager = Manager::as_ref(ctx);
-            let Some(session_id) = manager
-                .session_id(&ctx.view_id())
-                .or_else(|| manager.ended_session_id(&ctx.view_id()))
-            else {
-                return;
-            };
-            if let Ok(url) = url::Url::parse(&join_link(&session_id)) {
-                crate::uri::web_intent_parser::open_url_on_desktop(&url);
-            }
-        }
-
     }
 
     // Called when viewer receives acknowledgment from server
@@ -1487,25 +1472,8 @@ impl TerminalView {
     pub fn copy_shared_session_link(
         &mut self,
         _source: SharedSessionActionSource,
-        ctx: &mut ViewContext<Self>,
+        _ctx: &mut ViewContext<Self>,
     ) {
-        let manager = Manager::as_ref(ctx);
-        let Some(session_id) = manager
-            .session_id(&ctx.view_id())
-            .or_else(|| manager.ended_session_id(&ctx.view_id()))
-        else {
-            return;
-        };
-
-        ctx.clipboard()
-            .write(ClipboardContent::plain_text(join_link(&session_id)));
-
-        let window_id = ctx.window_id();
-        crate::workspace::ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
-            let toast = DismissibleToast::default(COPY_LINK_TEXT.to_string());
-            toast_stack.add_ephemeral_toast(toast, window_id, ctx);
-        });
-
     }
 
     pub fn open_shared_session_qr_code(&mut self, ctx: &mut ViewContext<Self>) {
@@ -1662,8 +1630,8 @@ impl TerminalView {
         let Some(new_role) = participant_list
             .present_viewers
             .iter()
-            .find(|v| v.info.id == self_id)
-            .map(|v| v.max_acl)
+            .find(|v| v.id == self_id)
+            .and_then(|v| v.role)
         else {
             log::warn!("Could not find new role for viewer {self_id:?} in participant list");
             return;
@@ -1882,8 +1850,8 @@ impl TerminalView {
 
             let size_update = SizeUpdateBuilder::for_shared_session_update(
                 *self.size_info,
-                new_sharer_size.num_rows,
-                new_sharer_size.num_cols,
+                new_sharer_size.rows,
+                new_sharer_size.columns,
             )
             .build(self, ctx);
             self.resize_internal(size_update, ctx);
@@ -1906,19 +1874,18 @@ impl TerminalView {
                     manager
                         .single_distinct_present_viewer_uid()
                         .is_some_and(|viewer_uid| {
-                            skip_uid_check || viewer_uid == manager.firebase_uid().as_str()
+                            skip_uid_check || viewer_uid == manager.firebase_uid()
                         })
                 } else {
                     // No other distinct user should be viewing.
                     // Stale copies of our own connection share our UID.
                     let no_other_user = manager.get_present_viewers().all(|v| {
-                        v.info.profile_data.firebase_uid == manager.firebase_uid().as_string()
+                        v.profile_data.firebase_uid == manager.firebase_uid()
                     });
                     no_other_user
                         && (skip_uid_check
                             || manager.get_sharer().is_some_and(|s| {
-                                s.info.profile_data.firebase_uid
-                                    == manager.firebase_uid().as_string()
+                                s.profile_data.firebase_uid == manager.firebase_uid()
                             }))
                 }
             })
@@ -1956,11 +1923,11 @@ impl TerminalView {
         viewer_size: WindowSize,
         ctx: &mut ViewContext<Self>,
     ) {
-        self.active_viewer_driven_size = Some((viewer_size.num_rows, viewer_size.num_cols));
+        self.active_viewer_driven_size = Some((viewer_size.rows, viewer_size.columns));
         let size_update = SizeUpdateBuilder::for_viewer_size_report(
             *self.size_info,
-            viewer_size.num_rows,
-            viewer_size.num_cols,
+            viewer_size.rows,
+            viewer_size.columns,
         )
         .build(self, ctx);
         self.resize_internal(size_update, ctx);

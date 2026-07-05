@@ -1,10 +1,10 @@
-use warp_core::context_flag::ContextFlag;
-use warpui::keymap::{
+use cute_core::context_flag::ContextFlag;
+use cuteui::keymap::{
     BindingDescription, ContextPredicate, EditableBinding, FixedBinding, PerPlatformKeystroke,
 };
-use warpui::platform::OperatingSystem;
-use warpui::units::IntoLines;
-use warpui::AppContext;
+use cuteui::platform::OperatingSystem;
+use cuteui::units::IntoLines;
+use cuteui::AppContext;
 
 use super::{
     AgentOnboardingVersion, AskAISource, ContextMenuAction, OnboardingIntention, OnboardingVersion,
@@ -56,7 +56,7 @@ pub const CAN_SHOW_CONVERSATION_DETAILS_KEY: &str = "CanShowConversationDetails"
 /// these into their own function to ensure we pay special attention to
 /// these overlaps, and ensure only 1 action is taken.
 fn init_overlapping_keybindings(app: &mut AppContext) {
-    use warpui::keymap::macros::*;
+    use cuteui::keymap::macros::*;
 
     let escape_key: &str = "escape";
     let cmd_or_ctrl_enter: &str = "cmdorctrl-enter";
@@ -89,7 +89,7 @@ fn init_overlapping_keybindings(app: &mut AppContext) {
 
 /// Register keybindings for [`TerminalView`] actions.
 pub fn init(app: &mut AppContext) {
-    use warpui::keymap::macros::*;
+    use cuteui::keymap::macros::*;
 
     app.register_binding_validator::<TerminalView>(is_binding_pty_compliant);
 
@@ -180,7 +180,7 @@ pub fn init(app: &mut AppContext) {
         // On the web, we get pastes from system paste events.
         #[cfg(target_family = "wasm")]
         FixedBinding::standard(
-            warpui::actions::StandardAction::Paste,
+            cuteui::actions::StandardAction::Paste,
             TerminalAction::Paste,
             id!("Terminal") & !id!("IMEOpen"),
         ),
@@ -357,7 +357,7 @@ pub fn init(app: &mut AppContext) {
             ACCEPT_PROMPT_SUGGESTION_KEYBINDING,
             "Accept Prompt Suggestion",
             TerminalAction::ResolvePromptSuggestion(PromptSuggestionResolution::Accept {
-                interaction_source: InteractionSource::Keybinding,
+                interaction_source: InteractionSource::KEYBINDING,
             }),
         )
         .with_mac_key_binding(if FeatureFlag::AgentView.is_enabled() {
@@ -983,7 +983,7 @@ pub fn init(app: &mut AppContext) {
     app.register_editable_bindings([EditableBinding::new(
         TOGGLE_BLOCK_FILTER_KEYBINDING,
         "Toggle block filter on selected or last block",
-        TerminalAction::ToggleBlockFilterOnSelectedOrLastBlock(ToggleBlockFilterSource::Binding),
+        TerminalAction::ToggleBlockFilterOnSelectedOrLastBlock(ToggleBlockFilterSource::BINDING),
     )
     .with_mac_key_binding("shift-alt-F")
     .with_context_predicate(id!("Terminal") & !id!("IMEOpen") & !id!("AltScreen"))]);
@@ -1131,7 +1131,7 @@ pub fn init(app: &mut AppContext) {
 
 /// Registers bindings related to input modes.
 fn register_input_mode_bindings(app: &mut AppContext) {
-    use warpui::keymap::macros::*;
+    use cuteui::keymap::macros::*;
 
     // A context predicate that matches when the input mode bindings are
     // available for use. Disabled when a CLI agent session is active — the

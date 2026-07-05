@@ -1,8 +1,8 @@
 //! WASM-only view functions for the Workspace.
 
-use warp_core::channel::ChannelState;
-use warpui::elements::{ChildView, Element};
-use warpui::{AppContext, SingletonEntity, ViewContext, ViewHandle};
+use cute_core::channel::ChannelState;
+use cuteui::elements::{ChildView, Element};
+use cuteui::{AppContext, SingletonEntity, ViewContext, ViewHandle};
 
 use super::PanelPosition;
 use crate::ai::agent_conversations_model::AgentConversationsModel;

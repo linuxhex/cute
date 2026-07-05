@@ -2,10 +2,10 @@ mod items;
 use std::collections::HashMap;
 
 pub use items::Items;
-use warp_core::context_flag::ContextFlag;
-use warp_core::features::FeatureFlag;
-use warpui::elements::{Container, Flex, MouseStateHandle, ParentElement, Shrinkable, Wrap};
-use warpui::{
+use cute_core::context_flag::ContextFlag;
+use cute_core::features::FeatureFlag;
+use cuteui::elements::{Container, Flex, MouseStateHandle, ParentElement, Shrinkable, Wrap};
+use cuteui::{
     AppContext, Element, Entity, ModelHandle, SingletonEntity, TypedActionView, View, ViewContext,
     WindowId,
 };
@@ -81,20 +81,7 @@ impl ZeroState {
         app: &AppContext,
         window_id: WindowId,
     ) -> impl Iterator<Item = QueryFilter> {
-        let show_warp_drive = WarpDriveSettings::is_warp_drive_enabled(app);
-
         let mut valid_filters = vec![];
-        if show_warp_drive {
-            valid_filters.push(QueryFilter::Workflows);
-            if FeatureFlag::AgentModeWorkflows.is_enabled()
-                && AISettings::as_ref(app).is_any_ai_enabled(app)
-            {
-                valid_filters.push(QueryFilter::AgentModeWorkflows);
-            }
-            valid_filters.push(QueryFilter::Notebooks);
-
-            valid_filters.push(QueryFilter::EnvironmentVariables);
-        }
 
         // Don't show Files filter if the user is a viewer of a shared session
         if FeatureFlag::CommandPaletteFileSearch.is_enabled() {
@@ -109,6 +96,7 @@ impl ZeroState {
             }
         }
 
+        let show_warp_drive = WarpDriveSettings::is_warp_drive_enabled(app);
         if show_warp_drive {
             valid_filters.push(QueryFilter::Drive);
         }

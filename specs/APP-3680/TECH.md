@@ -12,7 +12,7 @@ Product spec: `specs/APP-3680/PRODUCT.md`
 
 **DefaultSessionMode:** `DefaultSessionMode` (`app/src/settings/ai.rs:252`) has `Terminal` and `Agent` variants. Set during onboarding via `apply_agent_settings` (`app/src/settings/onboarding.rs:122`).
 
-**Feature flags:** `TabConfigs`, `AgentOnboarding`, `OpenWarpNewSettingsModes`, and `AgentView` are the relevant flags (`warp_core/src/features.rs`). We'll add a new flag for this modal.
+**Feature flags:** `TabConfigs`, `AgentOnboarding`, `OpenWarpNewSettingsModes`, and `AgentView` are the relevant flags (`cute_core/src/features.rs`). We'll add a new flag for this modal.
 
 ## Relevant Code
 

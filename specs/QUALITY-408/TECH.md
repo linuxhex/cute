@@ -6,13 +6,13 @@ On macOS, `macos_config_dir_name()` returns `.warp` for both Stable and Preview 
 
 ## Relevant Code
 
-- `crates/warp_core/src/paths.rs:42-51` — `macos_config_dir_name()` maps channels to directory names. The `Channel::Preview` arm currently returns `WARP_CONFIG_DIR` (`.warp`).
-- `crates/warp_core/src/paths.rs:57-67` — `data_dir()` uses `macos_config_dir_name()` on macOS.
-- `crates/warp_core/src/paths.rs:71-83` — `config_local_dir()` also uses `macos_config_dir_name()` on macOS. On macOS, `data_dir()` and `config_local_dir()` return the same path.
+- `crates/cute_core/src/paths.rs:42-51` — `macos_config_dir_name()` maps channels to directory names. The `Channel::Preview` arm currently returns `WARP_CONFIG_DIR` (`.warp`).
+- `crates/cute_core/src/paths.rs:57-67` — `data_dir()` uses `macos_config_dir_name()` on macOS.
+- `crates/cute_core/src/paths.rs:71-83` — `config_local_dir()` also uses `macos_config_dir_name()` on macOS. On macOS, `data_dir()` and `config_local_dir()` return the same path.
 - `app/src/warp_data_directory_watcher.rs:28-46` — `ensure_warp_watch_roots_exist()` creates the data and config directories at startup.
 - `app/src/lib.rs:966` — calls `ensure_warp_watch_roots_exist()` during `initialize_app()`.
 - `app/src/persistence/sqlite.rs:350-389` — existing migration precedent: migrates the SQLite database from `state_dir()` to `secure_state_dir()` on first launch.
-- `crates/warp_core/src/channel/mod.rs:8-15` — `Channel` enum definition.
+- `crates/cute_core/src/channel/mod.rs:8-15` — `Channel` enum definition.
 
 ## Current State
 
@@ -36,7 +36,7 @@ The `WARP_CONFIG_DIR` constant (`.warp`) is also used for per-repository project
 
 ## Proposed Changes
 
-### 1. Update `macos_config_dir_name()` — `crates/warp_core/src/paths.rs`
+### 1. Update `macos_config_dir_name()` — `crates/cute_core/src/paths.rs`
 
 Change the Preview arm to return `.warp-preview`:
 
@@ -56,11 +56,11 @@ This is the only change needed to route Preview to a new directory. All downstre
 
 ### 2. Add migration module — `app/src/preview_config_migration.rs`
 
-Add a new module in the `warp` (app) crate that owns the migration. The migration is app startup logic, not a general path utility, so it lives in the app crate alongside other one-time migrations (e.g., `app/src/persistence/sqlite.rs`). The `warp_core::paths::data_dir()` helper is already channel-aware, so the module does not need access to the private `macos_config_dir_name()` in `warp_core`.
+Add a new module in the `warp` (app) crate that owns the migration. The migration is app startup logic, not a general path utility, so it lives in the app crate alongside other one-time migrations (e.g., `app/src/persistence/sqlite.rs`). The `cute_core::paths::data_dir()` helper is already channel-aware, so the module does not need access to the private `macos_config_dir_name()` in `cute_core`.
 
 The module exposes two functions:
 
-- `migrate_preview_config_dir_if_needed()` — `pub(crate)` entry point that does the channel check and computes paths from `warp_core::paths::data_dir()`, then delegates to the inner helper.
+- `migrate_preview_config_dir_if_needed()` — `pub(crate)` entry point that does the channel check and computes paths from `cute_core::paths::data_dir()`, then delegates to the inner helper.
 - `migrate_config_dir_via_symlinks(old_dir, new_dir)` — `pub(crate)` core logic that creates `new_dir`, then symlinks each top-level entry from `old_dir` into `new_dir`. Skips `.DS_Store`, `._*` metadata files, and any file in `MIGRATION_EXCLUDED_FILES` (currently `settings.toml`).
 
 The directory's existence is the migration marker — no separate marker file is needed. Subsequent launches see `~/.warp-preview` already exists and no-op.

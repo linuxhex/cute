@@ -90,7 +90,7 @@ Warp already has the low-level capabilities this feature needs:
 - Mermaid SVG generation and sizing in `crates/editor/src/content/mermaid_diagram.rs (20-67)`
 - Mermaid code-block identification in `crates/editor/src/content/text.rs (526-579)`
 
-The app crate already depends on `warp_editor`, and the block list already embeds editor-backed code blocks. Reusing editor Mermaid/image helpers therefore does not introduce a new crate dependency edge.
+The app crate already depends on `cute_editor`, and the block list already embeds editor-backed code blocks. Reusing editor Mermaid/image helpers therefore does not introduce a new crate dependency edge.
 
 Warp also already has a reusable fullscreen lightbox path at the workspace layer. `WorkspaceAction::OpenLightbox` / `UpdateLightboxImage` drive `LightboxView`, which already supports Escape dismissal, left/right keyboard navigation, and previous/next buttons. The block-list visual renderer should reuse that path rather than inventing a new fullscreen viewer.
 

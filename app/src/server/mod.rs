@@ -12,4 +12,3 @@ pub mod server_api;
 pub mod sync_queue;
 pub mod telemetry;
 pub mod voice_transcriber;
-

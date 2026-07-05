@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use warpui::{Entity, SingletonEntity};
+use cuteui::{Entity, SingletonEntity};
 
 use crate::auth::UserUid;
 pub use crate::cloud_object::models::UserProfileWithUID;

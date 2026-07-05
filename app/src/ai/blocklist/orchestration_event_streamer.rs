@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::sync::Arc;
 use std::time::Duration;
@@ -6,10 +8,10 @@ use anyhow::anyhow;
 use async_trait::async_trait;
 use futures::channel::mpsc;
 use uuid::Uuid;
-use warp_cli::agent::Harness;
+use cute_cli::agent::Harness;
 use warp_multi_agent_api as api;
-use warpui::r#async::{SpawnedFutureHandle, Timer};
-use warpui::{
+use cuteui::r#async::{SpawnedFutureHandle, Timer};
+use cuteui::{
     Entity, EntityId, GetSingletonModelHandle, ModelContext, SingletonEntity, UpdateModel,
 };
 
@@ -734,7 +736,7 @@ impl OrchestrationEventStreamer {
                         entry.known_children.insert(run_id.clone());
                         seeded_run_ids.push(run_id);
                         if let Some(seq) = task.last_event_sequence {
-                            seed = seed.max(seq);
+                            seed = seed.max(seq.try_into().unwrap());
                         }
                     }
                     entry.event_cursor = seed;
@@ -1076,7 +1078,7 @@ impl OrchestrationEventStreamer {
                 if let Some(stream) = me.streams.get_mut(&conversation_id) {
                     stream.harness = agent_task_harness(&task).or(stream.harness);
                     stream.event_cursor =
-                        local_cursor.max(task.last_event_sequence.unwrap_or(0));
+                        local_cursor.max(task.last_event_sequence.unwrap_or(0) as i64);
                 }
                 me.reevaluate_eligibility(conversation_id, ctx);
             },
@@ -1090,7 +1092,7 @@ impl OrchestrationEventStreamer {
     fn ensure_self_run_id_watched(
         &mut self,
         conversation_id: AIConversationId,
-        ctx: &warpui::AppContext,
+        ctx: &cuteui::AppContext,
     ) -> bool {
         let (run_id, is_child) = {
             let history = BlocklistAIHistoryModel::as_ref(ctx);
@@ -1315,7 +1317,7 @@ impl OrchestrationEventStreamer {
                     // server values so we don't re-deliver events the
                     // client already acknowledged locally.
                     let server_seq = task.last_event_sequence.unwrap_or(0);
-                    stream.event_cursor = sqlite_cursor.max(server_seq);
+                    stream.event_cursor = sqlite_cursor.max(server_seq.try_into().unwrap());
 
                     // Insert any new children. If new run_ids were added
                     // and an SSE connection is already open (e.g. a
@@ -1325,7 +1327,7 @@ impl OrchestrationEventStreamer {
                     had_sse = stream.sse_connection.is_some();
                     let mut added = false;
                     for child in task.children {
-                        if stream.watched_run_ids.insert(child) {
+                        if stream.watched_run_ids.insert(child.to_string()) {
                             added = true;
                         }
                     }
@@ -1399,7 +1401,7 @@ impl OrchestrationEventStreamer {
     fn self_run_id(
         &self,
         conversation_id: AIConversationId,
-        ctx: &warpui::AppContext,
+        ctx: &cuteui::AppContext,
     ) -> Option<String> {
         BlocklistAIHistoryModel::as_ref(ctx)
             .conversation(&conversation_id)
@@ -1411,7 +1413,7 @@ impl OrchestrationEventStreamer {
     fn is_parent_agent_conversation(
         &self,
         conversation_id: AIConversationId,
-        ctx: &warpui::AppContext,
+        ctx: &cuteui::AppContext,
     ) -> bool {
         let Some(stream) = self.streams.get(&conversation_id) else {
             return false;
@@ -1438,7 +1440,7 @@ impl OrchestrationEventStreamer {
     fn is_remote_run_view(
         &self,
         conversation_id: AIConversationId,
-        ctx: &warpui::AppContext,
+        ctx: &cuteui::AppContext,
     ) -> bool {
         BlocklistAIHistoryModel::as_ref(ctx)
             .conversation(&conversation_id)
@@ -1448,7 +1450,7 @@ impl OrchestrationEventStreamer {
     fn should_skip_sse_for_dormant_local_claude_child(
         &self,
         conversation_id: AIConversationId,
-        ctx: &warpui::AppContext,
+        ctx: &cuteui::AppContext,
     ) -> bool {
         let Some(conversation) =
             BlocklistAIHistoryModel::as_ref(ctx).conversation(&conversation_id)
@@ -1473,7 +1475,7 @@ impl OrchestrationEventStreamer {
     /// this process (an open agent view or an agent_sdk driver) AND the
     /// conversation has a real role to consume events for. Passive views
     /// of agent runs hosted elsewhere are excluded regardless of state.
-    fn is_eligible(&self, conversation_id: AIConversationId, ctx: &warpui::AppContext) -> bool {
+    fn is_eligible(&self, conversation_id: AIConversationId, ctx: &cuteui::AppContext) -> bool {
         if !self.has_active_consumer(conversation_id) {
             return false;
         }
@@ -1499,7 +1501,7 @@ impl OrchestrationEventStreamer {
     fn is_dormant_claude_wake_listener_eligible(
         &self,
         conversation_id: AIConversationId,
-        ctx: &warpui::AppContext,
+        ctx: &cuteui::AppContext,
     ) -> bool {
         self.has_active_consumer(conversation_id)
             && !self.is_remote_run_view(conversation_id, ctx)
@@ -1957,7 +1959,7 @@ async fn resolve_dormant_claude_wake_cursor(
     };
 
     match ai_client.get_ambient_agent_task(&task_id).await {
-        Ok(task) => local_cursor.max(task.last_event_sequence.unwrap_or(0)),
+        Ok(task) => local_cursor.max(task.last_event_sequence.unwrap_or(0) as i64),
         Err(err) => {
             log::warn!(
                 "Failed to read server cursor for dormant Claude wake listener \

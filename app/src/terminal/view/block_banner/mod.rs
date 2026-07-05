@@ -6,14 +6,14 @@
 //! without a LayoutContext. Use the exported BLOCK_BANNER_HEIGHT const when the banner height
 //! needs to be taken into account.
 
-mod warpify;
+mod cuteify;
 
-pub use warpify::*;
-use warpui::elements::{
+pub use cuteify::*;
+use cuteui::elements::{
     ConstrainedBox, Container, CornerRadius, Hoverable, MouseState, MouseStateHandle,
     ParentElement, Radius, Stack,
 };
-use warpui::Element;
+use cuteui::Element;
 
 use crate::themes::theme::WarpTheme;
 

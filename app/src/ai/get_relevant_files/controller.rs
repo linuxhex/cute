@@ -10,8 +10,8 @@ use ai::index::locations::CodeContextLocation;
 use anyhow::anyhow;
 use futures_util::stream::AbortHandle;
 use instant::Instant;
-use warp_core::features::FeatureFlag;
-use warpui::{AppContext, Entity, ModelContext, SingletonEntity};
+use cute_core::features::FeatureFlag;
+use cuteui::{AppContext, Entity, ModelContext, SingletonEntity};
 
 use crate::ai::agent::{AIAgentActionId, SearchCodebaseResult};
 use crate::ai::blocklist::SessionContext;

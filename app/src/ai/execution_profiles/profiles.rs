@@ -5,9 +5,9 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use warp_core::channel::ChannelState;
-use warp_core::user_preferences::GetUserPreferences;
-use warpui::{AppContext, Entity, EntityId, ModelContext, SingletonEntity};
+use cute_core::channel::ChannelState;
+use cute_core::user_preferences::GetUserPreferences;
+use cuteui::{AppContext, Entity, EntityId, ModelContext, SingletonEntity};
 
 use super::{
     AIExecutionProfile, ActionPermission, CloudAIExecutionProfileModel, WriteToPtyPermission,
@@ -17,7 +17,6 @@ use crate::ai::mcp::templatable_manager::TemplatableMCPServerManagerEvent;
 use crate::ai::mcp::TemplatableMCPServerManager;
 use crate::cloud_object::model::generic_string_model::GenericStringObjectId;
 use crate::cloud_object::model::persistence::{CloudModelEvent, UpdateSource};
-use crate::cloud_object::{GenericStringObjectFormat, JsonObjectType};
 use crate::drive::CloudObjectTypeAndId;
 use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::ids::{ClientId, SyncId};
@@ -1141,45 +1140,42 @@ impl AIExecutionProfilesModel {
             CloudModelEvent::ObjectCreated {
                 type_and_id:
                     CloudObjectTypeAndId::GenericStringObject {
-                        object_type:
-                            GenericStringObjectFormat::Json(JsonObjectType::AIExecutionProfile),
+                        object_type,
                         id,
                     },
-            } => {
+            } if object_type == "Json(AIExecutionProfile)" => {
                 self.handle_ai_execution_profile_created(*id, ctx);
             }
             CloudModelEvent::ObjectDeleted {
                 type_and_id:
                     CloudObjectTypeAndId::GenericStringObject {
-                        object_type:
-                            GenericStringObjectFormat::Json(JsonObjectType::AIExecutionProfile),
+                        object_type,
                         id,
                     },
                 folder_id: _,
-            } => {
+            } if object_type == "Json(AIExecutionProfile)" => {
                 self.handle_ai_execution_profile_deleted(*id, ctx);
             }
             CloudModelEvent::ObjectDeleted {
                 type_and_id:
                     CloudObjectTypeAndId::GenericStringObject {
-                        object_type: GenericStringObjectFormat::Json(JsonObjectType::MCPServer),
+                        object_type,
                         id: _,
                     },
                 folder_id: _,
-            } => {
+            } if object_type == "Json(MCPServer)" => {
                 // Legacy MCP servers are converted to templatable on startup;
                 // no action needed when a legacy cloud object is deleted.
             }
             CloudModelEvent::ObjectUpdated {
                 type_and_id:
                     CloudObjectTypeAndId::GenericStringObject {
-                        object_type:
-                            GenericStringObjectFormat::Json(JsonObjectType::AIExecutionProfile),
+                        object_type,
                         id,
                     },
                 source,
-            } => {
-                self.handle_ai_execution_profile_updated(*id, *source, ctx);
+            } if object_type == "Json(AIExecutionProfile)" => {
+                self.handle_ai_execution_profile_updated(*id, source.clone(), ctx);
             }
             CloudModelEvent::InitialLoadCompleted => {
                 self.reconcile_with_cloud_state_after_initial_load(ctx);

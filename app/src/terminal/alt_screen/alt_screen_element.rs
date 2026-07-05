@@ -5,18 +5,18 @@ use num_traits::Float as _;
 use parking_lot::FairMutex;
 use pathfinder_geometry::vector::vec2f;
 use vec1::Vec1;
-use warp_core::features::FeatureFlag;
-use warp_util::user_input::UserInput;
-use warpui::elements::new_scrollable::{NewScrollableElement, ScrollableAxis};
-use warpui::elements::{Axis, Point as UiPoint, ScrollData, ScrollableElement};
-use warpui::event::{DispatchedEvent, InBoundsExt, KeyState, ModifiersState};
-use warpui::fonts::Properties;
-use warpui::geometry::rect::RectF;
-use warpui::geometry::vector::Vector2F;
-use warpui::platform::keyboard::KeyCode;
-use warpui::text::SelectionType;
-use warpui::units::{IntoLines, IntoPixels, Lines, Pixels};
-use warpui::{
+use cute_core::features::FeatureFlag;
+use cute_util::user_input::UserInput;
+use cuteui::elements::new_scrollable::{NewScrollableElement, ScrollableAxis};
+use cuteui::elements::{Axis, Point as UiPoint, ScrollData, ScrollableElement};
+use cuteui::event::{DispatchedEvent, InBoundsExt, KeyState, ModifiersState};
+use cuteui::fonts::Properties;
+use cuteui::geometry::rect::RectF;
+use cuteui::geometry::vector::Vector2F;
+use cuteui::platform::keyboard::KeyCode;
+use cuteui::text::SelectionType;
+use cuteui::units::{IntoLines, IntoPixels, Lines, Pixels};
+use cuteui::{
     end_trace, record_trace_event, start_trace, AfterLayoutContext, AppContext, ClipBounds,
     Element, EntityId, Event, EventContext, LayoutContext, ModelHandle, PaintContext,
     SizeConstraint,
@@ -41,9 +41,7 @@ use crate::terminal::model::selection::{SelectAction, SelectionPoint};
 use crate::terminal::model::terminal_model::WithinModel;
 use crate::terminal::model::SecretHandle;
 use crate::terminal::safe_mode_settings::get_secret_obfuscation_mode;
-use crate::terminal::shared_session::presence_manager::{
-    text_selection_color, PresenceManager, MUTED_PARTICIPANT_COLOR,
-};
+use crate::terminal::shared_session::{PresenceManager, render_util::{get_muted_participant_color, text_selection_color}};
 use crate::terminal::view::{
     ActiveSessionState, TerminalAction, TerminalEditor, TerminalViewRenderContext,
 };
@@ -258,7 +256,7 @@ impl AltScreenElement {
         ctx.dispatch_typed_action(TerminalAction::Focus);
 
         // On mobile, request soft keyboard so users can input.
-        if warpui::platform::is_mobile_device() {
+        if cuteui::platform::is_mobile_device() {
             ctx.request_soft_keyboard();
         }
 
@@ -560,20 +558,20 @@ impl AltScreenElement {
                     start,
                     end,
                     is_reversed,
-                } = &participant.info.selection
+                } = &participant.selection
                 else {
                     continue;
                 };
                 let start = SelectionPoint {
                     row: start.row.into_lines(),
-                    col: start.col,
+                    col: start.column,
                 };
                 let end = SelectionPoint {
                     row: end.row.into_lines(),
-                    col: end.col,
+                    col: end.column,
                 };
                 let participant_color = if is_self_reconnecting {
-                    MUTED_PARTICIPANT_COLOR
+                    get_muted_participant_color()
                 } else {
                     participant.color
                 };

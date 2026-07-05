@@ -12,10 +12,10 @@ pub use ai::document::{AIDocumentId, AIDocumentVersion};
 use chrono::{DateTime, Local, Utc};
 use itertools::Itertools;
 use uuid::Uuid;
-use warp_editor::model::RichTextEditorModel;
-use warp_editor::render::model::RichTextStyles;
-use warpui::color::ColorU;
-use warpui::{AppContext, Entity, EntityId, ModelContext, ModelHandle, SingletonEntity, WindowId};
+use cute_editor::model::RichTextEditorModel;
+use cute_editor::render::model::RichTextStyles;
+use cuteui::color::ColorU;
+use cuteui::{AppContext, Entity, EntityId, ModelContext, ModelHandle, SingletonEntity, WindowId};
 use {anyhow, warp_multi_agent_api as maa_api};
 
 use crate::ai::agent::conversation::AIConversationId;
@@ -25,20 +25,19 @@ use crate::ai::blocklist::{BlocklistAIHistoryEvent, BlocklistAIHistoryModel};
 use crate::ai::execution_profiles::profiles::AIExecutionProfilesModel;
 use crate::appearance::Appearance;
 use crate::auth::auth_state::AuthStateProvider;
+use crate::cloud_object::{CloudObject, CloudObjectEventEntrypoint, Owner, Revision};
 use crate::cloud_object::model::persistence::CloudModel;
-use crate::cloud_object::{CloudObject, CloudObjectEventEntrypoint, Owner};
-use crate::drive::folders::CloudFolder;
+use crate::cloud_object::models::notebook::CloudNotebookModel;
 use crate::global_resource_handles::GlobalResourceHandlesProvider;
-use crate::notebooks::editor::model::{
-    FileLinkResolutionContext, NotebooksEditorModel, RichTextEditorModelEvent,
-};
-use crate::notebooks::editor::rich_text_styles;
+use crate::notebooks::editor::model::{FileLinkResolutionContext, NotebooksEditorModel, RichTextEditorModelEvent};
 use crate::notebooks::file::MarkdownDisplayMode;
-use crate::notebooks::{CloudNotebookModel, NotebookId};
+use crate::notebooks::editor::rich_text_styles;
+use crate::notebooks::NotebookId;
 use crate::persistence::ModelEvent;
 use crate::server::cloud_objects::update_manager::{
-    InitiatedBy, ObjectOperation, OperationSuccessType, UpdateManager, UpdateManagerEvent,
+    ObjectOperation, OperationSuccessType, UpdateManager, UpdateManagerEvent,
 };
+use crate::server::sync_queue::InitiatedBy;
 use crate::server::ids::{ClientId, ServerId, SyncId};
 use crate::settings::FontSettings;
 use crate::terminal::model::session::active_session::ActiveSession;
@@ -238,7 +237,7 @@ impl AIDocumentModel {
     /// Sends a request to create a new cloud notebook with the document's contents.
     /// Returns true if the create document request was sent successfully (or if there was already a notebook entry).
     /// Actually creating the notebook is done asynchronously in the background.
-    pub fn sync_to_warp_drive(&mut self, id: AIDocumentId, ctx: &mut ModelContext<Self>) -> bool {
+    pub fn sync_to_cute_drive(&mut self, id: AIDocumentId, ctx: &mut ModelContext<Self>) -> bool {
         let Some(document) = self.documents.get(&id) else {
             return false;
         };
@@ -273,6 +272,11 @@ impl AIDocumentModel {
         self.create_notebook_in_plan_folder(id, &title, &content, owner, plan_folder_id, ctx);
         ctx.emit(AIDocumentModelEvent::DocumentSaveStatusUpdated(id));
         true
+    }
+
+    /// Alias for `sync_to_cute_drive` for backwards compatibility.
+    pub fn sync_to_warp_drive(&mut self, id: AIDocumentId, ctx: &mut ModelContext<Self>) -> bool {
+        self.sync_to_cute_drive(id, ctx)
     }
 
     pub fn get_document_save_status(&self, id: &AIDocumentId) -> AIDocumentSaveStatus {
@@ -694,7 +698,7 @@ impl AIDocumentModel {
         }
     }
 
-    pub fn get_document_warp_drive_object_link(
+    pub fn get_document_cute_drive_object_link(
         &self,
         id: &AIDocumentId,
         ctx: &AppContext,
@@ -708,11 +712,20 @@ impl AIDocumentModel {
         notebook.object_link()
     }
 
+    /// Alias for `get_document_cute_drive_object_link` for backwards compatibility.
+    pub fn get_document_warp_drive_object_link(
+        &self,
+        id: &AIDocumentId,
+        ctx: &AppContext,
+    ) -> Option<String> {
+        self.get_document_cute_drive_object_link(id, ctx)
+    }
+
     /// Get the raw markdown content of a document by id.
     pub fn get_document_content(
         &self,
         id: &AIDocumentId,
-        ctx: &warpui::AppContext,
+        ctx: &cuteui::AppContext,
     ) -> Option<String> {
         let doc = self.documents.get(id)?;
         Some(doc.editor.as_ref(ctx).markdown_unescaped(ctx))
@@ -1027,10 +1040,8 @@ impl AIDocumentModel {
         };
         let content = doc.editor.as_ref(ctx).markdown_unescaped(ctx);
         let event = ModelEvent::SaveAIDocumentContent {
-            document_id: id.to_string(),
+            document_id: *id,
             content,
-            version: doc.version.0 as i32,
-            title: doc.title.clone(),
         };
         if let Err(err) = sender.try_send(event) {
             log::error!("Error persisting AI document content for {id}: {err}");
@@ -1050,7 +1061,7 @@ impl AIDocumentModel {
         };
         let content = doc.editor.as_ref(ctx).markdown(ctx);
         UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-            update_manager.update_notebook_data(content.into(), sync_id, ctx);
+            update_manager.update_notebook_data(content.into(), sync_id, None, ctx);
         });
     }
 
@@ -1162,7 +1173,7 @@ impl AIDocumentModel {
         };
 
         UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-            update_manager.create_notebook(
+            update_manager.create_notebook_with_model(
                 client_id,
                 owner,
                 Some(SyncId::ServerId(plan_folder_id)),
@@ -1357,7 +1368,7 @@ impl AIDocumentModel {
 }
 
 impl AIDocumentEarlierVersion {
-    pub fn get_content(&self, ctx: &warpui::AppContext) -> String {
+    pub fn get_content(&self, ctx: &cuteui::AppContext) -> String {
         self.editor.as_ref(ctx).markdown_unescaped(ctx)
     }
 }

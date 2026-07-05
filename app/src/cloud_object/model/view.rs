@@ -2,14 +2,15 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 
 use chrono::{Duration, Utc};
-use warp_graphql::scalars::time::ServerTimestamp;
-use warpui::{AppContext, Entity, ModelContext, SingletonEntity};
+use cute_graphql::scalars::time::ServerTimestamp;
+use cuteui::{AppContext, Entity, ModelContext, SingletonEntity};
 
 use super::persistence::{CloudModel, CloudModelEvent};
 use crate::auth::{AuthStateProvider, UserUid};
 use crate::cloud_object::{CloudObject, CloudObjectLocation, Space};
 use crate::drive::folders::CloudFolder;
-use crate::drive::sharing::{ContentEditability, SharingAccessLevel};
+use crate::drive::sharing::ContentEditability;
+use cute_server_client::drive::sharing::SharingAccessLevel;
 use crate::safe_info;
 use crate::server::cloud_objects::update_manager::{
     ObjectOperation, OperationSuccessType, UpdateManager, UpdateManagerEvent,
@@ -310,7 +311,7 @@ impl CloudViewModel {
             | CloudModelEvent::ObjectUntrashed { type_and_id, .. }
             | CloudModelEvent::ObjectPermissionsUpdated { type_and_id, .. } => {
                 // If an object is updated, we need to recompute the timestamps of its parents.
-                if self.invalidate_object_timestamps(&type_and_id.uid(), CloudModel::as_ref(ctx)) {
+                if self.invalidate_object_timestamps(&type_and_id.uid().uid(), CloudModel::as_ref(ctx)) {
                     ctx.emit(CloudViewModelEvent::SortTimestampsChanged);
                 }
             }
@@ -343,7 +344,7 @@ impl CloudViewModel {
                 // sorting.
                 if type_and_id.has_server_id()
                     && self
-                        .invalidate_object_timestamps(&type_and_id.uid(), CloudModel::as_ref(ctx))
+                        .invalidate_object_timestamps(&type_and_id.uid().uid(), CloudModel::as_ref(ctx))
                 {
                     ctx.emit(CloudViewModelEvent::SortTimestampsChanged);
                 }
@@ -355,9 +356,7 @@ impl CloudViewModel {
                     }
                 }
             }
-            CloudModelEvent::NotebookEditorChangedFromServer { .. }
-            | CloudModelEvent::ObjectForceExpanded { .. }
-            | CloudModelEvent::ObjectSynced { .. }
+            CloudModelEvent::ObjectForceExpanded { .. }
             | CloudModelEvent::InitialLoadCompleted => (),
         }
     }

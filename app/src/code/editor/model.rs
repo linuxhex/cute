@@ -27,40 +27,40 @@ use vim::{
     vim_a_quote, vim_a_word, vim_find_char_on_line, vim_find_matching_bracket, vim_inner_block,
     vim_inner_paragraph, vim_inner_quote, vim_inner_word, vim_word_iterator_from_offset,
 };
-use warp_core::platform::SessionPlatform;
-use warp_core::semantic_selection::SemanticSelection;
-use warp_core::ui::theme::Fill;
-use warp_editor::content::anchor::Anchor;
-use warp_editor::content::buffer::{
+use cute_core::platform::SessionPlatform;
+use cute_core::semantic_selection::SemanticSelection;
+use cute_core::ui::theme::Fill;
+use cute_editor::content::anchor::Anchor;
+use cute_editor::content::buffer::{
     AutoScrollBehavior, Buffer, BufferEditAction, BufferEvent, BufferSelectAction, EditOrigin,
     InitialBufferState, SelectionOffsets, ShouldAutoscroll, ToBufferCharOffset, ToBufferPoint,
     VimInsertPoint,
 };
-use warp_editor::content::edit::EditDelta;
-use warp_editor::content::find::{SearchConfig, SearchResults};
-use warp_editor::content::hidden_lines_model::HiddenLinesModel;
-use warp_editor::content::selection_model::BufferSelectionModel;
-use warp_editor::content::text::{BufferBlockStyle, IndentBehavior, IndentUnit};
-use warp_editor::content::version::BufferVersion;
-use warp_editor::decoration::DecorationLayer;
-use warp_editor::editor::TextDecoration;
-use warp_editor::model::{CoreEditorModel, PlainTextEditorModel};
-use warp_editor::multiline::{AnyMultilineString, MultilineString, LF};
-use warp_editor::render::model::{
+use cute_editor::content::edit::EditDelta;
+use cute_editor::content::find::{SearchConfig, SearchResults};
+use cute_editor::content::hidden_lines_model::HiddenLinesModel;
+use cute_editor::content::selection_model::BufferSelectionModel;
+use cute_editor::content::text::{BufferBlockStyle, IndentBehavior, IndentUnit};
+use cute_editor::content::version::BufferVersion;
+use cute_editor::decoration::DecorationLayer;
+use cute_editor::editor::TextDecoration;
+use cute_editor::model::{CoreEditorModel, PlainTextEditorModel};
+use cute_editor::multiline::{AnyMultilineString, MultilineString, LF};
+use cute_editor::render::model::{
     AutoScrollMode, BlockItem, Decoration, LineCount, LineDecoration, RenderEvent,
     RenderLineLocation, RenderState, RichTextStyles, StyleUpdateAction,
     UpdateDecorationAfterLayout, WidthSetting,
 };
-use warp_editor::selection::{SelectionMode, SelectionModel, TextDirection, TextUnit};
-use warp_util::standardized_path::StandardizedPath;
-use warpui::elements::{
+use cute_editor::selection::{SelectionMode, SelectionModel, TextDirection, TextUnit};
+use cute_util::standardized_path::StandardizedPath;
+use cuteui::elements::{
     AnchorPair, OffsetPositioning, OffsetType, PositionedElementOffsetBounds, PositioningAxis,
     XAxisAnchor, YAxisAnchor,
 };
-use warpui::text::point::Point;
-use warpui::text::TextBuffer;
-use warpui::units::{IntoPixels, Pixels};
-use warpui::{AppContext, Entity, ModelContext, ModelHandle, SingletonEntity};
+use cuteui::text::point::Point;
+use cuteui::text::TextBuffer;
+use cuteui::units::{IntoPixels, Pixels};
+use cuteui::{AppContext, Entity, ModelContext, ModelHandle, SingletonEntity};
 
 use super::super::DiffResult;
 use super::comments::{EditorCommentsModel, PendingComment, PendingCommentEvent};
@@ -552,7 +552,7 @@ impl CodeEditorModel {
     // Set the following line ranges to be hidden in the editor.
     pub fn set_hidden_lines(
         &mut self,
-        ranges: RangeSet<warp_editor::content::text::LineCount>,
+        ranges: RangeSet<cute_editor::content::text::LineCount>,
         ctx: &mut ModelContext<Self>,
     ) {
         self.hidden_lines.update(ctx, |model, ctx| {
@@ -567,7 +567,7 @@ impl CodeEditorModel {
     // Set the following hidden line ranges to be visible. This is no-op if the lines are already visible.
     pub fn set_visible_line_range(
         &mut self,
-        range: Range<warp_editor::content::text::LineCount>,
+        range: Range<cute_editor::content::text::LineCount>,
         ctx: &mut ModelContext<Self>,
     ) {
         let version = self.content().as_ref(ctx).buffer_version();
@@ -1300,7 +1300,7 @@ impl CodeEditorModel {
             let line_count = self.line_count(ctx);
 
             // Calculate the visible line ranges (with context)
-            let mut visible_ranges: RangeSet<warp_editor::content::text::LineCount> =
+            let mut visible_ranges: RangeSet<cute_editor::content::text::LineCount> =
                 RangeSet::new();
 
             // Add ranges for diffs
@@ -1318,14 +1318,14 @@ impl CodeEditorModel {
             }
 
             // Calculate hidden ranges as the complement of visible ranges
-            let all_lines: Range<warp_editor::content::text::LineCount> =
-                warp_editor::content::text::LineCount::from(0)
-                    ..warp_editor::content::text::LineCount::from(line_count);
+            let all_lines: Range<cute_editor::content::text::LineCount> =
+                cute_editor::content::text::LineCount::from(0)
+                    ..cute_editor::content::text::LineCount::from(line_count);
 
             // Find gaps in the visible ranges
             let hidden_ranges = visible_ranges
                 .gaps(&all_lines)
-                .collect::<RangeSet<warp_editor::content::text::LineCount>>();
+                .collect::<RangeSet<cute_editor::content::text::LineCount>>();
 
             self.set_hidden_lines(hidden_ranges, ctx);
         }
@@ -2092,10 +2092,10 @@ impl CodeEditorModel {
                 self.update_content(
                     |mut content, ctx| {
                         content.apply_edit(
-                        warp_editor::content::buffer::BufferEditAction::InsertForEachSelection {
+                        cute_editor::content::buffer::BufferEditAction::InsertForEachSelection {
                             texts: &texts,
                         },
-                        warp_editor::content::buffer::EditOrigin::UserTyped,
+                        cute_editor::content::buffer::EditOrigin::UserTyped,
                         selection_model,
                         ctx,
                     );
@@ -2126,10 +2126,10 @@ impl CodeEditorModel {
             self.update_content(
                 |mut content, ctx| {
                     content.apply_edit(
-                        warp_editor::content::buffer::BufferEditAction::InsertAtCharOffsetRanges {
+                        cute_editor::content::buffer::BufferEditAction::InsertAtCharOffsetRanges {
                             edits: &edits,
                         },
-                        warp_editor::content::buffer::EditOrigin::UserTyped,
+                        cute_editor::content::buffer::EditOrigin::UserTyped,
                         selection_model,
                         ctx,
                     );
@@ -3728,10 +3728,10 @@ impl CoreEditorModel for CodeEditorModel {
     }
 
     // TODO(kevin): Add validation to the content model.
-    fn validate(&self, _ctx: &impl warpui::ModelAsRef) {}
+    fn validate(&self, _ctx: &impl cuteui::ModelAsRef) {}
 
     // Since this is a plain text editor, there is no text styles.
-    fn active_text_style(&self) -> warp_editor::content::text::TextStyles {
+    fn active_text_style(&self) -> cute_editor::content::text::TextStyles {
         Default::default()
     }
 

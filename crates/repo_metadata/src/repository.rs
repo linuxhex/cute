@@ -9,11 +9,11 @@ use std::time::Duration;
 use futures::future::ready;
 #[cfg(feature = "local_fs")]
 use ignore::gitignore::Gitignore;
-use warp_util::standardized_path::StandardizedPath;
-use warpui::r#async::{BoxFuture, SpawnedFutureHandle};
+use cute_util::standardized_path::StandardizedPath;
+use cuteui::r#async::{BoxFuture, SpawnedFutureHandle};
 #[cfg(feature = "local_fs")]
-use warpui::SingletonEntity;
-use warpui::{Entity, ModelContext, ModelHandle};
+use cuteui::SingletonEntity;
+use cuteui::{Entity, ModelContext, ModelHandle};
 
 #[cfg(feature = "local_fs")]
 use crate::watcher::DirectoryWatcher;
@@ -230,7 +230,7 @@ impl Repository {
 
     #[cfg(feature = "local_fs")]
     pub(crate) async fn resolve_tracked_remote_ref(root_dir: PathBuf) -> Option<TrackedRemoteRef> {
-        let output = warp_util::git::run_git_command(
+        let output = cute_util::git::run_git_command(
             &root_dir,
             &["rev-parse", "--symbolic-full-name", "@{u}"],
         )
@@ -570,7 +570,7 @@ where
                                 let st = state.lock().unwrap();
                                 st.version
                             };
-                            warpui::r#async::Timer::after(wait).await;
+                            cuteui::r#async::Timer::after(wait).await;
 
                             // If version unchanged, we're quiet; flush pending and exit loop.
                             let maybe_merged = {

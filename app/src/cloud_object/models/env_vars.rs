@@ -1,9 +1,9 @@
-use warp_server_client::{
+use cute_server_client::{
     cloud_object::{GenericCloudObject, GenericServerObject, GenericStringModel, JsonObjectType},
     ids::GenericStringObjectId,
 };
 use serde::{Deserialize, Serialize};
-use warp_util::path::ShellFamily;
+use cute_util::path::ShellFamily;
 
 use super::{JsonModel, JsonSerializer};
 

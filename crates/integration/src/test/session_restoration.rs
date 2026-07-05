@@ -19,8 +19,8 @@ use warp::terminal::model::terminal_model::BlockIndex;
 use warp::terminal::shell::ShellType;
 use warp::terminal::{History, ShellHost, TerminalView};
 use warp::workspace::Workspace;
-use warpui::integration::{AssertionOutcome, TestStep};
-use warpui::{async_assert_eq, SingletonEntity, ViewHandle};
+use cuteui::integration::{AssertionOutcome, TestStep};
+use cuteui::{async_assert_eq, SingletonEntity, ViewHandle};
 
 use super::{new_builder, Builder, TEST_ONLY_ASSETS};
 use crate::util::{get_local_user, tab_title_in_home_dir};

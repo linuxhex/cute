@@ -3,8 +3,8 @@ pub use crate::cloud_object::models::{
     CloudAIExecutionProfileModel, ComputerUsePermission, RunAgentsPermission, WriteToPtyPermission,
     PROFILE_NAME_MAX_LENGTH,
 };
-use warp_core::features::FeatureFlag;
-use warpui::{AppContext, SingletonEntity};
+use cute_core::features::FeatureFlag;
+use cuteui::{AppContext, SingletonEntity};
 
 use super::llms::{LLMContextWindow, LLMPreferences};
 use crate::cloud_object::model::generic_string_model::StringModel;

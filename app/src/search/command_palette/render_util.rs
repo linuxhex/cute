@@ -1,7 +1,7 @@
 use pathfinder_color::ColorU;
-use warp_core::ui::theme::Fill;
-use warpui::elements::{Align, ConstrainedBox, Container, Empty};
-use warpui::Element;
+use cute_core::ui::theme::Fill;
+use cuteui::elements::{Align, ConstrainedBox, Container, Empty};
+use cuteui::Element;
 
 use crate::appearance::Appearance;
 use crate::search::result_renderer::ItemHighlightState;
@@ -26,7 +26,7 @@ pub fn render_search_item_icon(
         background_color.into_solid(),
         MinimumAllowedContrast::NonText,
     );
-    let icon_element = icon.to_warpui_icon(Fill::Solid(icon_color)).finish();
+    let icon_element = icon.to_cuteui_icon(Fill::Solid(icon_color)).finish();
     render_search_item_icon_inner(appearance, icon_element)
 }
 

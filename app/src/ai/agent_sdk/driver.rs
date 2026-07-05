@@ -20,17 +20,17 @@ use oneshot::{Canceled, Receiver, Sender};
 use repo_metadata::local_model::IndexedRepoState;
 use repo_metadata::{RepoMetadataModel, RepositoryIdentifier};
 use uuid::Uuid;
-use warp_cli::agent::{Harness, OutputFormat};
-use warp_cli::mcp::MCPSpec;
-use warp_cli::share::ShareRequest;
-use warp_cli::skill::SkillSpec;
-use warp_core::features::FeatureFlag;
-use warp_core::{report_error, report_if_error, safe_debug, safe_error, safe_info};
-use warp_graphql::ai::AgentTaskState;
-use warp_managed_secrets::ManagedSecretValue;
-use warp_util::local_or_remote_path::LocalOrRemotePath;
-use warpui::r#async::{FutureExt, TimeoutError};
-use warpui::{AppContext, Entity, ModelContext, ModelHandle, ModelSpawner, SingletonEntity};
+use cute_cli::agent::{Harness, OutputFormat};
+use cute_cli::mcp::MCPSpec;
+use cute_cli::share::ShareRequest;
+use cute_cli::skill::SkillSpec;
+use cute_core::features::FeatureFlag;
+use cute_core::{report_error, report_if_error, safe_debug, safe_error, safe_info};
+use cute_graphql::ai::AgentTaskState;
+use cute_managed_secrets::ManagedSecretValue;
+use cute_util::local_or_remote_path::LocalOrRemotePath;
+use cuteui::r#async::{FutureExt, TimeoutError};
+use cuteui::{AppContext, Entity, ModelContext, ModelHandle, ModelSpawner, SingletonEntity};
 
 use crate::ai::agent::conversation::AIConversationId;
 use crate::ai::agent::{
@@ -57,6 +57,7 @@ use crate::ai::blocklist::{
 use crate::ai::cloud_environments::{
     AmbientAgentEnvironment, CloudAmbientAgentEnvironment, GithubRepo,
 };
+use crate::cloud_object::{CloudObject, CloudObjectLookup};
 use crate::ai::document::ai_document_model::{AIDocumentModel, AIDocumentModelEvent};
 use crate::ai::execution_profiles::profiles::AIExecutionProfilesModel;
 use crate::ai::llms::{LLMId, LLMPreferences};
@@ -71,7 +72,6 @@ use crate::ai::skills::{
     SkillWatcher,
 };
 use crate::auth::AuthStateProvider;
-use crate::cloud_object::{CloudObject, CloudObjectLookup as _};
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::server_api::ai::AIClient;
 use crate::server::server_api::harness_support::{
@@ -99,7 +99,6 @@ mod snapshot;
 pub(crate) mod terminal;
 
 use environment::PrepareEnvironmentError;
-pub(crate) use snapshot::upload_snapshot_for_handoff;
 use terminal::TerminalDriverEvent;
 
 const MCP_SERVER_STARTUP_TIMEOUT: Duration = Duration::from_secs(20);
@@ -490,8 +489,8 @@ pub enum AgentDriverError {
     },
 }
 
-impl From<warpui::ModelDropped> for AgentDriverError {
-    fn from(_: warpui::ModelDropped) -> Self {
+impl From<cuteui::ModelDropped> for AgentDriverError {
+    fn from(_: cuteui::ModelDropped) -> Self {
         AgentDriverError::InvalidRuntimeState
     }
 }
@@ -582,7 +581,7 @@ impl AgentDriver {
 
         // Signal to third-party harnesses (e.g. Claude Code) that we're in a sandbox
         // so they allow root execution with permissive flags.
-        if warp_isolation_platform::detect().is_some() {
+        if cute_isolation_platform::detect().is_some() {
             env_vars.insert(OsString::from("IS_SANDBOX"), OsString::from("1"));
         }
 
@@ -803,7 +802,7 @@ impl AgentDriver {
                 ) {
                     let timeout = idle_timeout.min(SETUP_FAILED_IDLE_TIMEOUT);
                     log::info!("Environment setup failed; keeping session alive for {timeout:?}");
-                    warpui::r#async::Timer::after(timeout).await;
+                    cuteui::r#async::Timer::after(timeout).await;
                 }
             }
 
@@ -1913,7 +1912,7 @@ impl AgentDriver {
                 // and then call stop_sharing_session when they're done. To know when streams are finished, we would need to modify start_ordered_terminal_events_listener
                 // to send a message when the streams are finished, flushed, and the websocket is disconnected. For now, we'll just sleep for a second, as this seems
                 // to be enough time for the streams to be finished and the events to be flushed.
-                warpui::r#async::Timer::after(Duration::from_secs(1)).await;
+                cuteui::r#async::Timer::after(Duration::from_secs(1)).await;
 
                 conversation_status.into_result()
             }
@@ -2278,7 +2277,7 @@ impl AgentDriver {
         let command_result = loop {
             futures::select! {
                 exit_code = command_handle => break exit_code,
-                _ = warpui::r#async::Timer::after(HARNESS_SAVE_INTERVAL).fuse() => {
+                _ = cuteui::r#async::Timer::after(HARNESS_SAVE_INTERVAL).fuse() => {
                     log::debug!("Triggering periodic save of harness conversation data");
                     report_if_error!(runner
                         .save_conversation(SavePoint::Periodic, foreground)
@@ -2744,7 +2743,7 @@ impl AgentDriver {
 
             // Get the notebook link from the document model
             let Some(notebook_link) =
-                doc_model.get_document_warp_drive_object_link(document_id, ctx)
+                doc_model.get_document_cute_drive_object_link(document_id, ctx)
             else {
                 return;
             };
@@ -2985,7 +2984,7 @@ impl AgentDriver {
                 // If running as part of a task, store the session-sharing link.
                 if let Some(task_id) = self.task_id {
                     let server_api = ServerApiProvider::as_ref(ctx).get_ai_client();
-                    let session_id = *session_id;
+                    let session_id = session_id.clone();
                     ctx.spawn(
                         async move {
                             report_if_error!(server_api

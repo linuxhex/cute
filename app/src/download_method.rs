@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use warpui::r#async::executor::Background;
+use cuteui::r#async::executor::Background;
 
 use crate::auth::auth_state::AuthState;
 use crate::server::telemetry::DownloadSource;
@@ -58,8 +58,8 @@ async fn check_download_source() -> DownloadSource {
         .await;
 
     match result {
-        Ok(status) if status.success() => DownloadSource::Homebrew,
-        _ => DownloadSource::Website,
+        Ok(status) if status.success() => DownloadSource::HOMEBREW,
+        _ => DownloadSource::WEBSITE,
     }
 }
 

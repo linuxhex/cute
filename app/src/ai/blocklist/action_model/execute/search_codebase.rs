@@ -5,7 +5,7 @@ use futures::channel::oneshot;
 use futures::future::BoxFuture;
 use futures::FutureExt;
 use itertools::Itertools;
-use warpui::{AppContext, Entity, EntityId, ModelContext, ModelHandle, SingletonEntity};
+use cuteui::{AppContext, Entity, EntityId, ModelContext, ModelHandle, SingletonEntity};
 
 use super::{
     read_local_file_context, ActionExecution, AnyActionExecution, ExecuteActionInput,
@@ -294,14 +294,9 @@ impl SearchCodebaseExecutor {
             };
 
             let search_dir;
-            let is_cross_repo;
             if FeatureFlag::CrossRepoContext.is_enabled() {
-                is_cross_repo = codebase_path
-                    .as_ref()
-                    .is_some_and(|path| !current_working_directory.starts_with(path));
                 search_dir = codebase_path.unwrap_or(current_working_directory);
             } else {
-                is_cross_repo = false;
                 search_dir = current_working_directory;
             }
             let _server_output_id = get_server_output_id(conversation_id, ctx);

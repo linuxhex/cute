@@ -1,72 +1,37 @@
-use warpui::elements::MouseStateHandle;
-use warpui::{AppContext, Element};
-
-use super::{WarpDriveItem, WarpDriveItemId};
-use crate::ai::mcp::CloudMCPServer;
 use crate::appearance::Appearance;
-use crate::cloud_object::CloudObjectMetadata;
-use crate::drive::index::DriveIndexAction;
-use crate::drive::{CloudObjectTypeAndId, DriveObjectType};
+use crate::drive::CloudObjectTypeAndId;
+use crate::drive::items::WarpDriveItem;
 use crate::themes::theme::Fill;
+use crate::ui_components::icons::Icon;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct WarpDriveMCPServer {
     id: CloudObjectTypeAndId,
-    mcp_server: CloudMCPServer,
+    name: String,
 }
 
 impl WarpDriveMCPServer {
-    pub fn new(id: CloudObjectTypeAndId, mcp_server: CloudMCPServer) -> Self {
-        Self { id, mcp_server }
+    pub fn new(id: CloudObjectTypeAndId, name: String) -> Self {
+        Self { id, name }
     }
 }
 
 impl WarpDriveItem for WarpDriveMCPServer {
-    fn display_name(&self) -> Option<String> {
-        Some(self.mcp_server.model().string_model.name.clone())
-    }
-    fn metadata(&self) -> Option<&CloudObjectMetadata> {
-        Some(&self.mcp_server.metadata)
+    fn id(&self) -> &CloudObjectTypeAndId {
+        &self.id
     }
 
-    fn object_type(&self) -> Option<DriveObjectType> {
-        Some(DriveObjectType::MCPServer)
+    fn title(&self) -> &str {
+        &self.name
     }
 
-    fn secondary_icon(&self, _color: Option<Fill>) -> Option<Box<dyn Element>> {
-        None
+    fn icon(&self) -> Icon {
+        Icon::Dataflow
     }
 
-    fn click_action(&self) -> Option<DriveIndexAction> {
-        Some(DriveIndexAction::OpenMCPServerCollection)
-    }
-
-    fn preview(&self, _appearance: &Appearance) -> Option<Box<dyn Element>> {
-        // TODO
-        None
-    }
-
-    fn warp_drive_id(&self) -> WarpDriveItemId {
-        WarpDriveItemId::Object(self.id)
-    }
-
-    fn sync_status_icon(
-        &self,
-        sync_queue_is_dequeueing: bool,
-        hover_state: MouseStateHandle,
-        appearance: &Appearance,
-    ) -> Option<Box<dyn Element>> {
-        self.mcp_server
-            .metadata
-            .pending_changes_statuses
-            .render_icon(sync_queue_is_dequeueing, hover_state, appearance)
-    }
-
-    fn action_summary(&self, _app: &AppContext) -> Option<String> {
-        None
-    }
-
-    fn clone_box(&self) -> Box<dyn WarpDriveItem> {
-        Box::new(self.clone())
+    fn icon_color(&self, appearance: &Appearance) -> Fill {
+        appearance
+            .theme()
+            .main_text_color(appearance.theme().surface_2())
     }
 }

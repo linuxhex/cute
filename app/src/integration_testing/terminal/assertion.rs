@@ -1,11 +1,11 @@
 use pathfinder_geometry::rect::RectF;
 use regex::Regex;
 use settings::Setting as _;
-use warp_util::path::user_friendly_path;
-use warpui::integration::{AssertionCallback, AssertionOutcome};
-use warpui::units::Lines;
-use warpui::windowing::WindowManager;
-use warpui::{async_assert, async_assert_eq, App, SingletonEntity, ViewHandle, WindowId};
+use cute_util::path::user_friendly_path;
+use cuteui::integration::{AssertionCallback, AssertionOutcome};
+use cuteui::units::Lines;
+use cuteui::windowing::WindowManager;
+use cuteui::{async_assert, async_assert_eq, App, SingletonEntity, ViewHandle, WindowId};
 
 use super::util::ExpectedOutput;
 use crate::ai::blocklist::agent_view::AgentViewState;
@@ -763,8 +763,8 @@ pub fn assert_scroll_position(
 pub fn validate_git_branch(
     expected_git_branch: Option<String>,
     tab_idx: usize,
-    window_id: warpui::WindowId,
-    app: &warpui::App,
+    window_id: cuteui::WindowId,
+    app: &cuteui::App,
 ) -> AssertionOutcome {
     let terminal_view = single_terminal_view_for_tab(app, window_id, tab_idx);
     terminal_view.read(app, |view, _ctx| {

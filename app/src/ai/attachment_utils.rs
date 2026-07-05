@@ -1,5 +1,7 @@
 //! Shared utilities for file-attachment handling (download, filename sanitization,
 //! and building attachment maps).
+#![allow(dead_code)]
+
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 

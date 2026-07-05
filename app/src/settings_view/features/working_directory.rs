@@ -1,8 +1,8 @@
 use itertools::Itertools;
-use warpui::elements::{Container, CrossAxisAlignment, Flex, ParentElement, Shrinkable};
-use warpui::presenter::ChildView;
-use warpui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
-use warpui::{Element, Entity, SingletonEntity, TypedActionView, View, ViewContext, ViewHandle};
+use cuteui::elements::{Container, CrossAxisAlignment, Flex, ParentElement, Shrinkable};
+use cuteui::presenter::ChildView;
+use cuteui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
+use cuteui::{Element, Entity, SingletonEntity, TypedActionView, View, ViewContext, ViewHandle};
 
 use crate::appearance::Appearance;
 use crate::editor::{EditorView, Event as EditorEvent, SingleLineEditorOptions, TextOptions};
@@ -122,7 +122,7 @@ impl View for WorkingDirectoryView {
         "WorkingDirectoryView"
     }
 
-    fn render(&self, app: &warpui::AppContext) -> Box<dyn warpui::Element> {
+    fn render(&self, app: &cuteui::AppContext) -> Box<dyn cuteui::Element> {
         let appearance = Appearance::as_ref(app);
         let ui_builder = appearance.ui_builder();
 

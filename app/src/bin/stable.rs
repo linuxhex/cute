@@ -6,7 +6,7 @@
 mod channel_config;
 
 use anyhow::Result;
-use warp_core::channel::{Channel, ChannelState};
+use cute_core::channel::{Channel, ChannelState};
 
 // Simple wrapper around cute::run() for stable channel builds.
 fn main() -> Result<()> {

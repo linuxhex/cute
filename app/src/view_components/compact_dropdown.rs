@@ -1,14 +1,14 @@
 use pathfinder_geometry::vector::vec2f;
 use std::marker::PhantomData;
-use warpui::elements::{
+use cuteui::elements::{
     Border, ChildAnchor, ConstrainedBox, CornerRadius, CrossAxisAlignment, Flex,
     Icon as WarpUiIcon, MainAxisAlignment, MouseStateHandle, OffsetPositioning, ParentElement,
     PositionedElementAnchor, PositionedElementOffsetBounds, Radius, SavePosition, Stack,
 };
-use warpui::presenter::ChildView;
-use warpui::ui_components::button::ButtonVariant;
-use warpui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
-use warpui::{
+use cuteui::presenter::ChildView;
+use cuteui::ui_components::button::ButtonVariant;
+use cuteui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
+use cuteui::{
     AppContext, BlurContext, Element, Entity, SingletonEntity, TypedActionView, View, ViewContext,
     ViewHandle,
 };
@@ -130,7 +130,7 @@ impl<A: DropdownItemAction> CompactDropdown<A> {
                     .override_icon_color()
                     .unwrap_or_else(|| appearance.theme().active_ui_text_color());
                 button_label
-                    .add_child(self.render_sized_icon(appearance, icon.to_warpui_icon(icon_color)));
+                    .add_child(self.render_sized_icon(appearance, icon.to_cuteui_icon(icon_color)));
             }
         }
 

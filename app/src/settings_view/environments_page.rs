@@ -2,23 +2,23 @@ use std::collections::HashMap;
 
 use instant::Instant;
 use pathfinder_geometry::vector::vec2f;
-use warp_core::ui::color::blend::Blend;
-use warp_core::ui::theme::color::internal_colors;
-use warp_editor::editor::NavigationKey;
-use warp_graphql::scalars::time::ServerTimestamp;
-use warpui::elements::{
+use cute_core::ui::color::blend::Blend;
+use cute_core::ui::theme::color::internal_colors;
+use cute_editor::editor::NavigationKey;
+use cute_graphql::scalars::time::ServerTimestamp;
+use cuteui::elements::{
     Align, Border, ChildAnchor, Clipped, ConstrainedBox, Container, CornerRadius,
     CrossAxisAlignment, Element, Empty, Expanded, Flex, Hoverable, MainAxisAlignment, MainAxisSize,
     MouseStateHandle, OffsetPositioning, ParentAnchor, ParentElement, ParentOffsetBounds, Radius,
     Shrinkable, SizeConstraintCondition, SizeConstraintSwitch, Stack, Text,
 };
-use warpui::fonts::{Properties, Weight};
-use warpui::prelude::ChildView;
-use warpui::ui_components::button::ButtonVariant;
-use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::windowing::state::ApplicationStage;
-use warpui::windowing::{self, WindowManager};
-use warpui::{
+use cuteui::fonts::{Properties, Weight};
+use cuteui::prelude::ChildView;
+use cuteui::ui_components::button::ButtonVariant;
+use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
+use cuteui::windowing::state::ApplicationStage;
+use cuteui::windowing::{self, WindowManager};
+use cuteui::{
     AppContext, Entity, FocusContext, ModelHandle, SingletonEntity, TypedActionView, View,
     ViewContext, ViewHandle,
 };
@@ -39,21 +39,16 @@ use super::update_environment_form::{
 };
 use super::{editor_text_colors, SettingsSection};
 use crate::ai::ambient_agent_types::github_auth_url::GithubAuthRedirectTarget;
-use crate::ai::cloud_environments::{self, CloudAmbientAgentEnvironment};
+use crate::ai::cloud_environments::CloudAmbientAgentEnvironment;
 use crate::appearance::Appearance;
 use crate::cloud_object::model::persistence::{CloudModel, CloudModelEvent};
-use crate::cloud_object::{
-    CloudObjectLocation, CloudObjectLookup as _, GenericStringObjectFormat, JsonObjectType, Owner,
-    Space,
-};
-use crate::drive::CloudObjectTypeAndId;
+use crate::cloud_object::{CloudObjectLookup, Owner};
+
 use crate::editor::{
     EditorView, PropagateAndNoOpNavigationKeys, SingleLineEditorOptions, TextOptions,
 };
 use crate::root_view::CreateEnvironmentArg;
-use crate::server::cloud_objects::update_manager::{
-    ObjectOperation, OperationSuccessType, UpdateManager, UpdateManagerEvent,
-};
+
 use crate::server::ids::{ClientId, ServerId, SyncId};
 use crate::terminal::view::init_environment::mode_selector::{
     EnvironmentSetupMode, EnvironmentSetupModeSelector, EnvironmentSetupModeSelectorEvent,
@@ -76,7 +71,7 @@ use new_environment_button::NewEnvironmentButtonView;
 #[allow(unused_imports)] // IntegrationsClient trait is used in fetch_github_repos
 use {
     crate::server::server_api::{integrations::IntegrationsClient, ServerApiProvider},
-    warp_graphql::queries::user_github_info::UserGithubInfoResult,
+    cute_graphql::queries::user_github_info::UserGithubInfoResult,
 };
 
 const PAGE_TITLE_TEXT: &str = "Environments";
@@ -355,18 +350,11 @@ impl EnvironmentsPageView {
                 // don't need mouse state refresh, but the view should re-render.
                 CloudModelEvent::ObjectUpdated { .. }
                 | CloudModelEvent::ObjectMoved { .. }
-                | CloudModelEvent::ObjectPermissionsUpdated { .. }
-                | CloudModelEvent::ObjectSynced { .. } => {}
+                | CloudModelEvent::ObjectPermissionsUpdated { .. } => {}
                 // Events that never affect environments — skip entirely.
-                CloudModelEvent::NotebookEditorChangedFromServer { .. }
-                | CloudModelEvent::ObjectForceExpanded { .. } => return,
+                CloudModelEvent::ObjectForceExpanded { .. } => return,
             }
             ctx.notify();
-        });
-
-        // Subscribe to UpdateManager to show success toast when environment update completes
-        ctx.subscribe_to_model(&UpdateManager::handle(ctx), |view, _, event, ctx| {
-            view.handle_update_manager_event(event, ctx);
         });
 
         // Create search editor for list page
@@ -610,111 +598,7 @@ impl EnvironmentsPageView {
         });
     }
 
-    fn handle_update_manager_event(
-        &mut self,
-        event: &UpdateManagerEvent,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        let UpdateManagerEvent::ObjectOperationComplete { result } = event else {
-            return;
-        };
-
-        // Check if this is a successful update for our pending save
-        if let (ObjectOperation::Update, OperationSuccessType::Success) =
-            (&result.operation, &result.success_type)
-        {
-            let Some(server_id) = &result.server_id else {
-                return;
-            };
-
-            let should_handle = self
-                .pending_save_env_id
-                .is_some_and(|pending_env_id| server_id.uid() == pending_env_id.uid());
-
-            if should_handle {
-                self.pending_save_env_id = None;
-                self.show_success_toast("Successfully updated environment".to_string(), ctx);
-
-                // No need to force a global cloud-object refresh here: on update success the
-                // sync pipeline updates this environment's `revision_ts` (used for "Last edited")
-                // in-memory via `CloudModel::set_latest_revision_and_editor`.
-                ctx.notify();
-            }
-        }
-
-        // Check if this is a successful create for our pending create
-        if let (ObjectOperation::Create { .. }, OperationSuccessType::Success) =
-            (&result.operation, &result.success_type)
-        {
-            if let Some(pending_client_id) = self.pending_create_client_id.take() {
-                // Check if the client_id in the result matches our pending client_id
-                if let Some(result_client_id) = &result.client_id {
-                    if *result_client_id == pending_client_id {
-                        self.show_success_toast(
-                            "Successfully created environment".to_string(),
-                            ctx,
-                        );
-                    }
-                }
-            }
-        }
-
-        // Check if this is a successful delete for our pending delete
-        if let (ObjectOperation::Delete { .. }, OperationSuccessType::Success) =
-            (&result.operation, &result.success_type)
-        {
-            if let Some(pending_env_id) = self.pending_delete_env_id.take() {
-                // Check if the server_id matches our pending environment
-                if let Some(server_id) = &result.server_id {
-                    if server_id.uid() == pending_env_id.uid() {
-                        self.show_success_toast(
-                            "Environment deleted successfully".to_string(),
-                            ctx,
-                        );
-                    }
-                }
-            }
-        }
-
-        // Check if this is a completion event for our pending share (personal -> team)
-        if matches!(&result.operation, ObjectOperation::MoveToDrive) {
-            let (Some(pending_server_id), Some(result_server_id)) =
-                (self.pending_share_server_id, result.server_id)
-            else {
-                return;
-            };
-
-            if pending_server_id != result_server_id {
-                return;
-            }
-
-            self.pending_share_server_id = None;
-
-            if matches!(result.success_type, OperationSuccessType::Success) {
-                self.show_success_toast("Successfully shared environment".to_string(), ctx);
-            } else {
-                self.show_error_toast("Failed to share environment with team".to_string(), ctx);
-            }
-
-            ctx.notify();
-        }
-    }
-
-    fn delete_environment(&mut self, env_id: SyncId, ctx: &mut ViewContext<Self>) {
-        // Track the pending delete to show success toast when complete
-        self.pending_delete_env_id = Some(env_id);
-
-        // Delete via UpdateManager
-        UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-            update_manager.delete_object_by_user(
-                CloudObjectTypeAndId::GenericStringObject {
-                    object_type: GenericStringObjectFormat::Json(JsonObjectType::CloudEnvironment),
-                    id: env_id,
-                },
-                ctx,
-            );
-        });
-
+    fn delete_environment(&mut self, _env_id: SyncId, ctx: &mut ViewContext<Self>) {
         // Navigate back to list
         self.update_page(EnvironmentsPage::List, ctx);
     }
@@ -748,70 +632,14 @@ impl EnvironmentsPageView {
     ) {
         match event {
             UpdateEnvironmentFormEvent::Created {
-                environment,
-                share_with_team,
+                ..
             } => {
-                // Generate a client ID for tracking the create operation
-                let client_id = ClientId::default();
-                self.pending_create_client_id = Some(client_id);
-
-                let owner = if *share_with_team {
-                    cloud_environments::owner_for_new_environment(ctx)
-                } else {
-                    cloud_environments::owner_for_new_personal_environment(ctx)
-                };
-
-                let Some(owner) = owner else {
-                    self.show_error_toast(
-                        "Unable to create environment: not logged in.".to_string(),
-                        ctx,
-                    );
-                    return;
-                };
-
-                // Create via UpdateManager
-                UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-                    update_manager.create_ambient_agent_environment(
-                        environment.clone(),
-                        client_id,
-                        owner,
-                        ctx,
-                    );
-                });
-
                 // Navigate back to list
                 self.update_page(EnvironmentsPage::List, ctx);
             }
             UpdateEnvironmentFormEvent::Updated {
-                env_id,
-                environment,
+                ..
             } => {
-                // Verify the environment still exists
-                let Some(existing_env) = CloudAmbientAgentEnvironment::get_by_id(env_id, ctx)
-                else {
-                    self.show_error_toast(
-                        "Unable to save: environment no longer exists.".to_string(),
-                        ctx,
-                    );
-                    return;
-                };
-
-                // Get the revision from the existing environment
-                let revision = existing_env.metadata.revision.clone();
-
-                // Track the pending save to show success toast when complete
-                self.pending_save_env_id = Some(*env_id);
-
-                // Update via UpdateManager
-                UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-                    update_manager.update_ambient_agent_environment(
-                        environment.clone(),
-                        *env_id,
-                        revision,
-                        ctx,
-                    );
-                });
-
                 // Navigate back to list
                 self.update_page(EnvironmentsPage::List, ctx);
             }
@@ -927,7 +755,7 @@ impl TypedActionView for EnvironmentsPageView {
             }
             EnvironmentsPageAction::CopyEnvId(sync_id, env_id_string) => {
                 ctx.clipboard()
-                    .write(warpui::clipboard::ClipboardContent::plain_text(
+                    .write(cuteui::clipboard::ClipboardContent::plain_text(
                         env_id_string.clone(),
                     ));
                 // Track when this was copied for feedback
@@ -936,7 +764,7 @@ impl TypedActionView for EnvironmentsPageView {
                 let duration = COPY_FEEDBACK_DURATION;
                 ctx.spawn(
                     async move {
-                        warpui::r#async::Timer::after(duration).await;
+                        cuteui::r#async::Timer::after(duration).await;
                     },
                     |me, _, ctx| {
                         ctx.notify();
@@ -957,7 +785,7 @@ impl TypedActionView for EnvironmentsPageView {
                 self.open_environment_setup_mode_selector(ctx);
             }
             EnvironmentsPageAction::ShareToTeam(env_id) => {
-                let Some(team_uid) = UserWorkspaces::as_ref(ctx).current_team_uid() else {
+                let Some(_team_uid) = UserWorkspaces::as_ref(ctx).current_team_uid() else {
                     self.show_error_toast(
                         "Unable to share environment: you are not currently on a team.".to_string(),
                         ctx,
@@ -965,40 +793,13 @@ impl TypedActionView for EnvironmentsPageView {
                     return;
                 };
 
-                let SyncId::ServerId(server_id) = *env_id else {
+                let SyncId::ServerId(_server_id) = *env_id else {
                     self.show_error_toast(
                         "Unable to share environment: environment is not yet synced.".to_string(),
                         ctx,
                     );
                     return;
                 };
-
-                self.pending_share_server_id = Some(server_id);
-
-                UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-                    let (destination_folder_id, space) = match CloudObjectLocation::Space(Space::Team { team_uid }) {
-                        CloudObjectLocation::Space(space) => (None, space),
-                        CloudObjectLocation::Folder(folder_id) => {
-                            let server_id = match folder_id {
-                                SyncId::ClientId(_) => None,
-                                SyncId::ServerId(id) => Some(id),
-                            };
-                            (server_id, Space::Personal)
-                        },
-                        CloudObjectLocation::Trash => (None, Space::Personal),
-                    };
-                    update_manager.move_object_to_location(
-                        CloudObjectTypeAndId::GenericStringObject {
-                            object_type: GenericStringObjectFormat::Json(
-                                JsonObjectType::CloudEnvironment,
-                            ),
-                            id: *env_id,
-                        },
-                        destination_folder_id,
-                        space,
-                        ctx,
-                    );
-                });
 
                 ctx.notify();
             }
@@ -1009,8 +810,8 @@ impl TypedActionView for EnvironmentsPageView {
         &mut self,
         _action: &Self::Action,
         _ctx: &mut ViewContext<Self>,
-    ) -> warpui::accessibility::ActionAccessibilityContent {
-        warpui::accessibility::ActionAccessibilityContent::default()
+    ) -> cuteui::accessibility::ActionAccessibilityContent {
+        cuteui::accessibility::ActionAccessibilityContent::default()
     }
 }
 
@@ -1251,7 +1052,7 @@ impl EnvironmentsPageWidget {
 
         let search_icon = ConstrainedBox::new(
             Icon::Search
-                .to_warpui_icon(blended_colors::text_sub(theme, theme.surface_2()).into())
+                .to_cuteui_icon(blended_colors::text_sub(theme, theme.surface_2()).into())
                 .finish(),
         )
         .with_width(icon_size)
@@ -1553,7 +1354,7 @@ impl EnvironmentsPageWidget {
         let theme = appearance.theme();
         let build_icon = || {
             Container::new(
-                ConstrainedBox::new(icon.to_warpui_icon(theme.active_ui_text_color()).finish())
+                ConstrainedBox::new(icon.to_cuteui_icon(theme.active_ui_text_color()).finish())
                     .with_width(icon_size)
                     .with_height(icon_size)
                     .finish(),
@@ -1929,7 +1730,7 @@ impl EnvironmentsPageWidget {
             let icon_color: ThemeFill = if is_card_hovered {
                 theme.foreground()
             } else {
-                ThemeFill::Solid(warpui::color::ColorU::transparent_black())
+                ThemeFill::Solid(cuteui::color::ColorU::transparent_black())
             };
 
             let should_render_share_button = list_scope == EnvironmentListScope::Personal
@@ -2025,12 +1826,6 @@ impl SettingsPageMeta for EnvironmentsPageView {
     fn on_page_selected(&mut self, _allow_steal_focus: bool, ctx: &mut ViewContext<Self>) {
         self.environment_form.update(ctx, |form, ctx| {
             form.fetch_github_repos(ctx);
-        });
-        // Refresh cloud objects so the environments list reflects recent changes (e.g. a newly
-        // created environment from the terminal flow) without waiting for the next poll.
-        #[cfg(not(any(test, feature = "integration_tests")))]
-        UpdateManager::handle(ctx).update(ctx, |manager, ctx| {
-            manager.refresh_updated_objects(ctx);
         });
     }
 

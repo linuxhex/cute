@@ -15,18 +15,18 @@ use std::rc::Rc;
 use lazy_static::lazy_static;
 use markdown_parser::{FormattedText, FormattedTextFragment, FormattedTextLine};
 use pathfinder_color::ColorU;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::theme::color::internal_colors::neutral_2;
-use warpui::elements::{
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::theme::color::internal_colors::neutral_2;
+use cuteui::elements::{
     Align, Border, Clipped, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Empty,
     Flex, FormattedTextElement, Hoverable, MainAxisAlignment, MouseStateHandle, ParentElement,
     Radius, Shrinkable, SizeConstraintCondition, SizeConstraintSwitch, Text, Wrap, WrapFill,
 };
-use warpui::fonts::FamilyId;
-use warpui::keymap::Keystroke;
-use warpui::platform::Cursor;
-use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::{AppContext, Element, EventContext, SingletonEntity};
+use cuteui::fonts::FamilyId;
+use cuteui::keymap::Keystroke;
+use cuteui::platform::Cursor;
+use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
+use cuteui::{AppContext, Element, EventContext, SingletonEntity};
 
 use super::inline_action_header::HeaderConfig;
 use crate::ai::blocklist::block::view_impl::WithContentItemSpacing;

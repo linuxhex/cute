@@ -1,21 +1,21 @@
 use fuzzy_match::{match_indices_case_insensitive, FuzzyMatchResult};
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::icons::Icon;
-use warp_core::ui::theme::color::internal_colors;
-use warp_core::ui::theme::Fill;
-use warpui::elements::{
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::icons::Icon;
+use cute_core::ui::theme::color::internal_colors;
+use cute_core::ui::theme::Fill;
+use cuteui::elements::{
     ConstrainedBox, Container, CornerRadius, Highlight,
     MouseStateHandle, Radius, Text,
 };
-use warpui::fonts::{Properties, Style, Weight};
-use warpui::keymap::Keystroke;
-use warpui::platform::{Cursor, OperatingSystem};
-use warpui::text_layout::ClipConfig;
-use warpui::ui_components::button::ButtonVariant;
-use warpui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
-use warpui::{AppContext, Element, Entity, EntityId, SingletonEntity as _};
+use cuteui::fonts::{Properties, Style, Weight};
+use cuteui::keymap::Keystroke;
+use cuteui::platform::{Cursor, OperatingSystem};
+use cuteui::text_layout::ClipConfig;
+use cuteui::ui_components::button::ButtonVariant;
+use cuteui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
+use cuteui::{AppContext, Element, Entity, EntityId, SingletonEntity as _};
 
 use super::model_spec_scores::{
     render_model_spec_header, render_model_spec_scores, CostRow, CostRowTooltip,
@@ -322,7 +322,7 @@ impl SearchItem for ModelSearchItem {
         let icon_size = inline_styles::font_size(appearance);
         let icon_color = inline_styles::icon_color(appearance);
 
-        let icon = self.leading_icon.to_warpui_icon(icon_color).finish();
+        let icon = self.leading_icon.to_cuteui_icon(icon_color).finish();
 
         Container::new(
             ConstrainedBox::new(icon)
@@ -339,8 +339,8 @@ impl SearchItem for ModelSearchItem {
         _highlight_state: ItemHighlightState,
         app: &AppContext,
     ) -> Box<dyn Element> {
-        use warpui::elements::{Flex, ParentElement as _};
-        use warpui::prelude::CrossAxisAlignment;
+        use cuteui::elements::{Flex, ParentElement as _};
+        use cuteui::prelude::CrossAxisAlignment;
 
         let appearance = crate::appearance::Appearance::as_ref(app);
         let theme = appearance.theme();
@@ -379,7 +379,7 @@ impl SearchItem for ModelSearchItem {
             .with_child(text.finish());
         if let Some(icon) = self.credential_icon {
             let credential_icon =
-                ConstrainedBox::new(icon.to_warpui_icon(secondary_text_color).finish())
+                ConstrainedBox::new(icon.to_cuteui_icon(secondary_text_color).finish())
                     .with_width(font_size)
                     .with_height(font_size)
                     .finish();
@@ -463,7 +463,7 @@ impl SearchItem for ModelSearchItem {
     }
 
     fn render_details(&self, app: &AppContext) -> Option<Box<dyn Element>> {
-        use warpui::elements::{Flex, ParentElement as _};
+        use cuteui::elements::{Flex, ParentElement as _};
 
         let appearance = crate::appearance::Appearance::as_ref(app);
         let theme = appearance.theme();

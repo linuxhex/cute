@@ -57,46 +57,46 @@ use session_sharing_protocol::common::{AgentAttachment, ParticipantId, ServerCon
 use settings::{Setting as _, ToggleableSetting};
 use string_offset::{ByteOffset, CharOffset};
 use vim::vim::{VimHandler, VimMode};
-use warp_completer::completer::{
+use cute_completer::completer::{
     self, CompleterOptions, CompletionContext, CompletionsFallbackStrategy, Description, Match,
     MatchStrategy, MatchType, PathSeparators, SuggestionResults,
 };
-use warp_completer::meta::{HasSpan, Spanned};
-use warp_completer::parsers::simple::command_at_cursor_position;
-use warp_completer::parsers::LiteCommand;
-use warp_completer::signatures::CommandRegistry;
-use warp_completer::util::parse_current_commands_and_tokens;
-use warp_core::r#async::debounce;
-use warp_core::ui::theme::color::internal_colors;
-use warp_core::ui::theme::AnsiColorIdentifier;
-use warp_core::user_preferences::GetUserPreferences as _;
-use warp_editor::editor::NavigationKey;
-use warp_util::path::ShellFamily;
-use warpui::accessibility::{AccessibilityContent, ActionAccessibilityContent, WarpA11yRole};
-use warpui::clipboard::{ClipboardContent, ImageData};
-use warpui::clipboard_utils::CLIPBOARD_IMAGE_MIME_TYPES;
-use warpui::color::ColorU;
-use warpui::elements::{
+use cute_completer::meta::{HasSpan, Spanned};
+use cute_completer::parsers::simple::command_at_cursor_position;
+use cute_completer::parsers::LiteCommand;
+use cute_completer::signatures::CommandRegistry;
+use cute_completer::util::parse_current_commands_and_tokens;
+use cute_core::r#async::debounce;
+use cute_core::ui::theme::color::internal_colors;
+use cute_core::ui::theme::AnsiColorIdentifier;
+use cute_core::user_preferences::GetUserPreferences as _;
+use cute_editor::editor::NavigationKey;
+use cute_util::path::ShellFamily;
+use cuteui::accessibility::{AccessibilityContent, ActionAccessibilityContent, WarpA11yRole};
+use cuteui::clipboard::{ClipboardContent, ImageData};
+use cuteui::clipboard_utils::CLIPBOARD_IMAGE_MIME_TYPES;
+use cuteui::color::ColorU;
+use cuteui::elements::{
     resizable_state_handle, Align, AnchorPair, Clipped, ConstrainedBox, Container,
     CornerRadius, CrossAxisAlignment, DispatchEventResult, DropTargetData, Element, EventHandler,
     Flex, MainAxisAlignment, MainAxisSize, MouseStateHandle, OffsetPositioning, OffsetType,
     ParentElement, PositionedElementOffsetBounds, PositioningAxis, Radius,
     ResizableStateHandle, SavePosition, SelectionHandle, Text, Wrap, XAxisAnchor, YAxisAnchor,
 };
-pub use warpui::elements::{ParentElement as _, Stack};
-pub use warpui::geometry::vector::{vec2f, Vector2F};
-use warpui::keymap::{BindingDescription, EditableBinding, FixedBinding, Keystroke};
-use warpui::platform::OperatingSystem;
-use warpui::presenter::ChildView;
+pub use cuteui::elements::{ParentElement as _, Stack};
+pub use cuteui::geometry::vector::{vec2f, Vector2F};
+use cuteui::keymap::{BindingDescription, EditableBinding, FixedBinding, Keystroke};
+use cuteui::platform::OperatingSystem;
+use cuteui::presenter::ChildView;
 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-use warpui::r#async::FutureExt as _;
-use warpui::r#async::SpawnedFutureHandle;
-use warpui::text_layout::TextStyle;
-use warpui::ui_components::chip::Chip;
-use warpui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
-use warpui::units::IntoPixels;
-pub use warpui::WindowId;
-use warpui::{
+use cuteui::r#async::FutureExt as _;
+use cuteui::r#async::SpawnedFutureHandle;
+use cuteui::text_layout::TextStyle;
+use cuteui::ui_components::chip::Chip;
+use cuteui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
+use cuteui::units::IntoPixels;
+pub use cuteui::WindowId;
+use cuteui::{
     end_trace, start_trace, AppContext, Entity, EntityId, FocusContext, ModelAsRef, ModelHandle,
     SingletonEntity, TypedActionView, View, ViewContext, ViewHandle, WeakViewHandle,
 };
@@ -120,9 +120,7 @@ use super::safe_mode_settings::{
 };
 use super::session_settings::{SessionSettings, SessionSettingsChangedEvent};
 use super::settings::{SpacingMode, TerminalSettings, TerminalSettingsChangedEvent};
-use super::shared_session::presence_manager::PresenceManager;
-use super::shared_session::viewer::history_model::SharedSessionHistoryModel;
-use super::shared_session::SharedSessionStatus;
+use super::shared_session::{PresenceManager, SharedSessionHistoryModel, SharedSessionStatus};
 use super::shell::ShellType;
 use super::universal_developer_input::{
     UniversalDeveloperInputButtonBar, UniversalDeveloperInputButtonBarEvent,
@@ -1714,7 +1712,7 @@ impl DeferredRemoteOperations {
 }
 
 pub fn init(app: &mut AppContext) {
-    use warpui::keymap::macros::*;
+    use cuteui::keymap::macros::*;
 
     if cfg!(feature = "integration_tests") {
         app.register_fixed_bindings([
@@ -2201,9 +2199,10 @@ impl Input {
                         // immediately. This powers the "input is focused after the harness
                         // selector closes" UX for the `/harness` slash command.
                         ctx.subscribe_to_view(&harness_selector, |me, _, event, ctx| {
-                            let HarnessSelectorEvent::MenuVisibilityChanged { open } = event;
-                            if !*open {
-                                me.focus_input_box(ctx);
+                            if let HarnessSelectorEvent::MenuVisibilityChanged { open } = event {
+                                if !*open {
+                                    me.focus_input_box(ctx);
+                                }
                             }
                         });
                         harness_selector
@@ -5244,7 +5243,6 @@ impl Input {
                         query,
                         None,
                         EntrypointType::UserInitiated,
-                        None,
                         ctx,
                     );
                 });
@@ -5620,7 +5618,7 @@ impl Input {
         match prompt_alert {
             PromptAlertEvent::SignupAnonymousUser => {
                 ctx.emit(Event::SignupAnonymousUser {
-                    entrypoint: AnonymousUserSignupEntrypoint::SignUpAIPrompt,
+                    entrypoint: AnonymousUserSignupEntrypoint::SIGN_UP_AI_PROMPT,
                 });
             }
             PromptAlertEvent::OpenPrivacyPage => {
@@ -9309,7 +9307,7 @@ impl Input {
                             // the completions finish quickly, since that causes a jittery UX.
                             let _ = ctx.spawn(
                                 async move {
-                                    warpui::r#async::Timer::after(Duration::from_millis(750)).await;
+                                    cuteui::r#async::Timer::after(Duration::from_millis(750)).await;
                                     old_buffer_text_original
                                 },
                                 move |input, old_buffer_text_original, ctx| {
@@ -9906,7 +9904,7 @@ impl Input {
                                     .and_then(|pwd| {
                                         // Find git repo and construct absolute path
                                         use repo_metadata::repositories::DetectedRepositories;
-                                        use warp_util::local_or_remote_path::LocalOrRemotePath;
+                                        use cute_util::local_or_remote_path::LocalOrRemotePath;
                                         let git_repo_path = DetectedRepositories::as_ref(ctx)
                                             .get_root_for_path(&LocalOrRemotePath::Local(
                                                 Path::new(pwd).to_path_buf(),
@@ -9920,7 +9918,7 @@ impl Input {
                                             .map(|session| session.is_wsl())
                                             .unwrap_or(false);
 
-                                        let relative_path = warp_util::path::to_relative_path(
+                                        let relative_path = cute_util::path::to_relative_path(
                                             is_wsl,
                                             &absolute_path,
                                             Path::new(pwd),
@@ -9997,7 +9995,7 @@ impl Input {
                         None => image_filepaths.clone(),
                     };
                     let paths_str =
-                        warpui::clipboard_utils::escaped_paths_str(&transformed, shell_family);
+                        cuteui::clipboard_utils::escaped_paths_str(&transformed, shell_family);
 
                     self.editor.update(ctx, |editor, ctx| {
                         editor.user_insert(&paths_str, ctx);
@@ -10047,7 +10045,7 @@ impl Input {
 
         // Check if we should insert clipboard text in advance
         let mut already_inserted_text = false;
-        if warpui::clipboard::should_insert_text_on_paste(&content) {
+        if cuteui::clipboard::should_insert_text_on_paste(&content) {
             self.insert_clipboard_text_content(ctx, content.clone());
             already_inserted_text = true;
         }
@@ -10059,7 +10057,7 @@ impl Input {
             self.handle_pasted_image_data(content.clone(), ctx) == 0
         } else if content.num_paths() > 0 {
             // Else, we check the pasted file paths for any images.
-            let image_filepaths = warpui::clipboard_utils::get_image_filepaths_from_paths(
+            let image_filepaths = cuteui::clipboard_utils::get_image_filepaths_from_paths(
                 content.paths.as_deref().unwrap_or(&[]),
             );
             let num_images_expected = image_filepaths.len();
@@ -10580,6 +10578,7 @@ impl Input {
         let commands = history_model
             .as_ref(ctx)
             .entries()
+            .iter()
             .map(|entry| HistoryInputSuggestion::Command { entry })
             .collect();
         // TODO: append viewer's local shell history
@@ -12569,7 +12568,6 @@ impl Input {
                     prompt,
                     None,
                     EntrypointType::UserInitiated,
-                    None,
                     ctx,
                 );
             });
@@ -12787,7 +12785,6 @@ impl Input {
                     ai_query,
                     None,
                     EntrypointType::UserInitiated,
-                    None,
                     ctx,
                 );
             });
@@ -13948,7 +13945,7 @@ impl Input {
                 ..Default::default()
             },
         )
-        .with_icon(icon.to_warpui_icon(
+        .with_icon(icon.to_cuteui_icon(
             blended_colors::text_main(appearance.theme(), appearance.theme().background()).into(),
         ))
         .with_close_button(close_button)
@@ -14084,9 +14081,9 @@ impl Input {
         ctx.emit(Event::ShowCommandSearch(Default::default()));
 
         let _entrypoint = if buffer_starts_with_trigger {
-            AICommandSearchEntrypoint::ShortHandTrigger
+            AICommandSearchEntrypoint::SHORT_HAND_TRIGGER
         } else {
-            AICommandSearchEntrypoint::Keybinding
+            AICommandSearchEntrypoint::KEYBINDING
         };
         ctx.notify();
     }
@@ -14132,7 +14129,7 @@ impl Input {
     ) {
         match event {
             PromptSuggestionsEvent::SignupAnonymousUser => ctx.emit(Event::SignupAnonymousUser {
-                entrypoint: AnonymousUserSignupEntrypoint::SignUpAIPrompt,
+                entrypoint: AnonymousUserSignupEntrypoint::SIGN_UP_AI_PROMPT,
             }),
             PromptSuggestionsEvent::OpenPrivacyPage => {
                 ctx.emit(Event::OpenSettings(SettingsSection::Privacy))
@@ -14392,7 +14389,7 @@ impl View for Input {
         }
     }
 
-    fn keymap_context(&self, app: &AppContext) -> warpui::keymap::Context {
+    fn keymap_context(&self, app: &AppContext) -> cuteui::keymap::Context {
         let mut ctx = Self::default_keymap_context();
         let ai_settings = AISettings::as_ref(app);
 
@@ -14568,7 +14565,7 @@ impl View for Input {
             return self.render_cli_agent_input(app);
         }
         let is_universal_input = self.should_show_universal_developer_input(app);
-        let should_show_status_footer =
+        let _should_show_status_footer =
             self.ambient_agent_view_model()
                 .is_some_and(|ambient_agent_model| {
                     ambient_agent_model.as_ref(app).should_show_status_footer()

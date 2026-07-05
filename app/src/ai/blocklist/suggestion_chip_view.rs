@@ -1,17 +1,17 @@
 use pathfinder_color::ColorU;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::theme::Fill;
-use warpui::elements::{Align, ChildView, Container, ParentElement, SavePosition, Stack};
-use warpui::{
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::theme::Fill;
+use cuteui::elements::{Align, ChildView, Container, ParentElement, SavePosition, Stack};
+use cuteui::{
     AppContext, Element, Entity, SingletonEntity, TypedActionView, View, ViewContext, ViewHandle,
 };
 
 use super::suggested_agent_mode_workflow_modal::SuggestedAgentModeWorkflowAndId;
 use super::suggested_rule_modal::SuggestedRuleAndId;
 use crate::ai::agent::{SuggestedAgentModeWorkflow, SuggestedLoggingId, SuggestedRule};
-use crate::ai::facts::{AIFact, AIMemory, CloudAIFactModel};
-use crate::cloud_object::model::generic_string_model::GenericStringObjectId;
 use crate::cloud_object::model::persistence::{CloudModel, CloudModelEvent};
+use crate::cloud_object::models::ai_fact::{AIFact, AIMemory, CloudAIFactModel};
+use crate::cloud_object::{GenericStringObjectId};
 use crate::drive::CloudObjectTypeAndId;
 use crate::server::cloud_objects::update_manager::{
     ObjectOperation, OperationSuccessType, UpdateManager, UpdateManagerEvent,
@@ -189,7 +189,7 @@ pub struct SuggestionChipView {
 
 impl SuggestionChipView {
     pub fn new_rule_chip(rule: SuggestedRule, ctx: &mut ViewContext<Self>) -> Self {
-        Self::listen_for_warp_drive_events(ctx);
+        Self::listen_for_cute_drive_events(ctx);
 
         let chip = ctx.add_typed_action_view(|_| {
             ActionButton::new(rule.content.clone(), SecondaryTheme)
@@ -215,7 +215,7 @@ impl SuggestionChipView {
         ctx: &mut ViewContext<Self>,
     ) -> Self {
 
-        Self::listen_for_warp_drive_events(ctx);
+        Self::listen_for_cute_drive_events(ctx);
         let sync_id = SyncId::ClientId(ClientId::default());
 
         let chip = ctx.add_typed_action_view(|_| {
@@ -244,7 +244,7 @@ impl SuggestionChipView {
         }
     }
 
-    fn listen_for_warp_drive_events(ctx: &mut ViewContext<Self>) {
+    fn listen_for_cute_drive_events(ctx: &mut ViewContext<Self>) {
         let update_manager = UpdateManager::handle(ctx);
         ctx.subscribe_to_model(&update_manager, |me, _, event, ctx| {
             me.handle_update_manager_event(event, ctx);

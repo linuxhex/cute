@@ -18,7 +18,7 @@ The feature adds pinning so frequently-used children stay anchored to the leadin
 - `app/src/lib.rs:~1683` — `BlocklistAIHistoryModel` registered at startup with the restored `multi_agent_conversations` vec.
 - `app/src/auth/mod.rs:213-281` — `log_out()` calls `.reset()` on all singletons that hold user state.
 **Icons**
-- `crates/warp_core/src/ui/icons.rs` — `Icon` enum; new SVGs bundled at `app/assets/bundled/svg/`.
+- `crates/cute_core/src/ui/icons.rs` — `Icon` enum; new SVGs bundled at `app/assets/bundled/svg/`.
 ## Proposed changes
 ### 1. Per-conversation persistence
 **File**: `crates/persistence/src/model.rs`
@@ -59,7 +59,7 @@ In `log_out`, call `OrchestrationPinModel::handle(app).update(app, |model, _| mo
   - Pin state is also communicated by position (left of the divider).
 **Click-handler scoping (subtle):** Only wrap the avatar/pin-glyph element in `Hoverable` *and* attach the `TogglePin` click handler when `show_pin_glyph` is true. If we wrap unconditionally, the inner `Hoverable` steals clicks during the 300ms `with_hover_in_delay` window — a user clicking the avatar to navigate would land on the toggle. With the conditional wrap, clicks on the avatar (rest state) bubble to the outer pill's navigate handler, and clicks on the pin glyph (hover state) toggle pin.
 ### 4. Icons
-**Files**: `app/assets/bundled/svg/pin-01.svg`, `app/assets/bundled/svg/pin-filled.svg` (new), `crates/warp_core/src/ui/icons.rs`
+**Files**: `app/assets/bundled/svg/pin-01.svg`, `app/assets/bundled/svg/pin-filled.svg` (new), `crates/cute_core/src/ui/icons.rs`
 Add `Icon::Pin` (outline) and `Icon::PinFilled` (solid) variants, bundled from Figma SVGs.
 ## Testing and validation
 ### Unit tests

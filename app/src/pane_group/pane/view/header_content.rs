@@ -3,11 +3,11 @@
 //! This module provides the infrastructure for backing views to declaratively
 //! specify their header content without worrying about draggable behavior.
 
-use warp_core::ui::theme::Fill;
-use warpui::elements::{DraggableState, MouseStateHandle};
-use warpui::fonts::Properties;
-use warpui::text_layout::ClipConfig;
-use warpui::{AppContext, Element};
+use cute_core::ui::theme::Fill;
+use cuteui::elements::{DraggableState, MouseStateHandle};
+use cuteui::fonts::Properties;
+use cuteui::text_layout::ClipConfig;
+use cuteui::{AppContext, Element};
 
 /// Closure that renders sharing controls (share button, view-only indicator) for a pane header.
 /// Accepts optional icon color and button size overrides.

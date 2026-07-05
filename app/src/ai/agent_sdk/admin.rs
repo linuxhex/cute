@@ -2,9 +2,9 @@
 
 use anyhow::{Context, Result};
 use serde::Serialize;
-use warp_cli::agent::OutputFormat;
-use warpui::platform::TerminationMode;
-use warpui::{AppContext, SingletonEntity};
+use cute_cli::agent::OutputFormat;
+use cuteui::platform::TerminationMode;
+use cuteui::{AppContext, SingletonEntity};
 
 use crate::auth::auth_manager::{AuthManager, AuthManagerEvent};
 use crate::auth::user::PrincipalType;
@@ -71,17 +71,12 @@ pub fn login(ctx: &mut AppContext) -> Result<()> {
                 }
             }
             AuthManagerEvent::ReceivedDeviceAuthorizationCode {
-                verification_url,
-                verification_url_complete,
                 user_code,
+                verification_uri,
             } => {
-                if let Some(url) = verification_url_complete {
-                    println!("To log in, open this URL in your browser:\n{url}");
-                } else {
-                    println!(
-                        "To log in, visit {verification_url} and enter this code: {user_code}"
-                    );
-                }
+                println!(
+                    "To log in, visit {verification_uri} and enter this code: {user_code}"
+                );
             }
             _ => {}
         },
@@ -117,7 +112,7 @@ struct WhoamiOutput {
 /// Singleton model that provides a `ModelContext` for the `whoami` command's async work.
 struct WhoamiRunner;
 
-impl warpui::Entity for WhoamiRunner {
+impl cuteui::Entity for WhoamiRunner {
     type Event = ();
 }
 

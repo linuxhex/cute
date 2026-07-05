@@ -1,9 +1,10 @@
 use std::sync::Arc;
 
 pub use crate::cloud_object::models::{CloudWorkflow, CloudWorkflowModel, WorkflowId};
+pub use manager::WorkflowOpenSource;
 use serde::{Deserialize, Serialize};
-use warp_core::context_flag::ContextFlag;
-use warpui::{AppContext, SingletonEntity};
+use cute_core::context_flag::ContextFlag;
+use cuteui::{AppContext, SingletonEntity};
 
 pub mod categories;
 use anyhow::Result;
@@ -109,7 +110,7 @@ impl WorkflowViewMode {
     /// Viewing is disabled if the user is allowed to edit the workflow and in a context where
     /// running workflows is supported.
     pub fn supported_view_mode(workflow_id: Option<SyncId>, app: &AppContext) -> Self {
-        let can_edit = workflow_id
+        let _can_edit = workflow_id
             .map(|id| {
                 CloudViewModel::as_ref(app)
                     .object_editability(&id.uid(), app)
@@ -283,6 +284,7 @@ impl CloudModelType for CloudWorkflowModel {
         Some(Box::new(WarpDriveWorkflow::new(
             self.cloud_object_type_and_id(id),
             workflow.clone(),
+            workflow.model().data.is_agent_mode_workflow(),
         )))
     }
 

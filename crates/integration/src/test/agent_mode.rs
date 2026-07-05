@@ -19,9 +19,9 @@ use warp::integration_testing::terminal::{
 use warp::integration_testing::view_getters::single_terminal_view_for_tab;
 use warp::settings::SelectionSettings;
 use warp_multi_agent_api as api;
-use warpui::integration::TestStep;
-use warpui::text::SelectionType;
-use warpui::{async_assert, Event, SingletonEntity};
+use cuteui::integration::TestStep;
+use cuteui::text::SelectionType;
+use cuteui::{async_assert, Event, SingletonEntity};
 
 use super::new_builder;
 use crate::util::skip_if_powershell_core_2303;
@@ -106,7 +106,7 @@ fn builder_with_setup() -> Builder {
 }
 
 fn markdown_visuals_fixture_directory() -> String {
-    let fixture_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../warpui_core/test_data");
+    let fixture_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../cuteui_core/test_data");
     fixture_dir
         .canonicalize()
         .unwrap_or(fixture_dir)

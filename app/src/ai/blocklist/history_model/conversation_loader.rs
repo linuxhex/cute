@@ -8,7 +8,7 @@ use std::sync::Arc;
 use futures::FutureExt;
 use itertools::Itertools as _;
 use persistence::model::AgentConversationRecord;
-use warpui::{AppContext, SingletonEntity};
+use cuteui::{AppContext, SingletonEntity};
 
 use super::{
     agent_id_key_from_persisted_data, AIConversationMetadata, BlocklistAIHistoryModel,
@@ -109,9 +109,9 @@ pub async fn load_conversation_from_server(
 
 /// Boxes a future with the right type for the platform.
 /// On WASM, futures must not implement Send.
-fn box_future<F>(f: F) -> warpui::r#async::BoxFuture<'static, Option<CloudConversationData>>
+fn box_future<F>(f: F) -> cuteui::r#async::BoxFuture<'static, Option<CloudConversationData>>
 where
-    F: Future<Output = Option<CloudConversationData>> + warpui::r#async::Spawnable,
+    F: Future<Output = Option<CloudConversationData>> + cuteui::r#async::Spawnable,
 {
     cfg_if::cfg_if! {
         if #[cfg(target_family = "wasm")] {
@@ -153,7 +153,7 @@ impl BlocklistAIHistoryModel {
         &self,
         conversation_id: AIConversationId,
         ctx: &AppContext,
-    ) -> warpui::r#async::BoxFuture<'static, Option<CloudConversationData>> {
+    ) -> cuteui::r#async::BoxFuture<'static, Option<CloudConversationData>> {
         // First check if the conversation is already in memory
         if let Some(conversation) = self.conversations_by_id.get(&conversation_id) {
             return box_future(futures::future::ready(Some(CloudConversationData::Oz(
@@ -209,7 +209,7 @@ impl BlocklistAIHistoryModel {
         &mut self,
         server_token: &ServerConversationToken,
         ctx: &AppContext,
-    ) -> warpui::r#async::BoxFuture<'static, Option<CloudConversationData>> {
+    ) -> cuteui::r#async::BoxFuture<'static, Option<CloudConversationData>> {
         let conversation_id =
             self.get_or_set_canonical_conversation_id_for_server_token(server_token);
         if self.conversations_by_id.contains_key(&conversation_id)

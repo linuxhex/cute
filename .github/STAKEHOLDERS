@@ -112,7 +112,7 @@
 /app/src/terminal/warpify/ @zachbai @MaggieShan
 /app/src/settings_view/warpify_page.rs @zachbai @MaggieShan
 /app/assets/bundled/bootstrap/ @zachbai
-/crates/warp_completer/ @zachbai @szgupta @alokedesai @acarl005
+/crates/cute_completer/ @zachbai @szgupta @alokedesai @acarl005
 
 # Agent mode
 /app/src/ai/agent/ @zachbai
@@ -190,7 +190,7 @@
 /crates/graphql/ @ianhodge
 /crates/http_client/ @ianhodge
 /crates/http_server/ @ianhodge
-/crates/warp_server_client/ @ianhodge
+/crates/cute_server_client/ @ianhodge
 
 # Session sharing
 /app/src/terminal/shared_session/ @abhishekp106 @szgupta @bnavetta
@@ -225,7 +225,7 @@
 /app/src/ai/ambient_agents/ @bnavetta
 /app/src/terminal/view/ambient_agent/ @bnavetta
 /app/src/workspace/view/launch_modal/oz_launch.rs @bnavetta
-/crates/warp_cli/ @bnavetta @ianhodge
+/crates/cute_cli/ @bnavetta @ianhodge
 
 # Agent SDK and platform crates
 /app/src/ai/agent_sdk/ @bnavetta @ianhodge
@@ -242,4 +242,4 @@
 /script/windows/bootstrap.ps1 @acarl005
 
 # Shell completions in the Warp CLI
-/crates/warp_cli/src/completions.rs @zachbai @szgupta @alokedesai
+/crates/cute_cli/src/completions.rs @zachbai @szgupta @alokedesai

@@ -1,7 +1,7 @@
 use pathfinder_geometry::vector::Vector2F;
-use warp_core::context_flag::ContextFlag;
-use warpui::keymap::Trigger;
-use warpui::{SingletonEntity, ViewContext, ViewHandle};
+use cute_core::context_flag::ContextFlag;
+use cuteui::keymap::Trigger;
+use cuteui::{SingletonEntity, ViewContext, ViewHandle};
 
 use super::env_var_collection::{EnvVarCollectionAction, EnvVarCollectionView, VariableRowIndex};
 use crate::cloud_object::{CloudObject, GenericStringObjectFormat, Space};
@@ -426,12 +426,12 @@ impl EnvVarCollectionView {
 
             UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
                 update_manager.untrash_object(
-                    CloudObjectTypeAndId::GenericStringObject {
-                        object_type: GenericStringObjectFormat::Json(
+                    CloudObjectTypeAndId::from_generic_string_object(
+                        GenericStringObjectFormat::Json(
                             crate::cloud_object::JsonObjectType::EnvVarCollection,
                         ),
-                        id: env_var_collection_id,
-                    },
+                        env_var_collection_id,
+                    ),
                     ctx,
                 );
             });
@@ -481,7 +481,7 @@ impl EnvVarCollectionView {
             ExportManager::handle(ctx).update(ctx, |export_manager, ctx| {
                 export_manager.export(
                     window_id,
-                    &[CloudObjectTypeAndId::from_generic_string_object(
+                    &vec![CloudObjectTypeAndId::from_generic_string_object(
                         GenericStringObjectFormat::Json(
                             crate::cloud_object::JsonObjectType::EnvVarCollection,
                         ),

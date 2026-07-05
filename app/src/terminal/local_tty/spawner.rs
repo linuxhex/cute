@@ -1,5 +1,5 @@
 use anyhow::Result;
-use warpui::{AppContext, Entity, SingletonEntity};
+use cuteui::{AppContext, Entity, SingletonEntity};
 #[cfg(unix)]
 use {
     crate::report_error,
@@ -196,9 +196,9 @@ impl PtySpawner {
         }
 
         let _mode = if is_fallback {
-            PtySpawnMode::FallbackToDirect
+            PtySpawnMode::FALLBACK_TO_DIRECT
         } else {
-            PtySpawnMode::Direct
+            PtySpawnMode::DIRECT
         };
 
         Self::spawn_pty_directly(

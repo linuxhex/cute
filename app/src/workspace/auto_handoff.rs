@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use warpui::{
+use cuteui::{
     AppContext, Entity, EntityId, ModelContext, SingletonEntity, TypedActionView, ViewHandle,
     WindowId,
 };
@@ -79,6 +79,7 @@ impl AutoCloudHandoffEligibility {
     }
 }
 
+#[allow(dead_code)]
 pub(crate) struct AutoCloudHandoffRequest {
     workspace: ViewHandle<Workspace>,
     terminal_view_id: EntityId,
@@ -86,6 +87,7 @@ pub(crate) struct AutoCloudHandoffRequest {
     trigger: AutoCloudHandoffTrigger,
 }
 
+#[allow(dead_code)]
 impl AutoCloudHandoffRequest {
     fn dispatch(&self, ctx: &mut AppContext) {
         self.workspace.update(ctx, |workspace, ctx| {
@@ -100,10 +102,12 @@ impl AutoCloudHandoffRequest {
         });
     }
 }
+#[allow(dead_code)]
 pub(crate) struct AutoCloudHandoffController {
     attempted_conversation_ids: HashMap<AIConversationId, AutoCloudHandoffAttemptState>,
 }
 
+#[allow(dead_code)]
 impl AutoCloudHandoffController {
     pub(crate) fn new(ctx: &mut ModelContext<Self>) -> Self {
         ctx.subscribe_to_model(&SystemStats::handle(ctx), |controller, event, ctx| {

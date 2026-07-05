@@ -1,8 +1,8 @@
 use std::cmp::max;
 
 pub use block_list_element::GridType;
-use model::alt_screen::AltScreen;
-use model::blocks::BlockList;
+pub use model::alt_screen::AltScreen;
+pub use model::blocks::BlockList;
 use model::index::Side;
 pub use model::terminal_model::TerminalModel;
 use ordered_float::Float;
@@ -11,10 +11,10 @@ use serde::{Deserialize, Serialize};
 mod package_installers;
 pub use history::{History, HistoryEntry, HistoryEvent, ShellHost, UpArrowHistoryConfig};
 pub use view::{Event, TerminalView};
-pub use warp_terminal::shell::{self, ShellLaunchData};
-use warpui::geometry::vector::Vector2F;
-use warpui::units::{IntoPixels, Lines, Pixels};
-use warpui::{AppContext, WindowId};
+pub use cute_terminal::shell::{self, ShellLaunchData};
+use cuteui::geometry::vector::Vector2F;
+use cuteui::units::{IntoPixels, Lines, Pixels};
+use cuteui::{AppContext, WindowId};
 mod block_list_settings;
 
 mod alias;
@@ -76,7 +76,12 @@ pub mod ssh;
 pub mod terminal_manager;
 mod terminal_size_element;
 pub mod view;
-pub mod warpify;
+pub mod cuteify;
+/// Backward compatibility re-export module.
+/// The warpify module has been renamed to cuteify.
+pub mod warpify {
+    pub use super::cuteify::*;
+}
 mod waterfall_gap_element;
 mod writeable_pty;
 #[cfg(windows)]

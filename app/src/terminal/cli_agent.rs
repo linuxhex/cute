@@ -12,12 +12,12 @@ use markdown_parser::parse_markdown;
 use pathfinder_color::ColorU;
 use serde::{Deserialize, Serialize};
 use smol_str::SmolStr;
-use warp_cli::agent::Harness;
-use warp_completer::parsers::simple::top_level_command;
-use warp_editor::content::buffer::Buffer;
-use warp_editor::content::markdown::MarkdownStyle;
-use warp_util::path::EscapeChar;
-use warpui::{AppContext, SingletonEntity};
+use cute_cli::agent::Harness;
+use cute_completer::parsers::simple::top_level_command;
+use cute_editor::content::buffer::Buffer;
+use cute_editor::content::markdown::MarkdownStyle;
+use cute_util::path::EscapeChar;
+use cuteui::{AppContext, SingletonEntity};
 
 use crate::ai::agent::{AgentReviewCommentBatch, DiffSetHunk};
 use crate::ai::blocklist::CLAUDE_ORANGE;
@@ -591,22 +591,22 @@ pub fn build_selection_line_range_prompt(
 impl From<CLIAgent> for CLIAgentType {
     fn from(agent: CLIAgent) -> Self {
         match agent {
-            CLIAgent::Claude => CLIAgentType::Claude,
-            CLIAgent::Gemini => CLIAgentType::Gemini,
-            CLIAgent::Codex => CLIAgentType::Codex,
-            CLIAgent::Amp => CLIAgentType::Amp,
-            CLIAgent::Droid => CLIAgentType::Droid,
-            CLIAgent::OpenCode => CLIAgentType::OpenCode,
-            CLIAgent::Copilot => CLIAgentType::Copilot,
-            CLIAgent::Pi => CLIAgentType::Pi,
-            CLIAgent::Auggie => CLIAgentType::Auggie,
-            CLIAgent::CursorCli => CLIAgentType::Cursor,
-            CLIAgent::Goose => CLIAgentType::Goose,
-            CLIAgent::Hermes => CLIAgentType::Hermes,
-            CLIAgent::Vibe => CLIAgentType::Vibe,
-            CLIAgent::Qoder => CLIAgentType::Qoder,
-            CLIAgent::Trae => CLIAgentType::Trae,
-            CLIAgent::Unknown => CLIAgentType::Unknown,
+            CLIAgent::Claude => CLIAgentType::CLAUDE,
+            CLIAgent::Gemini => CLIAgentType::GEMINI,
+            CLIAgent::Codex => CLIAgentType::CODEX,
+            CLIAgent::Amp => CLIAgentType::AMP,
+            CLIAgent::Droid => CLIAgentType::DROID,
+            CLIAgent::OpenCode => CLIAgentType::OPEN_CODE,
+            CLIAgent::Copilot => CLIAgentType::COPILOT,
+            CLIAgent::Pi => CLIAgentType::PI,
+            CLIAgent::Auggie => CLIAgentType::AUGGIE,
+            CLIAgent::CursorCli => CLIAgentType::CURSOR,
+            CLIAgent::Goose => CLIAgentType::GOOSE,
+            CLIAgent::Hermes => CLIAgentType::HERMES,
+            CLIAgent::Vibe => CLIAgentType::VIBE,
+            CLIAgent::Qoder => CLIAgentType::QODER,
+            CLIAgent::Trae => CLIAgentType::TRAE,
+            CLIAgent::Unknown => CLIAgentType::UNKNOWN,
         }
     }
 }

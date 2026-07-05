@@ -1,10 +1,10 @@
 use pathfinder_geometry::vector::{vec2f, Vector2F};
-use warpui::elements::{
+use cuteui::elements::{
     AfterLayoutContext, AppContext, Element, EventContext, LayoutContext, PaintContext, Point,
     SizeConstraint,
 };
-use warpui::event::DispatchedEvent;
-use warpui::geometry::rect::RectF;
+use cuteui::event::DispatchedEvent;
+use cuteui::geometry::rect::RectF;
 
 use super::blockgrid_renderer::GridRenderParams;
 use crate::appearance::Appearance;

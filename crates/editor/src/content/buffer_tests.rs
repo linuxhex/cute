@@ -13,10 +13,10 @@ use rand::rngs::StdRng;
 use serde_yaml::{Mapping, Value};
 use string_offset::{ByteOffset, CharOffset};
 use vec1::{Vec1, vec1};
-use warp_util::content_version::ContentVersion;
-use warpui::elements::ListIndentLevel;
-use warpui::text::point::Point;
-use warpui::{App, AppContext, ModelContext, ModelHandle, ReadModel};
+use cute_util::content_version::ContentVersion;
+use cuteui::elements::ListIndentLevel;
+use cuteui::text::point::Point;
+use cuteui::{App, AppContext, ModelContext, ModelHandle, ReadModel};
 
 use super::{BufferEvent, EditResult, ToBufferCharOffset};
 use crate::content::buffer::{

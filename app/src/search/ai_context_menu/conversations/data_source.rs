@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use fuzzy_match::FuzzyMatchResult;
-use warpui::{AppContext, Entity, SingletonEntity};
+use cuteui::{AppContext, Entity, SingletonEntity};
 
 use super::search_item::ConversationSearchItem;
 use super::ConversationContextItem;
@@ -46,10 +46,11 @@ impl ConversationDataSource {
         let agent_model = AgentConversationsModel::as_ref(app);
         for task in agent_model.tasks_iter() {
             if let Some(conv_id) = &task.conversation_id {
-                if seen_tokens.insert(conv_id.clone()) {
+                let conv_id_str = conv_id.to_string();
+                if seen_tokens.insert(conv_id_str.clone()) {
                     items.push(ConversationContextItem {
                         title: task.title.clone(),
-                        server_conversation_token: conv_id.clone(),
+                        server_conversation_token: conv_id_str,
                         last_updated: task.updated_at,
                     });
                 }

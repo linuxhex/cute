@@ -5,13 +5,19 @@
 
 use std::sync::Arc;
 use chrono::{DateTime, Utc};
-use warpui::AppContext;
+use cuteui::AppContext;
 
 use crate::cloud_object::ObjectType;
 use crate::drive::CloudObjectTypeAndId;
-use crate::server::cloud_objects::update_manager::InitiatedBy;
 use crate::server::ids::{ClientId, ServerId, SyncId};
 use crate::workflows::workflow::Workflow;
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum InitiatedBy {
+    User,
+    Cloud,
+    System,
+}
 
 /// Serialized model data (stub for local version).
 #[derive(Clone, Debug, PartialEq, Default)]
@@ -114,7 +120,7 @@ pub enum SyncQueueEvent {
         server_creation_info: crate::cloud_object::ServerCreationInfo,
         client_id: ClientId,
         revision_and_editor: crate::cloud_object::RevisionAndLastEditor,
-        metadata_ts: warp_graphql::scalars::time::ServerTimestamp,
+        metadata_ts: cute_graphql::scalars::time::ServerTimestamp,
         initiated_by: InitiatedBy,
     },
     ObjectUpdateSuccessful {
@@ -169,8 +175,8 @@ impl SyncQueue {
     }
 }
 
-impl warpui::Entity for SyncQueue {
+impl cuteui::Entity for SyncQueue {
     type Event = SyncQueueEvent;
 }
 
-impl warpui::SingletonEntity for SyncQueue {}
+impl cuteui::SingletonEntity for SyncQueue {}

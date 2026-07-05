@@ -9,11 +9,11 @@ use async_channel::{self, Receiver, Sender};
 use async_trait::async_trait;
 use chrono::DateTime;
 use parking_lot::{Mutex, MutexGuard};
-use warp_completer::completer::{CommandExitStatus, CommandOutput};
-use warp_core::command::ExitCode;
-use warp_terminal::model::Point;
-use warp_util::on_cancel::OnCancelFutureExt;
-use warpui::r#async::block_on;
+use cute_completer::completer::{CommandExitStatus, CommandOutput};
+use cute_core::command::ExitCode;
+use cute_terminal::model::Point;
+use cute_util::on_cancel::OnCancelFutureExt;
+use cuteui::r#async::block_on;
 
 use super::ExecuteCommandOptions;
 use crate::safe_info;

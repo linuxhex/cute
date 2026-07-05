@@ -1,19 +1,19 @@
 use ordered_float::OrderedFloat;
 use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::vec2f;
-use warp_core::ui::color::blend::Blend;
-use warp_core::ui::color::coloru_with_opacity;
-use warp_core::ui::icons::Icon;
-use warp_core::ui::theme::color::internal_colors;
-use warpui::elements::{
+use cute_core::ui::color::blend::Blend;
+use cute_core::ui::color::coloru_with_opacity;
+use cute_core::ui::icons::Icon;
+use cute_core::ui::theme::color::internal_colors;
+use cuteui::elements::{
     AnchorPair, Container, CrossAxisAlignment, Expanded, Fill, Flex, Highlight, MainAxisSize,
     MouseStateHandle, OffsetPositioning, OffsetType, ParentElement, ParentOffsetBounds,
     PositioningAxis, Stack, Text, XAxisAnchor, YAxisAnchor,
 };
-use warpui::fonts::{Properties, Weight};
-use warpui::ui_components::button::ButtonTooltipPosition;
-use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::{AppContext, Element, Gradient, SingletonEntity};
+use cuteui::fonts::{Properties, Weight};
+use cuteui::ui_components::button::ButtonTooltipPosition;
+use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
+use cuteui::{AppContext, Element, Gradient, SingletonEntity};
 
 use crate::ai::agent::conversation::AIConversationId;
 use crate::ai::blocklist::history_model::BlocklistAIHistoryModel;

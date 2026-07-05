@@ -1,4 +1,5 @@
 //! Stub for RemoteServerClient after remote_server removal.
+#![allow(dead_code)]
 
 use std::path::PathBuf;
 

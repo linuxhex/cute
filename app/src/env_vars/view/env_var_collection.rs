@@ -1,17 +1,17 @@
 use pathfinder_geometry::vector::{vec2f, Vector2F};
-use warpui::clipboard::ClipboardContent;
-use warpui::elements::{
+use cuteui::clipboard::ClipboardContent;
+use cuteui::elements::{
     Align, AnchorPair, ChildAnchor, Clipped, ClippedScrollStateHandle, ClippedScrollable,
     ConstrainedBox, Container, CrossAxisAlignment, DispatchEventResult, EventHandler, Fill, Flex,
     MainAxisAlignment, MainAxisSize, MouseStateHandle, OffsetPositioning, OffsetType, ParentAnchor,
     ParentElement, ParentOffsetBounds, PositioningAxis, SavePosition, ScrollbarWidth, Shrinkable,
     Stack, XAxisAnchor, YAxisAnchor,
 };
-use warpui::keymap::EditableBinding;
-use warpui::platform::Cursor;
-use warpui::presenter::ChildView;
-use warpui::ui_components::components::UiComponent;
-use warpui::{
+use cuteui::keymap::EditableBinding;
+use cuteui::platform::Cursor;
+use cuteui::presenter::ChildView;
+use cuteui::ui_components::components::UiComponent;
+use cuteui::{
     id, AppContext, BlurContext, Element, Entity, FocusContext, ModelAsRef, ModelHandle,
     SingletonEntity, TypedActionView, View, ViewContext, ViewHandle, WindowId,
 };
@@ -595,14 +595,17 @@ impl EnvVarCollectionView {
         let initial_load_complete = UpdateManager::handle(ctx).update(ctx, |update_manager, _| {
             update_manager.initial_load_complete()
         });
-        ctx.spawn(initial_load_complete, move |me, _, ctx| {
+
+        // Since initial_load_complete() returns a bool, not a future,
+        // we directly check the result instead of spawning a future
+        if initial_load_complete {
             let env_var_collection = CloudModel::as_ref(ctx)
                 .get_env_var_collection(&env_var_collection_id)
                 .cloned();
             if let Some(env_var_collection) = env_var_collection {
-                me.load(env_var_collection, ctx);
+                self.load(env_var_collection, ctx);
             } else if let Some(server_id) = env_var_collection_id.into_server() {
-                me.fetch_and_load_env_var_collection(server_id, window_id, ctx);
+                self.fetch_and_load_env_var_collection(server_id, window_id, ctx);
             } else {
                 ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
                     toast_stack.add_ephemeral_toast_by_type(
@@ -613,7 +616,21 @@ impl EnvVarCollectionView {
                 });
                 log::warn!("Tried to open unknown env var collection {env_var_collection_id:?}");
             }
-        });
+        } else {
+            // If initial load is not complete, fetch the env var collection directly
+            if let Some(server_id) = env_var_collection_id.into_server() {
+                self.fetch_and_load_env_var_collection(server_id, window_id, ctx);
+            } else {
+                ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                    toast_stack.add_ephemeral_toast_by_type(
+                        ToastType::CloudObjectNotFound,
+                        window_id,
+                        ctx,
+                    );
+                });
+                log::warn!("Tried to open unknown env var collection {env_var_collection_id:?}");
+            }
+        }
     }
 
     fn fetch_and_load_env_var_collection(
@@ -826,11 +843,14 @@ impl EnvVarCollectionView {
             // memory and server data via update manager
             ActiveEnvVarCollection::CommittedEnvVarCollection(id) => UpdateManager::handle(ctx)
                 .update(ctx, |update_manager, ctx| {
+                    let revision = self.active_env_var_collection_data
+                        .update(ctx, |data, _| data.revision_ts.clone())
+                        .map(|r| r.timestamp_micros().to_string())
+                        .unwrap_or_default();
                     update_manager.update_env_var_collection(
                         new_env_var_collection,
                         id,
-                        self.active_env_var_collection_data
-                            .update(ctx, |data, _| data.revision_ts.clone()),
+                        revision,
                         ctx,
                     );
                 }),
@@ -1078,11 +1098,11 @@ impl EnvVarCollectionView {
         id: &CloudObjectTypeAndId,
         ctx: &mut ViewContext<Self>,
     ) -> Option<SyncId> {
-        id.as_generic_string_object_id().filter(|id| {
+        (*id).as_generic_string_object_id().filter(|id| {
             self.active_env_var_collection_data
                 .as_ref(ctx)
-                .is_active_env_var_collection(*id)
-        })
+                .is_active_env_var_collection(**id)
+        }).copied()
     }
 
     fn set_pane_title(&self, title: &str, ctx: &mut ViewContext<Self>) {
@@ -1112,6 +1132,7 @@ impl EnvVarCollectionView {
             .iter()
             .enumerate()
             .map(|(index, variable_editor_row)| {
+                let editability = editability.clone(); // Clone for use in each iteration
                 let secret_menu_button = if variable_editor_row.secret_menu_is_focused {
                     highlight_icon_button_with_context_menu(
                         Icon::Key,
@@ -1187,7 +1208,7 @@ impl EnvVarCollectionView {
                                 .clone(),
                             index,
                             variable_editor_row.rendered_secret_menu_is_focused,
-                            editability,
+                            editability.clone(),
                         ),
                         command @ EnvVarValue::Command(_) => self.render_secret_or_command_button(
                             appearance,
@@ -1197,7 +1218,7 @@ impl EnvVarCollectionView {
                                 .clone(),
                             index,
                             variable_editor_row.rendered_command_menu_is_focused,
-                            editability,
+                            editability.clone(),
                         ),
                     });
 
@@ -1280,7 +1301,7 @@ impl View for EnvVarCollectionView {
         }
     }
 
-    fn render(&self, app: &AppContext) -> Box<dyn warpui::Element> {
+    fn render(&self, app: &AppContext) -> Box<dyn cuteui::Element> {
         let appearance = Appearance::as_ref(app);
         let theme = appearance.theme();
         let mut content = Flex::column();
@@ -1304,7 +1325,7 @@ impl View for EnvVarCollectionView {
                             appearance,
                             |ctx, _, breadcrumb| {
                                 ctx.dispatch_typed_action(EnvVarCollectionAction::ViewInWarpDrive(
-                                    breadcrumb.kind.into_item_id(),
+                                    breadcrumb.kind.clone().into_item_id(),
                                 ));
                             },
                         ))
@@ -1371,7 +1392,7 @@ impl View for EnvVarCollectionView {
                     .finish(),
             )
             .with_child(
-                Container::new(self.render_variables_section_header(editability, appearance))
+                Container::new(self.render_variables_section_header(editability.clone(), appearance))
                     .with_margin_bottom(SECTION_SPACING)
                     .finish(),
             )
@@ -1529,7 +1550,7 @@ impl TypedActionView for EnvVarCollectionView {
                 self.update_open_modal_state(ctx);
                 ctx.notify();
             }
-            EnvVarCollectionAction::ViewInWarpDrive(id) => self.view_in_warp_drive(*id, ctx),
+            EnvVarCollectionAction::ViewInWarpDrive(id) => self.view_in_warp_drive(id.clone(), ctx),
         }
     }
 }

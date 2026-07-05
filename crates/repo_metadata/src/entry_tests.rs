@@ -174,7 +174,7 @@ fn test_git_path_filtering_allowlist() {
 }
 
 fn find_entry<'a>(entry: &'a super::Entry, path: &std::path::Path) -> Option<&'a super::Entry> {
-    let std_path = warp_util::standardized_path::StandardizedPath::try_from_local(path).ok()?;
+    let std_path = cute_util::standardized_path::StandardizedPath::try_from_local(path).ok()?;
     if entry.path() == &std_path {
         return Some(entry);
     }

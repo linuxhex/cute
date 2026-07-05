@@ -5,20 +5,20 @@ use markdown_parser::{
 };
 use pathfinder_color::ColorU;
 use settings::Setting;
-use warp_core::ui::theme::phenomenon::PhenomenonStyle;
-use warp_core::ui::theme::Fill;
-use warpui::elements::{
+use cute_core::ui::theme::phenomenon::PhenomenonStyle;
+use cute_core::ui::theme::Fill;
+use cuteui::elements::{
     Align, ChildView, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Empty, Flex,
     FormattedTextElement, MainAxisAlignment, MainAxisSize, MouseStateHandle, ParentElement, Radius,
     Text,
 };
-use warpui::fonts::{Properties, Weight};
-use warpui::geometry::vector::Vector2F;
-use warpui::keymap::{FixedBinding, Keystroke};
-use warpui::platform::file_picker::{FilePickerConfiguration, FilePickerError};
-use warpui::platform::Cursor;
-use warpui::ui_components::components::UiComponent;
-use warpui::{
+use cuteui::fonts::{Properties, Weight};
+use cuteui::geometry::vector::Vector2F;
+use cuteui::keymap::{FixedBinding, Keystroke};
+use cuteui::platform::file_picker::{FilePickerConfiguration, FilePickerError};
+use cuteui::platform::Cursor;
+use cuteui::ui_components::components::UiComponent;
+use cuteui::{
     AppContext, Element, Entity, EventContext, SingletonEntity, TypedActionView, View, ViewContext,
     ViewHandle,
 };
@@ -117,8 +117,8 @@ impl HoaOnboardingStep {
     }
 }
 
-pub fn init(app: &mut warpui::AppContext) {
-    use warpui::keymap::macros::*;
+pub fn init(app: &mut cuteui::AppContext) {
+    use cuteui::keymap::macros::*;
 
     app.register_fixed_bindings([FixedBinding::new(
         "enter",
@@ -567,7 +567,7 @@ impl View for HoaOnboardingFlow {
         "HoaOnboardingFlow"
     }
 
-    fn on_focus(&mut self, _focus_ctx: &warpui::FocusContext, ctx: &mut ViewContext<Self>) {
+    fn on_focus(&mut self, _focus_ctx: &cuteui::FocusContext, ctx: &mut ViewContext<Self>) {
         ctx.focus_self();
     }
 

@@ -10,8 +10,8 @@ use std::{
 use is_executable::IsExecutable as _;
 #[cfg(not(target_family = "wasm"))]
 use itertools::Itertools as _;
-use warp_util::local_or_remote_path::LocalOrRemotePath;
-use warpui::AppContext;
+use cute_util::local_or_remote_path::LocalOrRemotePath;
+use cuteui::AppContext;
 
 
 /// Fallback label used when a `RemotePath`'s host is not currently tracked.
@@ -20,11 +20,11 @@ const UNKNOWN_HOST_LABEL: &str = "Remote host";
 
 /// Returns the display name of a local or remote path, prefixed with the
 /// host label for remote paths.
-pub fn display_name_with_host(path: &LocalOrRemotePath, ctx: &AppContext) -> String {
+pub fn display_name_with_host(path: &LocalOrRemotePath, _ctx: &AppContext) -> String {
     let name = path.display_name();
     match path {
         LocalOrRemotePath::Local(_) => name.to_string(),
-        LocalOrRemotePath::Remote(remote) => {
+        LocalOrRemotePath::Remote(_remote) => {
             // Remote server has been removed
             format!("{}:{name}", UNKNOWN_HOST_LABEL)
         }
@@ -40,7 +40,7 @@ pub fn display_name_with_host(path: &LocalOrRemotePath, ctx: &AppContext) -> Str
 pub fn display_path_with_host(
     path: &LocalOrRemotePath,
     abbreviate_home: bool,
-    ctx: &AppContext,
+    _ctx: &AppContext,
 ) -> String {
     match path {
         LocalOrRemotePath::Local(local_path) => {
@@ -53,7 +53,7 @@ pub fn display_path_with_host(
                 path.display_path()
             }
         }
-        LocalOrRemotePath::Remote(remote) => {
+        LocalOrRemotePath::Remote(_remote) => {
             // Remote server has been removed
             format!("{}:{}", UNKNOWN_HOST_LABEL, path.display_path())
         }

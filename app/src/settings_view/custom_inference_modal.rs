@@ -2,15 +2,15 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
 use ::ai::api_keys::CustomEndpoint;
 use url::Url;
-use warp_editor::editor::NavigationKey;
-use warpui::elements::{
+use cute_editor::editor::NavigationKey;
+use cuteui::elements::{
     Border, ChildView, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Empty,
     Expanded, Flex, MainAxisSize, MouseStateHandle, ParentElement, Radius, Text,
 };
-use warpui::fonts::FamilyId;
-use warpui::ui_components::button::ButtonVariant;
-use warpui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
-use warpui::{
+use cuteui::fonts::FamilyId;
+use cuteui::ui_components::button::ButtonVariant;
+use cuteui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
+use cuteui::{
     AppContext, Element, Entity, SingletonEntity, TypedActionView, View, ViewContext, ViewHandle,
 };
 

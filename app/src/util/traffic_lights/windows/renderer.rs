@@ -3,14 +3,14 @@
 use std::sync::Arc;
 
 use pathfinder_color::ColorU;
-use warp_core::ui::theme::{Fill, WarpTheme};
-use warpui::elements::{
+use cute_core::ui::theme::{Fill, WarpTheme};
+use cuteui::elements::{
     Align, ConstrainedBox, Container, CrossAxisAlignment, Flex, Hoverable, MainAxisAlignment,
     MainAxisSize, MouseStateHandle, ParentElement, Text,
 };
-use warpui::fonts::FamilyId;
-use warpui::platform::FullscreenState;
-use warpui::{AppContext, Element, SingletonEntity};
+use cuteui::fonts::FamilyId;
+use cuteui::platform::FullscreenState;
+use cuteui::{AppContext, Element, SingletonEntity};
 
 use crate::util::traffic_lights::windows::RendererState;
 use crate::util::traffic_lights::windows_only::WINDOWS_BRIGHT_RED;

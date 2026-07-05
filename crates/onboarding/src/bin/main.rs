@@ -10,19 +10,19 @@ use onboarding::{
 };
 use pathfinder_color::ColorU;
 use rust_embed::RustEmbed;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::icons::Icon;
-use warp_core::ui::theme::{
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::icons::Icon;
+use cute_core::ui::theme::{
     AnsiColor, AnsiColors, Details, Fill, Image, TerminalColors, WarpTheme,
 };
-use warpui::assets::asset_cache::AssetSource;
-use warpui::elements::{
+use cuteui::assets::asset_cache::AssetSource;
+use cuteui::elements::{
     Container, CrossAxisAlignment, Flex, MainAxisAlignment, MainAxisSize, ParentElement,
 };
-use warpui::fonts::{Cache, FamilyId, Weight};
-use warpui::presenter::ChildView;
-use warpui::ui_components::components::{UiComponent as _, UiComponentStyles};
-use warpui::{
+use cuteui::fonts::{Cache, FamilyId, Weight};
+use cuteui::presenter::ChildView;
+use cuteui::ui_components::components::{UiComponent as _, UiComponentStyles};
+use cuteui::{
     platform, AddWindowOptions, AppContext, AssetProvider, Element, Entity, SingletonEntity as _,
     TypedActionView, View, ViewContext, ViewHandle,
 };
@@ -43,7 +43,7 @@ impl AssetProvider for Assets {
 
 fn main() -> Result<()> {
     // Initialize logging for the onboarding binary.
-    warp_logging::init(warp_logging::LogConfig {
+    cute_logging::init(cute_logging::LogConfig {
         is_cli: false,
         log_destination: None,
         ..Default::default()
@@ -269,7 +269,7 @@ impl View for OnboardingMainView {
         }
     }
 
-    fn on_focus(&mut self, focus_ctx: &warpui::FocusContext, ctx: &mut ViewContext<Self>) {
+    fn on_focus(&mut self, focus_ctx: &cuteui::FocusContext, ctx: &mut ViewContext<Self>) {
         if let OnboardingMainState::Onboarding(view) = &self.state {
             if focus_ctx.is_self_focused() {
                 ctx.focus(view);

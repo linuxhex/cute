@@ -5,11 +5,11 @@ use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::vec2f;
 use serde::{Deserialize, Serialize};
 use settings::Setting as _;
-use warp_core::context_flag::ContextFlag;
-use warp_core::ui::builder::UiBuilder;
-use warp_core::ui::theme::color::internal_colors;
-use warp_core::ui::theme::AnsiColors;
-use warpui::elements::{
+use cute_core::context_flag::ContextFlag;
+use cute_core::ui::builder::UiBuilder;
+use cute_core::ui::theme::color::internal_colors;
+use cute_core::ui::theme::AnsiColors;
+use cuteui::elements::{
     Align, Border, ChildAnchor, Clipped, ConstrainedBox, Container, CornerRadius,
     CrossAxisAlignment, DragAxis, Draggable, DraggableState, DropTarget, Element, Empty, Fill,
     Flex, Hoverable, MainAxisAlignment, MainAxisSize, MouseStateHandle, OffsetPositioning, Padding,
@@ -17,11 +17,11 @@ use warpui::elements::{
     PositionedElementOffsetBounds, Radius, Rect, SavePosition, Shrinkable, SizeConstraintCondition,
     SizeConstraintSwitch, Stack, Text,
 };
-use warpui::fonts::Weight;
-use warpui::text_layout::ClipConfig;
-use warpui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
-use warpui::ui_components::text_input::TextInput;
-use warpui::{AppContext, SingletonEntity, ViewHandle};
+use cuteui::fonts::Weight;
+use cuteui::text_layout::ClipConfig;
+use cuteui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
+use cuteui::ui_components::text_input::TextInput;
+use cuteui::{AppContext, SingletonEntity, ViewHandle};
 
 use crate::ai::agent::conversation::ConversationStatus;
 use crate::ai::conversation_status_ui::render_status_element;
@@ -1238,22 +1238,22 @@ impl<'a> TabComponent<'a> {
             Indicator::None => None,
             Indicator::Synced => Some(
                 Icon::LinkHorizontal
-                    .to_warpui_icon(self.styles.synced_input_indicator_color.into())
+                    .to_cuteui_icon(self.styles.synced_input_indicator_color.into())
                     .finish(),
             ),
             Indicator::Error => Some(
                 Icon::AlertTriangle
-                    .to_warpui_icon(self.styles.error_color.into())
+                    .to_cuteui_icon(self.styles.error_color.into())
                     .finish(),
             ),
             Indicator::Shared => Some(
                 Icon::Sharing
-                    .to_warpui_icon(self.styles.sharing_color.into())
+                    .to_cuteui_icon(self.styles.sharing_color.into())
                     .finish(),
             ),
             Indicator::Maximized => Some(
                 Icon::Maximize
-                    .to_warpui_icon(
+                    .to_cuteui_icon(
                         self.styles
                             .default
                             .font_color
@@ -1265,7 +1265,7 @@ impl<'a> TabComponent<'a> {
             Indicator::Shell(shell_indicator_type) => Some(
                 shell_indicator_type
                     .to_icon()
-                    .to_warpui_icon(internal_colors::neutral_5(self.appearance.theme()).into())
+                    .to_cuteui_icon(internal_colors::neutral_5(self.appearance.theme()).into())
                     .finish(),
             ),
             Indicator::Agent {
@@ -1278,7 +1278,7 @@ impl<'a> TabComponent<'a> {
                 } else {
                     // Show Oz icon when agent is active but no specific status
                     let icon_color = self.appearance.theme().accent();
-                    Some(Icon::Oz.to_warpui_icon(icon_color).finish())
+                    Some(Icon::Oz.to_cuteui_icon(icon_color).finish())
                 }
             }
             Indicator::AmbientAgent => {
@@ -1288,7 +1288,7 @@ impl<'a> TabComponent<'a> {
                     .font_color
                     .unwrap_or_else(|| self.appearance.theme().active_ui_text_color().into());
 
-                Some(Icon::OzCloud.to_warpui_icon(icon_color.into()).finish())
+                Some(Icon::OzCloud.to_cuteui_icon(icon_color.into()).finish())
             }
             Indicator::AgentActive => {
                 // Cute: Use the same rendering as vertical tabs for agent icon with status
@@ -1425,7 +1425,7 @@ impl<'a> TabComponent<'a> {
             let mut flex_row = Flex::row()
                 .with_main_axis_size(MainAxisSize::Max)
                 .with_main_axis_alignment(MainAxisAlignment::Center)
-                .with_cross_axis_alignment(warpui::elements::CrossAxisAlignment::Center);
+                .with_cross_axis_alignment(cuteui::elements::CrossAxisAlignment::Center);
             if let Some(indicator) = self.render_indicator() {
                 flex_row.add_child(indicator);
             }
@@ -1448,7 +1448,7 @@ impl<'a> TabComponent<'a> {
             } else {
                 // Fallback to terminal icon if no indicator is present
                 Icon::Terminal
-                    .to_warpui_icon(
+                    .to_cuteui_icon(
                         self.styles
                             .default
                             .font_color
@@ -1462,7 +1462,7 @@ impl<'a> TabComponent<'a> {
             Flex::row()
                 .with_main_axis_size(MainAxisSize::Max)
                 .with_main_axis_alignment(MainAxisAlignment::Center)
-                .with_cross_axis_alignment(warpui::elements::CrossAxisAlignment::Center)
+                .with_cross_axis_alignment(cuteui::elements::CrossAxisAlignment::Center)
                 .with_child(
                     ConstrainedBox::new(compact_icon)
                         .with_max_width(TAB_INDICATOR_HEIGHT)
@@ -1685,7 +1685,7 @@ impl UiComponent for TabComponent<'_> {
 
                         if let Some(directory) = &tooltip_directory_clone {
                             let folder_icon = Icon::Folder
-                                .to_warpui_icon(ThemeFill::Solid(font_color))
+                                .to_cuteui_icon(ThemeFill::Solid(font_color))
                                 .finish();
 
                             let directory_row = Flex::row()
@@ -1718,7 +1718,7 @@ impl UiComponent for TabComponent<'_> {
 
                         if let Some(branch) = &tooltip_git_branch_clone {
                             let branch_icon = Icon::GitBranch
-                                .to_warpui_icon(ThemeFill::Solid(font_color))
+                                .to_cuteui_icon(ThemeFill::Solid(font_color))
                                 .finish();
 
                             let branch_row = Flex::row()

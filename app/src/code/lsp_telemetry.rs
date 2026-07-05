@@ -1,7 +1,9 @@
+#![allow(dead_code)]
+
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use strum_macros::{EnumDiscriminants, EnumIter};
-use warp_core::telemetry::{EnablementState, TelemetryEvent, TelemetryEventDesc};
+use cute_core::telemetry::{EnablementState, TelemetryEvent, TelemetryEventDesc};
 
 /// The source from which the user enabled an LSP server.
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -160,7 +162,7 @@ impl TelemetryEvent for LspTelemetryEvent {
     }
 
     fn event_descs() -> impl Iterator<Item = Box<dyn TelemetryEventDesc>> {
-        warp_core::telemetry::enum_events::<Self>()
+        cute_core::telemetry::enum_events::<Self>()
     }
 }
 
@@ -200,4 +202,4 @@ impl TelemetryEventDesc for LspTelemetryEventDiscriminants {
     }
 }
 
-warp_core::register_telemetry_event!(LspTelemetryEvent);
+cute_core::register_telemetry_event!(LspTelemetryEvent);

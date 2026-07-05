@@ -14,13 +14,13 @@ use repo_metadata::file_tree_store::{
 use repo_metadata::local_model::IndexedRepoState;
 use repo_metadata::repositories::DetectedRepositories;
 use repo_metadata::{FileTreeEntry, RepoMetadataModel};
-use warp_core::ui::theme::color::internal_colors;
-use warp_core::ui::theme::Fill;
-use warp_core::HostId;
-use warp_util::path::LineAndColumnArg;
-use warp_util::standardized_path::StandardizedPath;
-use warpui::clipboard::ClipboardContent;
-use warpui::elements::{
+use cute_core::ui::theme::color::internal_colors;
+use cute_core::ui::theme::Fill;
+use cute_core::HostId;
+use cute_util::path::LineAndColumnArg;
+use cute_util::standardized_path::StandardizedPath;
+use cuteui::clipboard::ClipboardContent;
+use cuteui::elements::{
     AcceptedByDropTarget, Align, ChildAnchor, ChildView, Clipped, ConstrainedBox, Container,
     CrossAxisAlignment, Dismiss, Draggable, DraggableState, Empty, Flex, FormattedTextElement,
     Hoverable, MainAxisAlignment, MainAxisSize, MouseStateHandle, OffsetPositioning, ParentAnchor,
@@ -28,11 +28,11 @@ use warpui::elements::{
     Scrollable, ScrollableElement, ScrollbarWidth, Shrinkable, Stack, Text, UniformList,
     UniformListState,
 };
-use warpui::fonts::{Properties, Style, Weight};
-use warpui::keymap::FixedBinding;
-use warpui::platform::Cursor;
-use warpui::text_layout::TextAlignment;
-use warpui::{
+use cuteui::fonts::{Properties, Style, Weight};
+use cuteui::keymap::FixedBinding;
+use cuteui::platform::Cursor;
+use cuteui::text_layout::TextAlignment;
+use cuteui::{
     id, AppContext, BlurContext, Element, Entity, EventContext, ModelHandle, SingletonEntity as _,
     TypedActionView, View, ViewContext, ViewHandle, WeakViewHandle,
 };
@@ -47,7 +47,7 @@ use crate::terminal::input::InputDropTargetData;
 use crate::terminal::view::{TerminalDropTargetData, TerminalView};
 use crate::ui_components::icons::Icon;
 use crate::ui_components::item_highlight::{ImageOrIcon, ItemHighlightState};
-use warpui::elements::DropTargetData;
+use cuteui::elements::DropTargetData;
 
 /// Drop target data for file tree directory items
 #[derive(Debug, Clone)]
@@ -1024,8 +1024,8 @@ impl FileTreeView {
             .collect();
 
         // Ancestor-dedup only local inputs. Shared with `GlobalSearchView`
-        // via `warp_util::path::group_roots_by_common_ancestor`.
-        let grouping = warp_util::path::group_roots_by_common_ancestor(&local_inputs);
+        // via `cute_util::path::group_roots_by_common_ancestor`.
+        let grouping = cute_util::path::group_roots_by_common_ancestor(&local_inputs);
 
         // Final displayed order: local surviving roots (in input order),
         // followed by preserved remote roots (in their existing order).
@@ -1507,9 +1507,9 @@ impl FileTreeView {
     #[cfg(feature = "local_fs")]
     fn load_remote_directory(
         &self,
-        root_path: &StandardizedPath,
-        target_item: &FileTreeEntryState,
-        ctx: &mut ViewContext<Self>,
+        _root_path: &StandardizedPath,
+        _target_item: &FileTreeEntryState,
+        _ctx: &mut ViewContext<Self>,
     ) {
         // Remote server has been removed
     }
@@ -1869,7 +1869,7 @@ impl FileTreeView {
         let expand_icon = match expand_icon {
             Some(icon) => {
                 let chevron_icon_color = item_highlight_state.text_and_icon_color(appearance);
-                icon.to_warpui_icon(chevron_icon_color.into()).finish()
+                icon.to_cuteui_icon(chevron_icon_color.into()).finish()
             }
             None => Empty::new().finish(),
         };
@@ -1888,7 +1888,7 @@ impl FileTreeView {
         // Add the icon for the item.
         let icon_color = item_highlight_state.text_and_icon_color(appearance);
         let icon = match render_state.icon {
-            ImageOrIcon::Icon(icon) => icon.to_warpui_icon(icon_color.into()).finish(),
+            ImageOrIcon::Icon(icon) => icon.to_cuteui_icon(icon_color.into()).finish(),
             ImageOrIcon::Image(image) => image,
         };
         header_row.add_child(
@@ -2141,7 +2141,7 @@ impl FileTreeView {
         let id_for_drop_target = id.clone();
 
         let element: Box<dyn Element> = if is_directory {
-            use warpui::elements::DropTarget;
+            use cuteui::elements::DropTarget;
             use drop_target_element::FileTreeDropTargetElement;
             // Wrap with FileTreeDropTargetElement to handle external file drops
             Box::new(FileTreeDropTargetElement::new(
@@ -2327,7 +2327,7 @@ impl FileTreeView {
                 if is_remote {
                     // Emit a remote open event if we have a host ID.
                     if let Some(host_id) = &root_dir.remote_host_id {
-                        let remote_path = warp_util::remote_path::RemotePath::new(
+                        let remote_path = cute_util::remote_path::RemotePath::new(
                             host_id.clone(),
                             (*metadata.path).clone(),
                         );
@@ -2973,7 +2973,7 @@ impl FileTreeView {
                         ScrollbarWidth::Auto,
                         theme.nonactive_ui_detail().into(),
                         theme.active_ui_detail().into(),
-                        warpui::elements::Fill::None,
+                        cuteui::elements::Fill::None,
                     )
                     .with_overlayed_scrollbar()
                     .finish(),
@@ -3020,7 +3020,7 @@ impl FileTreeView {
                 Container::new(
                     ConstrainedBox::new(
                         Icon::AlertTriangle
-                            .to_warpui_icon(Fill::Solid(internal_colors::neutral_6(theme)))
+                            .to_cuteui_icon(Fill::Solid(internal_colors::neutral_6(theme)))
                             .finish(),
                     )
                     .with_width(24.)
@@ -3085,7 +3085,7 @@ impl FileTreeView {
 
         // Create loading icon
         let loading_icon = Icon::Loading
-            .to_warpui_icon(warp_core::ui::theme::Fill::Solid(
+            .to_cuteui_icon(cute_core::ui::theme::Fill::Solid(
                 internal_colors::neutral_6(theme),
             ))
             .finish();
@@ -3107,7 +3107,7 @@ impl FileTreeView {
         header_row.add_child(loading_icon);
 
         let folder_icon = Icon::Folder
-            .to_warpui_icon(warp_core::ui::theme::Fill::Solid(
+            .to_cuteui_icon(cute_core::ui::theme::Fill::Solid(
                 internal_colors::neutral_6(theme),
             ))
             .finish();

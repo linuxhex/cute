@@ -1,4 +1,4 @@
-use warpui::ModelContext;
+use cuteui::ModelContext;
 use windows::Win32::System::Com::{
     CoCreateInstance, CoInitializeEx, CoUninitialize, CLSCTX_ALL, COINIT_APARTMENTTHREADED,
 };

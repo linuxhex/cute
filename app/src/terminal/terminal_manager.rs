@@ -5,7 +5,7 @@ use std::sync::Arc;
 use parking_lot::FairMutex;
 use pathfinder_geometry::vector::Vector2F;
 use settings::Setting as _;
-use warpui::{AppContext, SingletonEntity, ViewHandle};
+use cuteui::{AppContext, SingletonEntity, ViewHandle};
 
 use super::event_listener::ChannelEventListener;
 use super::model::block::BlockSize;
@@ -42,7 +42,7 @@ pub trait TerminalManager: Any {
     fn as_any_mut(&mut self) -> &mut dyn Any;
 }
 
-impl warpui::Entity for Box<dyn TerminalManager> {
+impl cuteui::Entity for Box<dyn TerminalManager> {
     type Event = ();
 }
 

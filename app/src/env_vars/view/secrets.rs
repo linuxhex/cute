@@ -1,16 +1,16 @@
 use pathfinder_geometry::vector::vec2f;
-use warp_core::ui::appearance::Appearance;
-use warpui::elements::{
+use cute_core::ui::appearance::Appearance;
+use cuteui::elements::{
     ChildAnchor, ChildView, Clipped, ConstrainedBox, Container, Empty, Fill, MainAxisAlignment,
     MainAxisSize, MouseStateHandle, OffsetPositioning, ParentAnchor, ParentElement,
     ParentOffsetBounds, Shrinkable, Stack,
 };
-use warpui::fonts::Weight;
-use warpui::ui_components::button::{ButtonVariant, TextAndIcon, TextAndIconAlignment};
-use warpui::ui_components::components::{UiComponent, UiComponentStyles};
+use cuteui::fonts::Weight;
+use cuteui::ui_components::button::{ButtonVariant, TextAndIcon, TextAndIconAlignment};
+use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
 #[cfg(not(target_family = "wasm"))]
-use warpui::SingletonEntity;
-use warpui::{Element, ViewContext};
+use cuteui::SingletonEntity;
+use cuteui::{Element, ViewContext};
 
 use super::env_var_collection::{
     EnvVarCollectionAction, EnvVarCollectionView, VariableRowIndex, CORE_MAX_WIDTH, ROW_SPACING,
@@ -122,7 +122,7 @@ impl EnvVarCollectionView {
 
                             ToastStack::handle(dialog_ctx).update(dialog_ctx, |toast_stack, ctx| {
                                 toast_stack.add_persistent_toast(toast, window_id, ctx);
-                            })
+                            });
                         }
                     },
                 );
@@ -137,7 +137,7 @@ impl EnvVarCollectionView {
         menu_button_mouse_state: MouseStateHandle,
         row_index: usize,
         is_focused: bool,
-        editability: ContentEditability,
+        _editability: ContentEditability,
     ) -> Box<dyn Element> {
         let (display_name, action, menu, icon) = match secret {
             EnvVarValue::Secret(sec) => (
@@ -165,7 +165,7 @@ impl EnvVarCollectionView {
         let text_and_icon = TextAndIcon::new(
             TextAndIconAlignment::IconFirst,
             display_name,
-            icon.to_warpui_icon(appearance.theme().active_ui_text_color()),
+            icon.to_cuteui_icon(appearance.theme().active_ui_text_color()),
             MainAxisSize::Max,
             MainAxisAlignment::Center,
             vec2f(16., 16.),
@@ -194,14 +194,12 @@ impl EnvVarCollectionView {
             ..default_button_styles
         };
 
-        let mut button = appearance
+        let button = appearance
             .ui_builder()
             .button(ButtonVariant::Outlined, menu_button_mouse_state)
             .with_style(default_button_styles)
             .with_hovered_styles(hovered_styles)
-            .with_text_and_icon_label(text_and_icon);
-
-        let button = button
+            .with_text_and_icon_label(text_and_icon)
             .build()
             .on_click(move |ctx, _, _| ctx.dispatch_typed_action(action.clone()));
 

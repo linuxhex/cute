@@ -1,18 +1,18 @@
 use pathfinder_geometry::vector::Vector2F;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::theme::color::internal_colors;
-use warp_core::ui::theme::Fill;
-use warpui::elements::{
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::theme::color::internal_colors;
+use cute_core::ui::theme::Fill;
+use cuteui::elements::{
     Border, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Flex,
     FormattedTextElement, Hoverable, MainAxisAlignment, MainAxisSize, MouseStateHandle,
     ParentElement, Radius, Shrinkable, Text, Wrap,
 };
-use warpui::fonts::Weight;
-use warpui::platform::Cursor;
-use warpui::prelude::Align;
-use warpui::presenter::EventContext;
-use warpui::text_layout::TextAlignment;
-use warpui::{AppContext, Element};
+use cuteui::fonts::Weight;
+use cuteui::platform::Cursor;
+use cuteui::prelude::Align;
+use cuteui::presenter::EventContext;
+use cuteui::text_layout::TextAlignment;
+use cuteui::{AppContext, Element};
 
 pub(super) type ClickCallback = Box<dyn FnMut(&mut EventContext, &AppContext, Vector2F) + 'static>;
 pub(super) type HoverCallback =

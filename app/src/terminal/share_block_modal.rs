@@ -6,26 +6,26 @@ use parking_lot::FairMutex;
 use pathfinder_geometry::rect::RectF;
 use pathfinder_geometry::vector::{vec2f, Vector2F};
 use serde::Serialize;
-use warp_core::features::FeatureFlag;
-use warp_core::ui::theme::Fill;
-use warpui::clipboard::ClipboardContent;
-use warpui::elements::{
+use cute_core::features::FeatureFlag;
+use cute_core::ui::theme::Fill;
+use cuteui::clipboard::ClipboardContent;
+use cuteui::elements::{
     try_rect_with_z, Align, Border, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment,
     Dismiss, Element, Empty, Flex, MainAxisAlignment, MainAxisSize, MouseStateHandle,
     ParentElement, Point, Radius, SavePosition, ScrollData, ScrollStateHandle, Scrollable,
     ScrollableElement, ScrollbarWidth, Shrinkable, Stack, Text,
 };
-use warpui::event::{DispatchedEvent, ModifiersState};
-use warpui::fonts::{FamilyId, Properties, Style, Weight};
-use warpui::keymap::FixedBinding;
-use warpui::r#async::SpawnedFutureHandle;
-use warpui::ui_components::button::{ButtonVariant, TextAndIcon, TextAndIconAlignment};
-use warpui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
-use warpui::ui_components::radio_buttons::{
+use cuteui::event::{DispatchedEvent, ModifiersState};
+use cuteui::fonts::{FamilyId, Properties, Style, Weight};
+use cuteui::keymap::FixedBinding;
+use cuteui::r#async::SpawnedFutureHandle;
+use cuteui::ui_components::button::{ButtonVariant, TextAndIcon, TextAndIconAlignment};
+use cuteui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
+use cuteui::ui_components::radio_buttons::{
     RadioButtonItem, RadioButtonLayout, RadioButtonStateHandle,
 };
-use warpui::units::{IntoLines, IntoPixels, Lines, Pixels};
-use warpui::{
+use cuteui::units::{IntoLines, IntoPixels, Lines, Pixels};
+use cuteui::{
     AfterLayoutContext, AppContext, ClipBounds, Entity, Event, EventContext, FocusContext,
     LayoutContext, PaintContext, SingletonEntity, SizeConstraint, TypedActionView, View,
     ViewContext, ViewHandle,
@@ -152,7 +152,7 @@ pub enum ShareBlockModalAction {
 }
 
 pub fn init(app: &mut AppContext) {
-    use warpui::keymap::macros::*;
+    use cuteui::keymap::macros::*;
 
     app.register_fixed_bindings(vec![
         FixedBinding::custom(
@@ -648,7 +648,7 @@ impl ShareBlockModal {
             } else {
                 text_label.to_string()
             },
-            icon.to_warpui_icon(appearance.theme().active_ui_text_color()),
+            icon.to_cuteui_icon(appearance.theme().active_ui_text_color()),
             MainAxisSize::Max,
             MainAxisAlignment::Center,
             vec2f(16., 16.),
@@ -775,7 +775,7 @@ impl ShareBlockModal {
         let text_and_icon = TextAndIcon::new(
             TextAndIconAlignment::TextFirst,
             "Copy".to_string(),
-            Icon::Copy.to_warpui_icon(appearance.theme().active_ui_text_color()),
+            Icon::Copy.to_cuteui_icon(appearance.theme().active_ui_text_color()),
             MainAxisSize::Max,
             MainAxisAlignment::Center,
             vec2f(16., 16.),

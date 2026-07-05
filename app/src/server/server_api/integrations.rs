@@ -2,25 +2,25 @@ use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 #[cfg(test)]
 use mockall::automock;
-use warp_graphql::mutations::create_simple_integration::{
+use cute_graphql::mutations::create_simple_integration::{
     CreateSimpleIntegrationOutput,
 };
-use warp_graphql::queries::get_integrations_using_environment::{
+use cute_graphql::queries::get_integrations_using_environment::{
     GetIntegrationsUsingEnvironmentOutput,
 };
-use warp_graphql::queries::get_oauth_connect_tx_status::{
+use cute_graphql::queries::get_oauth_connect_tx_status::{
     OauthConnectTxStatus,
 };
-use warp_graphql::queries::get_simple_integrations::{
+use cute_graphql::queries::get_simple_integrations::{
     SimpleIntegrationsOutput,
 };
-use warp_graphql::queries::suggest_cloud_environment_image::{
+use cute_graphql::queries::suggest_cloud_environment_image::{
     SuggestCloudEnvironmentImageResult,
 };
-use warp_graphql::queries::user_repo_auth_status::{
+use cute_graphql::queries::user_repo_auth_status::{
     UserRepoAuthStatusOutput,
 };
-use warp_graphql::queries::user_github_info::{
+use cute_graphql::queries::user_github_info::{
     UserGithubInfoResult,
 };
 

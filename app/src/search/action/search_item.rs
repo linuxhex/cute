@@ -3,13 +3,13 @@ use std::sync::Arc;
 use fuzzy_match::FuzzyMatchResult;
 use ordered_float::OrderedFloat;
 use pathfinder_color::ColorU;
-use warpui::elements::{
+use cuteui::elements::{
     Align, ConstrainedBox, Container, Flex, Highlight, ParentElement, Shrinkable, Text,
 };
-use warpui::fonts::{Properties, Weight};
-use warpui::keymap::{DescriptionContext, Keystroke};
-use warpui::ui_components::components::UiComponent;
-use warpui::{AppContext, Element, SingletonEntity};
+use cuteui::fonts::{Properties, Weight};
+use cuteui::keymap::{DescriptionContext, Keystroke};
+use cuteui::ui_components::components::UiComponent;
+use cuteui::{AppContext, Element, SingletonEntity};
 
 use crate::appearance::Appearance;
 use crate::drive::cloud_object_styling::warp_drive_icon_color;
@@ -216,15 +216,16 @@ impl SearchItemIcon for BindingGroup {
                 ColorU::from_u32(colors::WARP_AI)
             }
             Self::WarpAi => appearance.theme().foreground().into_solid(),
-            Self::Workflow => warp_drive_icon_color(appearance, DriveObjectType::Workflow),
+            Self::Workflow => warp_drive_icon_color(appearance, DriveObjectType::Workflow).into(),
             Self::Notebooks => warp_drive_icon_color(
                 appearance,
                 DriveObjectType::Notebook {
                     is_ai_document: false,
                 },
-            ),
+            )
+            .into(),
             Self::EnvVarCollection => {
-                warp_drive_icon_color(appearance, DriveObjectType::EnvVarCollection)
+                warp_drive_icon_color(appearance, DriveObjectType::EnvVarCollection).into()
             }
         }
     }

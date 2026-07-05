@@ -7,8 +7,8 @@ use std::sync::OnceLock;
 
 use command::r#async::Command;
 use enum_iterator::{all, cardinality};
-use warp_util::path::LineAndColumnArg;
-use warpui::AppContext;
+use cute_util::path::LineAndColumnArg;
+use cuteui::AppContext;
 use winreg::enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE};
 use winreg::{RegKey, HKEY};
 

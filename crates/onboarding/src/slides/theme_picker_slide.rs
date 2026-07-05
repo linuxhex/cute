@@ -1,21 +1,21 @@
 use pathfinder_color::ColorU;
 use ui_components::{button, Component as _, Options as _};
-use warp_core::features::FeatureFlag;
-use warp_core::send_telemetry_from_ctx;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::theme::color::internal_colors;
-use warp_core::ui::theme::WarpTheme;
-use warpui::elements::{
+use cute_core::features::FeatureFlag;
+use cute_core::send_telemetry_from_ctx;
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::theme::color::internal_colors;
+use cute_core::ui::theme::WarpTheme;
+use cuteui::elements::{
     Border, ClippedScrollStateHandle, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment,
     Empty, Flex, FormattedTextElement, Hoverable, MainAxisAlignment, MainAxisSize,
     MouseStateHandle, ParentElement, Radius, Text,
 };
-use warpui::fonts::{Properties, Weight};
-use warpui::keymap::Keystroke;
-use warpui::platform::Cursor;
-use warpui::text_layout::TextAlignment;
-use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::{
+use cuteui::fonts::{Properties, Weight};
+use cuteui::keymap::Keystroke;
+use cuteui::platform::Cursor;
+use cuteui::text_layout::TextAlignment;
+use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
+use cuteui::{
     AppContext, Element, Entity, ModelHandle, SingletonEntity, TypedActionView, View, ViewContext,
 };
 

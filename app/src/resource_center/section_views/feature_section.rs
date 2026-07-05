@@ -1,11 +1,11 @@
-use warpui::elements::{
+use cuteui::elements::{
     Align, ConstrainedBox, Container, CrossAxisAlignment, Element, Flex, Hoverable, Icon,
     MouseState, MouseStateHandle, ParentElement, Shrinkable,
 };
-use warpui::fonts::Weight;
-use warpui::platform::Cursor;
-use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::{
+use cuteui::fonts::Weight;
+use cuteui::platform::Cursor;
+use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
+use cuteui::{
     Action, AppContext, Entity, EntityId, ModelHandle, SingletonEntity, TypedActionView, View,
     ViewContext, WindowId,
 };

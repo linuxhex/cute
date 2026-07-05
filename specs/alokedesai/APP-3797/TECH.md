@@ -8,7 +8,7 @@ The challenge is that this introduces two independent async conditions that must
 
 ## Relevant code
 
-- `warp_core/src/features.rs` — `FeatureFlag` enum and `DOGFOOD_FLAGS` array
+- `cute_core/src/features.rs` — `FeatureFlag` enum and `DOGFOOD_FLAGS` array
 - `app/src/terminal/model/terminal_model.rs:2808-2846` — `bootstrapped()` handler that takes `pending_session_info` and emits `HandlerEvent::Bootstrapped`
 - `app/src/terminal/model/terminal_model.rs:2848-2860` — `pre_interactive_ssh_session()` and `ssh()` handlers
 - `app/src/terminal/model/terminal_model.rs:2862-2908` — `init_shell()` handler
@@ -42,7 +42,7 @@ The challenge is that this introduces two independent async conditions that must
 
 ### 1. New feature flag
 
-Add `RemoteServerSSH` to the `FeatureFlag` enum in `warp_core/src/features.rs`. Add it to `DOGFOOD_FLAGS` for initial rollout.
+Add `RemoteServerSSH` to the `FeatureFlag` enum in `cute_core/src/features.rs`. Add it to `DOGFOOD_FLAGS` for initial rollout.
 
 ### 2. Remote server setup state machine
 

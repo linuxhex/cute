@@ -6,17 +6,17 @@ use instant::{Duration, Instant};
 use parking_lot::FairMutex;
 use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::vec2f;
-use warpui::elements::{
+use cuteui::elements::{
     Border, ChildAnchor, ChildView, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment,
     DropShadow, Empty, Expanded, Flex, Hoverable, MainAxisAlignment, MainAxisSize,
     MouseStateHandle, OffsetPositioning, ParentAnchor, ParentElement as _, ParentOffsetBounds,
     Percentage, PositionedElementAnchor, PositionedElementOffsetBounds, Radius, Rect, SavePosition,
     Stack, Text, DEFAULT_UI_LINE_HEIGHT_RATIO,
 };
-use warpui::platform::Cursor;
-use warpui::text_layout::ClipConfig;
-use warpui::ui_components::components::UiComponent;
-use warpui::{
+use cuteui::platform::Cursor;
+use cuteui::text_layout::ClipConfig;
+use cuteui::ui_components::components::UiComponent;
+use cuteui::{
     AppContext, Element, Entity, EntityId, ModelHandle, SingletonEntity as _, TypedActionView,
     View, ViewContext, ViewHandle,
 };
@@ -24,11 +24,11 @@ use warpui::{
 const SIDECAR_HORIZONTAL_GAP: f32 = 8.;
 const SIDECAR_POSITION_ID: &str = "model_sidecar_panel";
 
-use warp_cli::agent::Harness;
-use warp_core::features::FeatureFlag;
-use warp_core::ui::color::{coloru_with_opacity, Opacity};
-use warp_core::ui::theme::color::internal_colors;
-use warp_core::ui::theme::Fill;
+use cute_cli::agent::Harness;
+use cute_core::features::FeatureFlag;
+use cute_core::ui::color::{coloru_with_opacity, Opacity};
+use cute_core::ui::theme::color::internal_colors;
+use cute_core::ui::theme::Fill;
 
 use crate::ai::blocklist::prompt::PromptIconButtonTheme;
 use crate::ai::blocklist::{
@@ -87,7 +87,7 @@ const MODEL_LOCKED_FOR_FOLLOWUP_TOOLTIP: &str = "Follow-ups use the original run
 const MODEL_REQUIRES_EDIT_ACCESS_TOOLTIP: &str = "Request edit access to change model";
 const HARNESS_DEFAULT_MODEL_LABEL: &str = "default";
 
-pub fn calculate_scaled_font_size(appearance: &warp_core::ui::appearance::Appearance) -> f32 {
+pub fn calculate_scaled_font_size(appearance: &cute_core::ui::appearance::Appearance) -> f32 {
     if FeatureFlag::AgentView.is_enabled() {
         udi_font_size(appearance)
     } else {
@@ -96,7 +96,7 @@ pub fn calculate_scaled_font_size(appearance: &warp_core::ui::appearance::Appear
 }
 
 /// Calculate the maximum width for profile name text (we will clip to this width)
-pub fn calculate_max_profile_name_width(appearance: &warp_core::ui::appearance::Appearance) -> f32 {
+pub fn calculate_max_profile_name_width(appearance: &cute_core::ui::appearance::Appearance) -> f32 {
     let scaled_font_size = calculate_scaled_font_size(appearance);
     scaled_font_size * MAX_PROFILE_NAME_WIDTH_SCALE_FACTOR
 }
@@ -145,7 +145,7 @@ impl ActionButtonTheme for SelectorChipTheme {
         }
     }
 
-    fn font_properties(&self) -> Option<warpui::fonts::Properties> {
+    fn font_properties(&self) -> Option<cuteui::fonts::Properties> {
         None
     }
 }
@@ -434,7 +434,7 @@ impl ProfileModelSelector {
                     llm_preferences.hide_llm_popup(terminal_view_id);
                 } else if config.input_type.is_ai() {
                     ctx.spawn(
-                        warpui::r#async::Timer::after(NEW_MODEL_CHOICES_POPUP_DELAY),
+                        cuteui::r#async::Timer::after(NEW_MODEL_CHOICES_POPUP_DELAY),
                         |_, _, ctx| {
                             ctx.notify();
                         },
@@ -616,6 +616,14 @@ impl ProfileModelSelector {
 
     pub fn is_open(&self) -> bool {
         self.is_profile_menu_open || self.is_model_menu_open
+    }
+
+    pub fn is_menu_open(&self) -> bool {
+        self.is_model_menu_open
+    }
+
+    pub fn open_menu(&mut self, ctx: &mut ViewContext<Self>) {
+        self.set_model_menu_visibility(true, ctx);
     }
 
     pub fn model_menu_item_position_id(&self, llm_id: &LLMId) -> String {
@@ -1545,7 +1553,7 @@ impl ProfileModelSelector {
         let (vertical_padding, horizontal_padding) = self.get_padding_values(scaled_font_size);
 
         let profile_icon = Icon::Psychology
-            .to_warpui_icon(Fill::Solid(text_color))
+            .to_cuteui_icon(Fill::Solid(text_color))
             .finish();
 
         let max_label_width = calculate_max_profile_name_width(appearance);
@@ -1682,7 +1690,7 @@ impl ProfileModelSelector {
         let mut content = Flex::row().with_cross_axis_alignment(CrossAxisAlignment::Center);
         if is_lrc {
             let terminal_icon = Icon::Terminal
-                .to_warpui_icon(Fill::Solid(text_color))
+                .to_cuteui_icon(Fill::Solid(text_color))
                 .finish();
             content = content.with_child(
                 Container::new(
@@ -1703,7 +1711,7 @@ impl ProfileModelSelector {
         // (when enabled, clicking opens the inline model selector instead of a dropdown).
         if has_edit_access && !FeatureFlag::InlineMenuHeaders.is_enabled() {
             let chevron_icon = Icon::ChevronDown
-                .to_warpui_icon(Fill::Solid(text_color))
+                .to_cuteui_icon(Fill::Solid(text_color))
                 .finish();
 
             content = content.with_child(
@@ -2313,7 +2321,7 @@ impl View for ProfileModelSelector {
             crate::settings::InputSettings::as_ref(app).is_universal_developer_input_enabled(app);
 
         // The popup overflows the viewport on wasm mobile.
-        let is_wasm_mobile = warpui::platform::is_mobile_device();
+        let is_wasm_mobile = cuteui::platform::is_mobile_device();
 
         if !is_wasm_mobile
             && (is_udi_enabled

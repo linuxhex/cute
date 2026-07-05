@@ -3,8 +3,8 @@
 #![cfg_attr(feature = "release_bundle", windows_subsystem = "windows")]
 
 use anyhow::Result;
-use warp_core::channel::{Channel, ChannelConfig, ChannelState, OzConfig, WarpServerConfig};
-use warp_core::AppId;
+use cute_core::channel::{Channel, ChannelConfig, ChannelState, OzConfig, WarpServerConfig};
+use cute_core::AppId;
 
 // Simple wrapper around warp::run() for Warp OSS builds.
 fn main() -> Result<()> {
@@ -22,11 +22,11 @@ fn main() -> Result<()> {
         },
     );
     if cfg!(debug_assertions) {
-        state = state.with_additional_features(warp_core::features::DEBUG_FLAGS);
+        state = state.with_additional_features(cute_core::features::DEBUG_FLAGS);
     }
     // 跳过登录，直接进入主页面
     state = state
-        .with_additional_features(&[warp_core::features::FeatureFlag::SkipFirebaseAnonymousUser]);
+        .with_additional_features(&[cute_core::features::FeatureFlag::SkipFirebaseAnonymousUser]);
     ChannelState::set(state);
 
     cute::run()

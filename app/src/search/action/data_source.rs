@@ -2,8 +2,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use fuzzy_match::{match_indices_case_insensitive, FuzzyMatchResult};
-use warpui::keymap::{BindingId, DescriptionContext};
-use warpui::{AppContext, Entity, ModelContext, ModelHandle};
+use cuteui::keymap::{BindingId, DescriptionContext};
+use cuteui::{AppContext, Entity, ModelContext, ModelHandle};
 
 use crate::search::action::search_item::MatchedBinding;
 use crate::search::binding_source::BindingSource;
@@ -21,7 +21,7 @@ pub struct CommandBindingDataSource {
 impl CommandBindingDataSource {
     #[cfg(not(target_family = "wasm"))]
     pub fn new(binding_source: ModelHandle<BindingSource>, ctx: &mut ModelContext<Self>) -> Self {
-        if warp_core::features::FeatureFlag::UseTantivySearch.is_enabled() {
+        if cute_core::features::FeatureFlag::UseTantivySearch.is_enabled() {
             Self::new_full_text(binding_source, ctx)
         } else {
             Self::new_fuzzy(binding_source, ctx)
@@ -184,7 +184,7 @@ mod full_text_searcher {
     use std::sync::Arc;
 
     use fuzzy_match::FuzzyMatchResult;
-    use warpui::keymap::{BindingId, DescriptionContext};
+    use cuteui::keymap::{BindingId, DescriptionContext};
 
     use crate::search::action::data_source::{is_excluded_binding, ActionSearcher, SearcherAction};
     use crate::search::action::search_item::MatchedBinding;
@@ -193,7 +193,7 @@ mod full_text_searcher {
         SimpleFullTextSearcher, DEFAULT_MEMORY_BUDGET, SCORE_CONVERSION_FACTOR,
     };
     use crate::util::bindings::CommandBinding;
-    use warp_search_core::define_search_schema;
+    use cute_search_core::define_search_schema;
 
     define_search_schema!(
         schema_name: ACTION_SEARCH_SCHEMA,

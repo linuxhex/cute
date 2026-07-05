@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
-use warp_core::ui::icons::Icon;
-use warp_core::ui::theme::AnsiColorIdentifier;
-use warpui::elements::{ChildView, Element, Empty, ParentElement, Wrap};
-use warpui::{AppContext, Entity, TypedActionView, View, ViewContext, ViewHandle};
+use cute_core::ui::icons::Icon;
+use cute_core::ui::theme::AnsiColorIdentifier;
+use cuteui::elements::{ChildView, Element, Empty, ParentElement, Wrap};
+use cuteui::{AppContext, Entity, TypedActionView, View, ViewContext, ViewHandle};
 
 use super::{file_button_label, Artifact};
 use crate::notebooks::NotebookId;

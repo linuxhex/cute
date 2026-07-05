@@ -4,7 +4,7 @@ use chrono::{DateTime, Duration, Utc};
 pub use crate::server::server_api::object::{
     ObjectAction, ObjectActionHistory, ObjectActionSubtype, ObjectActionType,
 };
-use warpui::{Entity, ModelContext, SingletonEntity};
+use cuteui::{Entity, ModelContext, SingletonEntity};
 
 use crate::server::ids::{HashedSqliteId, ObjectUid};
 

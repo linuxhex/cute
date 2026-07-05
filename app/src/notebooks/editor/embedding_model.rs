@@ -4,20 +4,20 @@ use std::ops::Range;
 use std::sync::Arc;
 
 use string_offset::{ByteOffset, CharOffset};
-use warp_completer::signatures::CommandRegistry;
-use warp_editor::content::anchor::Anchor;
-use warp_editor::content::buffer::Buffer;
-use warp_editor::content::selection_model::BufferSelectionModel;
-use warp_editor::editor::EmbeddedItemModel;
-use warp_util::user_input::UserInput;
-use warpui::elements::{
+use cute_completer::signatures::CommandRegistry;
+use cute_editor::content::anchor::Anchor;
+use cute_editor::content::buffer::Buffer;
+use cute_editor::content::selection_model::BufferSelectionModel;
+use cute_editor::editor::EmbeddedItemModel;
+use cute_util::user_input::UserInput;
+use cuteui::elements::{
     Align, Border, Container, CrossAxisAlignment, Empty, Flex, MainAxisAlignment, MouseStateHandle,
     ParentElement, Shrinkable,
 };
-use warpui::platform::Cursor;
-use warpui::ui_components::button::ButtonVariant;
-use warpui::ui_components::components::UiComponent;
-use warpui::{AppContext, Element, Entity, ModelAsRef, ModelContext, ModelHandle, SingletonEntity};
+use cuteui::platform::Cursor;
+use cuteui::ui_components::button::ButtonVariant;
+use cuteui::ui_components::components::UiComponent;
+use cuteui::{AppContext, Element, Entity, ModelAsRef, ModelContext, ModelHandle, SingletonEntity};
 
 use super::embedded_item::EmbeddedWorkflow;
 use super::keys::{custom_action_to_display, NotebookKeybindings};

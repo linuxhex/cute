@@ -15,28 +15,28 @@ use regex::Regex;
 use string_offset::CharOffset;
 use url::Url;
 use vec1::{vec1, Vec1};
-use warp_core::features::FeatureFlag;
-use warp_core::r#async::debounce;
-use warp_core::semantic_selection::SemanticSelection;
-use warp_editor::content::buffer::{
+use cute_core::features::FeatureFlag;
+use cute_core::r#async::debounce;
+use cute_core::semantic_selection::SemanticSelection;
+use cute_editor::content::buffer::{
     AutoScrollBehavior, Buffer, BufferEditAction, BufferEvent, BufferSelectAction, EditOrigin,
     SelectionOffsets, ShouldAutoscroll,
 };
-use warp_editor::content::selection_model::BufferSelectionModel;
-use warp_editor::content::text::{
+use cute_editor::content::selection_model::BufferSelectionModel;
+use cute_editor::content::text::{
     BlockHeaderSize, BlockType, BufferBlockItem, BufferBlockStyle, BufferTextStyle, CodeBlockType,
     IndentBehavior, IndentUnit, TextStyles, TextStylesWithMetadata,
 };
-use warp_editor::model::{BufferUpdateWrapper, CoreEditorModel, RichTextEditorModel};
-use warp_editor::render::model::{
+use cute_editor::model::{BufferUpdateWrapper, CoreEditorModel, RichTextEditorModel};
+use cute_editor::render::model::{
     AutoScrollMode, BlockItem, RenderEvent, RenderState, RichTextStyles, StyleUpdateAction,
 };
-use warp_editor::search::Searcher;
-use warp_editor::selection::{SelectionMode, SelectionModel, TextDirection, TextUnit};
-use warpui::accessibility::{AccessibilityContent, ActionAccessibilityContent, WarpA11yRole};
-use warpui::clipboard::ClipboardContent;
-use warpui::elements::ListIndentLevel;
-use warpui::{
+use cute_editor::search::Searcher;
+use cute_editor::selection::{SelectionMode, SelectionModel, TextDirection, TextUnit};
+use cuteui::accessibility::{AccessibilityContent, ActionAccessibilityContent, WarpA11yRole};
+use cuteui::clipboard::ClipboardContent;
+use cuteui::elements::ListIndentLevel;
+use cuteui::{
     AppContext, Entity, ModelAsRef, ModelContext, ModelHandle, SingletonEntity, WindowId,
 };
 

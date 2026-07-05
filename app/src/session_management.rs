@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use chrono::NaiveDateTime;
-use warpui::{AppContext, Entity, EntityId, WindowId};
+use cuteui::{AppContext, Entity, EntityId, SingletonEntity, WindowId};
 
 use crate::context_chips::prompt_snapshot::PromptSnapshot;
 use crate::pane_group::{PaneGroup, PaneId};
@@ -241,3 +241,28 @@ pub struct TabNavigationData {
     /// 1-based left-to-right tab index for display disambiguation.
     pub tab_index: usize,
 }
+
+/// Manager for all shared sessions in the application.
+#[derive(Debug, Clone, Default)]
+pub struct SharedSessionManager {
+    sessions: Vec<()>,
+}
+
+impl SharedSessionManager {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn stop_all_shared_sessions(&mut self, _ctx: &mut cuteui::ModelContext<Self>) {
+        self.sessions.clear();
+    }
+
+    pub fn clear_joined(&mut self) {
+    }
+}
+
+impl Entity for SharedSessionManager {
+    type Event = ();
+}
+
+impl SingletonEntity for SharedSessionManager {}

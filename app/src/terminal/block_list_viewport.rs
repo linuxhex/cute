@@ -5,10 +5,10 @@ use std::sync::MutexGuard;
 use pathfinder_geometry::vector::Vector2F;
 use serde::{Deserialize, Serialize};
 use sum_tree::{Cursor, SeekBias};
-use warp_core::features::FeatureFlag;
-use warpui::elements::ClippedScrollStateHandle;
-use warpui::units::{IntoLines, IntoPixels, Lines, Pixels};
-use warpui::{AppContext, ModelHandle};
+use cute_core::features::FeatureFlag;
+use cuteui::elements::ClippedScrollStateHandle;
+use cuteui::units::{IntoLines, IntoPixels, Lines, Pixels};
+use cuteui::{AppContext, ModelHandle};
 
 use super::block_list_element::{
     GridType, SnackbarHeader, SnackbarHeaderState, SnackbarPoint, VisibleItem,

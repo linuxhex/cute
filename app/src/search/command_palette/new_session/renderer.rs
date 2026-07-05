@@ -1,6 +1,6 @@
-use warpui::elements::{Container, Flex, Highlight, ParentElement, Text};
-use warpui::fonts::{Properties, Weight};
-use warpui::Element;
+use cuteui::elements::{Container, Flex, Highlight, ParentElement, Text};
+use cuteui::fonts::{Properties, Weight};
+use cuteui::Element;
 
 use super::new_session_option::NewSessionOption;
 use crate::appearance::Appearance;

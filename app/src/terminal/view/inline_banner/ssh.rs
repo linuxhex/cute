@@ -1,5 +1,5 @@
-use warpui::elements::MouseStateHandle;
-use warpui::Element;
+use cuteui::elements::MouseStateHandle;
+use cuteui::Element;
 
 use super::{
     render_inline_block_list_banner, InlineBannerButtonState, InlineBannerContent,

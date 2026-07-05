@@ -1,10 +1,10 @@
-use warpui::assets::asset_cache::AssetSource;
-use warpui::elements::{
+use cuteui::assets::asset_cache::AssetSource;
+use cuteui::elements::{
     Align, CacheOption, ConstrainedBox, Container, CrossAxisAlignment, Element, Flex, Image,
     MainAxisAlignment, MouseStateHandle, ParentElement, Wrap,
 };
-use warpui::ui_components::components::UiComponent;
-use warpui::{AppContext, Entity, View, ViewContext, ViewHandle};
+use cuteui::ui_components::components::UiComponent;
+use cuteui::{AppContext, Entity, View, ViewContext, ViewHandle};
 
 use super::settings_page::{
     MatchData, PageType, SettingsPageEvent, SettingsPageMeta, SettingsPageViewHandle,

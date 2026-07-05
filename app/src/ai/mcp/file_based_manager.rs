@@ -5,9 +5,9 @@ use std::path::{Path, PathBuf};
 use itertools::Itertools as _;
 use repo_metadata::repositories::DetectedRepositories;
 use uuid::Uuid;
-use warp_core::features::FeatureFlag;
-use warp_util::local_or_remote_path::LocalOrRemotePath;
-use warpui::{AppContext, Entity, ModelContext, SingletonEntity};
+use cute_core::features::FeatureFlag;
+use cute_util::local_or_remote_path::LocalOrRemotePath;
+use cuteui::{AppContext, Entity, ModelContext, SingletonEntity};
 
 use super::{FileMCPWatcher, FileMCPWatcherEvent, MCPProvider};
 use crate::ai::mcp::templatable_installation::TemplatableMCPServerInstallation;

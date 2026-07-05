@@ -209,6 +209,6 @@ Before launching the Phase A agents:
   - `app/src/terminal/shared_session/viewer/orchestration_viewer_model_tests.rs` — fixture rewrite.
   - `app/src/server/server_api.rs` — new ancestor-scoped stream helper alongside `stream_agent_events`.
   - `app/src/ai/agent_events/driver.rs` — extend the `AgentEventSource` trait with a filter enum (or add a sibling method for the ancestor endpoint).
-  - `crates/warp_core/src/features.rs` — new feature flag.
+  - `crates/cute_core/src/features.rs` — new feature flag.
 - Touched files on the server: TBD pending the paired server spec.
 - No other client files should need to change.

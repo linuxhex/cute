@@ -1,7 +1,7 @@
 //! Stub for ssh_remote_server_failed_banner after remote_server removal.
 
-use warp_core::SessionId;
-use warpui::{AppContext, Entity, View, TypedActionView};
+use cute_core::SessionId;
+use cuteui::{AppContext, Entity, View, TypedActionView};
 
 use crate::remote_server::transport::UserFacingError;
 
@@ -39,8 +39,8 @@ impl View for SshRemoteServerFailedBanner {
         "SshRemoteServerFailedBanner"
     }
 
-    fn render(&self, _app: &AppContext) -> Box<dyn warpui::Element> {
-        Box::new(warpui::elements::Empty::new())
+    fn render(&self, _app: &AppContext) -> Box<dyn cuteui::Element> {
+        Box::new(cuteui::elements::Empty::new())
     }
 }
 

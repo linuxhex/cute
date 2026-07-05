@@ -1,4 +1,4 @@
-use warpui::AppContext;
+use cuteui::AppContext;
 
 use super::{CloudObject, Space};
 use crate::drive::folders::CloudFolder;
@@ -42,7 +42,7 @@ impl Space {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub enum ContainingObjectKind {
     Space(Space),
     Object(CloudObjectTypeAndId),

@@ -4,10 +4,10 @@ use std::path::PathBuf;
 use std::pin::Pin;
 use std::time::Duration;
 
-use warpui::integration::{self, PersistedDataMap, TestDriver, TestSetupUtils, TestStep};
-use warpui::{App, WindowId};
-use warpui_extras::user_preferences::file_backed::FileBackedUserPreferences;
-use warpui_extras::user_preferences::UserPreferences;
+use cuteui::integration::{self, PersistedDataMap, TestDriver, TestSetupUtils, TestStep};
+use cuteui::{App, WindowId};
+use cuteui_extras::user_preferences::file_backed::FileBackedUserPreferences;
+use cuteui_extras::user_preferences::UserPreferences;
 
 use crate::util::{set_zsh_histfile_location, write_rc_files_for_test, ShellRcType};
 

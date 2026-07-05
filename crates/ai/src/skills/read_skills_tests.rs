@@ -1,7 +1,7 @@
 use std::fs;
 
 use tempfile::tempdir;
-use warp_util::local_or_remote_path::LocalOrRemotePath;
+use cute_util::local_or_remote_path::LocalOrRemotePath;
 
 use super::*;
 

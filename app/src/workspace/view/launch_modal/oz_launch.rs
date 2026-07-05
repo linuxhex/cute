@@ -1,7 +1,7 @@
 use asset_macro::bundled_or_fetched_asset;
 use markdown_parser::{FormattedTextFragment, FormattedTextLine};
-use warpui::assets::asset_cache::AssetSource;
-use warpui::{AppContext, SingletonEntity};
+use cuteui::assets::asset_cache::AssetSource;
+use cuteui::{AppContext, SingletonEntity};
 
 use super::{CTAButton, CheckboxConfig, LaunchModalEvent, Slide};
 use crate::terminal::view::OnboardingIntention;
@@ -166,7 +166,7 @@ impl Slide for OzLaunchSlide {
         ) && !matches!(ugc_setting, UgcCollectionEnablementSetting::Enable)
     }
 
-    fn on_close(&self, ctx: &mut warpui::ViewContext<super::LaunchModal<Self>>) {
+    fn on_close(&self, ctx: &mut cuteui::ViewContext<super::LaunchModal<Self>>) {
         ctx.dispatch_typed_action(&WorkspaceAction::StartAgentOnboardingTutorial(
             OnboardingTutorial::NoProject {
                 intention: OnboardingIntention::AgentDrivenDevelopment,
@@ -175,6 +175,6 @@ impl Slide for OzLaunchSlide {
     }
 }
 
-pub fn init(app: &mut warpui::AppContext) {
+pub fn init(app: &mut cuteui::AppContext) {
     super::init::<OzLaunchSlide>(app);
 }

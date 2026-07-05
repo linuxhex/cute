@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use warp_util::standardized_path::StandardizedPath;
+use cute_util::standardized_path::StandardizedPath;
 
 use crate::{language_by_filename, language_by_local_filename, load_language, SUPPORTED_LANGUAGES};
 

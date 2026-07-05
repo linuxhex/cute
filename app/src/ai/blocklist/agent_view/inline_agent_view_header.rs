@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use ai::agent::action::{AIAgentActionType, ShellCommandDelay};
 use parking_lot::FairMutex;
-use warp_core::ui::appearance::Appearance;
-use warpui::elements::{CornerRadius, Radius};
-use warpui::{
+use cute_core::ui::appearance::Appearance;
+use cuteui::elements::{CornerRadius, Radius};
+use cuteui::{
     AppContext, Element, Entity, EntityId, ModelHandle, SingletonEntity, View, ViewContext,
 };
 
@@ -119,7 +119,7 @@ impl View for InlineAgentViewHeader {
         };
         if is_agent_tagged_in {
             let header_background = appearance.theme().surface_2();
-            let icon = Icon::Oz.to_warpui_icon(
+            let icon = Icon::Oz.to_cuteui_icon(
                 blended_colors::text_main(appearance.theme(), header_background).into(),
             );
             let message = if let Some(command) = top_level_command.as_deref() {

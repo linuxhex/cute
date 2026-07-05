@@ -4,7 +4,7 @@ cfg_if::cfg_if! {
     if #[cfg(feature = "local_fs")] {
         pub mod agent;
         mod block_list;
-        mod cloud_objects;
+        // mod cloud_objects;
         mod sqlite;
         pub mod commands;
     }
@@ -33,10 +33,10 @@ pub use sqlite::database_file_path_for_scope;
 #[cfg(any(feature = "local_fs", feature = "integration_tests"))]
 pub use sqlite::establish_ro_connection;
 use uuid::Uuid;
-use warp_core::command::ExitCode;
-use warp_graphql::scalars::time::ServerTimestamp;
+use cute_core::command::ExitCode;
+use cute_graphql::scalars::time::ServerTimestamp;
 use warp_multi_agent_api as api;
-use warpui::{AppContext, Entity, SingletonEntity};
+use cuteui::{AppContext, Entity, SingletonEntity};
 
 use self::model::{AgentConversation, AgentConversationData, Project};
 use crate::ai::blocklist::PersistedAIInput;
@@ -44,13 +44,6 @@ use crate::ai::mcp::TemplatableMCPServerInstallation;
 use crate::ai::persisted_workspace::EnablementState;
 use crate::app_state::AppState;
 use crate::auth::auth_manager::PersistedCurrentUserInformation;
-use crate::cloud_object::model::actions::ObjectAction;
-use crate::cloud_object::model::generic_string_model::CloudStringObject;
-use crate::cloud_object::{
-    CloudObject, CloudObjectMetadata, ObjectIdType, RevisionAndLastEditor, ServerCreationInfo,
-};
-use crate::drive::folders::CloudFolder;
-use crate::notebooks::CloudNotebook;
 use crate::server::ids::SyncId;
 use crate::suggestions::ignored_suggestions_model::SuggestionType;
 use crate::terminal::history::PersistedCommand;
@@ -59,6 +52,14 @@ use crate::terminal::model::session::SessionId;
 use crate::workflows::CloudWorkflow;
 use crate::workspaces::user_profiles::UserProfileWithUID;
 use crate::workspaces::workspace::{Workspace as WorkspaceMetadata, WorkspaceUid};
+use crate::cloud_object::model::generic_string_model::CloudStringObject;
+use crate::cloud_object::model::actions::ObjectAction;
+use crate::cloud_object::{HashedSqliteId, RevisionAndLastEditor, ServerCreationInfo};
+use crate::persistence::model::ObjectMetadata;
+use crate::server::ids::ClientId;
+use crate::cloud_object::models::CloudNotebook;
+use crate::drive::folders::CloudFolder;
+use crate::ai::document::ai_document_model::AIDocumentId;
 
 pub enum PersistenceScope {
     App,
@@ -184,14 +185,10 @@ pub struct PersistedData {
     /// Session restoration data
     pub app_state: AppState,
 
-    /// Shareable objects.
-    pub cloud_objects: Vec<Box<dyn CloudObject>>,
     pub workspaces: Vec<WorkspaceMetadata>,
     pub current_workspace_uid: Option<WorkspaceUid>,
     pub command_history: Vec<PersistedCommand>,
     pub user_profiles: Vec<UserProfileWithUID>,
-    pub time_of_next_force_object_refresh: Option<DateTime<Utc>>,
-    pub object_actions: Vec<ObjectAction>,
     pub ai_queries: Vec<PersistedAIInput>,
     pub codebase_indices: Vec<CodeWorkspaceMetadata>,
     pub workspace_language_servers: HashMap<PathBuf, HashMap<LSPServerType, EnablementState>>,
@@ -201,6 +198,9 @@ pub struct PersistedData {
     pub ignored_suggestions: Vec<(String, SuggestionType)>,
     pub mcp_server_installations: HashMap<Uuid, TemplatableMCPServerInstallation>,
     pub mcp_servers_to_restore: Vec<Uuid>,
+    pub cloud_objects: Vec<Box<dyn crate::cloud_object::CloudObject>>,
+    pub time_of_next_force_object_refresh: Option<DateTime<Utc>>,
+    pub object_actions: Vec<ObjectAction>,
 }
 
 #[derive(Clone, Debug)]
@@ -240,34 +240,6 @@ pub enum ModelEvent {
     DeleteBlocks(Vec<u8>),
     Snapshot(AppState),
     UpsertWorkflows(Vec<CloudWorkflow>),
-    UpsertNotebooks(Vec<CloudNotebook>),
-    UpsertFolders(Vec<CloudFolder>),
-    MarkObjectAsSynced {
-        hashed_sqlite_id: String,
-        revision_and_editor: RevisionAndLastEditor,
-        metadata_ts: Option<ServerTimestamp>,
-    },
-    IncrementRetryCount(String),
-    UpsertGenericStringObject {
-        object: Box<dyn CloudStringObject>,
-    },
-    UpsertGenericStringObjects(Vec<Box<dyn CloudStringObject>>),
-    UpsertNotebook {
-        notebook: CloudNotebook,
-    },
-    UpsertWorkflow {
-        workflow: CloudWorkflow,
-    },
-    UpsertFolder {
-        folder: CloudFolder,
-    },
-    UpdateObjectAfterServerCreation {
-        client_id: String,
-        server_creation_info: ServerCreationInfo,
-    },
-    DeleteObjects {
-        ids: Vec<(SyncId, ObjectIdType)>,
-    },
     UpsertWorkspace {
         workspace: Box<WorkspaceMetadata>,
     },
@@ -276,10 +248,6 @@ pub enum ModelEvent {
     },
     SetCurrentWorkspace {
         workspace_uid: WorkspaceUid,
-    },
-    UpdateObjectMetadata {
-        id: String,
-        metadata: CloudObjectMetadata,
     },
     InsertCommand {
         metadata: StartedCommandMetadata,
@@ -291,21 +259,12 @@ pub enum ModelEvent {
         profiles: Vec<UserProfileWithUID>,
     },
     ClearUserProfiles,
-    RecordTimeOfNextRefresh {
-        timestamp: DateTime<Utc>,
-    },
     // `PauseAndRemoveDatabase` and `ReconstructAndResume` are used to pause and resume the writer thread.
     // These are employed as part of Logout v0 to ensure that the writer thread
     // does not continue writing to the DB after the user has logged out and the DB is deleted.
     PauseAndRemoveDatabase,
     #[cfg(feature = "local_fs")]
     ReconstructAndResume,
-    InsertObjectAction {
-        object_action: ObjectAction,
-    },
-    SyncObjectActions {
-        actions_to_sync: Vec<ObjectAction>,
-    },
     /// Close the SQLite writer thread when the app is about to quit.
     Terminate,
     UpsertAIQuery {
@@ -379,10 +338,47 @@ pub enum ModelEvent {
         block_id: String,
         agent_view_visibility: SerializedAgentViewVisibility,
     },
+    UpsertNotebooks(Vec<CloudNotebook>),
+    UpsertFolders(Vec<CloudFolder>),
+    UpsertGenericStringObject {
+        object: Box<dyn CloudStringObject>,
+    },
+    UpsertGenericStringObjects(Vec<Box<dyn CloudStringObject>>),
+    UpsertNotebook {
+        notebook: CloudNotebook,
+    },
+    UpsertWorkflow {
+        workflow: CloudWorkflow,
+    },
+    UpsertFolder {
+        folder: CloudFolder,
+    },
+    MarkObjectAsSynced {
+        revision_and_editor: RevisionAndLastEditor,
+        metadata_ts: Option<ServerTimestamp>,
+        hashed_sqlite_id: HashedSqliteId,
+    },
+    IncrementRetryCount(String),
+    DeleteObjects(Vec<String>),
+    UpdateObjectAfterServerCreation {
+        client_id: ClientId,
+        server_creation_info: ServerCreationInfo,
+    },
+    UpdateObjectMetadata {
+        id: String,
+        metadata: ObjectMetadata,
+    },
+    RecordTimeOfNextRefresh {
+        timestamp: i64,
+    },
+    InsertObjectAction {
+        object_action: ObjectAction,
+    },
+    SyncObjectActions {
+        actions_to_sync: Vec<ObjectAction>,
+    },
     SaveAIDocumentContent {
-        document_id: String,
+        document_id: AIDocumentId,
         content: String,
-        version: i32,
-        title: String,
     },
 }

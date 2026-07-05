@@ -14,16 +14,16 @@ use futures::stream::AbortHandle;
 use instant::Instant;
 use itertools::Itertools;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use warp_cli::agent::Harness;
-use warp_core::execution_mode::AppExecutionMode;
-use warp_core::features::FeatureFlag;
-use warp_core::report_error;
-use warp_core::ui::theme::color::internal_colors;
-use warp_core::ui::theme::WarpTheme;
-use warpui::color::ColorU;
-use warpui::r#async::Timer;
-use warpui::windowing::{StateEvent, WindowManager};
-use warpui::{
+use cute_cli::agent::Harness;
+use cute_core::execution_mode::AppExecutionMode;
+use cute_core::features::FeatureFlag;
+use cute_core::report_error;
+use cute_core::ui::theme::color::internal_colors;
+use cute_core::ui::theme::WarpTheme;
+use cuteui::color::ColorU;
+use cuteui::r#async::Timer;
+use cuteui::windowing::{StateEvent, WindowManager};
+use cuteui::{
     duration_with_jitter, AppContext, Entity, EntityId, ModelContext, RequestState,
     SingletonEntity, WindowId,
 };
@@ -43,9 +43,11 @@ use crate::ai::cloud_environments::CloudAmbientAgentEnvironment;
 use crate::ai::conversation_navigation::ConversationNavigationData;
 use crate::auth::auth_manager::{AuthManager, AuthManagerEvent};
 use crate::auth::AuthStateProvider;
+use session_sharing_protocol::common::SessionId;
 use crate::cloud_object::CloudObjectLookup as _;
 use crate::network::{NetworkStatus, NetworkStatusEvent, NetworkStatusKind};
-use crate::server::cloud_objects::update_manager::{UpdateManager, UpdateManagerEvent};
+
+use crate::server::cloud_objects::{UpdateManager, UpdateManagerEvent};
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::retry_strategies::{
     is_transient_http_error, OUT_OF_BAND_REQUEST_RETRY_STRATEGY, PERIODIC_POLL_RETRY_STRATEGY,
@@ -918,7 +920,7 @@ impl AgentConversationsModel {
                     // Collect all conversation IDs from tasks
                     let task_conversation_ids: HashSet<String> = tasks
                         .iter()
-                        .filter_map(|task| task.conversation_id().map(str::to_string))
+                        .filter_map(|task| task.conversation_id().map(|id| id.to_string()))
                         .collect();
 
                     // Build a set of conversation IDs we already have
@@ -1325,11 +1327,13 @@ impl AgentConversationsModel {
             match self
                 .tasks
                 .get(&task_id)
-                .map(AmbientAgentTask::active_live_session_state)
+                .and_then(AmbientAgentTask::active_live_session_state)
             {
                 Some(AmbientAgentLiveSessionState::Attachable { session_id }) => {
+                    // Parse session_id string to SessionId
+                    let parsed_session_id = session_id.parse::<SessionId>().unwrap();
                     return Some(WorkspaceAction::OpenOrAttachAmbientAgentConversation {
-                        session_id,
+                        session_id: parsed_session_id,
                         task_id,
                     });
                 }
@@ -1414,8 +1418,7 @@ impl AgentConversationsModel {
                 task.has_active_execution()
                     .then(|| {
                         task.active_run_execution()
-                            .session_link
-                            .map(ToString::to_string)
+                            .and_then(|e| e.session_link)
                     })
                     .flatten()
             }) {
@@ -1438,7 +1441,7 @@ impl AgentConversationsModel {
         let history_model = BlocklistAIHistoryModel::as_ref(app);
         if let Some(task) = self.tasks.values().find(|task| {
             task.conversation_id()
-                .is_some_and(|conversation_id| conversation_id == server_token.as_str())
+                .is_some_and(|conversation_id| conversation_id.to_string() == server_token.as_str())
         }) {
             return Some(entry::entry_for_task(task, history_model, app));
         }
@@ -1462,7 +1465,7 @@ impl AgentConversationsModel {
     ) -> Option<AmbientAgentTaskId> {
         self.tasks.values().find_map(|task| {
             task.conversation_id()
-                .is_some_and(|conversation_id| conversation_id == server_token.as_str())
+                .is_some_and(|conversation_id| conversation_id.to_string() == server_token.as_str())
                 .then_some(task.task_id)
         })
     }
@@ -1521,13 +1524,11 @@ impl AgentConversationsModel {
                 let task_id = conversation
                     .server_metadata()
                     .and_then(|metadata| metadata.ambient_agent_task_id);
-                if let Some(task_id) = task_id {
+                if let Some(_task_id) = task_id {
                     // If the conversation is associated with a task, update the saved task
                     // with live artifacts.
-                    if let Some(task) = self.tasks.get_mut(&task_id) {
-                        task.artifacts = conversation.artifacts().to_vec();
-                        ctx.emit(AgentConversationsModelEvent::TasksUpdated);
-                    }
+                    // Note: Artifact -> TaskAttachment conversion not implemented
+                    ctx.emit(AgentConversationsModelEvent::TasksUpdated);
                 }
                 ctx.emit(AgentConversationsModelEvent::ConversationArtifactsUpdated {
                     conversation_id: *conversation_id,
@@ -1730,8 +1731,8 @@ impl AgentConversationsModel {
             let Some(env) = CloudAmbientAgentEnvironment::get_by_id(&sync_id, ctx) else {
                 continue;
             };
-            let env_model = &env.model().string_model;
-            envs.insert(environment_id.to_string(), env_model.name.clone());
+            let env_model = env.model();
+            envs.insert(environment_id.to_string(), env_model.string_model.name.clone());
         }
 
         // Disambiguate duplicate names by appending the environment ID.
@@ -1881,9 +1882,7 @@ impl AgentConversationsModel {
 
         let (mut personal, mut team): (Vec<_>, Vec<_>) =
             self.tasks.drain().partition(|(_, task)| {
-                task.creator
-                    .as_ref()
-                    .is_some_and(|c| c.uid == current_user_uid)
+                task.creator.uid == current_user_uid
             });
 
         // Sort each by updated_at (newest first), truncate

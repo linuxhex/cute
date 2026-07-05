@@ -1,16 +1,16 @@
 use markdown_parser::{FormattedText, FormattedTextFragment, FormattedTextLine};
 use pathfinder_color::ColorU;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::theme::Fill;
-use warp_core::ui::Icon;
-use warpui::elements::{
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::theme::Fill;
+use cute_core::ui::Icon;
+use cuteui::elements::{
     Border, CacheOption, Clipped, Container, CornerRadius, Element, FormattedTextElement,
     Hoverable, Image, ParentElement, Radius, Wrap, WrapFill, DEFAULT_UI_LINE_HEIGHT_RATIO,
 };
-use warpui::platform::Cursor;
-use warpui::prelude::{Align, ConstrainedBox, CrossAxisAlignment, Flex, MainAxisSize, Text};
-use warpui::ui_components::keyboard_shortcut::keystroke_to_keys;
-use warpui::{AppContext, SingletonEntity};
+use cuteui::platform::Cursor;
+use cuteui::prelude::{Align, ConstrainedBox, CrossAxisAlignment, Flex, MainAxisSize, Text};
+use cuteui::ui_components::keyboard_shortcut::keystroke_to_keys;
+use cuteui::{AppContext, SingletonEntity};
 
 use crate::ai::blocklist::agent_view::agent_view_bg_color;
 use crate::ai::blocklist::agent_view::shortcuts::render_keystroke_with_color_overrides;
@@ -30,7 +30,7 @@ pub fn render_standard_message_bar(
     right_element: Option<Box<dyn Element>>,
     app: &AppContext,
 ) -> Box<dyn Element> {
-    use warpui::prelude::MainAxisAlignment;
+    use cuteui::prelude::MainAxisAlignment;
 
     let (left_items, right_chips): (Vec<_>, Vec<_>) = message.items.into_iter().partition(|item| {
         !matches!(
@@ -95,7 +95,7 @@ pub fn render_wrapping_standard_message_bar(
     let appearance = Appearance::as_ref(app);
     let theme = appearance.theme();
     let font_size = styles::font_size(app);
-    let icon = ConstrainedBox::new(icon.to_warpui_icon(Fill::Solid(icon_color)).finish())
+    let icon = ConstrainedBox::new(icon.to_cuteui_icon(Fill::Solid(icon_color)).finish())
         .with_height(font_size)
         .with_width(font_size)
         .finish();
@@ -193,7 +193,7 @@ fn render_message_bar_items(items: &[MessageItem], app: &AppContext) -> Box<dyn 
             }
             MessageItem::Icon { icon, color } => {
                 let icon_color = color.unwrap_or(default_font_color);
-                ConstrainedBox::new(icon.to_warpui_icon(Fill::Solid(icon_color)).finish())
+                ConstrainedBox::new(icon.to_cuteui_icon(Fill::Solid(icon_color)).finish())
                     .with_height(styles::font_size(app))
                     .with_width(styles::font_size(app))
                     .finish()
@@ -332,7 +332,7 @@ fn render_terminal_message_items(items: &[MessageItem], app: &AppContext) -> Box
                     let rendered_key = if key_text == "⏎" {
                         ConstrainedBox::new(
                             Icon::CornerDownLeft
-                                .to_warpui_icon(Fill::Solid(keystroke_color))
+                                .to_cuteui_icon(Fill::Solid(keystroke_color))
                                 .finish(),
                         )
                         .with_height(icon_size)
@@ -341,7 +341,7 @@ fn render_terminal_message_items(items: &[MessageItem], app: &AppContext) -> Box
                     } else if key_text == "⇧" {
                         ConstrainedBox::new(
                             Icon::ArrowBlockUp
-                                .to_warpui_icon(Fill::Solid(keystroke_color))
+                                .to_cuteui_icon(Fill::Solid(keystroke_color))
                                 .finish(),
                         )
                         .with_height(icon_size)
@@ -397,7 +397,7 @@ fn render_terminal_message_items(items: &[MessageItem], app: &AppContext) -> Box
             }
             MessageItem::Icon { icon, color } => {
                 let icon_color = color.unwrap_or(default_text_color);
-                ConstrainedBox::new(icon.to_warpui_icon(Fill::Solid(icon_color)).finish())
+                ConstrainedBox::new(icon.to_cuteui_icon(Fill::Solid(icon_color)).finish())
                     .with_height(icon_size)
                     .with_width(icon_size)
                     .finish()
@@ -517,8 +517,8 @@ pub fn disableable_message_item_color_overrides(
 
 pub mod styles {
     use pathfinder_color::ColorU;
-    use warp_core::ui::appearance::Appearance;
-    use warpui::{AppContext, SingletonEntity};
+    use cute_core::ui::appearance::Appearance;
+    use cuteui::{AppContext, SingletonEntity};
 
     use crate::ui_components::blended_colors;
 

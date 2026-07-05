@@ -1,13 +1,12 @@
 use std::collections::HashSet;
 use std::path::PathBuf;
 
-use warp_core::context_flag::ContextFlag;
-use warp_core::features::FeatureFlag;
-use warpui::keymap::BindingId;
-use warpui::{AppContext, Entity, ModelContext, ModelHandle, SingletonEntity};
+use cute_core::context_flag::ContextFlag;
+use cute_core::features::FeatureFlag;
+use cuteui::keymap::BindingId;
+use cuteui::{AppContext, Entity, ModelContext, ModelHandle, SingletonEntity};
 
-use super::{conversations, warp_drive};
-use crate::drive::settings::WarpDriveSettings;
+use super::conversations;
 use crate::search::action::CommandBindingDataSource;
 use crate::search::binding_source::BindingSource;
 use crate::search::command_palette::mixer::{CommandPaletteItemAction, ItemSummary};
@@ -25,7 +24,6 @@ use crate::settings::AISettings;
 pub struct DataSourceStore {
     actions_data_source: ModelHandle<CommandBindingDataSource>,
     sessions_data_source: ModelHandle<navigation::DataSource>,
-    warp_drive_data_source: ModelHandle<warp_drive::DataSource>,
     launch_config_data_source: ModelHandle<launch_config::DataSource>,
     new_session_data_source: Option<ModelHandle<NewSessionDataSource>>,
     all_conversation_data_source: ModelHandle<conversations::DataSource>,
@@ -45,8 +43,6 @@ impl DataSourceStore {
         let sessions_data_source =
             ctx.add_model(|_| navigation::DataSource::new(active_session_handle));
 
-        let warp_drive_data_source = ctx.add_model(warp_drive::DataSource::new);
-
         let launch_config_data_source = ctx.add_model(launch_config::DataSource::new);
 
         let new_session_data_source = (FeatureFlag::ShellSelector.is_enabled()
@@ -61,7 +57,6 @@ impl DataSourceStore {
         Self {
             actions_data_source,
             sessions_data_source,
-            warp_drive_data_source,
             launch_config_data_source,
             new_session_data_source,
             all_conversation_data_source,
@@ -91,22 +86,6 @@ impl DataSourceStore {
                 self.sessions_data_source.clone(),
                 HashSet::from([QueryFilter::Sessions]),
             );
-
-            if WarpDriveSettings::is_warp_drive_enabled(ctx) {
-                let mut warp_drive_filters = HashSet::from([
-                    QueryFilter::Notebooks,
-                    QueryFilter::Plans,
-                    QueryFilter::Drive,
-                    QueryFilter::Workflows,
-                ]);
-
-                warp_drive_filters.insert(QueryFilter::EnvironmentVariables);
-
-                if AISettings::as_ref(ctx).is_any_ai_enabled(ctx) {
-                    warp_drive_filters.insert(QueryFilter::AgentModeWorkflows);
-                }
-                mixer.add_sync_source(self.warp_drive_data_source.clone(), warp_drive_filters);
-            }
 
             mixer.add_sync_source(
                 self.actions_data_source.clone(),
@@ -209,18 +188,7 @@ impl DataSourceStore {
                 .actions_data_source
                 .as_ref(app)
                 .query_result(*binding_id),
-            ItemSummary::Workflow { id } => self
-                .warp_drive_data_source
-                .as_ref(app)
-                .query_result(id, app),
-            ItemSummary::EnvVarCollection { id } => self
-                .warp_drive_data_source
-                .as_ref(app)
-                .query_result(id, app),
-            ItemSummary::Notebook { id } => self
-                .warp_drive_data_source
-                .as_ref(app)
-                .query_result(id, app),
+            ItemSummary::Workflow { .. } | ItemSummary::EnvVarCollection { .. } | ItemSummary::Notebook { .. } => None,
             ItemSummary::Session { pane_view_locator } => self
                 .sessions_data_source
                 .as_ref(app)

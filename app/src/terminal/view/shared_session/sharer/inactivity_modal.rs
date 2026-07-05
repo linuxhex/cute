@@ -1,15 +1,15 @@
 use std::time::Duration;
 
-use warp_core::ui::appearance::Appearance;
-use warpui::elements::{
+use cute_core::ui::appearance::Appearance;
+use cuteui::elements::{
     ChildView, Container, CrossAxisAlignment, Flex, MouseStateHandle, ParentElement, Text,
 };
-use warpui::fonts::{Properties, Weight};
-use warpui::platform::Cursor;
-use warpui::r#async::Timer;
-use warpui::ui_components::button::ButtonVariant;
-use warpui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
-use warpui::{
+use cuteui::fonts::{Properties, Weight};
+use cuteui::platform::Cursor;
+use cuteui::r#async::Timer;
+use cuteui::ui_components::button::ButtonVariant;
+use cuteui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
+use cuteui::{
     AppContext, Element, Entity, SingletonEntity, TypedActionView, View, ViewContext, ViewHandle,
 };
 

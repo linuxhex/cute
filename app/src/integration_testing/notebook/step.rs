@@ -1,17 +1,17 @@
 use std::sync::Arc;
 
 use string_offset::CharOffset;
-use warp_editor::model::CoreEditorModel;
-use warpui::integration::TestStep;
-use warpui::windowing::WindowManager;
-use warpui::{async_assert, App, SingletonEntity, ViewHandle, WindowId};
+use cute_editor::model::CoreEditorModel;
+use cuteui::integration::TestStep;
+use cuteui::windowing::WindowManager;
+use cuteui::{async_assert, App, SingletonEntity, ViewHandle, WindowId};
 
 use crate::cloud_object::model::persistence::CloudModel;
 use crate::cloud_object::{CloudObjectEventEntrypoint, Space};
 use crate::drive::OpenWarpDriveObjectSettings;
 use crate::integration_testing::view_getters::{notebook_view, workspace_view};
 use crate::notebooks::manager::NotebookSource;
-use crate::server::cloud_objects::update_manager::UpdateManager;
+
 use crate::server::ids::{ClientId, SyncId};
 use crate::workspaces::user_workspaces::UserWorkspaces;
 
@@ -34,7 +34,7 @@ pub fn create_a_personal_notebook(key: impl Into<String>, title: impl Into<Strin
             let client_id = ClientId::new();
             let sync_id = SyncId::ClientId(client_id);
             UpdateManager::handle(app).update(app, |update_manager, ctx| {
-                update_manager.create_notebook(
+                update_manager.create_notebook_with_model(
                     client_id,
                     UserWorkspaces::as_ref(ctx)
                         .personal_drive(ctx)

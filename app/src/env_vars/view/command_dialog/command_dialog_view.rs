@@ -1,12 +1,12 @@
-use warp_core::ui::appearance::Appearance;
-use warp_editor::editor::NavigationKey;
-use warpui::elements::{
+use cute_core::ui::appearance::Appearance;
+use cute_editor::editor::NavigationKey;
+use cuteui::elements::{
     Border, ConstrainedBox, Container, CornerRadius, Flex, MouseStateHandle, ParentElement, Radius,
     Shrinkable,
 };
-use warpui::ui_components::button::ButtonVariant;
-use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::{
+use cuteui::ui_components::button::ButtonVariant;
+use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
+use cuteui::{
     AppContext, Element, Entity, FocusContext, SingletonEntity, TypedActionView, View, ViewContext,
     ViewHandle,
 };
@@ -198,7 +198,7 @@ impl EnvVarCommandDialog {
             .with_centered_text_label(label_text.to_owned())
             .with_style(UiComponentStyles {
                 font_size: Some(BUTTON_FONT_SIZE),
-                font_weight: Some(warpui::fonts::Weight::Normal),
+                font_weight: Some(cuteui::fonts::Weight::Normal),
                 ..Default::default()
             });
 
@@ -209,7 +209,7 @@ impl EnvVarCommandDialog {
         button
             .build()
             .on_click(move |ctx, _, _| ctx.dispatch_typed_action(action.clone()))
-            .with_cursor(warpui::platform::Cursor::PointingHand)
+            .with_cursor(cuteui::platform::Cursor::PointingHand)
             .finish()
     }
 

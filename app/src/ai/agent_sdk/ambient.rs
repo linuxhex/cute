@@ -1,17 +1,17 @@
 //! Commands to interact with ambient agents on Warp's platform.
 use futures::{future, StreamExt};
-use warp_cli::agent::{Harness, OutputFormat, Prompt, RunCloudArgs};
-use warp_cli::json_filter::JsonOutput;
-use warp_cli::task::{
+use cute_cli::agent::{Harness, OutputFormat, Prompt, RunCloudArgs};
+use cute_cli::json_filter::JsonOutput;
+use cute_cli::task::{
     ArtifactTypeArg, ExecutionLocationArg, ListTasksArgs, RunSortByArg,
     RunSourceArg, RunStateArg, TaskGetArgs,
 };
-use warp_cli::{GlobalOptions, SortOrderArg};
-use warp_core::channel::ChannelState;
-use warp_core::features::FeatureFlag;
-use warpui::platform::TerminationMode;
-use warpui::r#async::Spawnable;
-use warpui::{AppContext, ModelContext, SingletonEntity};
+use cute_cli::{GlobalOptions, SortOrderArg};
+use cute_core::channel::ChannelState;
+use cute_core::features::FeatureFlag;
+use cuteui::platform::TerminationMode;
+use cuteui::r#async::Spawnable;
+use cuteui::{AppContext, ModelContext, SingletonEntity};
 
 use super::common::{EnvironmentChoice, ResolveConfigurationError};
 use crate::ai::agent::{extract_user_query_mode, UserQueryMode};
@@ -25,7 +25,7 @@ use crate::ai::ambient_agent_types::task::HarnessConfig;
 use crate::ai::ambient_agent_types::{
     AgentConfigSnapshot, AmbientAgentTask, AmbientAgentTaskState,
 };
-use crate::ai::artifacts::Artifact;
+use crate::ai::ambient_agent_types::task::TaskAttachment;
 use crate::auth::AuthStateProvider;
 use crate::cloud_object::model::persistence::CloudModel;
 use crate::server::ids::{ServerId, SyncId};
@@ -33,7 +33,6 @@ use crate::server::server_api::ai::{
     AgentSource, ArtifactType, ExecutionLocation,
     RunSortBy, RunSortOrder, SpawnAgentRequest, TaskListFilter,
 };
-use crate::terminal::shared_session;
 use crate::util::time_format::format_approx_duration_from_now_utc;
 use crate::workspaces::user_workspaces::UserWorkspaces;
 use crate::ServerApiProvider;
@@ -523,13 +522,7 @@ impl AmbientAgentRunner {
                 Ok(session_join_info) => {
                     if should_open {
                         if let Some(session_join_info) = session_join_info {
-                            let url =
-                                match (super::is_running_in_warp(), session_join_info.session_id) {
-                                    (true, Some(session_id)) => {
-                                        shared_session::join_native_intent(&session_id)
-                                    }
-                                    _ => session_join_info.session_link,
-                                };
+                            let url = session_join_info.session_link;
 
                             ctx.open_url(&url);
                         }
@@ -695,63 +688,13 @@ impl AmbientAgentRunner {
     }
 
     /// Format artifacts for display.
-    fn format_artifacts(artifacts: &[Artifact]) -> String {
+    fn format_artifacts(artifacts: &[TaskAttachment]) -> String {
         let mut lines = vec!["Artifacts:".to_string()];
 
         for artifact in artifacts {
-            match artifact {
-                Artifact::PullRequest {
-                    url,
-                    branch,
-                    repo,
-                    number,
-                    ..
-                } => {
-                    let pr_display = match (repo, number) {
-                        (Some(repo), Some(num)) => format!("  PR: {} #{}", repo, num),
-                        _ => "  PR:".to_string(),
-                    };
-                    lines.push(pr_display);
-                    lines.push(format!("    Branch: {}", branch));
-                    lines.push(format!("    Link: {}", url));
-                }
-                Artifact::Plan {
-                    notebook_uid,
-                    title,
-                    ..
-                } => {
-                    let plan_title = title.as_deref().unwrap_or("Untitled Plan");
-                    lines.push(format!("  Plan: {}", plan_title));
-                    if let Some(id) = notebook_uid {
-                        lines.push(format!(
-                            "    Link: {}/drive/notebook/{}",
-                            ChannelState::server_root_url(),
-                            id
-                        ));
-                    }
-                }
-                Artifact::Screenshot {
-                    artifact_uid,
-                    description,
-                    ..
-                } => {
-                    let desc = description.as_deref().unwrap_or("No description");
-                    lines.push(format!("  Screenshot: {} ({})", artifact_uid, desc));
-                }
-                Artifact::File {
-                    filename,
-                    filepath,
-                    description,
-                    ..
-                } => {
-                    let label = super::super::artifacts::file_button_label(filename, filepath);
-                    lines.push(format!("  File: {}", label));
-                    lines.push(format!("    Path: {}", filepath));
-                    if let Some(description) = description {
-                        lines.push(format!("    Description: {}", description));
-                    }
-                }
-            }
+            lines.push(format!("  File: {}", artifact.filename));
+            lines.push(format!("    ID: {}", artifact.file_id));
+            lines.push(format!("    Link: {}", artifact.download_url));
         }
 
         lines.join("\n")
@@ -810,7 +753,7 @@ impl AmbientAgentRunner {
     }
 }
 
-impl warpui::Entity for AmbientAgentRunner {
+impl cuteui::Entity for AmbientAgentRunner {
     type Event = ();
 }
 

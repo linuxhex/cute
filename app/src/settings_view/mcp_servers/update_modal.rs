@@ -11,15 +11,15 @@ use crate::view_components::action_button::{
 };
 use chrono::{Local, TimeZone};
 use uuid::Uuid;
-use warp_core::ui::external_product_icon::ExternalProductIcon;
-use warp_core::ui::icons::Icon;
-use warp_core::ui::theme::color::internal_colors;
-use warpui::elements::{Align, Empty, Padding, Shrinkable};
-use warpui::fonts::{Properties, Weight};
-use warpui::keymap::Keystroke;
-use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::SingletonEntity;
-use warpui::{
+use cute_core::ui::external_product_icon::ExternalProductIcon;
+use cute_core::ui::icons::Icon;
+use cute_core::ui::theme::color::internal_colors;
+use cuteui::elements::{Align, Empty, Padding, Shrinkable};
+use cuteui::fonts::{Properties, Weight};
+use cuteui::keymap::Keystroke;
+use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
+use cuteui::SingletonEntity;
+use cuteui::{
     elements::{
         Border, ChildView, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Flex,
         Hoverable, MainAxisAlignment, MouseStateHandle, ParentElement, Radius, Text,
@@ -169,7 +169,7 @@ impl UpdateModalBody {
                     let mut icon = Container::new(
                         ConstrainedBox::new(
                             Icon::X
-                                .to_warpui_icon(theme.active_ui_text_color())
+                                .to_cuteui_icon(theme.active_ui_text_color())
                                 .finish(),
                         )
                         .with_width(16.)

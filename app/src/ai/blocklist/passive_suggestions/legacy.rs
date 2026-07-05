@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::path::PathBuf;
 #[cfg(not(target_family = "wasm"))]
 use std::process::Stdio;
@@ -9,9 +11,9 @@ use chrono::Utc;
 use command::r#async::Command;
 use parking_lot::FairMutex;
 use serde_json::json;
-use warp_core::features::FeatureFlag;
-use warpui::r#async::{FutureExt as AsyncFutureExt, SpawnedFutureHandle, Timer};
-use warpui::{Entity, EntityId, ModelContext, ModelHandle, SingletonEntity};
+use cute_core::features::FeatureFlag;
+use cuteui::r#async::{FutureExt as AsyncFutureExt, SpawnedFutureHandle, Timer};
+use cuteui::{Entity, EntityId, ModelContext, ModelHandle, SingletonEntity};
 
 use super::static_prompt_suggestions::static_suggested_query;
 #[cfg(not(target_family = "wasm"))]
@@ -412,9 +414,9 @@ impl PassiveSuggestionsModel {
             .unwrap_or(true);
         if !can_read_file || should_skip_for_remote {
             let reason = if !can_read_file {
-                PromptSuggestionFallbackReason::NoReadFilesPermission
+                PromptSuggestionFallbackReason::NO_READ_FILES_PERMISSION
             } else {
-                PromptSuggestionFallbackReason::SSHRemoteSession
+                PromptSuggestionFallbackReason::SSH_REMOTE_SESSION
             };
             ctx.emit(PassiveSuggestionsEvent::PassiveCodeDiffFailed { reason });
             return;
@@ -443,7 +445,7 @@ impl PassiveSuggestionsModel {
                                 content.missing_files
                             );
                             ctx.emit(PassiveSuggestionsEvent::PassiveCodeDiffFailed {
-                                reason: PromptSuggestionFallbackReason::MissingFile,
+                                reason: PromptSuggestionFallbackReason::MISSING_FILE,
                             });
                             return;
                         }
@@ -452,7 +454,7 @@ impl PassiveSuggestionsModel {
                     Err(err) => {
                         log::warn!("Failed to retrieve file content for suggested code diffs: {err}");
                         ctx.emit(PassiveSuggestionsEvent::PassiveCodeDiffFailed {
-                            reason: PromptSuggestionFallbackReason::FailedToRetrieveFile,
+                            reason: PromptSuggestionFallbackReason::FAILED_TO_RETRIEVE_FILE,
                         });
                         return;
                     }
@@ -477,9 +479,9 @@ impl PassiveSuggestionsModel {
                 {
                     let reason =
                         if has_large_file && total_lines >= PASSIVE_CODE_DIFF_LONG_FILE_LINE_LIMIT {
-                            PromptSuggestionFallbackReason::FileTooManyLines
+                            PromptSuggestionFallbackReason::FILE_TOO_MANY_LINES
                         } else {
-                            PromptSuggestionFallbackReason::FileTooManyBytes
+                            PromptSuggestionFallbackReason::FILE_TOO_MANY_BYTES
                         };
                     ctx.emit(PassiveSuggestionsEvent::PassiveCodeDiffFailed {
                         reason,
@@ -512,7 +514,7 @@ impl PassiveSuggestionsModel {
                     }
                     Err(_) => {
                         ctx.emit(PassiveSuggestionsEvent::PassiveCodeDiffFailed {
-                            reason: PromptSuggestionFallbackReason::FailedToSendAIRequest,
+                            reason: PromptSuggestionFallbackReason::FAILED_TO_SEND_AI_REQUEST,
                         });
                     }
                 }
@@ -552,7 +554,7 @@ impl PassiveSuggestionsModel {
                     });
                     me.pending_code_diff_stream_id = None;
                     ctx.emit(PassiveSuggestionsEvent::PassiveCodeDiffFailed {
-                        reason: PromptSuggestionFallbackReason::AIQueryTimeout,
+                        reason: PromptSuggestionFallbackReason::AI_QUERY_TIMEOUT,
                     });
                 }
             },

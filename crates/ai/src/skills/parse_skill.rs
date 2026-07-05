@@ -9,7 +9,7 @@ use anyhow::Result;
 use lazy_static::lazy_static;
 use regex::Regex;
 use thiserror::Error;
-use warp_util::local_or_remote_path::LocalOrRemotePath;
+use cute_util::local_or_remote_path::LocalOrRemotePath;
 
 const MAX_SKILL_DESCRIPTION_CHARS: usize = 512;
 

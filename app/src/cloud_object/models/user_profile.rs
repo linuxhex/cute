@@ -1,4 +1,4 @@
-use warp_server_client::{UserUid, ids::ServerId};
+use cute_server_client::{UserUid, ids::ServerId};
 use session_sharing_protocol::common::ProfileData;
 
 /// Public struct for storing all the UserProfile data that's fed in from either sqlite or the server.
@@ -21,8 +21,8 @@ impl From<ProfileData> for UserProfileWithUID {
     }
 }
 
-impl From<warp_graphql::user::PublicUserProfile> for UserProfileWithUID {
-    fn from(value: warp_graphql::user::PublicUserProfile) -> Self {
+impl From<cute_graphql::user::PublicUserProfile> for UserProfileWithUID {
+    fn from(value: cute_graphql::user::PublicUserProfile) -> Self {
         UserProfileWithUID {
             firebase_uid: UserUid::new(&value.uid),
             display_name: value.display_name,

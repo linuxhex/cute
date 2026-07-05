@@ -5,9 +5,9 @@ use anyhow::Result;
 use base64::Engine;
 use blocking::unblock;
 use instant::Instant;
-use warp_core::channel::IapConfig;
-use warpui::r#async::Timer;
-use warpui::{Entity, ModelContext, SingletonEntity};
+use cute_core::channel::IapConfig;
+use cuteui::r#async::Timer;
+use cuteui::{Entity, ModelContext, SingletonEntity};
 
 use crate::view_components::DismissibleToast;
 use crate::workspace::{ToastStack, WorkspaceAction};

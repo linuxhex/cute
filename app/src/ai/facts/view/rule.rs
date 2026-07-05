@@ -4,17 +4,17 @@ use std::path::PathBuf;
 use ai::project_context::model::{ProjectContextModel, ProjectContextModelEvent};
 use markdown_parser::weight::CustomWeight;
 use markdown_parser::{FormattedText, FormattedTextFragment, FormattedTextLine};
-use warp_core::ui::appearance::{Appearance, AppearanceEvent};
-use warp_core::ui::theme::color::internal_colors;
-use warpui::elements::{
+use cute_core::ui::appearance::{Appearance, AppearanceEvent};
+use cute_core::ui::theme::color::internal_colors;
+use cuteui::elements::{
     Align, Border, ChildView, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment,
     Expanded, Flex, FormattedTextElement, HighlightedHyperlink, Hoverable, MainAxisAlignment,
     MainAxisSize, MouseStateHandle, ParentElement, Shrinkable,
 };
-use warpui::platform::{Cursor, FilePickerConfiguration};
-use warpui::ui_components::button::ButtonVariant;
-use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::{
+use cuteui::platform::{Cursor, FilePickerConfiguration};
+use cuteui::ui_components::button::ButtonVariant;
+use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
+use cuteui::{
     AppContext, Element, Entity, FocusContext, SingletonEntity, TypedActionView, View, ViewContext,
     ViewHandle,
 };
@@ -446,7 +446,7 @@ impl RuleView {
         update_manager.update(ctx, |update_manager, ctx| {
             update_manager.delete_object_by_user(
                 CloudObjectTypeAndId::GenericStringObject {
-                    object_type: GenericStringObjectFormat::Json(JsonObjectType::AIFact),
+                    object_type: format!("{:?}", GenericStringObjectFormat::Json(JsonObjectType::AIFact)),
                     id,
                 },
                 ctx,
@@ -460,7 +460,7 @@ impl RuleView {
             .with_child(
                 Container::new(
                     ConstrainedBox::new(
-                        warpui::elements::Icon::new(
+                        cuteui::elements::Icon::new(
                             Icon::BookOpen.into(),
                             appearance
                                 .theme()
@@ -563,13 +563,13 @@ impl RuleView {
             if is_selected {
                 container = container
                     .with_background(appearance.theme().surface_2())
-                    .with_corner_radius(CornerRadius::with_all(warpui::elements::Radius::Pixels(
+                    .with_corner_radius(CornerRadius::with_all(cuteui::elements::Radius::Pixels(
                         4.,
                     )));
             } else if state.is_hovered() {
                 container = container
                     .with_background(appearance.theme().surface_1())
-                    .with_corner_radius(CornerRadius::with_all(warpui::elements::Radius::Pixels(
+                    .with_corner_radius(CornerRadius::with_all(cuteui::elements::Radius::Pixels(
                         4.,
                     )));
             }
@@ -627,7 +627,7 @@ impl RuleView {
                     Container::new(
                         ConstrainedBox::new(
                             Icon::Info
-                                .to_warpui_icon(
+                                .to_cuteui_icon(
                                     appearance
                                         .theme()
                                         .sub_text_color(appearance.theme().background()),
@@ -645,7 +645,7 @@ impl RuleView {
                 .finish(),
         )
         .with_background(appearance.theme().accent_overlay())
-        .with_corner_radius(CornerRadius::with_all(warpui::elements::Radius::Pixels(4.)))
+        .with_corner_radius(CornerRadius::with_all(cuteui::elements::Radius::Pixels(4.)))
         .with_uniform_padding(style::BANNER_PADDING)
         .with_margin_bottom(style::ITEM_BOTTOM_MARGIN)
         .finish()
@@ -740,7 +740,7 @@ impl RuleView {
         Some(
             Container::new(row.finish())
                 .with_background(internal_colors::neutral_1(appearance.theme()))
-                .with_corner_radius(CornerRadius::with_all(warpui::elements::Radius::Pixels(4.)))
+                .with_corner_radius(CornerRadius::with_all(cuteui::elements::Radius::Pixels(4.)))
                 .with_border(
                     Border::all(1.)
                         .with_border_color(internal_colors::neutral_2(appearance.theme())),
@@ -821,7 +821,7 @@ impl RuleView {
 
             Container::new(row.finish())
                 .with_background(bg_color)
-                .with_corner_radius(CornerRadius::with_all(warpui::elements::Radius::Pixels(4.)))
+                .with_corner_radius(CornerRadius::with_all(cuteui::elements::Radius::Pixels(4.)))
                 .with_border(
                     Border::all(1.)
                         .with_border_color(internal_colors::neutral_2(appearance.theme())),

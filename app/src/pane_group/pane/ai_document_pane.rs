@@ -1,4 +1,4 @@
-use warpui::{AppContext, ModelHandle, SingletonEntity, ViewContext, ViewHandle};
+use cuteui::{AppContext, ModelHandle, SingletonEntity, ViewContext, ViewHandle};
 
 use super::view::PaneView;
 use super::{
@@ -93,7 +93,7 @@ impl PaneContent for AIDocumentPane {
                     group.close_pane_with_confirmation(pane_id, ctx);
                 }
                 AIDocumentEvent::ViewInWarpDrive(id) => {
-                    ctx.emit(crate::pane_group::Event::ViewInWarpDrive(*id));
+                    ctx.emit(crate::pane_group::Event::ViewInWarpDrive(id.clone()));
                 }
                 #[cfg(feature = "local_fs")]
                 AIDocumentEvent::OpenCodeInWarp {

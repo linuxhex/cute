@@ -18,6 +18,9 @@ pub mod auth_secret_types;
 pub mod aws_credentials;
 pub(crate) mod block_context;
 pub(crate) mod blocklist;
+pub(crate) mod cloud_environments;
+pub(crate) mod execution_profiles;
+pub(crate) mod facts;
 #[cfg(any(feature = "local_fs", not(target_family = "wasm")))]
 pub(crate) mod codebase_auto_indexing;
 pub mod control_code_parser;
@@ -40,15 +43,12 @@ pub(crate) mod skills;
 pub(crate) mod voice;
 pub use agent_tips::*;
 pub use request_usage_model::*;
-use warpui::AppContext;
+use cuteui::AppContext;
 #[cfg(not(target_family = "wasm"))]
 pub mod agent_sdk;
 pub mod cloud_agent_config;
 pub mod cloud_agent_settings;
-pub mod cloud_environments;
 pub mod connected_self_hosted_workers;
-pub mod execution_profiles;
-pub mod facts;
 pub(crate) mod generate_block_title;
 pub(crate) mod generate_code_review_content;
 pub(crate) mod loading;

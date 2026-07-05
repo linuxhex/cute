@@ -1,5 +1,4 @@
 use serde::Serialize;
-use warpui::{AppContext, SingletonEntity};
 
 use super::conversation::AIConversationId;
 use super::{
@@ -9,27 +8,19 @@ use super::{
 use crate::ai::llms::LLMId;
 use crate::server::telemetry::AgentModeCitation as CitationForTelemetry;
 use crate::terminal::view::block_onboarding::onboarding_agentic_suggestions_block::OnboardingChipType;
-use crate::CloudModel;
 
 pub trait ForTelemetry {
     type Output;
 
-    fn for_telemetry(&self, ctx: &AppContext) -> Option<Self::Output>;
+    fn for_telemetry<T>(&self, _ctx: T) -> Option<Self::Output>;
 }
 
 impl ForTelemetry for AIAgentCitation {
     type Output = CitationForTelemetry;
 
-    fn for_telemetry(&self, ctx: &AppContext) -> Option<Self::Output> {
+    fn for_telemetry<T>(&self, _ctx: T) -> Option<Self::Output> {
         match self {
-            Self::WarpDriveObject { uid } => {
-                CloudModel::as_ref(ctx).get_by_uid(uid).map(|object| {
-                    CitationForTelemetry::WarpDriveObject {
-                        object_type: object.object_type().to_string(),
-                        uid: object.uid(),
-                    }
-                })
-            }
+            Self::WarpDriveObject { .. } => None,
             Self::WarpDocumentation { path } => {
                 Some(CitationForTelemetry::WarpDocs { page: path.clone() })
             }

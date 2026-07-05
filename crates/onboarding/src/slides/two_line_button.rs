@@ -1,16 +1,16 @@
 use pathfinder_geometry::vector::vec2f;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::icons::Icon;
-use warp_core::ui::theme::color::internal_colors;
-use warp_core::ui::theme::Fill;
-use warpui::elements::{
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::icons::Icon;
+use cute_core::ui::theme::color::internal_colors;
+use cute_core::ui::theme::Fill;
+use cuteui::elements::{
     Align, Border, ChildAnchor, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Flex,
     Hoverable, MainAxisSize, MouseStateHandle, OffsetPositioning, ParentAnchor, ParentElement,
     ParentOffsetBounds, Radius, Stack, Text,
 };
-use warpui::fonts::{Properties, Weight};
-use warpui::platform::Cursor;
-use warpui::Element;
+use cuteui::fonts::{Properties, Weight};
+use cuteui::platform::Cursor;
+use cuteui::Element;
 
 use super::agent_slide::AgentSlideAction;
 
@@ -95,7 +95,7 @@ pub(super) fn render_two_line_button(
         // Build title row with optional icon
         let title_el: Box<dyn Element> = if let Some(icon) = icon {
             const ICON_SIZE: f32 = 14.;
-            let icon_el = ConstrainedBox::new(Box::new(icon.to_warpui_icon(title_fill)))
+            let icon_el = ConstrainedBox::new(Box::new(icon.to_cuteui_icon(title_fill)))
                 .with_width(ICON_SIZE)
                 .with_height(ICON_SIZE)
                 .finish();

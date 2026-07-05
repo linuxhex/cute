@@ -1,16 +1,16 @@
 use std::borrow::Cow;
 use std::cell::RefCell;
 
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::builder::UiBuilder;
-use warp_core::ui::theme::color::internal_colors;
-use warp_core::ui::theme::WarpTheme;
-use warpui::clipboard::ClipboardContent;
-use warpui::elements::*;
-use warpui::text_layout::ClipConfig;
-use warpui::ui_components::button::ButtonVariant;
-use warpui::ui_components::components::UiComponent as _;
-use warpui::{Entity, SingletonEntity as _, TypedActionView, View, ViewContext};
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::builder::UiBuilder;
+use cute_core::ui::theme::color::internal_colors;
+use cute_core::ui::theme::WarpTheme;
+use cuteui::clipboard::ClipboardContent;
+use cuteui::elements::*;
+use cuteui::text_layout::ClipConfig;
+use cuteui::ui_components::button::ButtonVariant;
+use cuteui::ui_components::components::UiComponent as _;
+use cuteui::{Entity, SingletonEntity as _, TypedActionView, View, ViewContext};
 
 use crate::terminal::model::terminal_model::ExitReason;
 use crate::ui_components;
@@ -152,7 +152,7 @@ impl TerminationType {
         Container::new(
             ConstrainedBox::new(
                 icon_type
-                    .to_warpui_icon(appearance.theme().background())
+                    .to_cuteui_icon(appearance.theme().background())
                     .finish(),
             )
             .with_width(ICON_SIZE)

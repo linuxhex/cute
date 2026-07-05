@@ -18,7 +18,7 @@ The fix mirrors the established `LLMPreferences` pattern: a singleton model fetc
 
 **Harness enum** — `crates/warp_cli/src/agent.rs:122-148`: `Harness` with variants Oz, Claude, OpenCode, Gemini, Codex, Unknown. Now derives `Serialize`/`Deserialize` for caching.
 
-**GraphQL schema** — `crates/warp_graphql_schema/api/schema.graphql`: existing `AgentHarness` enum. New `HarnessInfo` type and `User.availableHarnesses` field.
+**GraphQL schema** — `crates/cute_graphql_schema/api/schema.graphql`: existing `AgentHarness` enum. New `HarnessInfo` type and `User.availableHarnesses` field.
 
 **UI consumers** — hard-coded harness lists in:
 - `app/src/terminal/view/ambient_agent/harness_selector.rs` — selector dropdown

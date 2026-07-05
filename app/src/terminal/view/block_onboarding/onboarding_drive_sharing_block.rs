@@ -1,13 +1,13 @@
 use pathfinder_geometry::vector::vec2f;
-use warp_core::ui::appearance::Appearance;
-use warpui::elements::{
+use cute_core::ui::appearance::Appearance;
+use cuteui::elements::{
     Border, Container, Flex, MainAxisAlignment, MainAxisSize, MouseStateHandle, ParentElement, Text,
 };
-use warpui::fonts::{Properties, Weight};
-use warpui::platform::Cursor;
-use warpui::ui_components::button::{ButtonVariant, TextAndIcon, TextAndIconAlignment};
-use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::{AppContext, Element, Entity, SingletonEntity, View, ViewContext};
+use cuteui::fonts::{Properties, Weight};
+use cuteui::platform::Cursor;
+use cuteui::ui_components::button::{ButtonVariant, TextAndIcon, TextAndIconAlignment};
+use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
+use cuteui::{AppContext, Element, Entity, SingletonEntity, View, ViewContext};
 
 use crate::cloud_object::model::persistence::{CloudModel, CloudModelEvent};
 use crate::drive::CloudObjectTypeAndId;
@@ -92,11 +92,11 @@ impl View for OnboardingDriveSharingBlock {
             );
         }
 
-        let button_label = match CloudModel::as_ref(app).get_by_uid(&self.object_id.uid()) {
+        let button_label = match CloudModel::as_ref(app).get_by_uid(&self.object_id.uid().uid()) {
             Some(object) => format!("Share {}", object.display_name()),
             None => format!("Share this {}", self.object_id.object_type()),
         };
-        let object_id = self.object_id;
+        let object_id = self.object_id.clone();
         let button = appearance
             .ui_builder()
             .button(ButtonVariant::Accent, self.share_button.clone())
@@ -111,7 +111,7 @@ impl View for OnboardingDriveSharingBlock {
                 TextAndIcon::new(
                     TextAndIconAlignment::IconFirst,
                     button_label,
-                    Icon::Share.to_warpui_icon(appearance.theme().background()),
+                    Icon::Share.to_cuteui_icon(appearance.theme().background()),
                     MainAxisSize::Min,
                     MainAxisAlignment::SpaceEvenly,
                     vec2f(BUTTON_FONT_SIZE, BUTTON_FONT_SIZE),
@@ -122,7 +122,7 @@ impl View for OnboardingDriveSharingBlock {
             .with_cursor(Cursor::PointingHand)
             .on_click(move |ctx, _, _| {
                 ctx.dispatch_typed_action(WorkspaceAction::OpenObjectSharingSettings {
-                    object_id,
+                    object_id: object_id.clone(),
                     source: SharingDialogSource::OnboardingBlock,
                 });
             })

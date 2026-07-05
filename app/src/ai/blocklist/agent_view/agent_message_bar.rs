@@ -1,14 +1,14 @@
 use std::sync::Arc;
 
 use parking_lot::FairMutex;
-use warp_core::features::FeatureFlag;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::theme::Fill;
-use warpui::assets::asset_cache::AssetSource;
-use warpui::elements::{Container, Element, Empty, MouseStateHandle};
-use warpui::keymap::Keystroke;
-use warpui::platform::OperatingSystem;
-use warpui::{AppContext, Entity, ModelHandle, SingletonEntity, View, ViewContext};
+use cute_core::features::FeatureFlag;
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::theme::Fill;
+use cuteui::assets::asset_cache::AssetSource;
+use cuteui::elements::{Container, Element, Empty, MouseStateHandle};
+use cuteui::keymap::Keystroke;
+use cuteui::platform::OperatingSystem;
+use cuteui::{AppContext, Entity, ModelHandle, SingletonEntity, View, ViewContext};
 
 use super::{AgentViewState, EphemeralMessageModel, EphemeralMessageModelEvent};
 use crate::ai::agent::conversation::AIConversation;

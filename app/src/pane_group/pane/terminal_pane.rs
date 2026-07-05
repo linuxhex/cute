@@ -6,10 +6,10 @@ use std::sync::mpsc::SyncSender;
 use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
 use base64::Engine as _;
 use url::Url;
-use warp_cli::agent::Harness;
-use warp_core::execution_mode::AppExecutionMode;
+use cute_cli::agent::Harness;
+use cute_core::execution_mode::AppExecutionMode;
 use warp_multi_agent_api as multi_agent_api;
-use warpui::{
+use cuteui::{
     AppContext, EntityId, ModelHandle, SingletonEntity, ViewContext, ViewHandle, WindowId,
 };
 
@@ -48,11 +48,10 @@ use crate::server::server_api::ServerApiProvider;
 use crate::session_management::SessionNavigationData;
 use crate::terminal::cli_agent_sessions::CLIAgentSessionsModel;
 use crate::terminal::general_settings::GeneralSettings;
-use crate::terminal::shared_session::manager::{Manager, ManagerEvent};
-use crate::terminal::shared_session::role_change_modal::RoleChangeOpenSource;
-#[cfg(not(target_family = "wasm"))]
-use crate::terminal::shared_session::SharedSessionSource;
-use crate::terminal::shared_session::{join_link, SharedSessionStatus};
+use crate::terminal::shared_session::{
+    IsSharedSessionCreator, Manager, ManagerEvent, RoleChangeOpenSource, SharedSessionSource,
+    SharedSessionStatus,
+};
 use crate::terminal::view::ambient_agent::should_disable_snapshot;
 use crate::terminal::view::Event;
 use crate::terminal::{TerminalManager, TerminalView};
@@ -69,7 +68,7 @@ use crate::{
         create_hidden_child_agent_conversation, HiddenChildAgentConversation,
         HiddenChildAgentConversationRequest, HiddenChildAgentTaskContext,
     },
-    terminal::shared_session::IsSharedSessionCreator,
+    
 };
 
 pub type TerminalPaneView = PaneView<TerminalView>;
@@ -338,16 +337,14 @@ impl PaneContent for TerminalPane {
         let terminal_view_id = self.terminal_view(ctx).id();
         let manager_model = Manager::handle(ctx);
         ctx.subscribe_to_model(&manager_model, move |group, model_handle, event, ctx| {
-            if let ManagerEvent::JoinedSession {
+            let ManagerEvent::JoinedSession {
                 session_id: _,
                 view_id,
-            } = event
-            {
-                // only take action if the view id is ours
-                if *view_id == terminal_view_id {
-                    let url = retrieve_shared_session_link(model_handle.as_ref(ctx), view_id);
-                    group.handle_pane_link_updated(terminal_pane_id.into(), url, ctx);
-                }
+            } = event;
+            // only take action if the view id is ours
+            if *view_id == terminal_view_id {
+                let url = retrieve_shared_session_link(model_handle.as_ref(ctx), view_id);
+                group.handle_pane_link_updated(terminal_pane_id.into(), url, ctx);
             }
         });
 
@@ -675,14 +672,9 @@ impl PaneContent for TerminalPane {
     }
 }
 
-fn retrieve_shared_session_link(manager: &Manager, terminal_view_id: &EntityId) -> Option<Url> {
-    let Some(session_id) = manager.session_id(terminal_view_id) else {
-        log::warn!("Failed to get join link args for updating browser url");
-        return None;
-    };
-    if let Ok(url) = Url::parse(&join_link(&session_id)) {
-        return Some(url);
-    }
+fn retrieve_shared_session_link(_manager: &Manager, _terminal_view_id: &EntityId) -> Option<Url> {
+    // TODO: Implement proper session_id retrieval when Manager is fully implemented
+    // Currently Manager is a stub and doesn't have session_id method
     None
 }
 
@@ -1472,7 +1464,7 @@ fn handle_terminal_view_event(
                 // shared-session viewer pane for the child so subsequent pill
                 // clicks land on a populated agent view rather than an empty
                 // cloud-mode shell.
-                group.ensure_shared_session_viewer_child_pane(*conversation_id, *session_id, ctx);
+                group.ensure_shared_session_viewer_child_pane(*conversation_id, session_id.clone(), ctx);
             }
             Event::OpenChildAgentInNewTab { conversation_id } => {
                 // Pane group can't add tabs; forward to the workspace.
@@ -2078,7 +2070,7 @@ fn launch_remote_child(
             }),
             Harness::Oz | Harness::OpenCode | Harness::Gemini | Harness::Unknown => None,
         });
-    let spawn_request = SpawnAgentRequest {
+    let _spawn_request = SpawnAgentRequest {
         prompt: Some(request.prompt),
         mode: UserQueryMode::Normal,
         config: Some(AgentConfigSnapshot {
@@ -2113,9 +2105,12 @@ fn launch_remote_child(
             ctx,
         );
         if let Some(ambient_agent_view_model) = terminal_view.ambient_agent_view_model() {
-            ambient_agent_view_model.update(ctx, |model, ctx| {
+            ambient_agent_view_model.update(ctx, |model, _ctx| {
                 model.set_conversation_id(Some(conversation_id));
-                model.spawn_agent_with_request(spawn_request, ctx);
+                // TODO: Implement spawn_agent_with_request when AmbientAgentViewModel is fully implemented
+                // Currently AmbientAgentViewModel is a stub and doesn't have spawn_agent_with_request method
+                // model.spawn_agent_with_request(spawn_request, ctx);
+                log::warn!("spawn_agent_with_request not implemented in AmbientAgentViewModel stub");
             });
         } else {
             log::error!("Remote StartAgent child pane missing ambient agent view model");

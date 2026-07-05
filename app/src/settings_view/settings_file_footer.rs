@@ -8,16 +8,16 @@
 //!   error *and* the user has dismissed the workspace banner.
 //! * Otherwise, a plain bordered "Open settings file" button.
 use pathfinder_color::ColorU;
-use warp_core::ui::color::coloru_with_opacity;
-use warp_core::ui::theme::Fill;
-use warpui::elements::{
+use cute_core::ui::color::coloru_with_opacity;
+use cute_core::ui::theme::Fill;
+use cuteui::elements::{
     Border, Clipped, ClippedScrollStateHandle, ClippedScrollable, ConstrainedBox, Container,
     CornerRadius, CrossAxisAlignment, Element, Empty, Expanded, Flex, Highlight, Hoverable,
     MainAxisAlignment, MainAxisSize, MouseStateHandle, ParentElement, Radius, ScrollbarWidth, Text,
     Wrap,
 };
-use warpui::fonts::{FamilyId, Properties, Weight};
-use warpui::platform::Cursor;
+use cuteui::fonts::{FamilyId, Properties, Weight};
+use cuteui::platform::Cursor;
 
 use crate::appearance::Appearance;
 use crate::settings::SettingsFileError;
@@ -108,7 +108,7 @@ pub fn render_open_settings_file_button(
     let ui_font_family = appearance.ui_font_family();
 
     Hoverable::new(mouse_state, move |state| {
-        let icon = ConstrainedBox::new(Icon::Code2.to_warpui_icon(text_fill).finish())
+        let icon = ConstrainedBox::new(Icon::Code2.to_cuteui_icon(text_fill).finish())
             .with_width(FOOTER_ICON_SIZE)
             .with_height(FOOTER_ICON_SIZE)
             .finish();
@@ -187,7 +187,7 @@ pub fn render_settings_error_alert(
 
     let alert_icon = ConstrainedBox::new(
         Icon::AlertCircle
-            .to_warpui_icon(Fill::Solid(text_color))
+            .to_cuteui_icon(Fill::Solid(text_color))
             .finish(),
     )
     .with_width(FOOTER_ICON_SIZE)
@@ -206,7 +206,7 @@ pub fn render_settings_error_alert(
     // action buttons below stay fixed and always actionable. Scrollbar thumb
     // colors are derived from `text_color` (which already contrasts against
     // the yellow alert background) so they remain visible in both themes.
-    // `ClippedScrollable` wants `warpui::elements::Fill` (not the theme
+    // `ClippedScrollable` wants `cuteui::elements::Fill` (not the theme
     // `Fill` used elsewhere in this file), so the three fills below are
     // fully qualified to avoid an import alias.
     let scrollable_text = ConstrainedBox::new(
@@ -214,9 +214,9 @@ pub fn render_settings_error_alert(
             mouse_states.alert_text_scroll_state.clone(),
             text_row,
             ScrollbarWidth::Auto,
-            warpui::elements::Fill::Solid(coloru_with_opacity(text_color, 30)),
-            warpui::elements::Fill::Solid(coloru_with_opacity(text_color, 60)),
-            warpui::elements::Fill::None,
+            cuteui::elements::Fill::Solid(coloru_with_opacity(text_color, 30)),
+            cuteui::elements::Fill::Solid(coloru_with_opacity(text_color, 60)),
+            cuteui::elements::Fill::None,
         )
         .finish(),
     )
@@ -333,7 +333,7 @@ fn render_alert_action_button(
         if let Some(icon) = icon {
             row.add_child(
                 Container::new(
-                    ConstrainedBox::new(icon.to_warpui_icon(Fill::Solid(text_color)).finish())
+                    ConstrainedBox::new(icon.to_cuteui_icon(Fill::Solid(text_color)).finish())
                         .with_width(ALERT_OZ_ICON_SIZE)
                         .with_height(ALERT_OZ_ICON_SIZE)
                         .finish(),

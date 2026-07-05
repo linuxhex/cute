@@ -6,14 +6,12 @@ use std::path::{Path, PathBuf};
 use diesel::{QueryDsl, RunQueryDsl, SqliteConnection};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::Icon;
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::Icon;
 
-use crate::cloud_object::model::generic_string_model::StringModel;
-use crate::cloud_object::model::json_model::JsonModel;
 use crate::cloud_object::{
     CloudObjectUuid, GenericStringObjectFormat, GenericStringObjectUniqueKey, JsonObjectType,
-    Revision,
+    Revision, StringModel,
 };
 use crate::drive::items::mcp_server::WarpDriveMCPServer;
 use crate::drive::items::WarpDriveItem;
@@ -52,13 +50,15 @@ cfg_if::cfg_if! {
 pub mod gallery;
 pub use gallery::MCPGalleryManager;
 pub mod templatable;
+// Use all MCP-related types from crate::cloud_object::models::mcp (local definitions with Serialize/Deserialize)
 #[cfg(not(target_family = "wasm"))]
-pub use crate::cloud_object::models::{
-    CLIServer, JSONMCPServer, JSONTransportType, ServerSentEvents, StaticEnvVar, StaticHeader,
+pub use crate::cloud_object::models::mcp::{
+    CLIServer, JSONMCPServer, JSONTransportType, MCPServer, ServerSentEvents, StaticEnvVar,
+    StaticHeader, TransportType,
 };
-pub use crate::cloud_object::models::{
-    CloudMCPServer, CloudMCPServerModel, MCPServer, MCPServerState, TransportType,
-};
+pub use crate::cloud_object::models::mcp::CloudMCPServer;
+// Import MCPServerState from cute_server_client (it's used by other parts of the codebase)
+pub use cute_server_client::cloud_object::models::MCPServerState;
 pub use templatable::{JsonTemplate, TemplatableMCPServer, TemplateVariable};
 pub mod logs;
 pub mod templatable_installation;
@@ -129,20 +129,16 @@ impl StringModel for MCPServer {
         mcp_server: &CloudMCPServer,
     ) -> Option<Box<dyn WarpDriveItem>> {
         Some(Box::new(WarpDriveMCPServer::new(
-            CloudObjectTypeAndId::GenericStringObject {
-                object_type: GenericStringObjectFormat::Json(JsonObjectType::MCPServer),
+            CloudObjectTypeAndId::from_generic_string_object(
+                GenericStringObjectFormat::Json(JsonObjectType::MCPServer),
                 id,
-            },
-            mcp_server.clone(),
+            ),
+            mcp_server.model().string_model.name.clone(),
         )))
     }
 }
 
-impl JsonModel for MCPServer {
-    fn json_object_type() -> JsonObjectType {
-        JsonObjectType::MCPServer
-    }
-}
+
 
 /// Trait for types that have a name and value field.
 /// Used for shared operations on `StaticEnvVar` and `StaticHeader`.
@@ -485,7 +481,7 @@ pub enum MCPServerUpdate {
 
 pub(crate) fn home_config_file_path(provider: MCPProvider) -> Option<PathBuf> {
     match provider {
-        MCPProvider::Warp => warp_core::paths::warp_home_mcp_config_file_path(),
+        MCPProvider::Warp => cute_core::paths::warp_home_mcp_config_file_path(),
         _ => dirs::home_dir().map(|home_dir| home_dir.join(provider.home_config_path())),
     }
 }

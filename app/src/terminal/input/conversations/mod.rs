@@ -6,9 +6,9 @@ mod view;
 
 use pathfinder_color::ColorU;
 pub use view::{InlineConversationMenuEvent, InlineConversationMenuView};
-use warp_core::ui::appearance::Appearance;
-use warpui::keymap::Keystroke;
-use warpui::SingletonEntity;
+use cute_core::ui::appearance::Appearance;
+use cuteui::keymap::Keystroke;
+use cuteui::SingletonEntity;
 
 use crate::ai::active_agent_views_model::{ActiveAgentViewsModel, ConversationOrTaskId};
 use crate::ai::agent_conversations_model::AgentConversationEntryId;

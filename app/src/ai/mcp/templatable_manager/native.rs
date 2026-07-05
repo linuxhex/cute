@@ -13,12 +13,12 @@ use simple_logger::manager::LogManager;
 use simple_logger::SimpleLogger;
 use tokio::io::AsyncBufReadExt as _;
 use uuid::Uuid;
-use warp_core::execution_mode::AppExecutionMode;
-use warp_core::features::FeatureFlag;
-use warp_core::safe_error;
-use warp_core::settings::Setting as _;
-use warpui::windowing::WindowManager;
-use warpui::{AppContext, ModelContext, SingletonEntity};
+use cute_core::execution_mode::AppExecutionMode;
+use cute_core::features::FeatureFlag;
+use cute_core::safe_error;
+use cute_core::settings::Setting as _;
+use cuteui::windowing::WindowManager;
+use cuteui::{AppContext, ModelContext, SingletonEntity};
 
 use super::oauth::{self, AuthContext, FileBasedPersistedCredentialsMap, PersistedCredentialsMap};
 use super::utils::{query_resources_for, query_tools_for};
@@ -51,13 +51,24 @@ use crate::drive::CloudObjectTypeAndId;
 use crate::persistence::{
     database_file_path_for_scope, establish_ro_connection, ModelEvent, PersistenceScope,
 };
-use crate::server::cloud_objects::update_manager::{InitiatedBy, UpdateManager};
+use crate::server::sync_queue::InitiatedBy;
 use crate::server::ids::{ClientId, ServerId, SyncId};
+use crate::server::cloud_objects::UpdateManager;
 use crate::settings::AISettings;
 use crate::view_components::DismissibleToast;
 use crate::workspace::ToastStack;
 use crate::workspaces::user_workspaces::UserWorkspaces;
 use crate::GlobalResourceHandlesProvider;
+
+/// Checks if a CloudObjectTypeAndId is for a TemplatableMCPServer.
+fn is_templatable_mcp_server_type(type_and_id: &CloudObjectTypeAndId) -> bool {
+    match type_and_id {
+        CloudObjectTypeAndId::GenericStringObject { object_type, .. } => {
+            object_type == "Json(TemplatableMCPServer)"
+        }
+        _ => false,
+    }
+}
 
 /// Controls the behavior of `spawn_server_impl`.
 enum SpawnMode {
@@ -199,81 +210,26 @@ impl TemplatableMCPServerManager {
         // TemplatableMCPServerManager is the source of truth for templatable MCP servers stored on the cloud
         let cloud_model = CloudModel::handle(ctx);
         ctx.subscribe_to_model(&cloud_model, |me, event, ctx| match event {
-            CloudModelEvent::ObjectUpdated {
-                type_and_id:
-                    CloudObjectTypeAndId::GenericStringObject {
-                        object_type:
-                            GenericStringObjectFormat::Json(JsonObjectType::TemplatableMCPServer),
-                        id: _,
-                    },
-                source: _,
-            }
-            | CloudModelEvent::ObjectTrashed {
-                type_and_id:
-                    CloudObjectTypeAndId::GenericStringObject {
-                        object_type:
-                            GenericStringObjectFormat::Json(JsonObjectType::TemplatableMCPServer),
-                        id: _,
-                    },
-                source: _,
-            }
-            | CloudModelEvent::ObjectUntrashed {
-                type_and_id:
-                    CloudObjectTypeAndId::GenericStringObject {
-                        object_type:
-                            GenericStringObjectFormat::Json(JsonObjectType::TemplatableMCPServer),
-                        id: _,
-                    },
-                source: _,
-            }
-            | CloudModelEvent::ObjectDeleted {
-                type_and_id:
-                    CloudObjectTypeAndId::GenericStringObject {
-                        object_type:
-                            GenericStringObjectFormat::Json(JsonObjectType::TemplatableMCPServer),
-                        id: _,
-                    },
-                folder_id: _,
-            }
-            | CloudModelEvent::ObjectSynced {
-                type_and_id:
-                    CloudObjectTypeAndId::GenericStringObject {
-                        object_type:
-                            GenericStringObjectFormat::Json(JsonObjectType::TemplatableMCPServer),
-                        id: _,
-                    },
-                client_id: _,
-                server_id: _,
-            }
-            | CloudModelEvent::ObjectMoved {
-                type_and_id:
-                    CloudObjectTypeAndId::GenericStringObject {
-                        object_type:
-                            GenericStringObjectFormat::Json(JsonObjectType::TemplatableMCPServer),
-                        id: _,
-                    },
-                source: _,
-                from_folder: _,
-                to_folder: _,
-            } => {
+            CloudModelEvent::ObjectUpdated { type_and_id, .. }
+            | CloudModelEvent::ObjectTrashed { type_and_id, .. }
+            | CloudModelEvent::ObjectUntrashed { type_and_id, .. }
+            | CloudModelEvent::ObjectDeleted { type_and_id, .. }
+            | CloudModelEvent::ObjectMoved { type_and_id, .. }
+                if is_templatable_mcp_server_type(type_and_id) => {
                 me.fetch_cloud_servers(ctx);
             },
-            CloudModelEvent::ObjectCreated {
-                type_and_id:
-                    CloudObjectTypeAndId::GenericStringObject {
-                        object_type:
-                            GenericStringObjectFormat::Json(JsonObjectType::TemplatableMCPServer),
-                        id: new_sync_id
-                    },
-            } => {
-                log::debug!("A new MCP server template was found with sync id {new_sync_id}");
-                if let Some(new_server) = CloudTemplatableMCPServer::get_by_id(new_sync_id, ctx) {
-                    let uuid = new_server.model().string_model.uuid;
-                    if let Some(legacy_server) = CloudMCPServer::get_by_uuid(&uuid, ctx) {
-                        let old_sync_id = legacy_server.sync_id();
-                        me.delete_legacy_mcp_server(old_sync_id, InitiatedBy::System, ctx);
-                        log::info!("Successfully converted MCP server {old_sync_id} into {uuid} with sync id {new_sync_id}.");
-                        ctx.emit(TemplatableMCPServerManagerEvent::LegacyServerConverted);
+            CloudModelEvent::ObjectCreated { type_and_id }
+                if is_templatable_mcp_server_type(type_and_id) => {
+                if let CloudObjectTypeAndId::GenericStringObject { id: new_sync_id, .. } = type_and_id {
+                    log::debug!("A new MCP server template was found with sync id {new_sync_id}");
+                    if let Some(new_server) = CloudTemplatableMCPServer::get_by_id(new_sync_id, ctx) {
+                        let uuid = new_server.model().string_model.uuid;
+                        if let Some(legacy_server) = CloudMCPServer::get_by_uuid(&uuid, ctx) {
+                            let old_sync_id = legacy_server.sync_id();
+                            me.delete_legacy_mcp_server(old_sync_id, InitiatedBy::System, ctx);
+                            log::info!("Successfully converted MCP server {old_sync_id} into {uuid} with sync id {new_sync_id}.");
+                            ctx.emit(TemplatableMCPServerManagerEvent::LegacyServerConverted);
+                        }
                     }
                 }
                 me.fetch_cloud_servers(ctx);
@@ -452,13 +408,17 @@ impl TemplatableMCPServerManager {
     ) {
         let owner = UserWorkspaces::as_ref(ctx).space_to_owner(space, ctx);
         if let Some(owner) = owner {
+            let owner_str = match owner {
+                crate::cloud_object::Owner::User { user_uid } => user_uid.to_string(),
+                crate::cloud_object::Owner::Team { team_uid } => team_uid.to_string(),
+            };
             let update_manager = UpdateManager::handle(ctx);
             update_manager.update(ctx, |update_manager, ctx| {
                 let client_id = ClientId::default();
                 update_manager.create_templatable_mcp_server(
                     templatable_mcp_server.clone(),
                     client_id,
-                    owner,
+                    owner_str,
                     initiated_by,
                     ctx,
                 );
@@ -481,12 +441,18 @@ impl TemplatableMCPServerManager {
         let cloud_templatable_mcp_server =
             self.get_cloud_templatable_mcp_server(template_server.uuid);
         if let Some(cloud_templatable_mcp_server) = cloud_templatable_mcp_server {
+            let revision_str = cloud_templatable_mcp_server
+                .metadata
+                .revision
+                .clone()
+                .and_then(|r| Some(r.utc().to_string()))
+                .unwrap_or_default();
             let update_manager = UpdateManager::handle(ctx);
             update_manager.update(ctx, |update_manager, ctx| {
                 update_manager.update_templatable_mcp_server(
                     template_server,
                     cloud_templatable_mcp_server.id,
-                    cloud_templatable_mcp_server.metadata.revision.clone(),
+                    revision_str,
                     ctx,
                 );
             });
@@ -504,10 +470,10 @@ impl TemplatableMCPServerManager {
 
         let cloud_templatable_mcp_server = self.get_cloud_templatable_mcp_server(uuid);
         if let Some(cloud_templatable_mcp_server) = cloud_templatable_mcp_server {
-            let cloud_object_type_and_id = CloudObjectTypeAndId::GenericStringObject {
-                object_type: GenericStringObjectFormat::Json(JsonObjectType::TemplatableMCPServer),
-                id: cloud_templatable_mcp_server.id,
-            };
+            let cloud_object_type_and_id = CloudObjectTypeAndId::from_generic_string_object(
+                GenericStringObjectFormat::Json(JsonObjectType::TemplatableMCPServer),
+                cloud_templatable_mcp_server.id,
+            );
 
             let update_manager = UpdateManager::handle(ctx);
             update_manager.update(ctx, |update_manager, ctx| {
@@ -525,10 +491,10 @@ impl TemplatableMCPServerManager {
         // The legacy MCPServerManager no longer runs servers, so we only need
         // to delete the cloud object. OAuth credentials were already copied
         // during conversion.
-        let cloud_object_type_and_id = CloudObjectTypeAndId::GenericStringObject {
-            object_type: GenericStringObjectFormat::Json(JsonObjectType::MCPServer),
-            id: sync_id,
-        };
+        let cloud_object_type_and_id = CloudObjectTypeAndId::from_generic_string_object(
+            GenericStringObjectFormat::Json(JsonObjectType::MCPServer),
+            sync_id,
+        );
 
         let update_manager = UpdateManager::handle(ctx);
         update_manager.update(ctx, |update_manager, ctx| {
@@ -1434,12 +1400,10 @@ impl TemplatableMCPServerManager {
 
         if let Some(sync_id) = sync_id {
             if let Some(team_uid) = team_uid {
-                let object_type_and_id = CloudObjectTypeAndId::GenericStringObject {
-                    object_type: GenericStringObjectFormat::Json(
-                        JsonObjectType::TemplatableMCPServer,
-                    ),
-                    id: sync_id,
-                };
+                let object_type_and_id = CloudObjectTypeAndId::from_generic_string_object(
+                    GenericStringObjectFormat::Json(JsonObjectType::TemplatableMCPServer),
+                    sync_id,
+                );
                 UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
                     let (destination_folder_id, space) = match CloudObjectLocation::Space(Space::Team { team_uid }) {
                         CloudObjectLocation::Space(space) => (None, space),
@@ -1484,10 +1448,10 @@ impl TemplatableMCPServerManager {
         if let Some(cloud_templatable_mcp_server) = cloud_templatable_mcp_server {
             let sync_id = cloud_templatable_mcp_server.sync_id();
 
-            let object_type_and_id = CloudObjectTypeAndId::GenericStringObject {
-                object_type: GenericStringObjectFormat::Json(JsonObjectType::TemplatableMCPServer),
-                id: sync_id,
-            };
+            let object_type_and_id = CloudObjectTypeAndId::from_generic_string_object(
+                GenericStringObjectFormat::Json(JsonObjectType::TemplatableMCPServer),
+                sync_id,
+            );
             UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
                 let (destination_folder_id, space) = match CloudObjectLocation::Space(Space::Personal) {
                     CloudObjectLocation::Space(space) => (None, space),
@@ -2082,8 +2046,8 @@ fn make_client_info() -> rmcp::model::ClientInfo {
     rmcp::model::ClientInfo::new(
         Default::default(),
         rmcp::model::Implementation::new(
-            warp_core::channel::ChannelState::app_id().to_string(),
-            warp_core::channel::ChannelState::app_version()
+            cute_core::channel::ChannelState::app_id().to_string(),
+            cute_core::channel::ChannelState::app_version()
                 .map(|v| v.to_string())
                 .unwrap_or_default(),
         ),

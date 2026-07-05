@@ -1,7 +1,7 @@
 use serde_json::{json, Value};
 use strum_macros::{EnumDiscriminants, EnumIter};
-use warp_core::features::FeatureFlag;
-use warp_core::telemetry::{EnablementState, TelemetryEvent, TelemetryEventDesc};
+use cute_core::features::FeatureFlag;
+use cute_core::telemetry::{EnablementState, TelemetryEvent, TelemetryEventDesc};
 
 use crate::workspace::tab_settings::{
     VerticalTabsCompactSubtitle, VerticalTabsDisplayGranularity, VerticalTabsPrimaryInfo,
@@ -11,6 +11,7 @@ use crate::workspace::tab_settings::{
 /// Which display option on the vertical tabs settings popup the user changed,
 /// along with the new value they picked.
 #[derive(Clone, Copy, Debug)]
+#[allow(dead_code)]
 pub enum VerticalTabsDisplayOption {
     DisplayGranularity(VerticalTabsDisplayGranularity),
     TabItemMode(VerticalTabsTabItemMode),
@@ -87,6 +88,7 @@ impl VerticalTabsChipEntrypoint {
 
 #[derive(Debug, EnumDiscriminants)]
 #[strum_discriminants(derive(EnumIter))]
+#[allow(dead_code)]
 pub enum VerticalTabsTelemetryEvent {
     /// The user updated a display option in the vertical tabs settings popup.
     DisplayOptionChanged(VerticalTabsDisplayOption),
@@ -133,7 +135,7 @@ impl TelemetryEvent for VerticalTabsTelemetryEvent {
     }
 
     fn event_descs() -> impl Iterator<Item = Box<dyn TelemetryEventDesc>> {
-        warp_core::telemetry::enum_events::<Self>()
+        cute_core::telemetry::enum_events::<Self>()
     }
 }
 
@@ -165,4 +167,4 @@ impl TelemetryEventDesc for VerticalTabsTelemetryEventDiscriminants {
     }
 }
 
-warp_core::register_telemetry_event!(VerticalTabsTelemetryEvent);
+cute_core::register_telemetry_event!(VerticalTabsTelemetryEvent);

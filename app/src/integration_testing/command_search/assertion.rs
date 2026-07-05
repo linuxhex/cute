@@ -1,5 +1,5 @@
-use warpui::integration::AssertionCallback;
-use warpui::{async_assert, async_assert_eq};
+use cuteui::integration::AssertionCallback;
+use cuteui::{async_assert, async_assert_eq};
 
 use crate::integration_testing::view_getters::{command_search_view, workspace_view};
 use crate::search::QueryFilter;

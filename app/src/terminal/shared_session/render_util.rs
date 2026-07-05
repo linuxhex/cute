@@ -1,16 +1,46 @@
 use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::vec2f;
-use warpui::elements::{
+use session_sharing_protocol::common::{ParticipantInfo, SessionId};
+use session_sharing_protocol::sharer::{
+    AddGuestsResponse, FailedToInitializeSessionReason, SessionEndedReason,
+};
+use cuteui::elements::{
     ChildAnchor, CornerRadius, Fill, Hoverable, MouseStateHandle, OffsetPositioning, ParentAnchor,
     ParentElement, ParentOffsetBounds, Radius, Stack,
 };
-use warpui::fonts::Weight;
-use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::{AppContext, Element, SingletonEntity};
+use cuteui::fonts::Weight;
+use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
+use cuteui::{AppContext, Element, SingletonEntity};
+use std::sync::OnceLock;
 
-use super::presence_manager::{Participant, MUTED_AVATAR_BORDER_COLOR, MUTED_PARTICIPANT_COLOR};
 use crate::appearance::Appearance;
 use crate::ui_components::avatar::{Avatar, AvatarContent};
+
+/// Color for muted/disconnected participants
+pub static MUTED_PARTICIPANT_COLOR: OnceLock<ColorU> = OnceLock::new();
+pub fn get_muted_participant_color() -> ColorU {
+    *MUTED_PARTICIPANT_COLOR.get_or_init(|| ColorU::new(150, 150, 150, 255))
+}
+
+/// Border color for muted participant avatars
+pub static MUTED_AVATAR_BORDER_COLOR: OnceLock<ColorU> = OnceLock::new();
+pub fn get_muted_avatar_border_color() -> ColorU {
+    *MUTED_AVATAR_BORDER_COLOR.get_or_init(|| ColorU::new(120, 120, 120, 255))
+}
+
+/// Participant with color for rendering
+pub struct Participant {
+    pub info: ParticipantInfo,
+    pub color: ColorU,
+}
+
+/// Participant at a selected block with rendering information
+pub struct ParticipantAtBlock {
+    pub participant: Participant,
+    pub should_show_avatar: bool,
+    pub is_top_of_continuous_selection: bool,
+    pub is_bottom_of_continuous_selection: bool,
+}
 
 pub fn shared_session_indicator_color(appearance: &Appearance) -> ColorU {
     appearance.theme().terminal_colors().normal.red.into()
@@ -34,12 +64,12 @@ pub fn non_hoverable_participant_avatar(
 ) -> Box<dyn Element> {
     let appearance = Appearance::as_ref(app);
     let background = if is_muted {
-        MUTED_PARTICIPANT_COLOR
+        get_muted_participant_color()
     } else {
         participant_color
     };
     let border_color = if is_muted {
-        MUTED_AVATAR_BORDER_COLOR.into()
+        get_muted_avatar_border_color().into()
     } else if image_url.is_none() {
         appearance.theme().surface_2()
     } else {
@@ -143,4 +173,40 @@ pub fn participant_avatar_for_selected_block(
         stack.finish()
     })
     .finish()
+}
+
+/// Returns the text selection color for a participant
+pub fn text_selection_color(participant_color: ColorU) -> ColorU {
+    participant_color
+}
+
+/// Returns a user-friendly string for session termination reason
+pub fn session_terminated_reason_string(
+    _reason: SessionEndedReason,
+    _max_session_size: usize,
+) -> String {
+    "Session ended".to_string()
+}
+
+/// Returns the join link for a session
+pub fn join_link(session_id: &SessionId) -> String {
+    format!("https://app.cute.dev/join/{}", session_id)
+}
+
+/// Returns a user-friendly error string for failed guest addition
+pub fn failed_to_add_guests_user_error(reason: &AddGuestsResponse) -> String {
+    match reason {
+        AddGuestsResponse::Error(_) => "Failed to add guests to session".to_string(),
+        _ => "Unknown error".to_string(),
+    }
+}
+
+/// Returns a user-friendly error string for failed session initialization
+pub fn failed_to_initialize_session_user_error(reason: &FailedToInitializeSessionReason) -> String {
+    match reason {
+        FailedToInitializeSessionReason::NoUserQuotaRemaining { .. } => {
+            "Session quota exceeded".to_string()
+        }
+        _ => "Failed to initialize session".to_string(),
+    }
 }

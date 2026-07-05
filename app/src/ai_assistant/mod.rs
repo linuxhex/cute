@@ -6,12 +6,12 @@ use itertools::Itertools;
 use lazy_static::lazy_static;
 use pathfinder_color::ColorU;
 use serde::{Deserialize, Serialize};
-use warp_core::command::ExitCode;
-use warp_graphql::ai::{
+use cute_core::command::ExitCode;
+use cute_graphql::ai::{
     RequestLimitInfo as RequestLimitInfoGraphql,
     RequestLimitRefreshDuration as RequestLimitRefreshDurationGraphql,
 };
-use warp_graphql::mutations::generate_commands::{GenerateCommandsFailureType, GeneratedCommand};
+use cute_graphql::mutations::generate_commands::{GenerateCommandsFailureType, GeneratedCommand};
 
 use crate::ai::{RequestLimitInfo, RequestLimitRefreshDuration};
 use crate::server::telemetry::OpenedWarpAISource;
@@ -70,11 +70,11 @@ pub enum AskAIType {
 impl From<&AskAIType> for OpenedWarpAISource {
     fn from(value: &AskAIType) -> Self {
         match value {
-            AskAIType::FromAICommandSearch { .. } => OpenedWarpAISource::FromAICommandSearch,
+            AskAIType::FromAICommandSearch { .. } => OpenedWarpAISource::FROM_AI_COMMAND_SEARCH,
             AskAIType::FromBlock { .. } | AskAIType::FromBlocks { .. } => {
-                OpenedWarpAISource::HelpWithBlock
+                OpenedWarpAISource::HELP_WITH_BLOCK
             }
-            AskAIType::FromTextSelection { .. } => OpenedWarpAISource::HelpWithTextSelection,
+            AskAIType::FromTextSelection { .. } => OpenedWarpAISource::HELP_WITH_TEXT_SELECTION,
         }
     }
 }

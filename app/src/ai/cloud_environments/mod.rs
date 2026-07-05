@@ -1,91 +1,40 @@
-// Some of these re-exported types aren't used in the wasm build, so we suppress this
-// warning.
-//
-// Note: Cloud-specific logic has been removed. Only type definitions remain
-// for local agent use.
-#[cfg_attr(target_family = "wasm", expect(unused_imports))]
-pub use crate::cloud_object::models::{
+// Note: Cloud-specific logic has been removed.
+
+use cuteui::{AppContext, SingletonEntity as _};
+
+use crate::auth::AuthStateProvider;
+use crate::workspaces::user_workspaces::UserWorkspaces;
+use crate::cloud_object::Owner;
+
+// Re-export types from cloud_object::models::cloud_environment
+pub use crate::cloud_object::models::cloud_environment::{
     AmbientAgentEnvironment, AwsProviderConfig, BaseImage, CloudAmbientAgentEnvironment,
     CloudAmbientAgentEnvironmentModel, GcpProviderConfig, GithubRepo, ProvidersConfig,
 };
-use warp_server_client::cloud_object::Owner;
-use warpui::{AppContext, SingletonEntity as _};
 
-use crate::auth::AuthStateProvider;
-use crate::cloud_object::model::generic_string_model::StringModel;
-use crate::cloud_object::model::json_model::JsonModel;
-use crate::cloud_object::{
-    GenericStringObjectFormat, GenericStringObjectUniqueKey, JsonObjectType, Revision,
-};
-use crate::workspaces::user_workspaces::UserWorkspaces;
-
-impl StringModel for AmbientAgentEnvironment {
-    type CloudObjectType = CloudAmbientAgentEnvironment;
-
-    fn model_type_name(&self) -> &'static str {
-        "Cloud environment"
-    }
-
-    fn should_enforce_revisions() -> bool {
-        true
-    }
-
-    fn model_format() -> GenericStringObjectFormat {
-        GenericStringObjectFormat::Json(JsonObjectType::CloudEnvironment)
-    }
-
-    fn display_name(&self) -> String {
-        self.name.clone()
-    }
-
-    fn _update_object_queue_item(
-        &self,
-        _revision_ts: Option<Revision>,
-        _object: &CloudAmbientAgentEnvironment,
-    ) {
-        // No-op for local version
-    }
-
-    fn uniqueness_key(&self) -> Option<GenericStringObjectUniqueKey> {
-        None
-    }
-
-    fn should_show_activity_toasts() -> bool {
-        false
-    }
-
-    fn warn_if_unsaved_at_quit() -> bool {
-        true
-    }
-}
-
-impl JsonModel for AmbientAgentEnvironment {
-    fn json_object_type() -> JsonObjectType {
-        JsonObjectType::CloudEnvironment
-    }
-}
-
-/// Resolves the current owner for creating new environments.
-///
-/// If the user is on a team, returns `Owner::Team`. Otherwise, returns
-/// `Owner::User` with the current user's ID. Returns `None` if the user
-/// is not logged in.
-#[allow(dead_code)]
+/// Stub function: Get the owner for a new environment (team preference).
+/// Returns None if the user is not logged in or has no team.
 pub fn owner_for_new_environment(ctx: &AppContext) -> Option<Owner> {
+    // TODO: Implement proper owner resolution logic
+    log::debug!("owner_for_new_environment called (stub)");
+    
+    // Try to get team UID first
     if let Some(team_uid) = UserWorkspaces::as_ref(ctx).current_team_uid() {
-        Some(Owner::Team { team_uid })
-    } else {
-        let user_id = AuthStateProvider::as_ref(ctx).get().user_id()?;
-        Some(Owner::User { user_uid: user_id })
+        return Some(Owner::Team { team_uid });
     }
+    
+    // Fall back to personal environment
+    owner_for_new_personal_environment(ctx)
 }
 
-/// Resolves the current owner for creating new personal environments.
-///
-/// Returns `Owner::User` with the current user's ID. Returns `None` if the user
-/// is not logged in.
-#[allow(dead_code)]
+/// Stub function: Get the owner for a new personal environment.
+/// Returns None if the user is not logged in.
 pub fn owner_for_new_personal_environment(ctx: &AppContext) -> Option<Owner> {
-    let user_id = AuthStateProvider::as_ref(ctx).get().user_id()?;
-    Some(Owner::User { user_uid: user_id })
+    // TODO: Implement proper owner resolution logic
+    log::debug!("owner_for_new_personal_environment called (stub)");
+    
+    AuthStateProvider::as_ref(ctx)
+        .get()
+        .user_id()
+        .map(|user_uid| Owner::User { user_uid })
 }

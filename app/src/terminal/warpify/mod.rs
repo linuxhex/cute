@@ -3,8 +3,10 @@ pub mod settings;
 pub mod success_block;
 pub mod trigger_state;
 
+pub use render::render_never_warpify_ssh_link;
+
 use channel_versions::overrides::TargetOS;
-use warpui::AssetProvider;
+use cuteui::AssetProvider;
 
 use crate::terminal::model::terminal_model::SubshellInitializationInfo;
 use crate::terminal::shell::ShellType;

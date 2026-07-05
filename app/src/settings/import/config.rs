@@ -6,11 +6,11 @@ use pathfinder_color::ColorU;
 use serde::Serialize;
 use strum_macros::EnumIter;
 use thiserror::Error;
-use warp_core::ui::color::hex_color::HexColorError as UiHexColorError;
-use warp_core::ui::theme::{AnsiColors, WarpTheme};
-use warpui::fonts::FontInfo;
-use warpui::keymap::Keystroke;
-use warpui::DisplayIdx;
+use cute_core::ui::color::hex_color::HexColorError as UiHexColorError;
+use cute_core::ui::theme::{AnsiColors, WarpTheme};
+use cuteui::fonts::FontInfo;
+use cuteui::keymap::Keystroke;
+use cuteui::DisplayIdx;
 
 use super::alacritty_parser::AlacrittyConfig;
 #[cfg(target_os = "macos")]

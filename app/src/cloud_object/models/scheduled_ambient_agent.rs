@@ -1,13 +1,14 @@
 use std::collections::HashMap;
 
-use warp_server_client::{
+use cute_server_client::{
     cloud_object::{GenericCloudObject, GenericServerObject, GenericStringModel, JsonObjectType},
     ids::GenericStringObjectId,
 };
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use warp_cli::agent::Harness;
+use cute_cli::agent::Harness;
 
 use super::{JsonModel, JsonSerializer};
+use crate::cloud_object::model::generic_string_model::StringModel;
 
 /// Runtime configuration snapshot for agent execution.
 ///
@@ -15,7 +16,7 @@ use super::{JsonModel, JsonSerializer};
 /// It combines settings from config files and CLI args.
 /// Unlike `AgentConfig` (the cloud model), field names here use the runtime format
 /// (e.g. `model_id` instead of `base_model_id`).
-#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
 pub struct AgentConfigSnapshot {
     /// Config name for searchability/traceability.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -57,7 +58,7 @@ pub struct AgentConfigSnapshot {
 }
 
 /// Configuration for a third-party execution harness.
-#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
 pub struct HarnessConfig {
     /// The harness type, e.g. [`Harness::Claude`].
     #[serde(
@@ -114,7 +115,7 @@ fn deserialize_harness<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Har
     }))
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct HarnessAuthSecretsConfig {
     /// Name of a managed secret for Claude Code harness authentication.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -194,6 +195,38 @@ impl ScheduledAmbientAgent {
 impl JsonModel for ScheduledAmbientAgent {
     fn json_object_type() -> JsonObjectType {
         JsonObjectType::ScheduledAmbientAgent
+    }
+}
+
+impl StringModel for ScheduledAmbientAgent {
+    type CloudObjectType = GenericCloudObject<GenericStringObjectId, GenericStringModel<Self, JsonSerializer>>;
+
+    fn model_type_name(&self) -> &'static str {
+        "Scheduled Agent"
+    }
+
+    fn should_enforce_revisions() -> bool {
+        false
+    }
+
+    fn model_format() -> cute_server_client::cloud_object::GenericStringObjectFormat {
+        cute_server_client::cloud_object::GenericStringObjectFormat::Json(Self::json_object_type())
+    }
+
+    fn should_show_activity_toasts() -> bool {
+        false
+    }
+
+    fn warn_if_unsaved_at_quit() -> bool {
+        false
+    }
+
+    fn display_name(&self) -> String {
+        self.name.clone()
+    }
+
+    fn uniqueness_key(&self) -> Option<crate::cloud_object::GenericStringObjectUniqueKey> {
+        None
     }
 }
 

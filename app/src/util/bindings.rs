@@ -8,13 +8,13 @@ use fuzzy_match::match_indices_case_insensitive;
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use regex::Regex;
-use warpui::actions::StandardAction;
-use warpui::keymap::{
+use cuteui::actions::StandardAction;
+use cuteui::keymap::{
     BindingDescription, BindingId, BindingLens, CustomTag, DescriptionContext, EditableBindingLens,
     IsBindingValid, Keystroke, Trigger,
 };
-use warpui::platform::OperatingSystem;
-use warpui::{Action, AppContext, SingletonEntity};
+use cuteui::platform::OperatingSystem;
+use cuteui::{Action, AppContext, SingletonEntity};
 
 use crate::keyboard::{remove_custom_keybinding, write_custom_keybinding, UserDefinedKeybinding};
 use crate::settings_view::keybindings::{KeybindingChangedEvent, KeybindingChangedNotifier};
@@ -782,7 +782,7 @@ fn materialize_description(desc: &BindingDescription, ctx: &AppContext) -> Bindi
 
 /// Possible groups a Binding can be part of. The string representation (produced in
 /// [`BindingGroup::as_str`]) is used as the group identifier within
-/// [`warpui::keymap::FixedBinding`] or [`EditableBinding`].
+/// [`cuteui::keymap::FixedBinding`] or [`EditableBinding`].
 #[derive(Copy, Clone, Debug, Sequence)]
 pub enum BindingGroup {
     Settings,
@@ -842,8 +842,8 @@ impl BindingGroup {
 /// framework and we can't easily produce the shift-modified version of the key ourselves. In this case the recommended
 /// solution is to to create separate [`Keystroke`]s for the Mac and non-Mac cases. For example:
 /// ```
-/// use warpui::keymap::Keystroke;
-/// use warpui::platform::OperatingSystem;
+/// use cuteui::keymap::Keystroke;
+/// use cuteui::platform::OperatingSystem;
 /// let keystroke = if OperatingSystem::get().is_mac() {
 ///    Keystroke::parse("cmd-[")
 /// } else {

@@ -2,8 +2,8 @@ use std::collections::HashMap;
 use std::ffi::OsString;
 use std::path::PathBuf;
 
-use warp_cli::agent::Harness;
-use warpui::{EntityId, SingletonEntity, ViewContext, ViewHandle};
+use cute_cli::agent::Harness;
+use cuteui::{EntityId, SingletonEntity, ViewContext, ViewHandle};
 
 use crate::ai::agent::conversation::{AIConversationId, ConversationStatus};
 use crate::ai::ambient_agent_types::AmbientAgentTaskId;

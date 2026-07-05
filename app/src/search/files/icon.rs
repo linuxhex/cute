@@ -1,6 +1,6 @@
-use warp_core::ui::appearance::Appearance;
-use warpui::elements::Icon;
-use warpui::Element;
+use cute_core::ui::appearance::Appearance;
+use cuteui::elements::Icon;
+use cuteui::Element;
 
 use crate::search::result_renderer::ItemHighlightState;
 

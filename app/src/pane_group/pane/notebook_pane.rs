@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use anyhow::Context;
 use url::Url;
-use warpui::{AppContext, ModelHandle, SingletonEntity, ViewContext, ViewHandle};
+use cuteui::{AppContext, ModelHandle, SingletonEntity, ViewContext, ViewHandle};
 
 use super::super::{DefaultSessionModeBehavior, Direction};
 use super::view::PaneView;
@@ -226,19 +226,19 @@ fn handle_notebook_event(
         NotebookEvent::EditWorkflow(id) => {
             ctx.emit(crate::pane_group::Event::OpenCloudWorkflowForEdit(*id))
         }
-        NotebookEvent::ViewInWarpDrive(id) => view_in_warp_drive(*id, ctx),
+        NotebookEvent::ViewInWarpDrive(id) => view_in_warp_drive(id.clone(), ctx),
         NotebookEvent::MoveToSpace {
             cloud_object_type_and_id,
             new_space,
-        } => move_to_space(*cloud_object_type_and_id, *new_space, ctx),
+        } => move_to_space(cloud_object_type_and_id.clone(), new_space.clone(), ctx),
         NotebookEvent::Pane(pane_event) => group.handle_pane_event(pane_id, pane_event, ctx),
         NotebookEvent::OpenDriveObjectShareDialog {
             cloud_object_type_and_id,
             invitee_email,
             source,
         } => ctx.emit(crate::pane_group::Event::OpenDriveObjectShareDialog {
-            source: *source,
-            cloud_object_type_and_id: *cloud_object_type_and_id,
+            source: source.clone(),
+            cloud_object_type_and_id: cloud_object_type_and_id.clone(),
             invitee_email: invitee_email.clone(),
         }),
         NotebookEvent::AttachPlanAsContext(ai_document_id) => {

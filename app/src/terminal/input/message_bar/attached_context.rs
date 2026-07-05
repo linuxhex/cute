@@ -1,7 +1,7 @@
 //! Shared message producers for displaying attached blocks/text context.
 
-use warp_core::features::FeatureFlag;
-use warpui::keymap::Keystroke;
+use cute_core::features::FeatureFlag;
+use cuteui::keymap::Keystroke;
 
 use crate::ai::blocklist::agent_view::{AgentMessageBarMouseStates, AgentViewController};
 use crate::ai::blocklist::{BlocklistAIContextModel, BlocklistAIInputModel};

@@ -20,8 +20,8 @@ use serde::{Deserialize, Serialize};
 use tempfile::NamedTempFile;
 use tokio::sync::Mutex as AsyncMutex;
 use uuid::Uuid;
-use warpui::r#async::SpawnedFutureHandle;
-use warpui::ModelSpawner;
+use cuteui::r#async::SpawnedFutureHandle;
+use cuteui::ModelSpawner;
 
 use crate::ai::agent_events::{
     run_agent_event_driver, AgentEventConsumer, AgentEventConsumerControlFlow,
@@ -715,7 +715,7 @@ async fn read_parent_bridge_resume_cursor(
     };
 
     let server_sequence = match server_api.get_ambient_agent_task(&task_id).await {
-        Ok(task) => task.last_event_sequence.unwrap_or(0),
+        Ok(task) => task.last_event_sequence.unwrap_or(0) as i64,
         Err(err) => {
             log::warn!(
                 "Failed to read server-backed event cursor for Claude message bridge run {run_id}: {err:#}"

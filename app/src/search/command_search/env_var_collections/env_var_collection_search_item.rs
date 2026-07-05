@@ -1,12 +1,12 @@
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
-use warpui::elements::{
+use cuteui::elements::{
     ConstrainedBox, Container, CrossAxisAlignment, Flex, Highlight, Icon, MainAxisAlignment,
     MainAxisSize, ParentElement, Text,
 };
-use warpui::fonts::{Properties, Weight};
-use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::{AppContext, Element, SingletonEntity};
+use cuteui::fonts::{Properties, Weight};
+use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
+use cuteui::{AppContext, Element, SingletonEntity};
 
 use crate::appearance::Appearance;
 use crate::env_vars::CloudEnvVarCollection;

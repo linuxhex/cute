@@ -11,14 +11,14 @@ pub use cloud_mode_v2_view::{CloudModeV2SlashCommandView, Section as CloudModeV2
 pub use data_source::*;
 pub use view::{CloseReason, InlineSlashCommandView, SlashCommandsEvent};
 #[cfg(not(target_family = "wasm"))]
-use warp_cli::agent::Harness;
-use warp_core::features::FeatureFlag;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::theme::AnsiColorIdentifier;
+use cute_cli::agent::Harness;
+use cute_core::features::FeatureFlag;
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::theme::AnsiColorIdentifier;
 #[cfg(feature = "local_fs")]
-use warp_util::path::{CleanPathResult, LineAndColumnArg};
-use warpui::clipboard::ClipboardContent;
-use warpui::{AppContext, SingletonEntity, ViewContext};
+use cute_util::path::{CleanPathResult, LineAndColumnArg};
+use cuteui::clipboard::ClipboardContent;
+use cuteui::{AppContext, SingletonEntity, ViewContext};
 
 #[cfg(not(target_family = "wasm"))]
 use crate::ai::agent::conversation::AIConversationId;
@@ -749,10 +749,12 @@ impl Input {
                     return false;
                 }
                 // Only open the host selector when a default host is configured.
-                if self
-                    .host_selector()
-                    .is_none_or(|h| !h.as_ref(ctx).has_default_host())
-                {
+                let has_default_host = std::env::var("WARP_CLOUD_MODE_DEFAULT_HOST")
+                    .ok()
+                    .filter(|s| !s.is_empty())
+                    .is_some()
+                    || crate::UserWorkspaces::as_ref(ctx).default_host_slug().is_some();
+                if self.host_selector().is_none() && !has_default_host {
                     return false;
                 }
                 self.suggestions_mode_model.update(ctx, |model, ctx| {

@@ -2,7 +2,7 @@
 use std::path::PathBuf;
 
 #[cfg(windows)]
-use warp_terminal::shell::{ShellLaunchData, ShellType};
+use cute_terminal::shell::{ShellLaunchData, ShellType};
 
 use super::*;
 

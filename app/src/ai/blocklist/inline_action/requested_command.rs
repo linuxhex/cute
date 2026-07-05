@@ -8,17 +8,17 @@ use lazy_static::lazy_static;
 use parking_lot::FairMutex;
 use pathfinder_geometry::vector::vec2f;
 use settings::Setting as _;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::Icon;
-use warp_editor::render::element::VerticalExpansionBehavior;
-use warpui::elements::{
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::Icon;
+use cute_editor::render::element::VerticalExpansionBehavior;
+use cuteui::elements::{
     Align, Border, ChildView, Clipped, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment,
     Expanded, Flex, MainAxisSize, MouseStateHandle, OffsetPositioning, ParentElement, Radius,
     ScrollbarWidth, SelectableArea, SelectionHandle, Stack, Text,
 };
-use warpui::keymap::{Context, EditableBinding, FixedBinding, Keystroke};
-use warpui::ui_components::components::UiComponent as _;
-use warpui::{
+use cuteui::keymap::{Context, EditableBinding, FixedBinding, Keystroke};
+use cuteui::ui_components::components::UiComponent as _;
+use cuteui::{
     AppContext, Element, Entity, EntityId, EventContext, ModelHandle, SingletonEntity,
     TypedActionView, UpdateView, View, ViewContext, ViewHandle,
 };
@@ -113,7 +113,7 @@ lazy_static! {
 }
 
 pub fn init(app: &mut AppContext) {
-    use warpui::keymap::macros::*;
+    use cuteui::keymap::macros::*;
 
     app.register_fixed_bindings([
         FixedBinding::new(
@@ -745,7 +745,7 @@ impl RequestedCommandView {
                     Container::new(
                         ConstrainedBox::new(
                             Icon::Info
-                                .to_warpui_icon(
+                                .to_cuteui_icon(
                                     blended_colors::text_sub(theme, theme.surface_1()).into(),
                                 )
                                 .finish(),
@@ -1562,9 +1562,9 @@ impl View for RequestedCommandView {
                 OffsetPositioning::offset_from_save_position_element(
                     Self::get_position_id_for_accept_split_button(&self.position_id_prefix),
                     vec2f(0., 8.),
-                    warpui::elements::PositionedElementOffsetBounds::WindowByPosition,
-                    warpui::elements::PositionedElementAnchor::BottomRight,
-                    warpui::elements::ChildAnchor::TopRight,
+                    cuteui::elements::PositionedElementOffsetBounds::WindowByPosition,
+                    cuteui::elements::PositionedElementAnchor::BottomRight,
+                    cuteui::elements::ChildAnchor::TopRight,
                 ),
             );
         }

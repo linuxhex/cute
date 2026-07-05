@@ -1,5 +1,5 @@
-use warp_cli::agent::Harness;
-use warpui::{AppContext, EntityId, SingletonEntity};
+use cute_cli::agent::Harness;
+use cuteui::{AppContext, EntityId, SingletonEntity};
 
 use crate::ai::agent::api::ServerConversationToken;
 use crate::ai::agent::conversation::{
@@ -223,11 +223,7 @@ fn task_creator_access(task: &AmbientAgentTask, app: &AppContext) -> Conversatio
         return ConversationAccess::Unknown;
     };
 
-    if task
-        .creator
-        .as_ref()
-        .is_some_and(|creator| creator.uid == current_user_uid.as_str())
-    {
+    if task.creator.uid == current_user_uid.as_str() {
         ConversationAccess::Edit
     } else {
         ConversationAccess::Unknown

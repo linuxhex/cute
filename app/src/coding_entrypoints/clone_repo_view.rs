@@ -1,5 +1,5 @@
-use warpui::elements::{ChildView, Flex, ParentElement as _};
-use warpui::{
+use cuteui::elements::{ChildView, Flex, ParentElement as _};
+use cuteui::{
     AppContext, Element, Entity, FocusContext, TypedActionView, View, ViewContext, ViewHandle,
 };
 

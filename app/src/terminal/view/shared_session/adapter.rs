@@ -7,19 +7,18 @@ use chrono::{DateTime, Local};
 use markdown_parser::FormattedTextFragment;
 use session_sharing_protocol::common::{ParticipantId, ParticipantList, Role, SessionId};
 use session_sharing_protocol::sharer::SessionSourceType;
-use warp_core::features::FeatureFlag;
-use warpui::elements::MouseStateHandle;
-use warpui::{AppContext, Element, ModelHandle, ViewContext, ViewHandle};
+use cute_core::features::FeatureFlag;
+use cuteui::elements::MouseStateHandle;
+use cuteui::{AppContext, Element, ModelHandle, ViewContext, ViewHandle};
 
 use super::sharer::Sharer;
 use super::viewer::Viewer;
 use crate::auth::UserUid;
 use crate::banner::{Banner, BannerTextContent};
-use crate::terminal::shared_session::participant_avatar_view::ParticipantAvatarView;
-use crate::terminal::shared_session::presence_manager::PresenceManager;
 use crate::terminal::shared_session::render_util::{
-    participant_avatar_for_selected_block, ParticipantAvatarParams,
+    participant_avatar_for_selected_block, Participant as RenderParticipant, ParticipantAvatarParams,
 };
+use crate::terminal::shared_session::{ParticipantAvatarView, PresenceManager};
 use crate::terminal::view::{throttle, TerminalAction, TerminalView};
 use crate::ui_components::icons::Icon;
 
@@ -233,7 +232,6 @@ impl Adapter {
             // Update the local state for all participants that have the same UID.
             let participant_ids: Vec<ParticipantId> = presence_manager
                 .present_viewer_ids_for_uid(firebase_uid)
-                .cloned()
                 .collect();
             for participant_id in participant_ids {
                 self.update_participant_role_internal(&participant_id, role, ctx);
@@ -327,7 +325,13 @@ impl Adapter {
             avatars.insert(
                 viewer.id().clone(),
                 participant_avatar_for_selected_block(
-                    ParticipantAvatarParams::new(viewer, is_self_reconnecting),
+                    ParticipantAvatarParams::new(
+                        &RenderParticipant {
+                            info: viewer.clone(),
+                            color: viewer.color.clone(),
+                        },
+                        is_self_reconnecting,
+                    ),
                     mouse_state_handle,
                     app,
                 ),
@@ -340,13 +344,19 @@ impl Adapter {
                 .map(|s| s.block_selection_mouse_state_handle.clone())
             {
                 avatars.insert(
-                    sharer.id().clone(),
-                    participant_avatar_for_selected_block(
-                        ParticipantAvatarParams::new(sharer, is_self_reconnecting),
-                        mouse_state_handle,
-                        app,
+                sharer.id().clone(),
+                participant_avatar_for_selected_block(
+                    ParticipantAvatarParams::new(
+                        &RenderParticipant {
+                            info: sharer.clone(),
+                            color: sharer.color.clone(),
+                        },
+                        is_self_reconnecting,
                     ),
-                );
+                    mouse_state_handle,
+                    app,
+                ),
+            );
             }
         }
 
@@ -378,7 +388,7 @@ impl Adapter {
             let self_uid = presence_manager.firebase_uid();
             let sharer_uid = presence_manager
                 .get_sharer()
-                .map(|s| s.info.profile_data.firebase_uid.as_str());
+                .map(|s| s.profile_data.firebase_uid.as_str());
             let mut seen_uids = HashSet::new();
             self.viewers
                 .iter()
@@ -393,7 +403,7 @@ impl Adapter {
                     let is_duplicate = !seen_uids.insert(viewer_uid);
                     let is_same_user_as_self = self_uid == viewer_uid;
                     let is_same_user_as_sharer =
-                        sharer_uid.is_some_and(|sharer_uid| sharer_uid == viewer_uid.as_str());
+                        sharer_uid.is_some_and(|sharer_uid| sharer_uid == viewer_uid);
 
                     !is_duplicate && !is_same_user_as_self && !is_same_user_as_sharer
                 })

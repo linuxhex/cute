@@ -4,16 +4,16 @@
 
 use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::vec2f;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::theme::Fill;
-use warpui::elements::{
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::theme::Fill;
+use cuteui::elements::{
     Align, ChildAnchor, ConstrainedBox, Container, CornerRadius, Flex,
     MainAxisSize, MouseStateHandle, OffsetPositioning, ParentAnchor,
     ParentElement, ParentOffsetBounds, Radius, Stack,
 };
-use warpui::keymap::FixedBinding;
-use warpui::ui_components::components::UiComponent;
-use warpui::{AppContext, Element, Entity, SingletonEntity, TypedActionView, View, ViewContext};
+use cuteui::keymap::FixedBinding;
+use cuteui::ui_components::components::UiComponent;
+use cuteui::{AppContext, Element, Entity, SingletonEntity, TypedActionView, View, ViewContext};
 
 use crate::ui_components::blended_colors;
 
@@ -25,7 +25,7 @@ const CORNER_RADIUS: f32 = 10.;
 
 #[allow(dead_code)]
 pub fn init(app: &mut AppContext) {
-    use warpui::keymap::macros::*;
+    use cuteui::keymap::macros::*;
 
     app.register_fixed_bindings([FixedBinding::new(
         "escape",
@@ -78,13 +78,13 @@ impl BuildPlanMigrationModal {
         Flex::column()
             .with_main_axis_size(MainAxisSize::Min)
             .with_child(
-                warpui::elements::Text::new("Plan Updated", appearance.ui_font_family(), 24.)
+                cuteui::elements::Text::new("Plan Updated", appearance.ui_font_family(), 24.)
                     .with_color(text_color)
                     .finish(),
             )
             .with_child(
                 Container::new(
-                    warpui::elements::Text::new(
+                    cuteui::elements::Text::new(
                         "Your workspace has been updated to the new plan.",
                         appearance.ui_font_family(),
                         14.,

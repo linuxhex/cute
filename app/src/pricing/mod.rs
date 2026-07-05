@@ -2,10 +2,10 @@
 //!
 //! Note: Cloud-specific logic has been removed. Simplified stub.
 
-use warp_graphql::billing::{
+use cute_graphql::billing::{
     AddonCreditsOption, OveragesPricing, PlanPricing, PricingInfo, StripeSubscriptionPlan,
 };
-use warpui::{Entity, ModelContext, SingletonEntity};
+use cuteui::{Entity, ModelContext, SingletonEntity};
 
 /// A global model for maintaining pricing information from the server.
 /// Simplified: local version has no pricing.

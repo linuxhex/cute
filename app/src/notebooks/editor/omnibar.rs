@@ -4,21 +4,21 @@
 use itertools::Itertools;
 use pathfinder_geometry::rect::RectF;
 use pathfinder_geometry::vector::Vector2F;
-use warp_editor::content::text::{
+use cute_editor::content::text::{
     BlockType as ContentBlockType, BufferBlockStyle, BufferTextStyle, TextStyles,
     TextStylesWithMetadata,
 };
-use warp_editor::model::RichTextEditorModel;
-use warp_editor::render::model::RenderState;
-use warpui::accessibility::{AccessibilityContent, ActionAccessibilityContent, WarpA11yRole};
-use warpui::elements::{
+use cute_editor::model::RichTextEditorModel;
+use cute_editor::render::model::RenderState;
+use cuteui::accessibility::{AccessibilityContent, ActionAccessibilityContent, WarpA11yRole};
+use cuteui::elements::{
     AnchorPair, Border, ConstrainedBox, Container, CornerRadius, DropShadow, Flex, MainAxisSize,
     MouseStateHandle, OffsetPositioning, OffsetType, ParentElement, Point,
     PositionedElementOffsetBounds, PositioningAxis, Radius, Rect, XAxisAnchor, YAxisAnchor,
 };
-use warpui::presenter::ChildView;
-use warpui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
-use warpui::{
+use cuteui::presenter::ChildView;
+use cuteui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
+use cuteui::{
     AppContext, Element, Entity, ModelHandle, SingletonEntity, SizeConstraint, TypedActionView,
     View, ViewContext, ViewHandle,
 };
@@ -258,7 +258,7 @@ impl View for Omnibar {
         "Omnibar"
     }
 
-    fn render(&self, app: &warpui::AppContext) -> Box<dyn Element> {
+    fn render(&self, app: &cuteui::AppContext) -> Box<dyn Element> {
         let appearance = Appearance::as_ref(app);
         let mut actions = Flex::row().with_main_axis_size(MainAxisSize::Min);
 
@@ -483,9 +483,9 @@ impl Compact {
 impl Element for Compact {
     fn layout(
         &mut self,
-        constraint: warpui::SizeConstraint,
-        ctx: &mut warpui::LayoutContext,
-        app: &warpui::AppContext,
+        constraint: cuteui::SizeConstraint,
+        ctx: &mut cuteui::LayoutContext,
+        app: &cuteui::AppContext,
     ) -> Vector2F {
         self.child.layout(
             SizeConstraint {
@@ -500,8 +500,8 @@ impl Element for Compact {
     fn paint(
         &mut self,
         origin: Vector2F,
-        ctx: &mut warpui::PaintContext,
-        app: &warpui::AppContext,
+        ctx: &mut cuteui::PaintContext,
+        app: &cuteui::AppContext,
     ) {
         self.child.paint(origin, ctx, app)
     }
@@ -516,18 +516,18 @@ impl Element for Compact {
 
     fn dispatch_event(
         &mut self,
-        event: &warpui::event::DispatchedEvent,
-        ctx: &mut warpui::EventContext,
-        app: &warpui::AppContext,
+        event: &cuteui::event::DispatchedEvent,
+        ctx: &mut cuteui::EventContext,
+        app: &cuteui::AppContext,
     ) -> bool {
         self.child.dispatch_event(event, ctx, app)
     }
 
-    fn after_layout(&mut self, ctx: &mut warpui::AfterLayoutContext, app: &AppContext) {
+    fn after_layout(&mut self, ctx: &mut cuteui::AfterLayoutContext, app: &AppContext) {
         self.child.after_layout(ctx, app)
     }
 
-    fn z_index(&self) -> Option<warpui::elements::ZIndex> {
+    fn z_index(&self) -> Option<cuteui::elements::ZIndex> {
         self.child.z_index()
     }
 

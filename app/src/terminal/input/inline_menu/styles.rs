@@ -3,11 +3,11 @@
 //! This module provides common styling functions used across all inline menu
 //! implementations (models, slash commands, conversations) to ensure consistent
 //! visual design matching the Figma specifications.
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::color::blend::Blend;
-use warp_core::ui::theme::{Fill, WarpTheme};
-use warpui::color::ColorU;
-use warpui::{AppContext, SingletonEntity};
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::color::blend::Blend;
+use cute_core::ui::theme::{Fill, WarpTheme};
+use cuteui::color::ColorU;
+use cuteui::{AppContext, SingletonEntity};
 
 use crate::ai::blocklist::agent_view::agent_view_bg_fill;
 use crate::search::result_renderer::ItemHighlightState;

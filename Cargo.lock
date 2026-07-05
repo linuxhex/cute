@@ -326,6 +326,12 @@ dependencies = [
  "cfg-if",
  "chrono",
  "computer_use",
+ "cute_core",
+ "cute_graphql",
+ "cute_terminal",
+ "cute_util",
+ "cuteui",
+ "cuteui_extras",
  "derivative",
  "dirs 6.0.0",
  "dunce",
@@ -367,13 +373,7 @@ dependencies = [
  "unicode-width 0.1.14",
  "uuid",
  "virtual-fs",
- "warp_core",
- "warp_graphql",
  "warp_multi_agent_api",
- "warp_terminal",
- "warp_util",
- "warpui",
- "warpui_extras",
  "watcher",
 ]
 
@@ -1166,22 +1166,22 @@ dependencies = [
  "async-fs",
  "bytes",
  "cfg-if",
+ "cuteui_core",
  "futures",
  "log",
  "reqwest",
  "url",
- "warpui_core",
 ]
 
 [[package]]
 name = "asset_macro"
 version = "0.1.0"
 dependencies = [
+ "cute_util",
  "proc-macro2",
  "quote",
  "sha2 0.10.9",
  "syn 2.0.117",
- "warp_util",
 ]
 
 [[package]]
@@ -3055,6 +3055,7 @@ dependencies = [
  "clap",
  "command",
  "computer_use",
+ "cuteui",
  "dispatch2",
  "futures",
  "image",
@@ -3070,7 +3071,6 @@ dependencies = [
  "tempfile",
  "tokio",
  "url",
- "warpui",
  "windows 0.62.2",
  "x11rb",
  "zbus",
@@ -3741,6 +3741,25 @@ dependencies = [
  "crc",
  "csv",
  "ctor",
+ "cute_assets",
+ "cute_cli",
+ "cute_completer",
+ "cute_core",
+ "cute_editor",
+ "cute_files",
+ "cute_graphql",
+ "cute_isolation_platform",
+ "cute_js",
+ "cute_logging",
+ "cute_managed_secrets",
+ "cute_ripgrep",
+ "cute_search_core",
+ "cute_server_client",
+ "cute_terminal",
+ "cute_util",
+ "cute_web_event_bus",
+ "cuteui",
+ "cuteui_extras",
  "cvt",
  "cynic",
  "dashmap",
@@ -3925,26 +3944,7 @@ dependencies = [
  "walkdir",
  "warp-command-signatures",
  "warp-workflows",
- "warp_assets",
- "warp_cli",
- "warp_completer",
- "warp_core",
- "warp_editor",
- "warp_files",
- "warp_graphql",
- "warp_isolation_platform",
- "warp_js",
- "warp_logging",
- "warp_managed_secrets",
  "warp_multi_agent_api",
- "warp_ripgrep",
- "warp_search_core",
- "warp_server_client",
- "warp_terminal",
- "warp_util",
- "warp_web_event_bus",
- "warpui",
- "warpui_extras",
  "wasm-bindgen",
  "watcher",
  "web-sys",
@@ -3957,6 +3957,670 @@ dependencies = [
  "winreg",
  "x11rb",
  "zbus",
+]
+
+[[package]]
+name = "cute_assets"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "cuteui_core",
+ "rust-embed 8.7.2",
+]
+
+[[package]]
+name = "cute_cli"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "cfg-if",
+ "cfg_aliases 0.2.1",
+ "chrono",
+ "clap",
+ "clap_complete",
+ "color-print",
+ "cute_core",
+ "cute_util",
+ "humantime",
+ "jaq-all",
+ "serde",
+ "serial_test",
+ "url",
+ "uuid",
+ "windows 0.62.2",
+]
+
+[[package]]
+name = "cute_completer"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-recursion",
+ "async-trait",
+ "bincode",
+ "cfg-if",
+ "clap",
+ "command",
+ "cute_cli",
+ "cute_completer",
+ "cute_core",
+ "cute_js",
+ "cute_util",
+ "cuteui",
+ "derive-new",
+ "dirs 6.0.0",
+ "futures",
+ "fuzzy_match",
+ "getset",
+ "instant",
+ "itertools 0.14.0",
+ "lazy_static",
+ "log",
+ "memo-map",
+ "regex",
+ "rquickjs",
+ "serde",
+ "shellexpand",
+ "smol_str",
+ "string-offset",
+ "thiserror 2.0.17",
+ "typed-path 0.10.0",
+ "warp-command-signatures",
+]
+
+[[package]]
+name = "cute_core"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "asset_macro",
+ "async-broadcast",
+ "cfg-if",
+ "chrono",
+ "command-corrections",
+ "concat-idents",
+ "cute_features",
+ "cute_util",
+ "cuteui",
+ "cuteui_extras",
+ "dashmap",
+ "directories",
+ "dirs 6.0.0",
+ "enum-iterator",
+ "futures",
+ "futures-lite 1.13.0",
+ "getset",
+ "http 1.4.0",
+ "instant",
+ "inventory",
+ "itertools 0.14.0",
+ "lazy_static",
+ "line-ending",
+ "log",
+ "mockito",
+ "objc2-foundation 0.3.2",
+ "parking_lot",
+ "pin-project",
+ "rand 0.8.6",
+ "regex",
+ "reqwest",
+ "schemars",
+ "sentry",
+ "sentry-log",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "serde_yaml 0.8.26",
+ "settings",
+ "settings_value",
+ "shellexpand",
+ "string-offset",
+ "strum",
+ "strum_macros",
+ "sysinfo",
+ "tempfile",
+ "thiserror 2.0.17",
+ "tokio",
+ "url",
+ "websocket",
+]
+
+[[package]]
+name = "cute_editor"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "arrayvec",
+ "asset_cache",
+ "async-channel",
+ "bytes",
+ "criterion",
+ "cute_core",
+ "cute_util",
+ "cuteui",
+ "enclose",
+ "enum-iterator",
+ "env_logger",
+ "float-cmp",
+ "futures-lite 1.13.0",
+ "html5ever",
+ "imara-diff",
+ "instant",
+ "itertools 0.14.0",
+ "lazy_static",
+ "line-ending",
+ "log",
+ "markdown_parser",
+ "markup5ever",
+ "mermaid_to_svg",
+ "mime_guess",
+ "num-traits",
+ "ordered-float 3.9.2",
+ "parking_lot",
+ "pathfinder_color",
+ "rand 0.8.6",
+ "rangemap",
+ "rayon",
+ "regex-automata",
+ "regex-syntax",
+ "rust-embed 8.7.2",
+ "serde",
+ "serde_yaml 0.8.26",
+ "string-offset",
+ "sum_tree",
+ "thiserror 2.0.17",
+ "urlocator",
+ "vec1",
+ "vim",
+]
+
+[[package]]
+name = "cute_features"
+version = "0.0.0"
+dependencies = [
+ "enum-iterator",
+]
+
+[[package]]
+name = "cute_files"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-channel",
+ "async-fs",
+ "cute_core",
+ "cute_util",
+ "cuteui",
+ "futures",
+ "log",
+ "notify-debouncer-full",
+ "repo_metadata",
+ "tempfile",
+ "thiserror 2.0.17",
+ "watcher",
+]
+
+[[package]]
+name = "cute_graphql"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-channel",
+ "chrono",
+ "cute_core",
+ "cute_graphql_schema",
+ "cynic",
+ "cynic-codegen",
+ "futures",
+ "futures-util",
+ "graphql-ws-client",
+ "http 1.4.0",
+ "http_client",
+ "instant",
+ "log",
+ "persistence",
+ "reqwest",
+ "serde",
+ "thiserror 2.0.17",
+ "websocket",
+ "ws_stream_wasm",
+]
+
+[[package]]
+name = "cute_graphql_schema"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "cynic",
+ "cynic-codegen",
+]
+
+[[package]]
+name = "cute_isolation_platform"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "base64 0.22.1",
+ "chrono",
+ "command",
+ "cute_core",
+ "log",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.17",
+]
+
+[[package]]
+name = "cute_js"
+version = "0.1.0"
+dependencies = [
+ "bincode",
+ "cfg-if",
+ "rquickjs",
+ "serde",
+ "thiserror 2.0.17",
+ "uuid",
+]
+
+[[package]]
+name = "cute_logging"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "cfg-if",
+ "chrono",
+ "console_error_panic_hook",
+ "cute_core",
+ "cute_web_event_bus",
+ "dirs 6.0.0",
+ "env_logger",
+ "js-sys",
+ "log",
+ "log-panics",
+ "sentry",
+ "sentry-log",
+ "tempfile",
+ "wasm-bindgen",
+ "web-sys",
+ "zip 2.4.2",
+]
+
+[[package]]
+name = "cute_managed_secrets"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "base64 0.22.1",
+ "chrono",
+ "cute_core",
+ "cute_graphql",
+ "cute_isolation_platform",
+ "cuteui",
+ "getrandom 0.3.4",
+ "hpke",
+ "log",
+ "rand 0.9.4",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror 2.0.17",
+ "tink-core",
+ "tink-hybrid",
+ "tink-proto",
+ "vec1",
+ "zeroize",
+]
+
+[[package]]
+name = "cute_ripgrep"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-process",
+ "command",
+ "cute_cli",
+ "futures",
+ "getrandom 0.2.16",
+ "grep",
+ "ignore",
+ "instant",
+ "log",
+ "nix 0.26.4",
+ "serde",
+ "serde_json",
+ "string-offset",
+]
+
+[[package]]
+name = "cute_search_core"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-channel",
+ "async-trait",
+ "cute_core",
+ "cuteui_core",
+ "enum-iterator",
+ "futures",
+ "futures-util",
+ "instant",
+ "itertools 0.14.0",
+ "lazy_static",
+ "log",
+ "ordered-float 3.9.2",
+ "parking_lot",
+ "paste",
+ "pathfinder_color",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "string-offset",
+ "strum",
+ "strum_macros",
+ "tantivy",
+]
+
+[[package]]
+name = "cute_server_client"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bincode",
+ "chrono",
+ "cute_core",
+ "cute_graphql",
+ "cuteui_core",
+ "cynic",
+ "derivative",
+ "diesel",
+ "itertools 0.14.0",
+ "lasso",
+ "log",
+ "pathfinder_geometry",
+ "persistence",
+ "schemars",
+ "serde",
+ "session-sharing-protocol",
+ "settings_value",
+ "thiserror 2.0.17",
+ "uuid",
+]
+
+[[package]]
+name = "cute_terminal"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "bitflags 2.9.4",
+ "bitflags-serde-legacy",
+ "cfg-if",
+ "channel_versions",
+ "command-corrections",
+ "cute_completer",
+ "cute_core",
+ "cute_util",
+ "cuteui",
+ "enum-iterator",
+ "get-size",
+ "itertools 0.14.0",
+ "lazy_static",
+ "log",
+ "pathfinder_color",
+ "regex",
+ "serde",
+ "session-sharing-protocol",
+ "smol_str",
+ "static_assertions",
+ "string-offset",
+ "thiserror 2.0.17",
+ "typed-path 0.10.0",
+ "unicode-segmentation",
+ "unicode-width 0.1.14",
+ "uuid",
+ "version-compare",
+ "vte",
+]
+
+[[package]]
+name = "cute_util"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "command",
+ "content_inspector",
+ "cuteui",
+ "dirs 6.0.0",
+ "dunce",
+ "event-listener",
+ "futures-lite 1.13.0",
+ "futures-util",
+ "gloo",
+ "hex",
+ "lazy_static",
+ "log",
+ "mime_guess",
+ "pathdiff",
+ "pin-project",
+ "rand 0.8.6",
+ "regex",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.17",
+ "typed-path 0.10.0",
+ "windows 0.62.2",
+]
+
+[[package]]
+name = "cute_web_event_bus"
+version = "0.0.0"
+dependencies = [
+ "js-sys",
+ "log",
+ "serde",
+ "serde-wasm-bindgen",
+ "wasm-bindgen",
+]
+
+[[package]]
+name = "cuteui"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "arboard",
+ "asset_cache",
+ "async-io",
+ "async-task",
+ "bimap",
+ "bindgen 0.70.1",
+ "block",
+ "blocking",
+ "bytemuck",
+ "cc",
+ "cfg-if",
+ "cfg_aliases 0.2.1",
+ "chrono",
+ "cocoa 0.26.0",
+ "command",
+ "core-foundation 0.10.1",
+ "core-graphics 0.25.0",
+ "core-text",
+ "cosmic-text",
+ "ctrlc",
+ "cuteui",
+ "cuteui_core",
+ "dashmap",
+ "derivative",
+ "derive_more 0.99.17",
+ "dirs 6.0.0",
+ "dispatch",
+ "dwrote",
+ "env_logger",
+ "font-kit",
+ "fontconfig",
+ "fontdb",
+ "foreign-types 0.5.0",
+ "futures",
+ "futures-lite 1.13.0",
+ "futures-timer",
+ "futures-util",
+ "global-hotkey",
+ "gloo",
+ "image",
+ "instant",
+ "itertools 0.14.0",
+ "js-sys",
+ "lazy_static",
+ "libc",
+ "log",
+ "markdown_parser",
+ "memmap2 0.9.7",
+ "metal",
+ "native-dialog",
+ "nix 0.26.4",
+ "notify-rust",
+ "num-traits",
+ "objc",
+ "objc2 0.6.3",
+ "objc2-app-kit 0.3.2",
+ "objc2-foundation 0.3.2",
+ "open",
+ "ordered-float 3.9.2",
+ "owned_ttf_parser",
+ "parking_lot",
+ "pathfinder_color",
+ "pathfinder_geometry",
+ "rand 0.8.6",
+ "resvg",
+ "rust-embed 8.7.2",
+ "serde",
+ "sum_tree",
+ "takecell",
+ "tauri-winrt-notification",
+ "thiserror 2.0.17",
+ "tini",
+ "urlencoding",
+ "vec1",
+ "version-compare",
+ "virtual-fs",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+ "wgpu",
+ "windows 0.62.2",
+ "windows-core 0.62.2",
+ "windows-version",
+ "winit",
+ "winreg",
+ "x11-dl",
+ "x11rb",
+ "zbus",
+]
+
+[[package]]
+name = "cuteui_core"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "arboard",
+ "async-broadcast",
+ "async-channel",
+ "async-executor",
+ "async-fs",
+ "async-io",
+ "async-task",
+ "bounded-vec-deque",
+ "bytes",
+ "cfg-if",
+ "cfg_aliases 0.2.1",
+ "chrono",
+ "command",
+ "concat-idents",
+ "ctor",
+ "ctrlc",
+ "cute_util",
+ "cuteui_core",
+ "dashmap",
+ "derivative",
+ "derive_more 0.99.17",
+ "dirs 6.0.0",
+ "enum-iterator",
+ "float-cmp",
+ "font-kit",
+ "futures",
+ "futures-lite 1.13.0",
+ "futures-util",
+ "gloo",
+ "image",
+ "infer",
+ "instant",
+ "itertools 0.14.0",
+ "lazy_static",
+ "log",
+ "markdown_parser",
+ "minimp4",
+ "num-derive",
+ "num-traits",
+ "num_cpus",
+ "openh264",
+ "ordered-float 3.9.2",
+ "parking_lot",
+ "pathfinder_color",
+ "pathfinder_geometry",
+ "rand 0.8.6",
+ "rangemap",
+ "raw-window-handle 0.6.2",
+ "resvg",
+ "rstar",
+ "rust-embed 8.7.2",
+ "rustc-hash 2.1.1",
+ "schemars",
+ "serde",
+ "serde_json",
+ "settings_value",
+ "similar",
+ "simplelog",
+ "smallvec 1.15.1",
+ "string-offset",
+ "strum",
+ "strum_macros",
+ "sum_tree",
+ "tempfile",
+ "thiserror 2.0.17",
+ "titlecase",
+ "tokio",
+ "trait-set",
+ "vec1",
+ "wasm-bindgen-futures",
+ "woothee",
+]
+
+[[package]]
+name = "cuteui_extras"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "async-channel",
+ "cuteui",
+ "cuteui_extras",
+ "gloo-storage",
+ "log",
+ "objc2 0.6.3",
+ "objc2-foundation 0.3.2",
+ "ouroboros",
+ "rand 0.8.6",
+ "ring",
+ "secret-service",
+ "security-framework 2.9.2",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "tempfile",
+ "thiserror 2.0.17",
+ "toml_edit 0.25.6+spec-1.1.0",
+ "windows 0.62.2",
+ "windows-registry 0.2.0",
+ "windows-result 0.2.0",
 ]
 
 [[package]]
@@ -6468,6 +7132,7 @@ dependencies = [
  "async-stream",
  "bytes",
  "cfg-if",
+ "cute_core",
  "futures",
  "gloo",
  "http 1.4.0",
@@ -6479,7 +7144,6 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_urlencoded",
- "warp_core",
  "wasm-bindgen-futures",
 ]
 
@@ -6488,12 +7152,12 @@ name = "http_server"
 version = "0.0.0"
 dependencies = [
  "axum",
+ "cute_core",
+ "cuteui",
  "log",
  "tokio",
  "tower",
  "tower-http",
- "warp_core",
- "warpui",
 ]
 
 [[package]]
@@ -6926,6 +7590,8 @@ dependencies = [
  "candle-onnx",
  "cfg-if",
  "clap",
+ "cute_completer",
+ "cute_features",
  "futures",
  "futures-lite 1.13.0",
  "instant",
@@ -6941,8 +7607,6 @@ dependencies = [
  "serde",
  "smol_str",
  "tokenizers",
- "warp_completer",
- "warp_features",
 ]
 
 [[package]]
@@ -6983,6 +7647,10 @@ dependencies = [
  "clap",
  "command",
  "cute",
+ "cute_cli",
+ "cute_core",
+ "cuteui",
+ "cuteui_extras",
  "diesel",
  "directories",
  "float-cmp",
@@ -7008,11 +7676,7 @@ dependencies = [
  "version-compare",
  "warp-command-signatures",
  "warp-workflows",
- "warp_cli",
- "warp_core",
  "warp_multi_agent_api",
- "warpui",
- "warpui_extras",
  "whoami",
 ]
 
@@ -7077,6 +7741,7 @@ dependencies = [
  "async-compat",
  "async-trait",
  "bincode",
+ "cuteui",
  "futures",
  "interprocess",
  "itertools 0.14.0",
@@ -7086,7 +7751,6 @@ dependencies = [
  "serde",
  "thiserror 2.0.17",
  "uuid",
- "warpui",
 ]
 
 [[package]]
@@ -7395,11 +8059,11 @@ dependencies = [
  "anyhow",
  "async-channel",
  "async-trait",
+ "cuteui",
  "futures",
  "log",
  "serde",
  "serde_json",
- "warpui",
 ]
 
 [[package]]
@@ -7519,12 +8183,12 @@ name = "languages"
 version = "0.0.0"
 dependencies = [
  "arborium",
+ "cute_editor",
+ "cute_util",
  "lazy_static",
  "rust-embed 8.7.2",
  "serde",
  "serde_yaml 0.8.26",
- "warp_editor",
- "warp_util",
 ]
 
 [[package]]
@@ -7835,6 +8499,9 @@ dependencies = [
  "cfg-if",
  "chrono",
  "command",
+ "cute_core",
+ "cute_util",
+ "cuteui",
  "env_logger",
  "futures",
  "globset",
@@ -7855,9 +8522,6 @@ dependencies = [
  "strum_macros",
  "tokio",
  "url",
- "warp_core",
- "warp_util",
- "warpui",
 ]
 
 [[package]]
@@ -7974,7 +8638,7 @@ dependencies = [
 name = "managed_secrets_wasm"
 version = "0.1.0"
 dependencies = [
- "warp_managed_secrets",
+ "cute_managed_secrets",
  "wasm-bindgen",
 ]
 
@@ -8626,6 +9290,7 @@ dependencies = [
  "async-trait",
  "cfg-if",
  "command",
+ "cute_core",
  "flate2",
  "futures",
  "http_client",
@@ -8635,7 +9300,6 @@ dependencies = [
  "serde_json",
  "sha2 0.10.9",
  "tar",
- "warp_core",
  "zip 2.4.2",
 ]
 
@@ -9300,6 +9964,9 @@ dependencies = [
  "ai",
  "anyhow",
  "cfg-if",
+ "cute_core",
+ "cute_logging",
+ "cuteui",
  "instant",
  "log",
  "pathfinder_color",
@@ -9311,9 +9978,6 @@ dependencies = [
  "strum_macros",
  "ui_components",
  "uuid",
- "warp_core",
- "warp_logging",
- "warpui",
 ]
 
 [[package]]
@@ -11014,6 +11678,9 @@ dependencies = [
  "anyhow",
  "async-fs",
  "cfg-if",
+ "cute_core",
+ "cute_util",
+ "cuteui",
  "dirs 6.0.0",
  "dunce",
  "env_logger",
@@ -11032,9 +11699,6 @@ dependencies = [
  "thiserror 2.0.17",
  "virtual-fs",
  "walkdir",
- "warp_core",
- "warp_util",
- "warpui",
  "watcher",
 ]
 
@@ -12171,12 +12835,10 @@ dependencies = [
 
 [[package]]
 name = "session-sharing-protocol"
-version = "0.0.0"
-source = "git+https://github.com/warpdotdev/session-sharing-protocol.git?rev=5a0ad6135809feee9da2e9efae8bd6b54b89172e#5a0ad6135809feee9da2e9efae8bd6b54b89172e"
+version = "0.1.0"
 dependencies = [
- "byte-unit",
+ "pathfinder_color",
  "serde",
- "serde_json",
  "uuid",
 ]
 
@@ -12186,6 +12848,9 @@ version = "0.0.0"
 dependencies = [
  "anyhow",
  "concat-idents",
+ "cute_features",
+ "cuteui",
+ "cuteui_extras",
  "inventory",
  "log",
  "schemars",
@@ -12193,9 +12858,6 @@ dependencies = [
  "serde_json",
  "settings_value",
  "tempfile",
- "warp_features",
- "warpui",
- "warpui_extras",
 ]
 
 [[package]]
@@ -12379,11 +13041,11 @@ dependencies = [
  "async-channel",
  "async-fs",
  "chrono",
+ "cute_core",
+ "cuteui",
  "futures",
  "log",
  "thiserror 2.0.17",
- "warp_core",
- "warpui",
 ]
 
 [[package]]
@@ -12837,6 +13499,9 @@ name = "syntax_tree"
 version = "0.1.0"
 dependencies = [
  "arborium",
+ "cute_editor",
+ "cute_util",
+ "cuteui",
  "futures",
  "futures-lite 1.13.0",
  "languages",
@@ -12845,9 +13510,6 @@ dependencies = [
  "rangemap",
  "streaming-iterator",
  "string-offset",
- "warp_editor",
- "warp_util",
- "warpui",
 ]
 
 [[package]]
@@ -14033,12 +14695,12 @@ version = "0.0.0"
 dependencies = [
  "anyhow",
  "asset_cache",
+ "cute_core",
+ "cuteui",
  "pathfinder_color",
  "pathfinder_geometry",
  "rust-embed 8.7.2",
  "rustls",
- "warp_core",
- "warpui",
 ]
 
 [[package]]
@@ -14427,12 +15089,12 @@ name = "vim"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "cute_core",
+ "cuteui",
  "itertools 0.14.0",
  "log",
  "string-offset",
  "unindent 0.2.4",
- "warp_core",
- "warpui",
 ]
 
 [[package]]
@@ -14453,6 +15115,7 @@ dependencies = [
  "async-channel",
  "base64 0.22.1",
  "cpal",
+ "cuteui",
  "futures",
  "hound",
  "instant",
@@ -14460,7 +15123,6 @@ dependencies = [
  "parking_lot",
  "rubato",
  "thiserror 2.0.17",
- "warpui",
 ]
 
 [[package]]
@@ -14586,319 +15248,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "warp_assets"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "rust-embed 8.7.2",
- "warpui_core",
-]
-
-[[package]]
-name = "warp_cli"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "cfg-if",
- "cfg_aliases 0.2.1",
- "chrono",
- "clap",
- "clap_complete",
- "color-print",
- "humantime",
- "jaq-all",
- "serde",
- "serial_test",
- "url",
- "uuid",
- "warp_core",
- "warp_util",
- "windows 0.62.2",
-]
-
-[[package]]
-name = "warp_completer"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-recursion",
- "async-trait",
- "bincode",
- "cfg-if",
- "clap",
- "command",
- "derive-new",
- "dirs 6.0.0",
- "futures",
- "fuzzy_match",
- "getset",
- "instant",
- "itertools 0.14.0",
- "lazy_static",
- "log",
- "memo-map",
- "regex",
- "rquickjs",
- "serde",
- "shellexpand",
- "smol_str",
- "string-offset",
- "thiserror 2.0.17",
- "typed-path 0.10.0",
- "warp-command-signatures",
- "warp_cli",
- "warp_completer",
- "warp_core",
- "warp_js",
- "warp_util",
- "warpui",
-]
-
-[[package]]
-name = "warp_core"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "asset_macro",
- "async-broadcast",
- "cfg-if",
- "chrono",
- "command-corrections",
- "concat-idents",
- "dashmap",
- "directories",
- "dirs 6.0.0",
- "enum-iterator",
- "futures",
- "futures-lite 1.13.0",
- "getset",
- "http 1.4.0",
- "instant",
- "inventory",
- "itertools 0.14.0",
- "lazy_static",
- "line-ending",
- "log",
- "mockito",
- "objc2-foundation 0.3.2",
- "parking_lot",
- "pin-project",
- "rand 0.8.6",
- "regex",
- "reqwest",
- "schemars",
- "sentry",
- "sentry-log",
- "serde",
- "serde_json",
- "serde_with",
- "serde_yaml 0.8.26",
- "settings",
- "settings_value",
- "shellexpand",
- "string-offset",
- "strum",
- "strum_macros",
- "sysinfo",
- "tempfile",
- "thiserror 2.0.17",
- "tokio",
- "url",
- "warp_features",
- "warp_util",
- "warpui",
- "warpui_extras",
- "websocket",
-]
-
-[[package]]
-name = "warp_editor"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "arrayvec",
- "asset_cache",
- "async-channel",
- "bytes",
- "criterion",
- "enclose",
- "enum-iterator",
- "env_logger",
- "float-cmp",
- "futures-lite 1.13.0",
- "html5ever",
- "imara-diff",
- "instant",
- "itertools 0.14.0",
- "lazy_static",
- "line-ending",
- "log",
- "markdown_parser",
- "markup5ever",
- "mermaid_to_svg",
- "mime_guess",
- "num-traits",
- "ordered-float 3.9.2",
- "parking_lot",
- "pathfinder_color",
- "rand 0.8.6",
- "rangemap",
- "rayon",
- "regex-automata",
- "regex-syntax",
- "rust-embed 8.7.2",
- "serde",
- "serde_yaml 0.8.26",
- "string-offset",
- "sum_tree",
- "thiserror 2.0.17",
- "urlocator",
- "vec1",
- "vim",
- "warp_core",
- "warp_util",
- "warpui",
-]
-
-[[package]]
-name = "warp_features"
-version = "0.0.0"
-dependencies = [
- "enum-iterator",
-]
-
-[[package]]
-name = "warp_files"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-channel",
- "async-fs",
- "futures",
- "log",
- "notify-debouncer-full",
- "repo_metadata",
- "tempfile",
- "thiserror 2.0.17",
- "warp_core",
- "warp_util",
- "warpui",
- "watcher",
-]
-
-[[package]]
-name = "warp_graphql"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-channel",
- "chrono",
- "cynic",
- "cynic-codegen",
- "futures",
- "futures-util",
- "graphql-ws-client",
- "http 1.4.0",
- "http_client",
- "instant",
- "log",
- "persistence",
- "reqwest",
- "serde",
- "thiserror 2.0.17",
- "warp_core",
- "warp_graphql_schema",
- "websocket",
- "ws_stream_wasm",
-]
-
-[[package]]
-name = "warp_graphql_schema"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "cynic",
- "cynic-codegen",
-]
-
-[[package]]
-name = "warp_isolation_platform"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "base64 0.22.1",
- "chrono",
- "command",
- "log",
- "serde",
- "serde_json",
- "thiserror 2.0.17",
- "warp_core",
-]
-
-[[package]]
-name = "warp_js"
-version = "0.1.0"
-dependencies = [
- "bincode",
- "cfg-if",
- "rquickjs",
- "serde",
- "thiserror 2.0.17",
- "uuid",
-]
-
-[[package]]
-name = "warp_logging"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "cfg-if",
- "chrono",
- "console_error_panic_hook",
- "dirs 6.0.0",
- "env_logger",
- "js-sys",
- "log",
- "log-panics",
- "sentry",
- "sentry-log",
- "tempfile",
- "warp_core",
- "warp_web_event_bus",
- "wasm-bindgen",
- "web-sys",
- "zip 2.4.2",
-]
-
-[[package]]
-name = "warp_managed_secrets"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "base64 0.22.1",
- "chrono",
- "getrandom 0.3.4",
- "hpke",
- "log",
- "rand 0.9.4",
- "serde",
- "serde_json",
- "tempfile",
- "thiserror 2.0.17",
- "tink-core",
- "tink-hybrid",
- "tink-proto",
- "vec1",
- "warp_core",
- "warp_graphql",
- "warp_isolation_platform",
- "warpui",
- "zeroize",
-]
-
-[[package]]
 name = "warp_multi_agent_api"
 version = "0.0.0"
 source = "git+https://github.com/warpdotdev/warp-proto-apis.git?rev=c67de64fc4949f693a679552dc88cebc9f7d0180#c67de64fc4949f693a679552dc88cebc9f7d0180"
@@ -14908,357 +15257,6 @@ dependencies = [
  "prost-reflect-build",
  "prost-types",
  "regex",
-]
-
-[[package]]
-name = "warp_ripgrep"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-process",
- "command",
- "futures",
- "getrandom 0.2.16",
- "grep",
- "ignore",
- "instant",
- "log",
- "nix 0.26.4",
- "serde",
- "serde_json",
- "string-offset",
- "warp_cli",
-]
-
-[[package]]
-name = "warp_search_core"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-channel",
- "async-trait",
- "enum-iterator",
- "futures",
- "futures-util",
- "instant",
- "itertools 0.14.0",
- "lazy_static",
- "log",
- "ordered-float 3.9.2",
- "parking_lot",
- "paste",
- "pathfinder_color",
- "serde",
- "serde_json",
- "sha2 0.10.9",
- "string-offset",
- "strum",
- "strum_macros",
- "tantivy",
- "warp_core",
- "warpui_core",
-]
-
-[[package]]
-name = "warp_server_client"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "bincode",
- "chrono",
- "cynic",
- "derivative",
- "diesel",
- "itertools 0.14.0",
- "lasso",
- "log",
- "pathfinder_geometry",
- "persistence",
- "schemars",
- "serde",
- "session-sharing-protocol",
- "settings_value",
- "thiserror 2.0.17",
- "uuid",
- "warp_core",
- "warp_graphql",
- "warpui_core",
-]
-
-[[package]]
-name = "warp_terminal"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "bitflags 2.9.4",
- "bitflags-serde-legacy",
- "cfg-if",
- "channel_versions",
- "command-corrections",
- "enum-iterator",
- "get-size",
- "itertools 0.14.0",
- "lazy_static",
- "log",
- "pathfinder_color",
- "regex",
- "serde",
- "session-sharing-protocol",
- "smol_str",
- "static_assertions",
- "string-offset",
- "thiserror 2.0.17",
- "typed-path 0.10.0",
- "unicode-segmentation",
- "unicode-width 0.1.14",
- "uuid",
- "version-compare",
- "vte",
- "warp_completer",
- "warp_core",
- "warp_util",
- "warpui",
-]
-
-[[package]]
-name = "warp_util"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "command",
- "content_inspector",
- "dirs 6.0.0",
- "dunce",
- "event-listener",
- "futures-lite 1.13.0",
- "futures-util",
- "gloo",
- "hex",
- "lazy_static",
- "log",
- "mime_guess",
- "pathdiff",
- "pin-project",
- "rand 0.8.6",
- "regex",
- "serde",
- "serde_json",
- "thiserror 2.0.17",
- "typed-path 0.10.0",
- "warpui",
- "windows 0.62.2",
-]
-
-[[package]]
-name = "warp_web_event_bus"
-version = "0.0.0"
-dependencies = [
- "js-sys",
- "log",
- "serde",
- "serde-wasm-bindgen",
- "wasm-bindgen",
-]
-
-[[package]]
-name = "warpui"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "arboard",
- "asset_cache",
- "async-io",
- "async-task",
- "bimap",
- "bindgen 0.70.1",
- "block",
- "blocking",
- "bytemuck",
- "cc",
- "cfg-if",
- "cfg_aliases 0.2.1",
- "chrono",
- "cocoa 0.26.0",
- "command",
- "core-foundation 0.10.1",
- "core-graphics 0.25.0",
- "core-text",
- "cosmic-text",
- "ctrlc",
- "dashmap",
- "derivative",
- "derive_more 0.99.17",
- "dirs 6.0.0",
- "dispatch",
- "dwrote",
- "env_logger",
- "font-kit",
- "fontconfig",
- "fontdb",
- "foreign-types 0.5.0",
- "futures",
- "futures-lite 1.13.0",
- "futures-timer",
- "futures-util",
- "global-hotkey",
- "gloo",
- "image",
- "instant",
- "itertools 0.14.0",
- "js-sys",
- "lazy_static",
- "libc",
- "log",
- "markdown_parser",
- "memmap2 0.9.7",
- "metal",
- "native-dialog",
- "nix 0.26.4",
- "notify-rust",
- "num-traits",
- "objc",
- "objc2 0.6.3",
- "objc2-app-kit 0.3.2",
- "objc2-foundation 0.3.2",
- "open",
- "ordered-float 3.9.2",
- "owned_ttf_parser",
- "parking_lot",
- "pathfinder_color",
- "pathfinder_geometry",
- "rand 0.8.6",
- "resvg",
- "rust-embed 8.7.2",
- "serde",
- "sum_tree",
- "takecell",
- "tauri-winrt-notification",
- "thiserror 2.0.17",
- "tini",
- "urlencoding",
- "vec1",
- "version-compare",
- "virtual-fs",
- "warpui",
- "warpui_core",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
- "wgpu",
- "windows 0.62.2",
- "windows-core 0.62.2",
- "windows-version",
- "winit",
- "winreg",
- "x11-dl",
- "x11rb",
- "zbus",
-]
-
-[[package]]
-name = "warpui_core"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "arboard",
- "async-broadcast",
- "async-channel",
- "async-executor",
- "async-fs",
- "async-io",
- "async-task",
- "bounded-vec-deque",
- "bytes",
- "cfg-if",
- "cfg_aliases 0.2.1",
- "chrono",
- "command",
- "concat-idents",
- "ctor",
- "ctrlc",
- "dashmap",
- "derivative",
- "derive_more 0.99.17",
- "dirs 6.0.0",
- "enum-iterator",
- "float-cmp",
- "font-kit",
- "futures",
- "futures-lite 1.13.0",
- "futures-util",
- "gloo",
- "image",
- "infer",
- "instant",
- "itertools 0.14.0",
- "lazy_static",
- "log",
- "markdown_parser",
- "minimp4",
- "num-derive",
- "num-traits",
- "num_cpus",
- "openh264",
- "ordered-float 3.9.2",
- "parking_lot",
- "pathfinder_color",
- "pathfinder_geometry",
- "rand 0.8.6",
- "rangemap",
- "raw-window-handle 0.6.2",
- "resvg",
- "rstar",
- "rust-embed 8.7.2",
- "rustc-hash 2.1.1",
- "schemars",
- "serde",
- "serde_json",
- "settings_value",
- "similar",
- "simplelog",
- "smallvec 1.15.1",
- "string-offset",
- "strum",
- "strum_macros",
- "sum_tree",
- "tempfile",
- "thiserror 2.0.17",
- "titlecase",
- "tokio",
- "trait-set",
- "vec1",
- "warp_util",
- "warpui_core",
- "wasm-bindgen-futures",
- "woothee",
-]
-
-[[package]]
-name = "warpui_extras"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "async-channel",
- "gloo-storage",
- "log",
- "objc2 0.6.3",
- "objc2-foundation 0.3.2",
- "ouroboros",
- "rand 0.8.6",
- "ring",
- "secret-service",
- "security-framework 2.9.2",
- "serde",
- "serde_json",
- "sha2 0.10.9",
- "tempfile",
- "thiserror 2.0.17",
- "toml_edit 0.25.6+spec-1.1.0",
- "warpui",
- "warpui_extras",
- "windows 0.62.2",
- "windows-registry 0.2.0",
- "windows-result 0.2.0",
 ]
 
 [[package]]
@@ -15399,10 +15397,10 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-channel",
+ "cuteui",
  "futures",
  "log",
  "notify-debouncer-full",
- "warpui",
 ]
 
 [[package]]

@@ -1,5 +1,5 @@
 use anyhow::Result;
-use warpui::AppContext;
+use cuteui::AppContext;
 
 use super::{DisplayMap, DisplayPoint};
 

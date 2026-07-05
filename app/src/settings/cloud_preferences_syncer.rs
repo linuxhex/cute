@@ -5,7 +5,7 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use warpui::{Entity, ModelContext, SingletonEntity};
+use cuteui::{Entity, ModelContext, SingletonEntity};
 
 use super::cloud_preferences::{CloudPreferencesSettings, CloudPreferencesSettingsChangedEvent};
 use super::manager::SettingsEvent;

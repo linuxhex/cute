@@ -2,17 +2,17 @@ use std::cmp::Ordering;
 
 use itertools::Itertools;
 use pathfinder_color::ColorU;
-use warp_core::features::FeatureFlag;
-use warp_core::ui::appearance::Appearance;
-use warp_editor::editor::NavigationKey;
-use warpui::elements::{
+use cute_core::features::FeatureFlag;
+use cute_core::ui::appearance::Appearance;
+use cute_editor::editor::NavigationKey;
+use cuteui::elements::{
     ChildView, ConstrainedBox, Container, CrossAxisAlignment, Fill, Flex, MainAxisAlignment,
     MainAxisSize, ParentElement, Shrinkable,
 };
-use warpui::text_layout::TextStyle;
-use warpui::ui_components::button::ButtonVariant;
-use warpui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
-use warpui::{AppContext, Element, SingletonEntity as _, ViewContext, ViewHandle};
+use cuteui::text_layout::TextStyle;
+use cuteui::ui_components::button::ButtonVariant;
+use cuteui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
+use cuteui::{AppContext, Element, SingletonEntity as _, ViewContext, ViewHandle};
 
 use super::alias_argument_selector::{AliasArgumentSelector, AliasArgumentSelectorEvent};
 use super::{
@@ -164,7 +164,7 @@ impl WorkflowView {
                                 me.handle_argument_editor_event(emitter, event, ctx);
                             });
 
-                            let arg_type_editor = ctx.add_typed_action_view(|ctx| {
+                            let arg_type_editor = ctx.add_view(|ctx| {
                                 WorkflowArgSelector::new(
                                     WorkflowArgSelectorStyles {
                                         editor_padding: Coords {
@@ -176,10 +176,10 @@ impl WorkflowView {
                                         height: Some(ARGUMENT_INPUT_HEIGHT),
                                         width: None,
                                         dropdown_background: |appearance| {
-                                            appearance.theme().surface_2()
+                                            appearance.theme().surface_2().into_solid()
                                         },
                                         border_color: |appearance| {
-                                            appearance.theme().foreground().with_opacity(20)
+                                            appearance.theme().foreground().with_opacity(20).into_solid()
                                         },
                                         border_radius: BUTTON_BORDER_RADIUS,
                                     },

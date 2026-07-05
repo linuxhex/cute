@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 
 use anyhow::Result;
-use warp_server_client::cloud_object::{
+use cute_server_client::cloud_object::{
     GenericStringObjectFormat, JsonObjectType, SerializedModel, Serializer,
 };
 use serde::{Serialize, de::DeserializeOwned};

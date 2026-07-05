@@ -16,17 +16,17 @@ use session_sharing_protocol::common::{
     AICommandMetadata, OrderedTerminalEventType, ParticipantId,
 };
 use session_sharing_protocol::sharer::SessionSourceType;
-use warp_core::features::FeatureFlag;
-use warp_core::report_error;
-use warp_core::semantic_selection::SemanticSelection;
-pub use warp_terminal::model::BlockIndex;
-use warp_terminal::model::{KeyboardModes, KeyboardModesApplyBehavior};
-use warpui::assets::asset_cache::Asset;
-use warpui::image_cache::ImageType;
-use warpui::r#async::executor::Background;
+use cute_core::features::FeatureFlag;
+use cute_core::report_error;
+use cute_core::semantic_selection::SemanticSelection;
+pub use cute_terminal::model::BlockIndex;
+use cute_terminal::model::{KeyboardModes, KeyboardModesApplyBehavior};
+use cuteui::assets::asset_cache::Asset;
+use cuteui::image_cache::ImageType;
+use cuteui::r#async::executor::Background;
 #[cfg(not(target_family = "wasm"))]
-use warpui::util::save_as_file;
-use warpui::AppContext;
+use cuteui::util::save_as_file;
+use cuteui::AppContext;
 
 use super::super::{AltScreen, BlockList};
 use super::ansi::{
@@ -79,7 +79,6 @@ use crate::terminal::model::index::VisibleRow;
 use crate::terminal::model::iterm_image::{ITermImage, ITermImageMetadata};
 use crate::terminal::model::secrets::ObfuscateSecrets;
 use crate::terminal::model::session::SessionInfo;
-use crate::terminal::shared_session::ai_agent::encode_agent_response_event;
 use crate::terminal::shared_session::{SharedSessionSource, SharedSessionStatus};
 use crate::terminal::shell::{ShellName, ShellType};
 use crate::terminal::ssh::util::{InteractiveSshCommand, SshLoginState};
@@ -280,6 +279,16 @@ impl<T> WithinBlock<T> {
 
     pub fn is_within_this_block(&self, index: BlockIndex) -> bool {
         self.block_index == index
+    }
+
+    /// Stub method to convert to session sharing block point.
+    pub fn to_session_sharing_block_point(&self) -> Option<session_sharing_protocol::common::Point> {
+        None
+    }
+
+    /// Stub method to convert from session sharing block point.
+    pub fn from_session_sharing_block_point(_point: session_sharing_protocol::common::Point) -> Option<Self> where Self: Sized {
+        None
     }
 }
 
@@ -1240,7 +1249,7 @@ impl TerminalModel {
                 display_name: ShellName::blank(),
                 shell_type: ShellType::Zsh,
             },
-            SharedSessionStatus::ViewPending,
+            SharedSessionStatus::SharePending,
             true,
         )
     }
@@ -1276,7 +1285,7 @@ impl TerminalModel {
                 display_name: ShellName::blank(),
                 shell_type: ShellType::Zsh,
             },
-            SharedSessionStatus::ViewPending,
+            SharedSessionStatus::SharePending,
             false,
         )
     }
@@ -1316,15 +1325,8 @@ impl TerminalModel {
         self.ordered_terminal_events_for_shared_session_tx = None;
     }
 
-    fn ai_metadata_to_protocol(metadata: &AgentInteractionMetadata) -> AICommandMetadata {
-        AICommandMetadata {
-            tool_call_id: metadata
-                .requested_command_action_id()
-                .map(|id| id.to_string())
-                .unwrap_or_default(),
-            // Any command with a long-running control state is considered agent-monitored.
-            is_agent_monitored: metadata.long_running_control_state().is_some(),
-        }
+    fn ai_metadata_to_protocol(_metadata: &AgentInteractionMetadata) -> AICommandMetadata {
+        AICommandMetadata {}
     }
 
     pub fn set_write_to_pty_events_for_shared_session_tx(&mut self, tx: Sender<Vec<u8>>) {
@@ -1371,8 +1373,10 @@ impl TerminalModel {
         if self.shared_session_status().is_sharer() {
             if let Some(tx) = &self.ordered_terminal_events_for_shared_session_tx {
                 let encoded = encode_agent_response_event(response);
+                // Use a default ParticipantId if response_initiator is None
+                let initiator = response_initiator.unwrap_or_else(|| ParticipantId::default());
                 if let Err(e) = tx.try_send(OrderedTerminalEventType::AgentResponseEvent {
-                    response_initiator,
+                    response_initiator: initiator,
                     response_event: encoded,
                     forked_from_conversation_token,
                 }) {
@@ -1408,6 +1412,14 @@ impl TerminalModel {
                     );
                 }
             }
+        }
+    }
+
+    /// Sends an agent cancellation notification to viewers if this session is shared.
+    /// TODO: Implement proper cancellation event sending when OrderedTerminalEventType supports it.
+    pub fn send_agent_cancellation_for_shared_session(&self) {
+        if self.shared_session_status().is_sharer() {
+            log::debug!("Agent cancellation requested for shared session (stub)");
         }
     }
 
@@ -1714,7 +1726,7 @@ impl TerminalModel {
     /// Starts the execution for a command in a shared session (sharer or viewer).
     pub fn start_command_execution_for_shared_session(
         &mut self,
-        participant_id: ParticipantId,
+        _participant_id: ParticipantId,
         agent_metadata: Option<AgentInteractionMetadata>,
     ) {
         self.start_command_execution();
@@ -1731,9 +1743,9 @@ impl TerminalModel {
         // If this is a sharer, send an event to indicate the start of the command execution
         // along with the identity of the participant that ran the command.
         if let Some(tx) = &self.ordered_terminal_events_for_shared_session_tx {
+            let command = self.block_list.active_block().command_with_secrets_unobfuscated(false);
             if let Err(e) = tx.try_send(OrderedTerminalEventType::CommandExecutionStarted {
-                participant_id,
-                ai_metadata: agent_metadata.as_ref().map(Self::ai_metadata_to_protocol),
+                command,
             }) {
                 log::warn!("Failed to send OrderedTerminalEventType::CommandExecutionStarted: {e}");
             }
@@ -1999,10 +2011,8 @@ impl TerminalModel {
             let num_cols = size_update.new_size.columns();
             if let Some(tx) = &self.ordered_terminal_events_for_shared_session_tx {
                 if let Err(e) = tx.try_send(OrderedTerminalEventType::Resize {
-                    window_size: session_sharing_protocol::common::WindowSize {
-                        num_rows,
-                        num_cols,
-                    },
+                    width: num_cols as u16,
+                    height: num_rows as u16,
                 }) {
                     log::warn!("Failed to send OrderedTerminalEventType::Resize: {e}");
                 }
@@ -2711,7 +2721,7 @@ impl ansi::Handler for TerminalModel {
         delegate!(self.configure_charset(index, charset));
     }
 
-    fn set_color(&mut self, index: usize, color: warpui::color::ColorU) {
+    fn set_color(&mut self, index: usize, color: cuteui::color::ColorU) {
         self.override_colors[index] = Some(color);
     }
 
@@ -2803,14 +2813,17 @@ impl ansi::Handler for TerminalModel {
         // the blocklist (for the local shell).
         self.exit_alt_screen(true);
 
-        let block_id = data.next_block_id.to_string();
+        let _block_id = data.next_block_id.to_string();
         let is_for_in_band_command = self.block_list().active_block().is_in_band_command_block();
         let finished_block_bootstrap_stage = self.block_list().active_block().bootstrap_stage();
+        let command = self.block_list().active_block().command_with_secrets_unobfuscated(false);
+        let exit_code = data.exit_code.value();
         delegate!(self.command_finished(data));
 
         if let Some(tx) = &self.ordered_terminal_events_for_shared_session_tx {
             if let Err(e) = tx.try_send(OrderedTerminalEventType::CommandExecutionFinished {
-                next_block_id: block_id.into(),
+                command,
+                exit_code,
             }) {
                 log::warn!("Failed to send OrderedTerminalEventType::CommandFinished: {e}");
             }
@@ -3164,7 +3177,7 @@ impl ansi::Handler for TerminalModel {
         if !input.is_synchronized_output_frame() && self.shared_session_status().is_sharer() {
             if let Some(tx) = &self.ordered_terminal_events_for_shared_session_tx {
                 if let Err(e) = tx.try_send(OrderedTerminalEventType::PtyBytesRead {
-                    bytes: bytes.to_owned(),
+                    data: bytes.to_owned(),
                 }) {
                     log::warn!("Failed to send OrderedTerminalEventType::PtyBytesRead: {e}");
                 }
@@ -3616,6 +3629,16 @@ impl ModeProvider for TerminalModel {
     fn is_term_mode_set(&self, mode: TermMode) -> bool {
         self.is_term_mode_set(mode)
     }
+}
+
+// Stub function for agent response event encoding
+#[cfg(not(any(test, feature = "integration_tests")))]
+fn encode_agent_response_event(
+    _response: &warp_multi_agent_api::ResponseEvent,
+) -> String {
+    // TODO: Implement proper response event encoding logic
+    log::debug!("encode_agent_response_event called (stub)");
+    String::new()
 }
 
 /// Validates and decodes in-band command output sent via `warp_send_generator_output_osc_message`.

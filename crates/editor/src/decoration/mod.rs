@@ -1,4 +1,4 @@
-use warpui::ModelContext;
+use cuteui::ModelContext;
 
 use crate::content::buffer::BufferSnapshot;
 use crate::content::edit::PreciseDelta;

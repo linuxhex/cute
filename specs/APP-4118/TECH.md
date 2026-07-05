@@ -86,11 +86,11 @@ CommitIntent::CommitAndCreatePr => {
 ```
 ### 6. Imports
 The helper in `git_dialog/mod.rs` needs:
-- `warp_core::features::FeatureFlag`
+- `cute_core::features::FeatureFlag`
 - `crate::settings::AISettings`
 - `crate::workspaces::user_workspaces::UserWorkspaces`
 - `CustomerType` (match the path used by `share_block_modal.rs:32`)
-- `warp_core::channel::ChannelState` (match the path used by `share_block_modal.rs`)
+- `cute_core::channel::ChannelState` (match the path used by `share_block_modal.rs`)
 `commit.rs` and `pr.rs` each import `should_send_git_ops_ai_request` from `super`. `commit::new_state` calls it to set the initial placeholder; `commit::start_confirm` and `pr::start_confirm` each call it again at confirm time.
 ## Testing and validation
 No unit tests are added for this change. Validation is manual; maps to Behavior invariants 2, 4–9, 12–14:

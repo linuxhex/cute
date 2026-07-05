@@ -18,11 +18,11 @@ use serde_yaml::Mapping;
 use weight::CustomWeight;
 
 /// Trait for an "action" that can be dispatched via a hyperlink click handler.
-/// This purposefully shadows the `Action` trait from `warpui`.
+/// This purposefully shadows the `Action` trait from `cuteui`.
 ///
-/// Since `warpui` depends on this crate, we can't depend on the `warpui::Action` trait directly.
+/// Since `cuteui` depends on this crate, we can't depend on the `cuteui::Action` trait directly.
 /// Instead, we create a new trait with a blanket implementation that implicitly results
-/// in any `warpui::Action` implementing this `Action`.
+/// in any `cuteui::Action` implementing this `Action`.
 pub trait Action: Any + Debug + Send + Sync {
     fn as_any(&self) -> &dyn Any;
 }

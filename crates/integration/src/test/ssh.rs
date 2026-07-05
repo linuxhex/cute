@@ -22,8 +22,8 @@ use warp::integration_testing::view_getters::{single_terminal_view, single_termi
 use warp::terminal::model::bootstrap::BootstrapStage;
 use warp::terminal::session_settings::{StartupShell, StartupShellOverride};
 use warp::terminal::shell::ShellType;
-use warpui::integration::{AssertionCallback, AssertionOutcome, TestStep};
-use warpui::{async_assert, async_assert_eq};
+use cuteui::integration::{AssertionCallback, AssertionOutcome, TestStep};
+use cuteui::{async_assert, async_assert_eq};
 
 use super::new_builder;
 use crate::Builder;

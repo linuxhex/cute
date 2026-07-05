@@ -110,7 +110,7 @@ mod handoff_stubs {
     }
 
     #[derive(Debug, Clone)]
-    pub(crate) struct PendingCloudLaunch {
+    pub struct PendingCloudLaunch {
         pub(crate) prompt: String,
         pub(crate) attachments: HandoffLaunchAttachments,
     }
@@ -141,6 +141,6 @@ mod handoff_stubs {
 
 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
 pub(crate) use handoff_stubs::{
-    HandoffLaunchAttachments, PendingCloudLaunch, TouchedRepo, TouchedWorkspace,
+    HandoffLaunchAttachments, PendingCloudLaunch, TouchedWorkspace,
     pick_handoff_overlap_env, resolve_repo_for_path,
 };

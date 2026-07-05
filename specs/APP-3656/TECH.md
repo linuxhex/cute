@@ -11,7 +11,7 @@ The vertical tabs panel currently renders every pane as a multi-line card (2–4
 - `app/src/workspace/action.rs` — `WorkspaceAction` enum for dispatching UI events
 - `app/src/workspace/view.rs` — `Workspace` struct fields, `show_new_session_dropdown_menu` pattern for popup overlays
 - `ui/src/ui_components/segmented_control.rs` — `SegmentedControl<T>` view, `RenderableOptionConfig`, `SegmentedControlEvent`
-- `warp_core/src/ui/icons.rs` — `Icon` enum and SVG path mappings
+- `cute_core/src/ui/icons.rs` — `Icon` enum and SVG path mappings
 - `app/src/ai/conversation_status_ui.rs` — `render_status_element` for agent status badges
 - `app/src/terminal/view/tab_metadata.rs` — `terminal_title_from_shell()`, `display_working_directory()`, `selected_conversation_display_title()`
 - `app/src/terminal/view/pane_impl.rs (926-973)` — `is_ambient_agent_session()`, `selected_conversation_status()`, `selected_conversation_display_title()`

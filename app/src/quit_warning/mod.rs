@@ -2,8 +2,8 @@ use std::fmt::Write;
 
 use itertools::Itertools;
 use settings::ToggleableSetting as _;
-use warpui::modals::{AlertDialogWithCallbacks, AppModalCallback, ModalButton};
-use warpui::{AppContext, EntityId, SingletonEntity, ViewContext, WeakViewHandle, WindowId};
+use cuteui::modals::{AlertDialogWithCallbacks, AppModalCallback, ModalButton};
+use cuteui::{AppContext, EntityId, SingletonEntity, ViewContext, WeakViewHandle, WindowId};
 
 use crate::code::editor_management::{CodeEditorStatus, CodeEditorSummary};
 use crate::pane_group::{CodePane, PaneGroup, PaneId, TerminalPane};
@@ -189,11 +189,11 @@ impl QuitScope<'_> {
 
     fn close_target(&self) -> CloseTarget {
         match self {
-            Self::Pane { .. } => CloseTarget::Pane,
-            Self::Tabs(_) => CloseTarget::Tab,
-            Self::Window(_) => CloseTarget::Window,
-            Self::App => CloseTarget::App,
-            Self::EditorTab { .. } => CloseTarget::EditorTab,
+            Self::Pane { .. } => CloseTarget::PANE,
+            Self::Tabs(_) => CloseTarget::TAB,
+            Self::Window(_) => CloseTarget::WINDOW,
+            Self::App => CloseTarget::APP,
+            Self::EditorTab { .. } => CloseTarget::EDITOR_TAB,
         }
     }
 }

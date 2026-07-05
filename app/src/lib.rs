@@ -158,8 +158,8 @@ use terminal::keys_settings::KeysSettings;
 use terminal::local_shell::LocalShellState;
 pub use util::bindings::cmd_or_ctrl_shift;
 use voice::transcriber::VoiceTranscriber;
-use warp_cli::agent::AgentCommand;
-use warp_cli::{CliCommand, GlobalOptions};
+use cute_cli::agent::AgentCommand;
+use cute_cli::{CliCommand, GlobalOptions};
 #[cfg(feature = "local_fs")]
 use watcher::HomeDirectoryWatcher;
 
@@ -193,23 +193,23 @@ use settings::{ExtraMetaKeys, PrivacySettings};
 use terminal::input;
 use terminal::session_settings::SessionSettings;
 use url::Url;
-pub use warp_core::errors::{report_error, report_if_error};
-use warp_core::execution_mode::{AppExecutionMode, ExecutionMode};
+pub use cute_core::errors::{report_error, report_if_error};
+use cute_core::execution_mode::{AppExecutionMode, ExecutionMode};
 // Re-export the debounce function to simplify imports.
-pub use warp_core::r#async::debounce;
-use warp_core::user_preferences::GetUserPreferences as _;
+pub use cute_core::r#async::debounce;
+use cute_core::user_preferences::GetUserPreferences as _;
 // Re-export the safe logging macros at the crate root level for backwards compatibility
-pub use warp_core::{safe_debug, safe_error, safe_info, safe_warn};
+pub use cute_core::{safe_debug, safe_error, safe_info, safe_warn};
 #[cfg(feature = "local_fs")]
-use warp_files::FileModel;
-use warp_logging::LogDestination;
-use warp_managed_secrets::ManagedSecretManager;
-use warpui::integration::TestDriver;
-use warpui::modals::{AlertDialogWithCallbacks, AppModalCallback};
-use warpui::platform::app::ApproveTerminateResult;
-use warpui::platform::TerminationMode;
-use warpui::windowing::state::ApplicationStage;
-use warpui::{App, AppContext, Event, SingletonEntity, WindowId};
+use cute_files::FileModel;
+use cute_logging::LogDestination;
+use cute_managed_secrets::ManagedSecretManager;
+use cuteui::integration::TestDriver;
+use cuteui::modals::{AlertDialogWithCallbacks, AppModalCallback};
+use cuteui::platform::app::ApproveTerminateResult;
+use cuteui::platform::TerminationMode;
+use cuteui::windowing::state::ApplicationStage;
+use cuteui::{App, AppContext, Event, SingletonEntity, WindowId};
 use window_settings::WindowSettings;
 use workflows::manager::WorkflowManager;
 use workspace::sync_inputs::SyncedInputState;
@@ -238,10 +238,9 @@ use crate::code::global_buffer_model::GlobalBufferModel;
 use crate::code::language_server_shutdown_manager::LanguageServerShutdownManager;
 use crate::context_chips::prompt::Prompt;
 use crate::default_terminal::DefaultTerminal;
-use crate::drive::export::ExportManager;
-use crate::drive::CloudObjectTypeAndId;
 use crate::env_vars::manager::EnvVarCollectionManager;
 pub use crate::global_resource_handles::{GlobalResourceHandles, GlobalResourceHandlesProvider};
+pub use crate::drive::CloudObjectTypeAndId;
 use crate::gpu_state::GPUState;
 use crate::network::NetworkStatus;
 use crate::notebooks::editor::keys::NotebookKeybindings;
@@ -290,7 +289,7 @@ use crate::workspaces::user_profiles::UserProfiles;
 use crate::workspaces::user_workspaces::{UserWorkspaces, UserWorkspacesEvent};
 
 /// Our embedded application assets.
-pub static ASSETS: warp_assets::Assets = warp_assets::Assets;
+pub static ASSETS: cute_assets::Assets = cute_assets::Assets;
 
 fn determine_agent_source(
     launch_mode: &LaunchMode,
@@ -314,7 +313,7 @@ fn determine_agent_source(
 pub enum LaunchMode {
     /// Run the regular GUI application.
     App {
-        args: warp_cli::AppArgs,
+        args: cute_cli::AppArgs,
         /// API key for server authentication, if provided via `--api-key` or `WARP_API_KEY`.
         /// Only used on dogfood channels.
         api_key: Option<String>,
@@ -322,7 +321,7 @@ pub enum LaunchMode {
 
     /// Run the Warp command-line SDK.
     CommandLine {
-        command: warp_cli::CliCommand,
+        command: cute_cli::CliCommand,
         global_options: GlobalOptions,
         debug: bool,
         /// Whether this CLI invocation is running in a sandboxed environment.
@@ -338,11 +337,11 @@ pub enum LaunchMode {
 }
 
 impl LaunchMode {
-    fn args(&self) -> Cow<'_, warp_cli::AppArgs> {
+    fn args(&self) -> Cow<'_, cute_cli::AppArgs> {
         match self {
             LaunchMode::App { args, .. } => Cow::Borrowed(args),
             LaunchMode::CommandLine { .. } | LaunchMode::Test { .. } => {
-                Cow::Owned(warp_cli::AppArgs::default())
+                Cow::Owned(cute_cli::AppArgs::default())
             }
         }
     }
@@ -498,7 +497,7 @@ pub fn run() -> Result<()> {
     features::init_feature_flags();
 
     // Parse command-line arguments.
-    let args = warp_cli::Args::from_env();
+    let args = cute_cli::Args::from_env();
 
     // Server URL overrides are only honored on internal dev channels. Release channels silently
     // ignore `--server-root-url` / `--ws-server-url` / `--session-sharing-server-url` (and their
@@ -528,11 +527,11 @@ pub fn run() -> Result<()> {
         #[cfg(windows)]
         if command.prints_to_stdout() {
             // We attach a console to ensure that all standard output gets printed correctly.
-            warp_util::windows::attach_to_parent_console();
+            cute_util::windows::attach_to_parent_console();
         }
         match command {
             #[cfg(all(feature = "local_tty", unix))]
-            warp_cli::Command::Worker(warp_cli::WorkerCommand::TerminalServer(args)) => {
+            cute_cli::Command::Worker(cute_cli::WorkerCommand::TerminalServer(args)) => {
                 // If we were asked to run as a terminal server (as opposed to the main
                 // GUI application), do so immediately.  Ideally, the terminal server would
                 // be a separate binary, but it's much easier to distribute a single binary,
@@ -542,11 +541,11 @@ pub fn run() -> Result<()> {
                 return Ok(());
             }
             #[cfg(feature = "plugin_host")]
-            warp_cli::Command::Worker(warp_cli::WorkerCommand::PluginHost { .. }) => {
+            cute_cli::Command::Worker(cute_cli::WorkerCommand::PluginHost { .. }) => {
                 return crate::run_plugin_host();
             }
             #[cfg(feature = "local_tty")]
-            warp_cli::Command::Worker(warp_cli::WorkerCommand::MinidumpServer { socket_name }) => {
+            cute_cli::Command::Worker(cute_cli::WorkerCommand::MinidumpServer { socket_name }) => {
                 cfg_if::cfg_if! {
                     if #[cfg(all(linux_or_windows, feature = "crash_reporting"))] {
                         return crate::crash_reporting::run_minidump_server(socket_name);
@@ -557,14 +556,14 @@ pub fn run() -> Result<()> {
                 }
             }
             #[cfg(not(target_family = "wasm"))]
-            warp_cli::Command::Worker(warp_cli::WorkerCommand::RipgrepSearch {
+            cute_cli::Command::Worker(cute_cli::WorkerCommand::RipgrepSearch {
                 parent,
                 ignore_case,
                 multiline,
                 pattern,
                 paths,
             }) => {
-                warp_ripgrep::search::run_search_subprocess(
+                cute_ripgrep::search::run_search_subprocess(
                     std::slice::from_ref(pattern),
                     paths.clone(),
                     *ignore_case,
@@ -579,20 +578,20 @@ pub fn run() -> Result<()> {
                 feature = "plugin_host",
                 not(target_family = "wasm")
             )))]
-            warp_cli::Command::Worker(worker) => {
+            cute_cli::Command::Worker(worker) => {
                 // Need this case to handle platforms where there are no enum variants in
-                // warp_cli::WorkerCommand, as we still need to check Command::Worker.
+                // cute_cli::WorkerCommand, as we still need to check Command::Worker.
 
                 // On wasm, specifically, we should fail spectacularly if we get here.
                 #[cfg(target_family = "wasm")]
                 panic!("Worker process not supported on WASM: {worker:?}")
             }
-            warp_cli::Command::Completions { shell } => {
-                return warp_cli::completions::generate_to_stdout(*shell);
+            cute_cli::Command::Completions { shell } => {
+                return cute_cli::completions::generate_to_stdout(*shell);
             }
-            warp_cli::Command::CommandLine(cmd) => {
+            cute_cli::Command::CommandLine(cmd) => {
                 let (is_sandboxed, computer_use_override) = match cmd.as_ref() {
-                    warp_cli::CliCommand::Agent(warp_cli::agent::AgentCommand::Run(run_args)) => (
+                    cute_cli::CliCommand::Agent(cute_cli::agent::AgentCommand::Run(run_args)) => (
                         run_args.sandboxed,
                         run_args.computer_use.computer_use_override(),
                     ),
@@ -610,11 +609,11 @@ pub fn run() -> Result<()> {
                     computer_use_override,
                 });
             }
-            warp_cli::Command::DumpDebugInfo => {
+            cute_cli::Command::DumpDebugInfo => {
                 return debug_dump::run();
             }
             #[cfg(not(target_family = "wasm"))]
-            warp_cli::Command::PrintTelemetryEvents => {
+            cute_cli::Command::PrintTelemetryEvents => {
                 // Telemetry has been disabled
                 println!("Telemetry has been disabled in this build.");
                 return Ok(());
@@ -625,10 +624,10 @@ pub fn run() -> Result<()> {
     // If running as a standalone CLI binary or invoked as "oz", print help
     // instead of launching the GUI app.
     let is_cli_binary = cfg!(feature = "standalone")
-        || warp_cli::binary_name().is_some_and(|name| name.starts_with("oz"))
+        || cute_cli::binary_name().is_some_and(|name| name.starts_with("oz"))
         || std::env::var_os("WARP_CLI_MODE").is_some();
     if is_cli_binary {
-        warp_cli::Args::clap_command().print_help()?;
+        cute_cli::Args::clap_command().print_help()?;
         return Ok(());
     }
 
@@ -687,16 +686,16 @@ fn run_internal(mut launch_mode: LaunchMode) -> Result<()> {
     cfg_if::cfg_if! {
         if #[cfg(enable_crash_recovery)] {
             if crash_recovery::is_crash_recovery_process(launch_mode.args().as_ref()) {
-                warp_logging::init_for_crash_recovery_process()?;
+                cute_logging::init_for_crash_recovery_process()?;
             } else {
-                warp_logging::init(warp_logging::LogConfig {
+                cute_logging::init(cute_logging::LogConfig {
                     is_cli,
                     log_destination,
                     ..Default::default()
                 })?;
             }
         } else {
-            warp_logging::init(warp_logging::LogConfig {
+            cute_logging::init(cute_logging::LogConfig {
                 is_cli,
                 log_destination,
                 ..Default::default()
@@ -809,7 +808,7 @@ fn run_internal(mut launch_mode: LaunchMode) -> Result<()> {
         not(any(enable_crash_recovery, any(target_os = "linux", target_os = "freebsd"))),
         expect(unused)
     )]
-    let prefs_for_public_settings: &dyn warpui_extras::user_preferences::UserPreferences =
+    let prefs_for_public_settings: &dyn cuteui_extras::user_preferences::UserPreferences =
         if FeatureFlag::SettingsFile.is_enabled() {
             public_preferences.as_ref()
         } else {
@@ -829,13 +828,13 @@ fn run_internal(mut launch_mode: LaunchMode) -> Result<()> {
         terminal::local_tty::spawner::PtySpawner::new().context("Failed to create pty spawner")?;
 
     let mut app_builder = if launch_mode.is_headless() {
-        warpui::platform::AppBuilder::new_headless(
+        cuteui::platform::AppBuilder::new_headless(
             app_callbacks(launch_mode.is_integration_test()),
             Box::new(ASSETS),
             launch_mode.take_test_driver(),
         )
     } else {
-        warpui::platform::AppBuilder::new(
+        cuteui::platform::AppBuilder::new(
             app_callbacks(launch_mode.is_integration_test()),
             Box::new(ASSETS),
             launch_mode.take_test_driver(),
@@ -844,8 +843,8 @@ fn run_internal(mut launch_mode: LaunchMode) -> Result<()> {
 
     #[cfg(target_os = "macos")]
     {
-        use warpui::platform::mac::AppExt;
-        use warpui::AssetProvider as _;
+        use cuteui::platform::mac::AppExt;
+        use cuteui::AssetProvider as _;
 
         let activate_on_launch = !launch_mode.is_integration_test()
             || std::env::var("WARPUI_USE_REAL_DISPLAY_IN_INTEGRATION_TESTS").is_ok();
@@ -860,7 +859,7 @@ fn run_internal(mut launch_mode: LaunchMode) -> Result<()> {
 
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     {
-        use warpui::platform::linux::{self, AppBuilderExt};
+        use cuteui::platform::linux::{self, AppBuilderExt};
 
         use crate::settings::ForceX11;
 
@@ -875,7 +874,7 @@ fn run_internal(mut launch_mode: LaunchMode) -> Result<()> {
 
     #[cfg(target_os = "windows")]
     {
-        use warpui::platform::windows::AppBuilderExt;
+        use cuteui::platform::windows::AppBuilderExt;
         app_builder.set_app_user_model_id(ChannelState::app_id().to_string());
 
         // Only use DXC for DirectX shader compilation if we're not running in a Parallels VM
@@ -883,7 +882,7 @@ fn run_internal(mut launch_mode: LaunchMode) -> Result<()> {
         let is_parallels_vm = crate::util::vm_detection::is_running_in_windows_parallels_vm();
         if !is_parallels_vm {
             log::info!("Using DXC for DirectX shader compilation");
-            use warpui::platform::windows::DXCPath;
+            use cuteui::platform::windows::DXCPath;
 
             app_builder.use_dxc_for_directx_shader_compilation(DXCPath {
                 dxc_path: "dxcompiler.dll".to_string(),
@@ -912,7 +911,7 @@ fn run_internal(mut launch_mode: LaunchMode) -> Result<()> {
         #[cfg(not(target_family = "wasm"))]
         // Rotate the log files in the background.
         ctx.background_executor()
-            .spawn(warp_logging::rotate_log_files())
+            .spawn(cute_logging::rotate_log_files())
             .detach();
 
         ctx.add_singleton_model(|ctx| {
@@ -962,8 +961,8 @@ pub struct UpdateQuakeModeEventArg {
 pub(crate) fn initialize_app(
     launch_mode: &LaunchMode,
     mut timer: IntervalTimer,
-    startup_toml_parse_error: Option<warpui_extras::user_preferences::Error>,
-    ctx: &mut warpui::AppContext,
+    startup_toml_parse_error: Option<cuteui_extras::user_preferences::Error>,
+    ctx: &mut cuteui::AppContext,
     _pre_sentry_errors: impl IntoIterator<Item = anyhow::Error>,
 ) -> Option<AppState> {
     // WARNING: Errors that happen here before crash_reporting::init will not be collected in
@@ -974,7 +973,7 @@ pub(crate) fn initialize_app(
     // Register an implementation of the secure storage service.
     // 使用 no-op 存储避免 macOS keychain 弹窗提示
     // 由于设置了 SkipFirebaseAnonymousUser feature flag，不需要持久化用户认证信息
-    warpui_extras::secure_storage::register_noop(&data_domain, ctx);
+    cuteui_extras::secure_storage::register_noop(&data_domain, ctx);
 
     // One-time migration: give Preview its own config directory by
     // symlinking contents from the shared ~/.warp location. Must run
@@ -1282,7 +1281,7 @@ pub(crate) fn initialize_app(
 
             GPUState::handle(ctx).update(ctx, |gpu_state, ctx| {
                 gpu_state
-                    .set_has_lower_power_gpu(warpui::rendering::is_low_power_gpu_available(), ctx);
+                    .set_has_lower_power_gpu(cuteui::rendering::is_low_power_gpu_available(), ctx);
             });
 
             for window_id in ctx.window_ids().collect_vec() {
@@ -1325,7 +1324,7 @@ pub(crate) fn initialize_app(
     {
         let imported_config_model = ctx.add_singleton_model(ImportedConfigModel::new);
 
-        if ChannelState::channel() != warp_core::channel::Channel::Integration {
+        if ChannelState::channel() != cute_core::channel::Channel::Integration {
             imported_config_model.update(ctx, |model, ctx| {
                 model.search_for_settings_to_import(ctx);
             });
@@ -1348,6 +1347,9 @@ pub(crate) fn initialize_app(
         use code_review::git_status_update::GitStatusUpdateModel;
         ctx.add_singleton_model(|_| GitStatusUpdateModel::new());
     }
+
+    ctx.add_singleton_model(|_| crate::terminal::shared_session::SessionPermissionsManager::new());
+    ctx.add_singleton_model(|_| crate::terminal::shared_session::manager::Manager::new());
 
     ctx.add_singleton_model(|ctx| {
         ProjectManagementModel::new(persisted_projects, persistence_writer.sender(), ctx)
@@ -1457,13 +1459,13 @@ pub(crate) fn initialize_app(
         )
     });
 
-    let _unsynced_actions: Vec<(CloudObjectTypeAndId, ObjectAction)> = object_actions
+    let _unsynced_actions: Vec<(String, ObjectAction)> = object_actions
         .iter()
         .filter(|action| action.is_pending())
         .filter_map(|action| {
             cloud_model.read(ctx, |model, _| {
                 let object = model.get_by_uid(&action.uid);
-                object.map(|o| (o.cloud_object_type_and_id(), action.clone()))
+                object.map(|o| (o.uid().to_string(), action.clone()))
             })
         })
         .collect::<Vec<_>>();
@@ -1523,7 +1525,7 @@ pub(crate) fn initialize_app(
         ctx.add_singleton_model(|ctx| RepoOutlines::new_with_indexing_enabled(false, ctx));
     }
     ctx.add_singleton_model(|ctx| {
-        warp_core::sync_queue::SyncQueue::<SyncTask>::new_with_rate_limit(
+        cute_core::sync_queue::SyncQueue::<SyncTask>::new_with_rate_limit(
             &ctx.background_executor(),
             Some(DEFAULT_SYNC_REQUESTS_PER_MIN),
         )
@@ -1608,7 +1610,6 @@ pub(crate) fn initialize_app(
     // ByoLlmAuthBannerSessionState tracks dismissal of the BYO LLM auth banner (e.g., AWS Bedrock login).
     ctx.add_singleton_model(ByoLlmAuthBannerSessionState::new);
 
-    ctx.add_singleton_model(ExportManager::new);
     ctx.add_singleton_model(|ctx| NotebookManager::new(notebooks, ctx));
     ctx.add_singleton_model(|_| CodeManager::default());
     ctx.add_singleton_model(|_| OpenedFilesModel::new());
@@ -1633,13 +1634,6 @@ pub(crate) fn initialize_app(
 
     // Add a singleton model for resizable modals whose size should be persisted through restarts.
     ctx.add_singleton_model(|_| ResizableData::default());
-
-    // Add a singleton model to maintain state of shared session across all windows.
-    ctx.add_singleton_model(terminal::shared_session::manager::Manager::new);
-
-    ctx.add_singleton_model(
-        terminal::shared_session::permissions_manager::SessionPermissionsManager::new,
-    );
 
     ctx.add_singleton_model(EnvVarCollectionManager::new);
     ctx.add_singleton_model(WorkflowManager::new);
@@ -1769,8 +1763,8 @@ pub(crate) fn initialize_app(
     app_state
 }
 
-pub(crate) fn app_callbacks(is_integration_test: bool) -> warpui::platform::AppCallbacks {
-    warpui::platform::AppCallbacks {
+pub(crate) fn app_callbacks(is_integration_test: bool) -> cuteui::platform::AppCallbacks {
+    cuteui::platform::AppCallbacks {
         on_internet_reachability_changed: Some(Box::new(move |reachable, ctx| {
             NetworkStatus::handle(ctx)
                 .update(ctx, move |me, ctx| me.reachability_changed(reachable, ctx));
@@ -2166,7 +2160,7 @@ fn is_cloud_agent_web_home_launch_url(url: &Url) -> bool {
             .query_pairs()
             .any(|(key, value)| key == "source" && value == "web_home")
 }
-fn launch(ctx: &mut warpui::AppContext, app_state: Option<AppState>, launch_mode: LaunchMode) {
+fn launch(ctx: &mut cuteui::AppContext, app_state: Option<AppState>, launch_mode: LaunchMode) {
     IntervalTimer::handle(ctx).update(ctx, |timer, _ctx| {
         timer.mark_interval_end("APP_LAUNCHED");
     });
@@ -2187,7 +2181,8 @@ fn launch(ctx: &mut warpui::AppContext, app_state: Option<AppState>, launch_mode
                 .args()
                 .urls
                 .iter()
-                .any(is_cloud_agent_web_home_launch_url);
+                .any(is_cloud_agent_web_home_launch_url)
+                || cfg!(feature = "skip_login");
             let app_state = if should_skip_restore { None } else { app_state };
             // Attempt to restore windows from the persisted application state.
             let arg = OpenFromRestoredArg { app_state };
@@ -2258,5 +2253,5 @@ fn launch(ctx: &mut warpui::AppContext, app_state: Option<AppState>, launch_mode
 #[cfg(test)]
 fn init_logging_for_unit_tests_glue() {
     // Initialize terminal-friendly logging for tests from the shared logger crate.
-    warp_logging::init_logging_for_unit_tests();
+    cute_logging::init_logging_for_unit_tests();
 }

@@ -2,7 +2,7 @@ pub use crate::cloud_object::models::{
     CloudEnvVarCollection, CloudEnvVarCollectionModel, EnvVar, EnvVarCollection, EnvVarValue,
 };
 use itertools::Itertools;
-use warp_util::path::ShellFamily;
+use cute_util::path::ShellFamily;
 
 pub mod active_env_var_collection_data;
 pub mod env_var_collection_block;
@@ -157,10 +157,10 @@ impl StringModel for EnvVarCollection {
         env_var_collection: &CloudEnvVarCollection,
     ) -> Option<Box<dyn WarpDriveItem>> {
         Some(Box::new(WarpDriveEnvVarCollection::new(
-            CloudObjectTypeAndId::GenericStringObject {
-                object_type: GenericStringObjectFormat::Json(JsonObjectType::EnvVarCollection),
+            CloudObjectTypeAndId::from_generic_string_object(
+                GenericStringObjectFormat::Json(JsonObjectType::EnvVarCollection),
                 id,
-            },
+            ),
             env_var_collection.clone(),
         )))
     }

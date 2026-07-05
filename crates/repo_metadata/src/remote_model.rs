@@ -8,8 +8,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use futures::future::{self, BoxFuture, FutureExt as _};
-use warp_core::HostId;
-use warpui::ModelContext;
+use cute_core::HostId;
+use cuteui::ModelContext;
 
 use super::local_model::collect_contents_recursive;
 use crate::file_tree_store::{FileTreeEntry, FileTreeState};
@@ -213,7 +213,7 @@ impl RemoteRepoMetadataModel {
     }
 }
 
-impl warpui::Entity for RemoteRepoMetadataModel {
+impl cuteui::Entity for RemoteRepoMetadataModel {
     type Event = RemoteRepositoryMetadataEvent;
 }
 

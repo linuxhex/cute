@@ -2,8 +2,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use session_sharing_protocol::common::SessionId;
-use warp_graphql::ai::{AgentTaskState, PlatformErrorCode};
-use warpui::{Entity, EntityId, ModelContext, SingletonEntity};
+use cute_graphql::ai::{AgentTaskState, PlatformErrorCode};
+use cuteui::{Entity, EntityId, ModelContext, SingletonEntity};
 
 use super::history_model::{
     BlocklistAIHistoryEvent, BlocklistAIHistoryModel, ConversationStatusUpdate,
@@ -144,7 +144,7 @@ impl LocalAgentTaskSyncModel {
                 conversation_id,
                 session_id,
             } => {
-                self.on_local_shared_session_established(*conversation_id, *session_id, ctx);
+                self.on_local_shared_session_established(*conversation_id, session_id.clone(), ctx);
             }
             _ => {}
         }
@@ -256,7 +256,7 @@ impl LocalAgentTaskSyncModel {
                     .update_agent_task(
                         task_id,
                         task_state,
-                        session_id,
+                        session_id.clone(),
                         server_conversation_token.clone(),
                         status_message,
                     )

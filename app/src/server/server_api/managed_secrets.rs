@@ -2,9 +2,9 @@ use std::collections::HashMap;
 
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use warp_graphql::managed_secrets::{ManagedSecret, ManagedSecretType};
-pub use warp_managed_secrets::client::{ManagedSecretConfigs, ManagedSecretsClient};
-use warp_managed_secrets::client::{SecretOwner, TaskIdentityToken};
+use cute_graphql::managed_secrets::{ManagedSecret, ManagedSecretType};
+pub use cute_managed_secrets::client::{ManagedSecretConfigs, ManagedSecretsClient};
+use cute_managed_secrets::client::{SecretOwner, TaskIdentityToken};
 
 use super::ServerApi;
 
@@ -46,7 +46,7 @@ impl ManagedSecretsClient for ServerApi {
 
     async fn list_harness_auth_secrets(
         &self,
-        _harness: warp_graphql::ai::AgentHarness,
+        _harness: cute_graphql::ai::AgentHarness,
     ) -> Result<Vec<ManagedSecret>> {
         Ok(vec![])
     }
@@ -55,13 +55,13 @@ impl ManagedSecretsClient for ServerApi {
         &self,
         _task_id: String,
         _workload_token: String,
-    ) -> Result<HashMap<String, warp_graphql::queries::task_secrets::ManagedSecretValue>> {
+    ) -> Result<HashMap<String, cute_graphql::queries::task_secrets::ManagedSecretValue>> {
         Err(anyhow!("Managed secrets not supported in local version"))
     }
 
     async fn issue_task_identity_token(
         &self,
-        _options: warp_managed_secrets::client::IdentityTokenOptions,
+        _options: cute_managed_secrets::client::IdentityTokenOptions,
     ) -> Result<TaskIdentityToken> {
         Err(anyhow!("Managed secrets not supported in local version"))
     }

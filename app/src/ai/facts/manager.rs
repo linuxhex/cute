@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use warpui::{Entity, EntityId, ModelContext, SingletonEntity, ViewHandle, WindowId};
+use cuteui::{Entity, EntityId, ModelContext, SingletonEntity, ViewHandle, WindowId};
 
 use crate::ai::facts::AIFactView;
 use crate::pane_group::{AIFactPane, PaneContent};

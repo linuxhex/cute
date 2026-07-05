@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
-use warpui::elements::{MouseStateHandle, Text};
-use warpui::Element;
+use cuteui::elements::{MouseStateHandle, Text};
+use cuteui::Element;
 
 use super::{
     render_inline_block_list_banner, InlineBannerButtonState, InlineBannerCloseButton,

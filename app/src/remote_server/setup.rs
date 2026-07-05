@@ -1,4 +1,5 @@
 //! Stub for remote_server::setup after removal.
+#![allow(dead_code)]
 
 /// Returns the data directory for the remote server daemon.
 pub fn remote_server_daemon_data_dir(_identity_key: &str) -> String {

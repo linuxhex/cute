@@ -4,8 +4,8 @@ use std::sync::Arc;
 use anyhow::{Context, Result};
 use futures::channel::oneshot::{self, Receiver};
 use futures::stream::AbortHandle;
-use warpui::r#async::Timer;
-use warpui::{duration_with_jitter, Entity, ModelContext, RequestState, SingletonEntity};
+use cuteui::r#async::Timer;
+use cuteui::{duration_with_jitter, Entity, ModelContext, RequestState, SingletonEntity};
 
 use super::team_tester::{TeamTesterStatus, TeamTesterStatusEvent};
 use super::user_workspaces::{
@@ -17,12 +17,13 @@ use crate::auth::AuthStateProvider;
 use crate::cloud_object::CloudObjectEventEntrypoint;
 use crate::network::{NetworkStatus, NetworkStatusEvent, NetworkStatusKind};
 use crate::persistence::ModelEvent;
-use crate::server::cloud_objects::update_manager::UpdateManager;
+
 use crate::server::ids::ServerId;
 use crate::server::retry_strategies::{
     OUT_OF_BAND_REQUEST_RETRY_STRATEGY, PERIODIC_POLL, PERIODIC_POLL_RETRY_STRATEGY,
 };
 use crate::server::server_api::team::TeamClient;
+use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::{report_error, report_if_error};
 
 #[allow(dead_code)]

@@ -40,29 +40,29 @@ use repo_metadata::repositories::DetectedRepositories;
 use secret_redaction::*;
 use serde::Serialize;
 use settings::Setting as _;
-use warp_core::features::FeatureFlag;
-use warp_core::ui::theme::color::internal_colors;
-use warp_core::ui::theme::Fill;
-use warp_editor::content::buffer::InitialBufferState;
+use cute_core::features::FeatureFlag;
+use cute_core::ui::theme::color::internal_colors;
+use cute_core::ui::theme::Fill;
+use cute_editor::content::buffer::InitialBufferState;
 #[cfg(feature = "local_fs")]
-use warp_editor::content::edit::resolve_asset_source_relative_to_directory;
-use warp_editor::render::element::VerticalExpansionBehavior;
-use warp_util::local_or_remote_path::LocalOrRemotePath;
-use warp_util::path::ShellFamily;
-use warpui::assets::asset_cache::AssetCache;
-use warpui::clipboard::ClipboardContent;
-use warpui::elements::{
+use cute_editor::content::edit::resolve_asset_source_relative_to_directory;
+use cute_editor::render::element::VerticalExpansionBehavior;
+use cute_util::local_or_remote_path::LocalOrRemotePath;
+use cute_util::path::ShellFamily;
+use cuteui::assets::asset_cache::AssetCache;
+use cuteui::clipboard::ClipboardContent;
+use cuteui::elements::{
     get_rich_content_position_id, ClippedScrollStateHandle, MainAxisAlignment, MainAxisSize,
     MouseStateHandle, SecretRange, SelectionBound, SelectionHandle, TableStateHandle,
 };
-use warpui::image_cache::ImageType;
-use warpui::keymap::FixedBinding;
-use warpui::r#async::{SpawnedFutureHandle, Timer};
-use warpui::text::SelectionType;
-use warpui::ui_components::button::{ButtonVariant, TextAndIcon, TextAndIconAlignment};
-use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::ui_components::radio_buttons::RadioButtonStateHandle;
-use warpui::{
+use cuteui::image_cache::ImageType;
+use cuteui::keymap::FixedBinding;
+use cuteui::r#async::{SpawnedFutureHandle, Timer};
+use cuteui::text::SelectionType;
+use cuteui::ui_components::button::{ButtonVariant, TextAndIcon, TextAndIconAlignment};
+use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
+use cuteui::ui_components::radio_buttons::RadioButtonStateHandle;
+use cuteui::{
     AppContext, Entity, EntityId, ModelHandle, SingletonEntity, TypedActionView, View, ViewContext,
     ViewHandle, WeakViewHandle, WindowId,
 };
@@ -207,7 +207,7 @@ pub const RICH_CONTENT_SECRET_FIRST_CHAR_POSITION_ID: &str =
     "ai_block:rich_content_secret_first_char_position";
 
 pub fn init(app: &mut AppContext) {
-    use warpui::keymap::macros::*;
+    use cuteui::keymap::macros::*;
 
     app.register_fixed_bindings([
         FixedBinding::new(
@@ -762,7 +762,7 @@ pub struct AIBlock {
     controller: ModelHandle<BlocklistAIController>,
     active_session: ModelHandle<ActiveSession>,
     terminal_view_id: EntityId,
-    window_id: warpui::WindowId,
+    window_id: cuteui::WindowId,
 
     /// The current working directory at the time the AI block was created. Note that this
     /// is different from `directory_context`, which represents the directory-related contexts
@@ -1259,7 +1259,7 @@ impl AIBlock {
                         ai_block_view_id,
                         exchange_id,
                         conversation_id,
-                        entrypoint: AgentModeRewindEntrypoint::Button,
+                        entrypoint: AgentModeRewindEntrypoint::BUTTON,
                     });
                 })
         });
@@ -2090,7 +2090,7 @@ impl AIBlock {
                         button = button.with_text_and_icon_label(TextAndIcon::new(
                             TextAndIconAlignment::TextFirst,
                             accept_text.clone(),
-                            Icon::CornerDownLeft.to_warpui_icon(appearance.theme().foreground()),
+                            Icon::CornerDownLeft.to_cuteui_icon(appearance.theme().foreground()),
                             MainAxisSize::Max,
                             MainAxisAlignment::SpaceBetween,
                             vec2f(
@@ -2132,7 +2132,7 @@ impl AIBlock {
                         button = button.with_text_and_icon_label(TextAndIcon::new(
                             TextAndIconAlignment::TextFirst,
                             reject_text.clone(),
-                            Icon::CornerDownLeft.to_warpui_icon(appearance.theme().foreground()),
+                            Icon::CornerDownLeft.to_cuteui_icon(appearance.theme().foreground()),
                             MainAxisSize::Max,
                             MainAxisAlignment::SpaceBetween,
                             vec2f(
@@ -2520,7 +2520,7 @@ impl AIBlock {
         let surfaced_citations = output
             .citations
             .iter()
-            .filter_map(|citation| citation.for_telemetry(ctx))
+            .filter_map(|citation| citation.for_telemetry(()))
             .collect_vec();
         if !surfaced_citations.is_empty() {
         }
@@ -5315,7 +5315,7 @@ pub enum AIBlockEvent {
     #[cfg(feature = "local_fs")]
     OpenDetectedFilePath {
         absolute_path: PathBuf,
-        line_and_column_num: Option<warp_util::path::LineAndColumnArg>,
+        line_and_column_num: Option<cute_util::path::LineAndColumnArg>,
         target_override: Option<FileTarget>,
     },
     ShowLinkTooltip(RichContentLinkTooltipInfo),
@@ -5485,7 +5485,7 @@ pub enum AIBlockAction {
         is_positive: bool,
     },
     /// Clear the selections of all other views **except** for the source view that dispatched the event.
-    /// The `source_view_id` will be `None` if the event is dispatched by the [`warpui::elements::SelectableArea`]
+    /// The `source_view_id` will be `None` if the event is dispatched by the [`cuteui::elements::SelectableArea`]
     /// instead of a nested view (i.e. code block, requested command, etc.), which means all nested views
     /// should have their selections cleared.
     ClearOtherSelections {
@@ -5732,7 +5732,7 @@ impl TypedActionView for AIBlock {
                     .status(ctx)
                     .output_to_render()
                     .and_then(|output| output.get().server_output_id.clone());
-                if let Some(_citation) = citation.for_telemetry(ctx) {
+                if let Some(_citation) = citation.for_telemetry(()) {
                 }
             }
             AIBlockAction::OpenAIFactCollection => {
@@ -6130,7 +6130,7 @@ impl TypedActionView for AIBlock {
                     });
                     images.push(ui_components::lightbox::LightboxImage {
                         source: ui_components::lightbox::LightboxImageSource::Resolved {
-                            asset_source: warpui::assets::asset_cache::AssetSource::Raw {
+                            asset_source: cuteui::assets::asset_cache::AssetSource::Raw {
                                 id: asset_id,
                             },
                         },
@@ -6203,7 +6203,7 @@ impl TypedActionView for AIBlock {
                     }
                     images.push(ui_components::lightbox::LightboxImage {
                         source: ui_components::lightbox::LightboxImageSource::Resolved {
-                            asset_source: warpui::assets::asset_cache::AssetSource::Raw {
+                            asset_source: cuteui::assets::asset_cache::AssetSource::Raw {
                                 id: asset_id,
                             },
                         },

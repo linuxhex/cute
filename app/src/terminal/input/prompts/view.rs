@@ -1,5 +1,5 @@
-use warpui::elements::ChildView;
-use warpui::{Element, Entity, ModelHandle, View, ViewContext, ViewHandle};
+use cuteui::elements::ChildView;
+use cuteui::{Element, Entity, ModelHandle, View, ViewContext, ViewHandle};
 
 use crate::ai::blocklist::agent_view::AgentViewController;
 use crate::search::data_source::Query;
@@ -32,7 +32,7 @@ impl InlinePromptsMenuView {
         positioner: &ModelHandle<InlineMenuPositioner>,
         ctx: &mut ViewContext<Self>,
     ) -> Self {
-        let data_source = ctx.add_model(PromptsMenuDataSource::new);
+        let data_source = ctx.add_model(|_ctx| PromptsMenuDataSource::new());
 
         let mixer = ctx.add_model(|ctx| {
             let mut mixer = SearchMixer::<AcceptPrompt>::new();
@@ -119,7 +119,7 @@ impl View for InlinePromptsMenuView {
         "InlinePromptsMenuView"
     }
 
-    fn render(&self, _app: &warpui::AppContext) -> Box<dyn Element> {
+    fn render(&self, _app: &cuteui::AppContext) -> Box<dyn Element> {
         ChildView::new(&self.menu_view).finish()
     }
 }

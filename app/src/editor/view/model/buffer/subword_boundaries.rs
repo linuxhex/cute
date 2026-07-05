@@ -1,9 +1,9 @@
 use std::iter::Peekable;
 
 use itertools::Either;
-use warpui::text::word_boundaries::WordBoundariesApproach;
-use warpui::text::words::is_subword_boundary_char;
-use warpui::text::TextBuffer;
+use cuteui::text::word_boundaries::WordBoundariesApproach;
+use cuteui::text::words::is_subword_boundary_char;
+use cuteui::text::TextBuffer;
 
 use super::{CharOffset, Point};
 

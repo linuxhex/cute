@@ -4,7 +4,7 @@ use async_broadcast::Receiver;
 use futures_lite::StreamExt;
 use instant::{Duration, Instant};
 use parking_lot::FairMutex;
-use warpui::r#async::executor::Background;
+use cuteui::r#async::executor::Background;
 
 use crate::auth::auth_state::AuthState;
 use crate::terminal::TerminalModel;

@@ -1,5 +1,5 @@
 pub use crate::cloud_object::models::EnvVarSecretCommand;
-use warpui::ViewContext;
+use cuteui::ViewContext;
 
 use super::env_var_collection::{EnvVarCollectionView, VariableRowIndex};
 use crate::env_vars::active_env_var_collection_data::SavingStatus;

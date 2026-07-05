@@ -9,8 +9,8 @@ use warp::integration_testing::terminal::{
 use warp::integration_testing::view_getters::single_terminal_view_for_tab;
 use warp::terminal::model::terminal_model::BlockIndex;
 use warp::terminal::shell::{Shell, ShellType};
-use warpui::integration::{AssertionCallback, AssertionOutcome, TestStep};
-use warpui::{async_assert, async_assert_eq};
+use cuteui::integration::{AssertionCallback, AssertionOutcome, TestStep};
+use cuteui::{async_assert, async_assert_eq};
 
 use super::{new_builder, Builder};
 use crate::util::skip_if_powershell_core_2303;

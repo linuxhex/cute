@@ -16,11 +16,11 @@ pub use convert_from::{
 use futures_lite::Stream;
 pub use r#impl::generate_multi_agent_output;
 use serde::Serialize;
-use warp_core::channel::ChannelState;
-use warp_core::execution_mode::AppExecutionMode;
-use warp_core::features::FeatureFlag;
-use warp_core::user_preferences::GetUserPreferences;
-use warpui::{AppContext, EntityId, SingletonEntity as _};
+use cute_core::channel::ChannelState;
+use cute_core::execution_mode::AppExecutionMode;
+use cute_core::features::FeatureFlag;
+use cute_core::user_preferences::GetUserPreferences;
+use cuteui::{AppContext, EntityId, SingletonEntity as _};
 
 use super::{AIAgentInput, MCPContext, MCPServer, RequestMetadata, Suggestions};
 use crate::ai::agent::conversation::AIConversationId;
@@ -83,7 +83,7 @@ impl From<session_sharing_protocol::common::ServerConversationToken> for ServerC
 impl TryFrom<ServerConversationToken>
     for session_sharing_protocol::common::ServerConversationToken
 {
-    type Error = uuid::Error;
+    type Error = std::convert::Infallible;
 
     fn try_from(token: ServerConversationToken) -> Result<Self, Self::Error> {
         token.as_str().parse()

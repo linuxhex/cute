@@ -1,6 +1,6 @@
 use ai::skills::{ParsedSkill, SkillProvider, SkillReference};
-use warp_util::local_or_remote_path::LocalOrRemotePath;
-use warpui::{AppContext, Entity, ModelContext, SingletonEntity};
+use cute_util::local_or_remote_path::LocalOrRemotePath;
+use cuteui::{AppContext, Entity, ModelContext, SingletonEntity};
 
 use crate::ai::skills::{SkillDescriptor, SkillPathQuery};
 

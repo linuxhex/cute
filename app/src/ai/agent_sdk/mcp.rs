@@ -1,12 +1,12 @@
 use comfy_table::Cell;
 use serde::Serialize;
-use warp_cli::mcp::MCPCommand;
-use warp_cli::GlobalOptions;
-use warpui::{AppContext, ModelContext, SingletonEntity};
+use cute_cli::mcp::MCPCommand;
+use cute_cli::GlobalOptions;
+use cuteui::{AppContext, ModelContext, SingletonEntity};
 
 use crate::ai::agent_sdk::output::{self, TableFormat};
 use crate::ai::mcp::TemplatableMCPServerManager;
-use crate::server::cloud_objects::update_manager::UpdateManager;
+
 
 /// Handle MCP-related CLI commands.
 pub fn run(
@@ -28,9 +28,7 @@ struct MCPCommandRunner;
 
 impl MCPCommandRunner {
     fn list(&self, global_options: GlobalOptions, ctx: &mut ModelContext<Self>) {
-        let initial_sync = UpdateManager::as_ref(ctx).initial_load_complete();
-
-        ctx.spawn(initial_sync, move |_, _, ctx| {
+        ctx.spawn(async {}, move |_, _, ctx| {
             let mut servers = TemplatableMCPServerManager::get_all_runnable_mcp_servers(ctx);
             servers.sort_by_key(|(uuid, _)| *uuid);
 
@@ -41,12 +39,12 @@ impl MCPCommandRunner {
                 global_options.output_format,
             );
 
-            ctx.terminate_app(warpui::platform::TerminationMode::ForceTerminate, None);
+            ctx.terminate_app(cuteui::platform::TerminationMode::ForceTerminate, None);
         });
     }
 }
 
-impl warpui::Entity for MCPCommandRunner {
+impl cuteui::Entity for MCPCommandRunner {
     type Event = ();
 }
 impl SingletonEntity for MCPCommandRunner {}

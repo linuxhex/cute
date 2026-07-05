@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use chrono::Utc;
-use warp_server_client::{
-    cloud_object::{GenericCloudObject, GenericServerObject, GenericStringModel, JsonObjectType},
+use cute_server_client::{
+    cloud_object::{GenericCloudObject, GenericServerObject, GenericStringModel, GenericStringObjectFormat, JsonObjectType},
     ids::GenericStringObjectId,
 };
 use handlebars::get_arguments;
@@ -10,6 +10,8 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use super::{JsonModel, JsonSerializer};
+use crate::cloud_object::model::generic_string_model::StringModel;
+use crate::cloud_object::{CloudObjectUuid, GenericStringObjectUniqueKey};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct JSONMCPServer {
@@ -282,9 +284,47 @@ impl TemplatableMCPServer {
     }
 }
 
+impl CloudObjectUuid for TemplatableMCPServer {
+    fn uuid(&self) -> uuid::Uuid {
+        self.uuid
+    }
+}
+
 impl JsonModel for TemplatableMCPServer {
     fn json_object_type() -> JsonObjectType {
         JsonObjectType::TemplatableMCPServer
+    }
+}
+
+impl StringModel for TemplatableMCPServer {
+    type CloudObjectType = GenericCloudObject<GenericStringObjectId, GenericStringModel<Self, JsonSerializer>>;
+
+    fn model_type_name(&self) -> &'static str {
+        "MCP Server"
+    }
+
+    fn should_enforce_revisions() -> bool {
+        false
+    }
+
+    fn model_format() -> GenericStringObjectFormat {
+        GenericStringObjectFormat::Json(Self::json_object_type())
+    }
+
+    fn should_show_activity_toasts() -> bool {
+        false
+    }
+
+    fn warn_if_unsaved_at_quit() -> bool {
+        false
+    }
+
+    fn display_name(&self) -> String {
+        self.name.clone()
+    }
+
+    fn uniqueness_key(&self) -> Option<GenericStringObjectUniqueKey> {
+        None
     }
 }
 

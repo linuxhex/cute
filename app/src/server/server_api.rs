@@ -35,10 +35,10 @@ use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use team::TeamClient;
 use url::Url;
-use warp_core::errors::{register_error, AnyhowErrorExt, ErrorExt};
-use warp_managed_secrets::client::ManagedSecretsClient;
-use warpui::r#async::BoxFuture;
-use warpui::{Entity, ModelContext, SingletonEntity};
+use cute_core::errors::{register_error, AnyhowErrorExt, ErrorExt};
+use cute_managed_secrets::client::ManagedSecretsClient;
+use cuteui::r#async::BoxFuture;
+use cuteui::{Entity, ModelContext, SingletonEntity};
 use workspace::WorkspaceClient;
 
 use super::graphql::GraphQLError;
@@ -422,7 +422,7 @@ pub struct ServerApi {
     // We technically use OAuth2 for headless device authentication.
     oauth_client: self::auth::OAuth2Client,
     /// Cached ambient workload token for requests from ambient agents.
-    ambient_workload_token: Arc<Mutex<Option<warp_isolation_platform::WorkloadToken>>>,
+    ambient_workload_token: Arc<Mutex<Option<cute_isolation_platform::WorkloadToken>>>,
     /// The ambient agent task ID for requests from cloud agents.
     ambient_agent_task_id: Arc<RwLock<Option<AmbientAgentTaskId>>>,
     /// The source of agent runs (e.g. CLI, GitHub Action). Set once at startup and immutable.
@@ -715,6 +715,10 @@ impl ServerApi {
         let server_root =
             Url::parse(&ChannelState::server_root_url()).expect("Server root URL must be valid");
 
+        let auth_url = server_root
+            .join("/api/v1/oauth/device/auth")
+            .expect("Invalid auth URL");
+
         let token_url = server_root
             .join("/api/v1/oauth/token")
             .expect("Invalid token URL");
@@ -724,11 +728,12 @@ impl ServerApi {
             .expect("Invalid device URL");
 
         oauth2::basic::BasicClient::new(oauth2::ClientId::new("warp-cli".to_string()))
+            .set_auth_uri(oauth2::AuthUrl::from_url(auth_url))
             .set_token_uri(oauth2::TokenUrl::from_url(token_url))
             .set_device_authorization_url(oauth2::DeviceAuthorizationUrl::from_url(device_url))
     }
 
-    pub fn send_graphql_request<'a, QF, O: warp_graphql::client::Operation<QF> + Send + 'a>(
+    pub fn send_graphql_request<'a, QF, O: cute_graphql::client::Operation<QF> + Send + 'a>(
         &'a self,
         operation: O,
         timeout: Option<Duration>,
@@ -762,7 +767,7 @@ impl ServerApi {
                 headers.insert(name.to_string(), value);
             }
 
-            let options = warp_graphql::client::RequestOptions {
+            let options = cute_graphql::client::RequestOptions {
                 auth_token: auth_token.bearer_token(),
                 timeout,
                 headers,
@@ -1280,7 +1285,7 @@ impl ServerApi {
     /// Telemetry has been disabled - this is a no-op stub.
     pub async fn send_telemetry_event(
         &self,
-        _event: impl warp_core::telemetry::TelemetryEvent + Send,
+        _event: impl cute_core::telemetry::TelemetryEvent + Send,
         _settings_snapshot: PrivacySettingsSnapshot,
     ) -> Result<()> {
         Ok(())
@@ -1867,7 +1872,7 @@ mod tests {
         }
     }
 
-    impl warp_graphql::client::Operation<()> for FakeGraphqlOperation {
+    impl cute_graphql::client::Operation<()> for FakeGraphqlOperation {
         fn operation_name(&self) -> Option<Cow<'_, str>> {
             Some(Cow::Borrowed("FakeGraphqlOperation"))
         }
@@ -1875,7 +1880,7 @@ mod tests {
         fn send_request(
             self,
             _client: Arc<http_client::Client>,
-            options: warp_graphql::client::RequestOptions,
+            options: cute_graphql::client::RequestOptions,
         ) -> Pin<
             Box<
                 dyn Future<Output = std::result::Result<GraphQlResponse<()>, GraphQLError>>

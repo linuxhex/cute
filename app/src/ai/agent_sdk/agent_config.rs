@@ -1,10 +1,10 @@
 //! Commands to interact with available agents via the public API.
 
-use warp_cli::agent::ListAgentSkillsArgs;
-use warp_graphql::queries::get_oauth_connect_tx_status::OauthConnectTxStatus;
-use warp_graphql::queries::user_repo_auth_status::UserRepoAuthStatusEnum;
-use warpui::platform::TerminationMode;
-use warpui::{AppContext, ModelContext, SingletonEntity};
+use cute_cli::agent::ListAgentSkillsArgs;
+use cute_graphql::queries::get_oauth_connect_tx_status::OauthConnectTxStatus;
+use cute_graphql::queries::user_repo_auth_status::UserRepoAuthStatusEnum;
+use cuteui::platform::TerminationMode;
+use cuteui::{AppContext, ModelContext, SingletonEntity};
 
 use crate::ai::agent_sdk::oauth_flow::poll_oauth_until_terminal;
 use crate::ai::cloud_environments::GithubRepo;
@@ -306,7 +306,7 @@ impl AgentConfigRunner {
     }
 }
 
-impl warpui::Entity for AgentConfigRunner {
+impl cuteui::Entity for AgentConfigRunner {
     type Event = ();
 }
 

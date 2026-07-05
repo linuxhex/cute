@@ -8,28 +8,28 @@ use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::vec2f;
 use settings::Setting;
 use siphasher::sip::SipHasher;
-use warp_core::features::FeatureFlag;
-use warp_core::ui::icons::Icon;
-use warp_core::ui::theme::color::internal_colors;
-use warp_core::ui::theme::Fill;
-use warpui::clipboard::ClipboardContent;
-use warpui::elements::new_scrollable::{
+use cute_core::features::FeatureFlag;
+use cute_core::ui::icons::Icon;
+use cute_core::ui::theme::color::internal_colors;
+use cute_core::ui::theme::Fill;
+use cuteui::clipboard::ClipboardContent;
+use cuteui::elements::new_scrollable::{
     NewScrollableElement, ScrollableAppearance, SingleAxisConfig,
 };
-use warpui::elements::{
+use cuteui::elements::{
     Align, Border, ChildAnchor, ChildView, Clipped, ConstrainedBox, Container, CornerRadius,
     CrossAxisAlignment, Element, Empty, Expanded, Flex, Hoverable, List, ListState, MainAxisSize,
     MouseStateHandle, NewScrollable, OffsetPositioning, Padding, ParentAnchor, ParentElement,
     ParentOffsetBounds, Radius, Rect, ScrollStateHandle, ScrollbarWidth, Shrinkable,
     SizeConstraintCondition, SizeConstraintSwitch, Stack, Text, Wrap,
 };
-use warpui::fonts::{Properties, Weight};
-use warpui::keymap::FixedBinding;
-use warpui::platform::Cursor;
-use warpui::scene::DropShadow;
-use warpui::ui_components::button::ButtonVariant;
-use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::{
+use cuteui::fonts::{Properties, Weight};
+use cuteui::keymap::FixedBinding;
+use cuteui::platform::Cursor;
+use cuteui::scene::DropShadow;
+use cuteui::ui_components::button::ButtonVariant;
+use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
+use cuteui::{
     AppContext, Entity, FocusContext, ModelHandle, SingletonEntity, TypedActionView, View,
     ViewContext, ViewHandle, WeakViewHandle,
 };
@@ -118,7 +118,7 @@ pub fn init(app: &mut AppContext) {
     app.register_fixed_bindings([FixedBinding::new(
         cmd_or_ctrl_shift("f"),
         AgentManagementViewAction::FocusSearch,
-        warpui::keymap::macros::id!(AgentManagementView::ui_name()),
+        cuteui::keymap::macros::id!(AgentManagementView::ui_name()),
     )]);
 }
 
@@ -1348,7 +1348,7 @@ impl AgentManagementView {
                     }
                     AgentType::Local => {
                         ctx.dispatch_typed_action(&WorkspaceAction::NewTabInAgentMode {
-                            entrypoint: AgentModeEntrypoint::AgentManagementView,
+                            entrypoint: AgentModeEntrypoint::AGENT_MANAGEMENT_VIEW,
                             zero_state_prompt_suggestion_type: None,
                         });
                     }
@@ -1926,7 +1926,7 @@ impl AgentManagementView {
 
         let loading_icon = ConstrainedBox::new(
             Icon::Refresh
-                .to_warpui_icon(theme.sub_text_color(theme.surface_1()))
+                .to_cuteui_icon(theme.sub_text_color(theme.surface_1()))
                 .finish(),
         )
         .with_height(icon_size)
@@ -1970,7 +1970,7 @@ impl AgentManagementView {
 
         let loading_icon = ConstrainedBox::new(
             Icon::Loading
-                .to_warpui_icon(Fill::Solid(internal_colors::neutral_6(theme)))
+                .to_cuteui_icon(Fill::Solid(internal_colors::neutral_6(theme)))
                 .finish(),
         )
         .with_height(appearance.ui_font_size() + 2.)
@@ -2030,7 +2030,7 @@ impl AgentManagementView {
         let appearance = Appearance::as_ref(app);
         let icon = ConstrainedBox::new(
             Icon::FilterOff
-                .to_warpui_icon(appearance.theme().nonactive_ui_text_color())
+                .to_cuteui_icon(appearance.theme().nonactive_ui_text_color())
                 .finish(),
         )
         .with_width(24.)
@@ -2069,7 +2069,7 @@ impl AgentManagementView {
             axis_config,
             theme.nonactive_ui_detail().into(),
             theme.active_ui_detail().into(),
-            warpui::elements::Fill::None,
+            cuteui::elements::Fill::None,
         )
         .with_vertical_scrollbar(ScrollableAppearance::new(ScrollbarWidth::None, false))
         .with_always_handle_events_first(false)

@@ -3,13 +3,13 @@
 use ai::document::AIDocumentId;
 use fuzzy_match::FuzzyMatchResult;
 use ordered_float::OrderedFloat;
-use warp_core::ui::theme::Fill;
-use warp_core::ui::Icon;
-use warpui::elements::{ConstrainedBox, Container, Highlight, ParentElement, Shrinkable, Text};
-use warpui::fonts::{Properties, Weight};
-use warpui::prelude::{Align, CrossAxisAlignment, Flex, MainAxisAlignment, MainAxisSize};
-use warpui::text_layout::ClipConfig;
-use warpui::{AppContext, Element, SingletonEntity};
+use cute_core::ui::theme::Fill;
+use cute_core::ui::Icon;
+use cuteui::elements::{ConstrainedBox, Container, Highlight, ParentElement, Shrinkable, Text};
+use cuteui::fonts::{Properties, Weight};
+use cuteui::prelude::{Align, CrossAxisAlignment, Flex, MainAxisAlignment, MainAxisSize};
+use cuteui::text_layout::ClipConfig;
+use cuteui::{AppContext, Element, SingletonEntity};
 
 use crate::ai::document::ai_document_model::{AIDocument, AIDocumentVersion};
 use crate::appearance::Appearance;
@@ -68,7 +68,7 @@ impl SearchItem for PlanSearchItem {
             .sub_text_color(appearance.theme().background());
 
         let icon = Container::new(
-            ConstrainedBox::new(Icon::Compass.to_warpui_icon(icon_color).finish())
+            ConstrainedBox::new(Icon::Compass.to_cuteui_icon(icon_color).finish())
                 .with_width(ICON_SIZE)
                 .with_height(ICON_SIZE)
                 .finish(),

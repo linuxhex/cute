@@ -1,16 +1,14 @@
 use ordered_float::OrderedFloat;
-use warpui::elements::{
+use cuteui::elements::{
     Clipped, ConstrainedBox, Container, CrossAxisAlignment, Flex, Highlight, MainAxisAlignment,
     MainAxisSize, ParentElement, Shrinkable, Text,
 };
-use warpui::fonts::{Properties, Weight};
-use warpui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
-use warpui::{AppContext, Element, SingletonEntity};
+use cuteui::fonts::{Properties, Weight};
+use cuteui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
+use cuteui::{AppContext, Element, SingletonEntity};
 
 use crate::appearance::Appearance;
 use crate::cloud_object::CloudObject;
-use crate::drive::cloud_object_styling::warp_drive_icon_color;
-use crate::drive::DriveObjectType;
 use crate::search::item::{IconLocation, SearchItem};
 use crate::search::notebook_embedding::embedded_fuzzy_match::FuzzyMatchEmbeddedObjectResult;
 use crate::search::notebook_embedding::searcher::EmbeddingSearchItemAction;
@@ -43,23 +41,25 @@ impl SearchItem for WorkflowSearchItem {
         _highlight_state: ItemHighlightState,
         appearance: &Appearance,
     ) -> Box<dyn Element> {
-        let (icon, icon_color) = if self.cloud_workflow.model().data.is_agent_mode_workflow() {
-            (
-                Icon::Prompt,
-                warp_drive_icon_color(appearance, DriveObjectType::AgentModeWorkflow),
-            )
+        let icon = if self.cloud_workflow.model().data.is_agent_mode_workflow() {
+            Icon::Prompt
         } else {
-            (
-                Icon::Workflow,
-                warp_drive_icon_color(appearance, DriveObjectType::Workflow),
-            )
+            Icon::Workflow
         };
 
         Container::new(
-            ConstrainedBox::new(icon.to_warpui_icon(icon_color.into()).finish())
-                .with_width(ICON_SIZE)
-                .with_height(ICON_SIZE)
+            ConstrainedBox::new(
+                icon.to_cuteui_icon(
+                    appearance
+                        .theme()
+                        .main_text_color(appearance.theme().surface_2())
+                        .into(),
+                )
                 .finish(),
+            )
+            .with_width(ICON_SIZE)
+            .with_height(ICON_SIZE)
+            .finish(),
         )
         .with_margin_right(12.)
         .finish()
@@ -112,7 +112,7 @@ impl SearchItem for WorkflowSearchItem {
                 .finish();
             let warning_icon = ConstrainedBox::new(
                 Icon::Warning
-                    .to_warpui_icon(appearance.theme().ui_warning_color().into())
+                    .to_cuteui_icon(appearance.theme().ui_warning_color().into())
                     .finish(),
             )
             .with_width(warning_font_size)

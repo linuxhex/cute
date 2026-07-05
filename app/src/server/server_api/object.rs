@@ -7,8 +7,8 @@ use chrono::{DateTime, Utc};
 #[cfg(test)]
 use mockall::automock;
 
-use warp_server_client::cloud_object::{SerializedModel, ServerMetadata};
-use warp_server_client::ids::{GenericStringObjectId, HashedSqliteId, ObjectUid, ServerId, SyncId};
+use cute_server_client::cloud_object::{SerializedModel, ServerMetadata};
+use cute_server_client::ids::{GenericStringObjectId, HashedSqliteId, ObjectUid, ServerId, SyncId};
 
 use super::ServerApi;
 use crate::cloud_object::{
@@ -284,14 +284,14 @@ pub trait ObjectClient: 'static + Send + Sync {
         &self,
         object_id: ServerId,
         guest_emails: Vec<String>,
-        access_level: warp_graphql::object_permissions::AccessLevel,
+        access_level: cute_graphql::object_permissions::AccessLevel,
     ) -> Result<ObjectPermissionsUpdateData>;
 
     async fn update_object_guests(
         &self,
         object_id: ServerId,
         guest_emails: Vec<String>,
-        access_level: warp_graphql::object_permissions::AccessLevel,
+        access_level: cute_graphql::object_permissions::AccessLevel,
     ) -> Result<crate::cloud_object::ServerPermissions>;
 
     async fn remove_object_guest(
@@ -493,7 +493,7 @@ impl ObjectClient for ServerApi {
         &self,
         _object_id: ServerId,
         _guest_emails: Vec<String>,
-        _access_level: warp_graphql::object_permissions::AccessLevel,
+        _access_level: cute_graphql::object_permissions::AccessLevel,
     ) -> Result<ObjectPermissionsUpdateData> {
         Err(anyhow!("Cloud objects not supported in local version"))
     }
@@ -502,7 +502,7 @@ impl ObjectClient for ServerApi {
         &self,
         _object_id: ServerId,
         _guest_emails: Vec<String>,
-        _access_level: warp_graphql::object_permissions::AccessLevel,
+        _access_level: cute_graphql::object_permissions::AccessLevel,
     ) -> Result<crate::cloud_object::ServerPermissions> {
         Err(anyhow!("Cloud objects not supported in local version"))
     }

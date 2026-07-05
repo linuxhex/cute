@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use settings::Setting as _;
 use vim::vim::MotionType;
-use warpui::clipboard::ClipboardContent;
-use warpui::{AppContext, Entity, ModelContext, SingletonEntity};
+use cuteui::clipboard::ClipboardContent;
+use cuteui::{AppContext, Entity, ModelContext, SingletonEntity};
 
 use crate::settings::AppEditorSettings;
 

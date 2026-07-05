@@ -6,9 +6,9 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use settings::macros::{define_settings_group, maybe_define_setting, register_settings_events};
 use settings::{RespectUserSyncSetting, Setting, SupportedPlatforms, SyncToCloud};
-use warp_core::features::FeatureFlag;
-use warp_core::report_if_error;
-use warpui::{AppContext, Entity, ModelContext, SingletonEntity, UpdateModel};
+use cute_core::features::FeatureFlag;
+use cute_core::report_if_error;
+use cuteui::{AppContext, Entity, ModelContext, SingletonEntity, UpdateModel};
 
 use super::cloud_preferences_syncer::CloudPreferencesSyncer;
 use crate::ai::blocklist::telemetry_banner::should_collect_ai_ugc_telemetry;
@@ -16,10 +16,11 @@ use crate::auth::auth_state::AuthState;
 use crate::auth::AuthStateProvider;
 use crate::cloud_object::model::persistence::CloudModel;
 use crate::report_error;
-use crate::server::cloud_objects::update_manager::UpdateManager;
+
 #[cfg(test)]
 use crate::server::server_api::auth::MockAuthClient;
 use crate::server::server_api::auth::{AuthClient, SyncedUserSettings};
+use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::server_api::ServerApiProvider;
 use crate::terminal::safe_mode_settings::SafeModeSettings;
 use crate::workspaces::workspace::EnterpriseSecretRegex;
@@ -695,13 +696,14 @@ impl PrivacySettings {
         // Wait for cloud objects to load, and, if telemetry & crash reporting are synced to warp drive
         // initialize from the warp drive values.
         let update_manager = UpdateManager::as_ref(ctx);
+        let initial_load_complete = update_manager.initial_load_complete();
         ctx.spawn(
-            update_manager.initial_load_complete(),
+            async move { initial_load_complete },
             Self::handle_warp_drive_objects_loaded,
         );
     }
 
-    fn handle_warp_drive_objects_loaded(&mut self, _: (), ctx: &mut ModelContext<Self>) {
+    fn handle_warp_drive_objects_loaded(&mut self, _: bool, ctx: &mut ModelContext<Self>) {
         self.initialize_default_regexes_once(ctx);
         // Check if the warp drive preferences are set. If they are, and telemetry and crash reporting
         // are set as warp drive prefs, then use those.  Otherwise, update the warp drive prefs to match

@@ -1,12 +1,14 @@
 use std::fmt;
 
-use warp_server_client::{
-    cloud_object::{GenericCloudObject, GenericServerObject, GenericStringModel, JsonObjectType},
+use cute_server_client::{
+    cloud_object::{GenericCloudObject, GenericServerObject, GenericStringModel, GenericStringObjectFormat, JsonObjectType},
     ids::GenericStringObjectId,
 };
 use serde::{Deserialize, Serialize};
 
 use super::{JsonModel, JsonSerializer};
+use crate::cloud_object::model::generic_string_model::StringModel;
+use crate::cloud_object::GenericStringObjectUniqueKey;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct GithubRepo {
@@ -117,6 +119,38 @@ impl AmbientAgentEnvironment {
 impl JsonModel for AmbientAgentEnvironment {
     fn json_object_type() -> JsonObjectType {
         JsonObjectType::CloudEnvironment
+    }
+}
+
+impl StringModel for AmbientAgentEnvironment {
+    type CloudObjectType = GenericCloudObject<GenericStringObjectId, GenericStringModel<Self, JsonSerializer>>;
+
+    fn model_type_name(&self) -> &'static str {
+        "Ambient Agent Environment"
+    }
+
+    fn should_enforce_revisions() -> bool {
+        false
+    }
+
+    fn model_format() -> GenericStringObjectFormat {
+        GenericStringObjectFormat::Json(Self::json_object_type())
+    }
+
+    fn should_show_activity_toasts() -> bool {
+        false
+    }
+
+    fn warn_if_unsaved_at_quit() -> bool {
+        false
+    }
+
+    fn display_name(&self) -> String {
+        self.name.clone()
+    }
+
+    fn uniqueness_key(&self) -> Option<GenericStringObjectUniqueKey> {
+        None
     }
 }
 

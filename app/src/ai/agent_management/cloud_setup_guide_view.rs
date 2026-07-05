@@ -2,23 +2,23 @@ use std::collections::HashMap;
 
 use serde::Serialize;
 use string_offset::CharCounter;
-use warp_completer::signatures::CommandRegistry;
-use warp_completer::util::parse_current_commands_and_tokens;
-use warp_completer::ParsedTokensSnapshot;
-use warp_core::report_error;
-use warp_core::ui::theme::{AnsiColorIdentifier, AnsiColors};
-use warpui::clipboard::ClipboardContent;
-use warpui::elements::new_scrollable::{ClippedAxisConfiguration, DualAxisConfig, NewScrollable};
-use warpui::elements::{
+use cute_completer::signatures::CommandRegistry;
+use cute_completer::util::parse_current_commands_and_tokens;
+use cute_completer::ParsedTokensSnapshot;
+use cute_core::report_error;
+use cute_core::ui::theme::{AnsiColorIdentifier, AnsiColors};
+use cuteui::clipboard::ClipboardContent;
+use cuteui::elements::new_scrollable::{ClippedAxisConfiguration, DualAxisConfig, NewScrollable};
+use cuteui::elements::{
     Align, Border, ClippedScrollStateHandle, ConstrainedBox, Container, CornerRadius,
     CrossAxisAlignment, Element, Empty, Expanded, Flex, Highlight, HighlightedRange,
     MainAxisAlignment, MainAxisSize, MouseStateHandle, ParentElement, Radius, Text,
 };
-use warpui::fonts::{Properties, Weight};
-use warpui::prelude::ChildView;
-use warpui::text_layout::TextStyle;
-use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::{AppContext, Entity, SingletonEntity, TypedActionView, View, ViewContext, ViewHandle};
+use cuteui::fonts::{Properties, Weight};
+use cuteui::prelude::ChildView;
+use cuteui::text_layout::TextStyle;
+use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
+use cuteui::{AppContext, Entity, SingletonEntity, TypedActionView, View, ViewContext, ViewHandle};
 
 use crate::ai::agent_management::telemetry::SetupGuideStep;
 use crate::ai::blocklist::code_block::{
@@ -619,7 +619,7 @@ impl View for CloudSetupGuideView {
             },
             theme.nonactive_ui_detail().into(),
             theme.active_ui_detail().into(),
-            warpui::elements::Fill::None,
+            cuteui::elements::Fill::None,
         )
         .finish();
 

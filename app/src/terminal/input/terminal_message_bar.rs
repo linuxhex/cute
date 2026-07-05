@@ -2,10 +2,10 @@ use std::sync::Arc;
 
 use parking_lot::FairMutex;
 use pathfinder_color::ColorU;
-use warp_core::ui::theme::WarpTheme;
-use warpui::elements::{Container, Element};
-use warpui::keymap::Keystroke;
-use warpui::{AppContext, Entity, ModelHandle, SingletonEntity, View, ViewContext};
+use cute_core::ui::theme::WarpTheme;
+use cuteui::elements::{Container, Element};
+use cuteui::keymap::Keystroke;
+use cuteui::{AppContext, Entity, ModelHandle, SingletonEntity, View, ViewContext};
 
 use super::buffer_model::InputBufferModel;
 use super::message_bar::common::render_terminal_message;

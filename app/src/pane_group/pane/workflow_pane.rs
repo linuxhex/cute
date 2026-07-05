@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use anyhow::Context;
 use url::Url;
-use warpui::{AppContext, ModelHandle, SingletonEntity, ViewContext, ViewHandle};
+use cuteui::{AppContext, ModelHandle, SingletonEntity, ViewContext, ViewHandle};
 
 use super::{
     DetachType, PaneConfiguration, PaneContent, PaneGroup, PaneId, PaneView, ShareableLink,
@@ -184,7 +184,7 @@ fn handle_workflow_event(
 ) {
     match event {
         WorkflowViewEvent::Pane(pane_event) => group.handle_pane_event(pane_id, pane_event, ctx),
-        WorkflowViewEvent::ViewInWarpDrive(id) => view_in_warp_drive(*id, ctx),
+        WorkflowViewEvent::ViewInWarpDrive(id) => view_in_warp_drive(id.clone(), ctx),
         WorkflowViewEvent::RunWorkflow {
             workflow,
             source,
@@ -199,7 +199,7 @@ fn handle_workflow_event(
             source,
         } => {
             ctx.emit(crate::pane_group::Event::OpenDriveObjectShareDialog {
-                cloud_object_type_and_id: *cloud_object_type_and_id,
+                cloud_object_type_and_id: cloud_object_type_and_id.clone(),
                 invitee_email: invitee_email.clone(),
                 source: *source,
             });

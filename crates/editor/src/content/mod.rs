@@ -1,7 +1,7 @@
 pub mod anchor;
 pub mod buffer;
 pub mod core;
-mod cursor;
+pub mod cursor;
 pub mod diff;
 pub mod edit;
 pub mod find;

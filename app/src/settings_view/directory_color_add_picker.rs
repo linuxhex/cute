@@ -5,13 +5,13 @@ use ai::index::full_source_code_embedding::manager::{
     CodebaseIndexManager, CodebaseIndexManagerEvent,
 };
 use settings::Setting;
-use warp_util::path::user_friendly_path;
-use warpui::elements::{
+use cute_util::path::user_friendly_path;
+use cuteui::elements::{
     Border, ChildView, ConstrainedBox, Container, CrossAxisAlignment, Flex, Hoverable,
     MainAxisSize, MouseStateHandle, ParentElement, Text,
 };
-use warpui::platform::Cursor;
-use warpui::{
+use cuteui::platform::Cursor;
+use cuteui::{
     AppContext, Element, Entity, SingletonEntity, TypedActionView, View, ViewContext, ViewHandle,
 };
 

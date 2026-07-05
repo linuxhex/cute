@@ -1,13 +1,13 @@
 use std::collections::{HashMap, HashSet};
 
-use warpui::keymap::EditableBinding;
-use warpui::{AppContext, Entity, EntityId, SingletonEntity, WindowId};
+use cuteui::keymap::EditableBinding;
+use cuteui::{AppContext, Entity, EntityId, SingletonEntity, WindowId};
 
 use super::WorkspaceAction;
 use crate::util::bindings::{BindingGroup, CustomAction};
 
 pub fn init(app: &mut AppContext) {
-    use warpui::keymap::macros::*;
+    use cuteui::keymap::macros::*;
 
     app.register_editable_bindings(vec![
         EditableBinding::new(

@@ -4,10 +4,10 @@ use std::sync::Arc;
 use pathfinder_color::ColorU;
 use string_offset::CharOffset;
 use sum_tree::SumTree;
-use warpui::assets::asset_cache::AssetSource;
-use warpui::fonts::FamilyId;
-use warpui::text_layout::{CaretPosition, TextFrame};
-use warpui::units::IntoPixels;
+use cuteui::assets::asset_cache::AssetSource;
+use cuteui::fonts::FamilyId;
+use cuteui::text_layout::{CaretPosition, TextFrame};
+use cuteui::units::IntoPixels;
 
 use crate::content::text::{
     BufferBlockStyle, CodeBlockType, FormattedTable, table_cell_offset_maps,

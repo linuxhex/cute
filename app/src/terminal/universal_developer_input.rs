@@ -7,24 +7,24 @@ use std::sync::Arc;
 use pathfinder_color::ColorU;
 #[cfg(not(target_family = "wasm"))]
 use settings::Setting as _;
-use warp_core::features::FeatureFlag;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::color::contrast::{
+use cute_core::features::FeatureFlag;
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::color::contrast::{
     foreground_color_with_minimum_contrast, MinimumAllowedContrast,
 };
-use warp_core::ui::color::{coloru_with_opacity, Opacity, Rgb};
-use warp_core::ui::theme;
-use warp_core::ui::theme::color::internal_colors;
-use warpui::elements::{
+use cute_core::ui::color::{coloru_with_opacity, Opacity, Rgb};
+use cute_core::ui::theme;
+use cute_core::ui::theme::color::internal_colors;
+use cuteui::elements::{
     ChildView, Clipped, Container, CornerRadius, CrossAxisAlignment, Fill, Flex, MainAxisAlignment,
     MainAxisSize, ParentElement, Radius, Rect, Shrinkable, SizeConstraintCondition,
     SizeConstraintSwitch,
 };
-use warpui::ui_components::components::UiComponentStyles;
-use warpui::ui_components::segmented_control::{
+use cuteui::ui_components::components::UiComponentStyles;
+use cuteui::ui_components::segmented_control::{
     RenderableOptionConfig, SegmentedControl, SegmentedControlEvent, TooltipConfig,
 };
-use warpui::{
+use cuteui::{
     AppContext, Element, Entity, EntityId, ModelHandle, SingletonEntity as _, TypedActionView,
     View, ViewAsRef, ViewContext, ViewHandle,
 };
@@ -48,6 +48,7 @@ use crate::settings::{AISettings, AISettingsChangedEvent};
 use crate::settings_view::SettingsSection;
 use crate::terminal::input::MenuPositioningProvider;
 use crate::terminal::keys::TerminalKeybindings;
+use crate::terminal::shared_session::SessionPermissionsManager;
 use crate::terminal::model::block::BlockMetadata;
 #[cfg(not(target_family = "wasm"))]
 use crate::terminal::model::session::SessionType;
@@ -57,7 +58,6 @@ use crate::terminal::profile_model_selector::{
     ProfileModelSelectorEvent,
 };
 use crate::terminal::session_settings::{SessionSettings, SessionSettingsChangedEvent};
-use crate::terminal::shared_session::permissions_manager::SessionPermissionsManager;
 use crate::terminal::view::ambient_agent::AmbientAgentViewModel;
 use crate::ui_components::icons::Icon;
 use crate::view_components::action_button::{
@@ -791,7 +791,7 @@ impl View for UniversalDeveloperInputButtonBar {
         "UniversalDeveloperInputButtonBar"
     }
 
-    fn render(&self, app: &AppContext) -> Box<dyn warpui::Element> {
+    fn render(&self, app: &AppContext) -> Box<dyn cuteui::Element> {
         let appearance = Appearance::as_ref(app);
         let theme = appearance.theme();
         #[cfg(feature = "voice_input")]
@@ -800,7 +800,7 @@ impl View for UniversalDeveloperInputButtonBar {
         // Helper function to create a 1px vertical divider
         let create_divider = || {
             Container::new(
-                warpui::elements::ConstrainedBox::new(
+                cuteui::elements::ConstrainedBox::new(
                     Rect::new().with_background(theme.surface_3()).finish(),
                 )
                 .with_width(1.0)
@@ -812,7 +812,7 @@ impl View for UniversalDeveloperInputButtonBar {
             .finish()
         };
 
-        let build_buttons = |model_selector_element: Box<dyn warpui::Element>| {
+        let build_buttons = |model_selector_element: Box<dyn cuteui::Element>| {
             // Create a horizontal layout with buttons arranged in a row
             let mut buttons = Flex::row()
                 .with_main_axis_size(MainAxisSize::Max)

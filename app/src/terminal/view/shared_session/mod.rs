@@ -3,7 +3,7 @@
 pub(in crate::terminal::view) mod adapter;
 pub(in crate::terminal::view) mod cloud_conversation_continuation;
 mod conversation_ended_tombstone_view;
-pub(in crate::terminal::view) mod sharer;
+pub mod sharer;
 #[cfg(test)]
 pub mod test_utils;
 mod view_impl;
@@ -14,3 +14,13 @@ pub(in crate::terminal::view) use conversation_ended_tombstone_view::{
     ConversationEndedTombstoneEvent, ConversationEndedTombstoneView,
 };
 pub(in crate::terminal::view) use viewer::Viewer;
+
+/// Selection information for shared session presence.
+#[derive(Debug, Clone, Default)]
+#[allow(dead_code)]
+pub struct SharedSessionPresenceSelection {
+    // TODO: Add proper fields for presence selection
+}
+
+// Re-export from sharer module
+pub use sharer::network::{Network, NetworkEvent};

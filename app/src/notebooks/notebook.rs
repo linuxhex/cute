@@ -8,22 +8,22 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use settings::Setting as _;
 use url::Url;
-use warp_core::context_flag::ContextFlag;
-use warp_editor::editor::NavigationKey;
-use warp_editor::model::{CoreEditorModel, RichTextEditorModel};
-use warpui::accessibility::{AccessibilityContent, WarpA11yRole};
-use warpui::clipboard::ClipboardContent;
-use warpui::elements::{
+use cute_core::context_flag::ContextFlag;
+use cute_editor::editor::NavigationKey;
+use cute_editor::model::{CoreEditorModel, RichTextEditorModel};
+use cuteui::accessibility::{AccessibilityContent, WarpA11yRole};
+use cuteui::clipboard::ClipboardContent;
+use cuteui::elements::{
     Align, Clipped, ConstrainedBox, Container, CrossAxisAlignment, DispatchEventResult, Empty,
     EventHandler, Flex, MainAxisAlignment, MainAxisSize, MouseStateHandle, ParentElement,
     SavePosition, Shrinkable, Stack,
 };
-use warpui::keymap::{EditableBinding, FixedBinding};
-use warpui::presenter::ChildView;
-use warpui::r#async::{SpawnedFutureHandle, Timer};
-use warpui::ui_components::button::ButtonVariant;
-use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::{
+use cuteui::keymap::{EditableBinding, FixedBinding};
+use cuteui::presenter::ChildView;
+use cuteui::r#async::{SpawnedFutureHandle, Timer};
+use cuteui::ui_components::button::ButtonVariant;
+use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
+use cuteui::{
     AppContext, BlurContext, Element, Entity, FocusContext, ModelAsRef, ModelHandle,
     SingletonEntity, TypedActionView, View, ViewContext, ViewHandle, WindowId,
 };
@@ -41,13 +41,13 @@ use super::editor::NotebookWorkflow;
 use super::link::{NotebookLinks, SessionSource};
 use super::manager::NotebookManager;
 use super::telemetry::NotebookTelemetryAction;
-use super::{styles, CloudNotebookModel, NotebookId, NotebookLocation};
+use super::{styles, NotebookId, NotebookLocation};
 use crate::ai::blocklist::secret_redaction::find_secrets_in_text;
 use crate::ai::document::ai_document_model::AIDocumentId;
 use crate::appearance::Appearance;
 use crate::cloud_object::model::persistence::{CloudModel, CloudModelEvent, UpdateSource};
 use crate::cloud_object::model::view::EditorState;
-use crate::cloud_object::{CloudObject, CloudObjectEventEntrypoint, ObjectType, Owner, Space};
+use crate::cloud_object::{CloudObject, ObjectType, Owner, Space};
 use crate::drive::drive_helpers::has_feature_gated_anonymous_user_reached_notebook_limit;
 use crate::drive::export::ExportManager;
 use crate::drive::items::WarpDriveItemId;
@@ -65,7 +65,7 @@ use crate::notebooks::CloudNotebook;
 use crate::pane_group::focus_state::{PaneFocusHandle, PaneGroupFocusEvent};
 use crate::pane_group::pane::view;
 use crate::pane_group::{BackingView, PaneConfiguration, PaneEvent};
-use crate::server::cloud_objects::update_manager::{FetchSingleObjectOption, UpdateManager};
+use crate::server::cloud_objects::update_manager::{FetchSingleObjectOption, InitiatedBy, UpdateManager};
 use crate::server::ids::{ClientId, ServerId, SyncId};
 use crate::server::telemetry::{
     CloudObjectTelemetryMetadata, NotebookTelemetryMetadata,
@@ -130,7 +130,7 @@ lazy_static! {
 }
 
 pub fn init(app: &mut AppContext) {
-    use warpui::keymap::macros::*;
+    use cuteui::keymap::macros::*;
 
     app.register_editable_bindings([
         EditableBinding::new(
@@ -679,8 +679,8 @@ impl NotebookView {
         id.as_notebook_id().filter(|id| {
             self.active_notebook_data
                 .as_ref(ctx)
-                .is_active_notebook(*id)
-        })
+                .is_active_notebook(**id)
+        }).copied()
     }
 
     fn handle_cloud_model_event(&mut self, event: &CloudModelEvent, ctx: &mut ViewContext<Self>) {
@@ -778,25 +778,30 @@ impl NotebookView {
             // memory and server data via update manager
             ActiveNotebook::CommittedNotebook(id) => UpdateManager::handle(ctx)
                 .update(ctx, move |update_manager, ctx| {
-                    update_manager.update_notebook_data(content, id, ctx)
+                    update_manager.update_notebook_data(
+                        content.as_bytes().to_vec(),
+                        id,
+                        None, // revision
+                        ctx,
+                    )
                 }),
             // If the notebook hasn't been committed yet, create the notebook through update
             // manager, and update the active notebook
             ActiveNotebook::NewNotebook(notebook) => {
                 if let Some(client_id) = notebook.id.into_client() {
+                    let title = notebook.model().title.clone();
+                    let folder_id = notebook.metadata.folder_id.and_then(|id| id.into_server());
+                    let owner_str = match &notebook.permissions.owner {
+                        Owner::User { user_uid } => user_uid.to_string(),
+                        Owner::Team { team_uid } => team_uid.to_string(),
+                    };
                     UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
                         update_manager.create_notebook(
+                            title,
+                            folder_id,
                             client_id,
-                            notebook.permissions.owner,
-                            notebook.metadata.folder_id,
-                            CloudNotebookModel {
-                                title: notebook.model().title.clone(),
-                                data: content.to_string(),
-                                ai_document_id: notebook.model().ai_document_id,
-                                conversation_id: notebook.model().conversation_id.clone(),
-                            },
-                            CloudObjectEventEntrypoint::Unknown,
-                            true,
+                            owner_str,
+                            InitiatedBy::User,
                             ctx,
                         );
                     });
@@ -1166,15 +1171,12 @@ impl NotebookView {
     fn export(&self, ctx: &mut ViewContext<Self>) {
         if let Some(notebook_id) = self.notebook_id(ctx) {
             let window_id = ctx.window_id();
+            let exportable_objects = vec![CloudObjectTypeAndId::from_id_and_type(
+                notebook_id,
+                ObjectType::Notebook,
+            )];
             ExportManager::handle(ctx).update(ctx, |export_manager, ctx| {
-                export_manager.export(
-                    window_id,
-                    &[CloudObjectTypeAndId::from_id_and_type(
-                        notebook_id,
-                        ObjectType::Notebook,
-                    )],
-                    ctx,
-                )
+                export_manager.export(window_id, &exportable_objects, ctx)
             });
         }
     }
@@ -1190,11 +1192,11 @@ impl NotebookView {
     fn copy_to_personal(&mut self, ctx: &mut ViewContext<Self>) {
         // In the case of an object being trashed by another user, ensure we use the most recent
         // local edits.
-        let content = self.content(ctx);
+        let _content = self.content(ctx);
         let title = self.title.as_ref(ctx).buffer_text(ctx);
         let active_notebook = self.active_notebook_data.as_ref(ctx).active_notebook();
 
-        let ai_document_id = match active_notebook {
+        let _ai_document_id = match active_notebook {
             ActiveNotebook::CommittedNotebook(id) => CloudModel::as_ref(ctx)
                 .get_notebook(&id)
                 .and_then(|n| n.model().ai_document_id),
@@ -1210,19 +1212,18 @@ impl NotebookView {
             return;
         };
 
+        let owner_str = match &personal_drive {
+            Owner::User { user_uid } => user_uid.to_string(),
+            Owner::Team { team_uid } => team_uid.to_string(),
+        };
+
         UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
             update_manager.create_notebook(
-                copy_client_id,
-                personal_drive,
+                title.clone(),
                 None,
-                CloudNotebookModel {
-                    title: title.clone(),
-                    data: content,
-                    ai_document_id,
-                    conversation_id: None,
-                },
-                CloudObjectEventEntrypoint::Unknown,
-                true,
+                copy_client_id,
+                owner_str,
+                InitiatedBy::User,
                 ctx,
             );
         });
@@ -1257,7 +1258,7 @@ impl NotebookView {
         cloud_object_type_and_id: CloudObjectTypeAndId,
         app: &AppContext,
     ) -> bool {
-        if let Some(object) = CloudModel::as_ref(app).get_by_uid(&cloud_object_type_and_id.uid()) {
+        if let Some(object) = CloudModel::as_ref(app).get_by_uid(&cloud_object_type_and_id.uid().uid()) {
             return self.is_online(app)
                 && cloud_object_type_and_id.has_server_id()
                 && !object.metadata().has_pending_online_only_change();
@@ -1296,7 +1297,7 @@ impl NotebookView {
         {
             let cloud_object_type =
                 CloudObjectTypeAndId::from_id_and_type(cloud_id, ObjectType::Notebook);
-            let can_move = self.online_only_operation_allowed(cloud_object_type, ctx);
+            let can_move = self.online_only_operation_allowed(cloud_object_type.clone(), ctx);
 
             if can_move {
                 match space {
@@ -1304,7 +1305,7 @@ impl NotebookView {
                         menu_items.extend(team_spaces.iter().map(|space| {
                             MenuItemFields::new(format!("Move to {}", space.name(ctx)))
                                 .with_on_select_action(NotebookAction::MoveToSpace {
-                                    cloud_object_type_and_id: cloud_object_type,
+                                    cloud_object_type_and_id: cloud_object_type.clone(),
                                     new_space: *space,
                                 })
                                 .with_icon(Icon::Move)
@@ -1336,7 +1337,7 @@ impl NotebookView {
             );
         }
 
-        if !warpui::platform::is_mobile_device()
+        if !cuteui::platform::is_mobile_device()
             && !ContextFlag::HideOpenOnDesktopButton.is_enabled()
             && *UserAppInstallDetectionSettings::as_ref(ctx)
                 .user_app_installation_detected
@@ -1420,7 +1421,7 @@ impl NotebookView {
         let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
         // TODO @ianhodge CLD-2002: it could be nice to have a loading screen here while we wait for the load
         let settings = settings.clone();
-        ctx.spawn(initial_load_complete, move |me, _, ctx| {
+        ctx.spawn(async move { initial_load_complete }, move |me, _, ctx| {
             let notebook = CloudModel::as_ref(ctx).get_notebook(&notebook_id).cloned();
             let fetch_needed = notebook.is_none()
                 || settings
@@ -1467,7 +1468,7 @@ impl NotebookView {
                 )
             });
         let settings = settings.clone();
-        ctx.spawn(fetch_cloud_object_rx, move |me, _, ctx| {
+        ctx.spawn(fetch_cloud_object_rx, move |me: &mut Self, _, ctx| {
             if let Some(notebook) = CloudModel::as_ref(ctx)
                 .get_notebook(&SyncId::ServerId(notebook_id))
                 .cloned()
@@ -1524,7 +1525,7 @@ impl NotebookView {
 
         // Once we've received metadata from the server, check if we can eagerly edit the notebook.
         let has_metadata = UpdateManager::as_ref(ctx).initial_load_complete();
-        let baton_future = ctx.spawn(has_metadata, |me, _, ctx| {
+        let baton_future = ctx.spawn(async move { has_metadata }, |me, _, ctx| {
             let active_notebook_data = me.active_notebook_data.as_ref(ctx);
 
             if active_notebook_data.has_conflicts(ctx) {
@@ -1659,19 +1660,19 @@ impl NotebookView {
             // manager, and update the active notebook
             ActiveNotebook::NewNotebook(notebook) => {
                 if let Some(client_id) = notebook.id.into_client() {
+                    let title_str = title.to_string();
+                    let folder_id = notebook.metadata.folder_id.and_then(|id| id.into_server());
+                    let owner_str = match &notebook.permissions.owner {
+                        Owner::User { user_uid } => user_uid.to_string(),
+                        Owner::Team { team_uid } => team_uid.to_string(),
+                    };
                     UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
                         update_manager.create_notebook(
+                            title_str,
+                            folder_id,
                             client_id,
-                            notebook.permissions.owner,
-                            notebook.metadata.folder_id,
-                            CloudNotebookModel {
-                                title: title.to_string(),
-                                data: notebook.model().data.to_owned(),
-                                ai_document_id: notebook.model().ai_document_id,
-                                conversation_id: notebook.model().conversation_id.clone(),
-                            },
-                            CloudObjectEventEntrypoint::Unknown,
-                            true,
+                            owner_str,
+                            InitiatedBy::User,
                             ctx,
                         );
                     });
@@ -1828,7 +1829,7 @@ impl NotebookView {
                     .with_children([
                         ConstrainedBox::new(
                             icons::Icon::Trash
-                                .to_warpui_icon(appearance.theme().foreground())
+                                .to_cuteui_icon(appearance.theme().foreground())
                                 .finish(),
                         )
                         .with_width(16.)
@@ -2086,7 +2087,7 @@ impl View for NotebookView {
         }
     }
 
-    fn render(&self, app: &AppContext) -> Box<dyn warpui::Element> {
+    fn render(&self, app: &AppContext) -> Box<dyn cuteui::Element> {
         let mut content = Flex::column();
         content.extend(self.render_trash_banner(app));
         content.add_child(self.render_title(app));
@@ -2131,7 +2132,7 @@ impl View for NotebookView {
         SavePosition::new(stack.finish(), &self.view_position_id).finish()
     }
 
-    fn keymap_context(&self, app: &AppContext) -> warpui::keymap::Context {
+    fn keymap_context(&self, app: &AppContext) -> cuteui::keymap::Context {
         let mut context = Self::default_keymap_context();
 
         match self.mode_app_ctx(app) {
@@ -2181,7 +2182,7 @@ impl TypedActionView for NotebookView {
             NotebookAction::ResetFontSize => {
                 self.apply_font_size_to_setting(NotebookFontSize::default_value(), ctx)
             }
-            NotebookAction::ViewInWarpDrive(id) => self.view_in_warp_drive(*id, ctx),
+            NotebookAction::ViewInWarpDrive(id) => self.view_in_warp_drive(id.clone(), ctx),
             NotebookAction::FocusTerminalInput => {
                 ctx.emit(NotebookEvent::Pane(PaneEvent::FocusActiveSession))
             }
@@ -2212,7 +2213,7 @@ impl TypedActionView for NotebookView {
             NotebookAction::MoveToSpace {
                 cloud_object_type_and_id,
                 new_space,
-            } => self.move_to_team_owner(*cloud_object_type_and_id, *new_space, ctx),
+            } => self.move_to_team_owner(cloud_object_type_and_id.clone(), *new_space, ctx),
             #[cfg(target_family = "wasm")]
             NotebookAction::OpenLinkOnDesktop(url) => {
                 open_url_on_desktop(url);

@@ -1,16 +1,16 @@
 use std::path::PathBuf;
 
 use lsp::supported_servers::LSPServerType;
-use warpui::elements::{
+use cuteui::elements::{
     Border, ChildView, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Expanded, Flex,
     MainAxisAlignment, MainAxisSize, MouseStateHandle, ParentElement, Radius, Shrinkable,
 };
-use warpui::keymap::Keystroke;
-use warpui::ui_components::button::ButtonVariant;
-use warpui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
-use warpui::ui_components::keyboard_shortcut::KeyboardShortcut;
-use warpui::ui_components::text::Span;
-use warpui::{AppContext, Element, SingletonEntity, TypedActionView, ViewContext, ViewHandle};
+use cuteui::keymap::Keystroke;
+use cuteui::ui_components::button::ButtonVariant;
+use cuteui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
+use cuteui::ui_components::keyboard_shortcut::KeyboardShortcut;
+use cuteui::ui_components::text::Span;
+use cuteui::{AppContext, Element, SingletonEntity, TypedActionView, ViewContext, ViewHandle};
 
 use super::{InitProjectBlockAction, InitStepBlock};
 use crate::ai::agent::icons::yellow_stop_icon;

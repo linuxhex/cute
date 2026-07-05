@@ -1,9 +1,9 @@
 use std::fs;
 
 use virtual_fs::{Stub, VirtualFS};
-use warp_util::local_or_remote_path::LocalOrRemotePath;
-use warp_util::standardized_path::StandardizedPath;
-use warpui::App;
+use cute_util::local_or_remote_path::LocalOrRemotePath;
+use cute_util::standardized_path::StandardizedPath;
+use cuteui::App;
 
 use crate::repositories::{stub_git_repository, DetectedRepositories, RepoDetectionSource};
 use crate::watcher::DirectoryWatcher;

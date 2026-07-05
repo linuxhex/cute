@@ -2,12 +2,13 @@
 //! to known documents (e.g. Warp Drive objects).
 
 use markdown_parser::{parse_markdown, FormattedTextLine};
-use warpui::{AppContext, SingletonEntity};
+use cuteui::{AppContext, SingletonEntity};
 
 use crate::ai::agent::AIAgentCitation;
 use crate::cloud_object::model::persistence::CloudModel;
-use crate::env_vars::{EnvVarCollection, EnvVarCollectionExt, EnvVarExt, EnvVarValue};
-use crate::notebooks::CloudNotebookModel;
+use crate::cloud_object::models::env_vars::{EnvVarCollection, EnvVarValue};
+use crate::env_vars::{EnvVarCollectionExt, EnvVarExt};
+use crate::cloud_object::models::notebook::CloudNotebookModel;
 use crate::terminal::shell::ShellType;
 use crate::workflows::command_parser::command_matches_workflow;
 
@@ -22,7 +23,7 @@ pub(crate) fn is_command_copied_from_document(
 
     match document {
         AIAgentCitation::WarpDriveObject { uid } => {
-            is_command_copied_from_warp_drive_object(command, uid, shell_type, ctx)
+            is_command_copied_from_cute_drive_object(command, uid, shell_type, ctx)
         }
         _ => false,
     }
@@ -30,7 +31,7 @@ pub(crate) fn is_command_copied_from_document(
 
 /// Returns true iff the `command` is directly copied from the
 /// Warp Drive object identified by `object_uid`.
-fn is_command_copied_from_warp_drive_object(
+fn is_command_copied_from_cute_drive_object(
     command: &str,
     object_uid: &str,
     shell_type: Option<ShellType>,

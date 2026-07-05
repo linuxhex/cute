@@ -14,41 +14,41 @@ use settings::Setting as _;
 use string_offset::CharOffset;
 use vec1::{vec1, Vec1};
 use vim::vim::{Direction, InsertPosition, VimMode, VimModel, VimState, VimSubscriber};
-use warp_core::platform::SessionPlatform;
-use warp_editor::content::buffer::{
+use cute_core::platform::SessionPlatform;
+use cute_editor::content::buffer::{
     Buffer, BufferEditAction, EditOrigin, InitialBufferState, ToBufferCharOffset as _,
     ToBufferPoint,
 };
-use warp_editor::content::text::IndentUnit;
-use warp_editor::content::version::BufferVersion;
-use warp_editor::model::{CoreEditorModel, PlainTextEditorModel};
-use warp_editor::multiline::AnyMultilineString;
-use warp_editor::render::element::lens_element::RichTextElementLens;
-use warp_editor::render::element::{
+use cute_editor::content::text::IndentUnit;
+use cute_editor::content::version::BufferVersion;
+use cute_editor::model::{CoreEditorModel, PlainTextEditorModel};
+use cute_editor::multiline::AnyMultilineString;
+use cute_editor::render::element::lens_element::RichTextElementLens;
+use cute_editor::render::element::{
     DisplayOptions, DisplayStateHandle, RichTextElement, VerticalExpansionBehavior,
 };
-use warp_editor::render::model::{
+use cute_editor::render::model::{
     AutoScrollMode, BlockSpacing, Decoration, ExpansionType, LineCount, ParagraphStyles,
     RichTextStyles, CODE_EDITOR_HIDDEN_SECTION_EXPANSION_LINES,
 };
-use warp_editor::search::{SearchEvent, Searcher, MATCH_FILL, SELECTED_MATCH_FILL};
-use warp_util::content_version::ContentVersion;
-use warp_util::standardized_path::StandardizedPath;
-use warpui::elements::new_scrollable::{
+use cute_editor::search::{SearchEvent, Searcher, MATCH_FILL, SELECTED_MATCH_FILL};
+use cute_util::content_version::ContentVersion;
+use cute_util::standardized_path::StandardizedPath;
+use cuteui::elements::new_scrollable::{
     AxisConfiguration, DualAxisConfig, NewScrollableElement, ScrollableAppearance,
 };
-use warpui::elements::{
+use cuteui::elements::{
     ChildAnchor, ChildView, Dismiss, Fill, Flex, Margin, MouseStateHandle, NewScrollable,
     OffsetPositioning, Padding, ParentAnchor, ParentElement, ParentOffsetBounds, ScrollStateHandle,
     Shrinkable, Stack,
 };
-use warpui::event::ModifiersState;
-use warpui::keymap::Keystroke;
-use warpui::platform::Cursor;
-use warpui::prelude::RectF;
-use warpui::text::point::Point;
-use warpui::units::Pixels;
-use warpui::{
+use cuteui::event::ModifiersState;
+use cuteui::keymap::Keystroke;
+use cuteui::platform::Cursor;
+use cuteui::prelude::RectF;
+use cuteui::text::point::Point;
+use cuteui::units::Pixels;
+use cuteui::{
     AppContext, BlurContext, CursorInfo, Element, Entity, FocusContext, ModelHandle,
     SingletonEntity, View, ViewContext, ViewHandle, WeakViewHandle, WindowId,
 };
@@ -406,11 +406,11 @@ impl CodeEditorView {
                 // from truncating space for the code editor. We should not render it as an overlay
                 // for small code editors.
                 horizontal_scrollbar_appearance: ScrollableAppearance::new(
-                    warpui::elements::ScrollbarWidth::Auto,
+                    cuteui::elements::ScrollbarWidth::Auto,
                     false,
                 ),
                 vertical_scrollbar_appearance: ScrollableAppearance::new(
-                    warpui::elements::ScrollbarWidth::Auto,
+                    cuteui::elements::ScrollbarWidth::Auto,
                     false,
                 ),
                 gutter_hover_target: GutterHoverTarget::GutterElement,
@@ -880,21 +880,21 @@ impl CodeEditorView {
         let hidden_section_end = line_range.end.as_usize();
         let lines_to_unhide = match expansion_type {
             ExpansionType::Both => {
-                warp_editor::content::text::LineCount::from(hidden_section_start)
-                    ..warp_editor::content::text::LineCount::from(hidden_section_end)
+                cute_editor::content::text::LineCount::from(hidden_section_start)
+                    ..cute_editor::content::text::LineCount::from(hidden_section_end)
             }
             ExpansionType::ExpandDown => {
                 let end = hidden_section_end
                     .min(hidden_section_start + CODE_EDITOR_HIDDEN_SECTION_EXPANSION_LINES);
-                warp_editor::content::text::LineCount::from(hidden_section_start)
-                    ..warp_editor::content::text::LineCount::from(end)
+                cute_editor::content::text::LineCount::from(hidden_section_start)
+                    ..cute_editor::content::text::LineCount::from(end)
             }
             ExpansionType::ExpandUp => {
                 let start = hidden_section_start.max(
                     hidden_section_end.saturating_sub(CODE_EDITOR_HIDDEN_SECTION_EXPANSION_LINES),
                 );
-                warp_editor::content::text::LineCount::from(start)
-                    ..warp_editor::content::text::LineCount::from(hidden_section_end)
+                cute_editor::content::text::LineCount::from(start)
+                    ..cute_editor::content::text::LineCount::from(hidden_section_end)
             }
         };
         self.model.update(ctx, |model, ctx| {
@@ -1000,12 +1000,12 @@ impl CodeEditorView {
                 if let Some(results) = self.searcher.as_ref(ctx).results() {
                     if !results.matches.is_empty() {
                         // Convert all match ranges to selection offsets
-                        let selection_offsets: Vec<warp_editor::content::buffer::SelectionOffsets> =
+                        let selection_offsets: Vec<cute_editor::content::buffer::SelectionOffsets> =
                             results
                                 .matches
                                 .iter()
                                 .map(|match_result| {
-                                    warp_editor::content::buffer::SelectionOffsets {
+                                    cute_editor::content::buffer::SelectionOffsets {
                                         head: match_result.end,
                                         tail: match_result.start,
                                     }
@@ -1017,8 +1017,8 @@ impl CodeEditorView {
                             self.model.update(ctx, |model, ctx| {
                                 model.selection().update(ctx, |selection_model, ctx| {
                                     selection_model.update_selection(
-                                        warp_editor::content::buffer::BufferSelectAction::SetSelectionOffsets { selections },
-                                        warp_editor::content::buffer::AutoScrollBehavior::Selection,
+                                        cute_editor::content::buffer::BufferSelectAction::SetSelectionOffsets { selections },
+                                        cute_editor::content::buffer::AutoScrollBehavior::Selection,
                                         ctx,
                                     );
                                 });
@@ -1044,7 +1044,7 @@ impl CodeEditorView {
                     self.model.update(ctx, |model, ctx| {
                         model.update_content( |mut content_model, ctx| {
                             content_model.apply_edit(
-                                warp_editor::content::buffer::BufferEditAction::InsertAtCharOffsetRanges { edits: &edits },
+                                cute_editor::content::buffer::BufferEditAction::InsertAtCharOffsetRanges { edits: &edits },
                                 EditOrigin::UserInitiated,
                                 selection_model,
                                 ctx,
@@ -1096,7 +1096,7 @@ impl CodeEditorView {
                                 self.model.update(ctx, |model, ctx| {
                                     model.update_content(|mut content_model, ctx| {
                                         content_model.apply_edit(
-                                            warp_editor::content::buffer::BufferEditAction::InsertAtCharOffsetRanges { edits: &edits },
+                                            cute_editor::content::buffer::BufferEditAction::InsertAtCharOffsetRanges { edits: &edits },
                                             EditOrigin::UserInitiated,
                                             selection_model,
                                             ctx,
@@ -2039,8 +2039,8 @@ impl CodeEditorView {
                                 self.model.update(ctx, |model, ctx| {
                                     model.selection_model().update(ctx, |selection, ctx| {
                                         selection.update_selection(
-                                            warp_editor::content::buffer::BufferSelectAction::MoveRight,
-                                            warp_editor::content::buffer::AutoScrollBehavior::Selection,
+                                            cute_editor::content::buffer::BufferSelectAction::MoveRight,
+                                            cute_editor::content::buffer::AutoScrollBehavior::Selection,
                                             ctx,
                                         );
                                     });
@@ -2385,7 +2385,7 @@ impl View for CodeEditorView {
         }
     }
 
-    fn keymap_context(&self, app: &AppContext) -> warpui::keymap::Context {
+    fn keymap_context(&self, app: &AppContext) -> cuteui::keymap::Context {
         let mut context = Self::default_keymap_context();
 
         if self.interaction_state(app) != InteractionState::Editable {

@@ -281,7 +281,7 @@ pub struct NewObjectPermissions {
     pub anyone_with_link_source: Option<Vec<u8>>,
 }
 
-#[derive(Insertable, Queryable)]
+#[derive(Debug, Insertable, Queryable)]
 #[diesel(table_name = object_metadata)]
 pub struct ObjectMetadata {
     pub id: i32,

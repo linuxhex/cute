@@ -4,19 +4,19 @@ use std::sync::Arc;
 
 use markdown_parser::markdown_parser::CODE_BLOCK_DEFAULT_MARKDOWN_LANG;
 use pathfinder_color::ColorU;
-use warp_core::ui::builder::CHECK_SVG_PATH;
-use warp_core::ui::theme::color::internal_colors;
-use warp_editor::content::text::{
+use cute_core::ui::builder::CHECK_SVG_PATH;
+use cute_core::ui::theme::color::internal_colors;
+use cute_editor::content::text::{
     BlockHeaderSize, BlockType as ContentBlockType, BufferBlockStyle, CodeBlockType,
 };
-use warp_editor::render::model::{
+use cute_editor::render::model::{
     BrokenLinkStyle, CheckBoxStyle, EmbeddedItem, HorizontalRuleStyle, InlineCodeStyle,
     ParagraphStyles, RichTextStyles, TableStyle,
 };
-use warp_util::user_input::UserInput;
-use warpui::elements::{Border, ListIndentLevel};
-use warpui::fonts::FamilyId;
-use warpui::ui_components::checkbox::HOVER_BACKGROUND_COLOR;
+use cute_util::user_input::UserInput;
+use cuteui::elements::{Border, ListIndentLevel};
+use cuteui::fonts::FamilyId;
+use cuteui::ui_components::checkbox::HOVER_BACKGROUND_COLOR;
 
 use crate::appearance::Appearance;
 use crate::notebooks::editor::embedded_item::EmbeddedWorkflow;

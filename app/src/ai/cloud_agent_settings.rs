@@ -10,7 +10,7 @@ use std::collections::HashMap;
 
 use settings::macros::define_settings_group;
 use settings::{Setting as _, SupportedPlatforms, SyncToCloud};
-use warp_cli::agent::Harness;
+use cute_cli::agent::Harness;
 
 use crate::server::ids::SyncId;
 
@@ -100,7 +100,7 @@ impl CloudAgentSettings {
     pub fn mark_harness_auth_ftux_completed(
         &mut self,
         harness: Harness,
-        ctx: &mut warpui::ModelContext<Self>,
+        ctx: &mut cuteui::ModelContext<Self>,
     ) {
         let mut map = self.harness_auth_ftux_completed.value().clone();
         map.insert(harness.config_name().to_string(), true);
@@ -114,7 +114,7 @@ impl CloudAgentSettings {
         harness: Harness,
         model_id: &str,
         reasoning_level: Option<String>,
-        ctx: &mut warpui::ModelContext<Self>,
+        ctx: &mut cuteui::ModelContext<Self>,
     ) {
         let mut map = self.last_selected_harness_model.value().clone();
         if model_id.is_empty() {

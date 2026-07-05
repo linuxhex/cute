@@ -1,5 +1,5 @@
 use settings::{RespectUserSyncSetting, SupportedPlatforms, SyncToCloud};
-use warp_core::define_settings_group;
+use cute_core::define_settings_group;
 
 use crate::banner::BannerState;
 

@@ -21,13 +21,13 @@ use lsp::{LspManagerModel, LspServerConfig};
 use repo_metadata::repositories::{DetectedRepositories, DetectedRepositoriesEvent};
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "local_fs")]
-use warp_core::channel::ChannelState;
-use warp_core::features::FeatureFlag;
+use cute_core::channel::ChannelState;
+use cute_core::features::FeatureFlag;
 #[cfg(feature = "local_fs")]
-use warp_util::local_or_remote_path::LocalOrRemotePath;
+use cute_util::local_or_remote_path::LocalOrRemotePath;
 #[cfg(feature = "local_fs")]
-use warpui::windowing::WindowManager;
-use warpui::{AppContext, Entity, ModelContext, SingletonEntity};
+use cuteui::windowing::WindowManager;
+use cuteui::{AppContext, Entity, ModelContext, SingletonEntity};
 
 use crate::ai::blocklist::{BlocklistAIHistoryEvent, BlocklistAIHistoryModel};
 #[cfg(feature = "local_fs")]
@@ -820,7 +820,7 @@ impl PersistedWorkspace {
     /// This ensures that the codebase index is up-to-date before the conversation begins.
     fn trigger_incremental_sync_for_conversation(
         &mut self,
-        terminal_view_id: warpui::EntityId,
+        terminal_view_id: cuteui::EntityId,
         ctx: &mut ModelContext<Self>,
     ) {
         if !UserWorkspaces::as_ref(ctx).is_codebase_context_enabled(ctx) {

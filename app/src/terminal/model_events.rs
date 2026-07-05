@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use async_channel::Receiver;
 use instant::Instant;
-use warpui::{Entity, ModelContext, ModelHandle};
+use cuteui::{Entity, ModelContext, ModelHandle};
 
 use super::event::{BootstrappedEvent, SshLoginStatus};
 use super::model::ansi;
@@ -417,6 +417,8 @@ pub enum ModelEvent {
     RemoteServerBlockRequested {
         session_id: SessionId,
     },
+    /// Stub for saving AI document content.
+    SaveAIDocumentContent,
 }
 
 #[derive(Clone, Debug)]

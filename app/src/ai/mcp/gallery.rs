@@ -2,12 +2,13 @@ use std::collections::HashMap;
 
 use chrono::DateTime;
 use uuid::Uuid;
-use warpui::{Entity, ModelContext, SingletonEntity};
+use cuteui::{Entity, ModelContext, SingletonEntity};
 
 use crate::ai::mcp::templatable::{
     GalleryData, JsonTemplate, TemplatableMCPServer,
 };
-use crate::server::cloud_objects::update_manager::{UpdateManager, UpdateManagerEvent};
+
+use crate::server::cloud_objects::{UpdateManager, UpdateManagerEvent};
 use crate::server::datetime_ext::DateTimeExt;
 
 #[derive(Clone, Debug)]
@@ -149,20 +150,21 @@ impl MCPGalleryManager {
     /// Update gallery items from the server response
     pub fn update_gallery_items(
         &mut self,
-        templates: Vec<TemplatableMCPServer>,
+        gallery_items: Vec<GalleryMCPServer>,
         ctx: &mut ModelContext<Self>,
     ) {
-        let mut gallery_items = HashMap::new();
+        let mut items = HashMap::new();
         let mut templatable_mcp_servers = HashMap::new();
 
-        for templatable in templates {
-            let uuid = templatable.uuid;
-            let gallery_item: GalleryMCPServer = templatable.clone().into();
-            gallery_items.insert(uuid, gallery_item);
-            templatable_mcp_servers.insert(uuid, templatable);
+        for gallery_item in gallery_items {
+            let uuid = gallery_item.uuid();
+            if let Ok(templatable) = TemplatableMCPServer::try_from(gallery_item.clone()) {
+                items.insert(uuid, gallery_item);
+                templatable_mcp_servers.insert(uuid, templatable);
+            }
         }
 
-        self.gallery_items = gallery_items;
+        self.gallery_items = items;
         self.templatable_mcp_servers = templatable_mcp_servers;
 
         ctx.emit(MCPGalleryManagerEvent::ItemsRefreshed);

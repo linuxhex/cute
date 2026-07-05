@@ -14,10 +14,10 @@ use warp::integration_testing::view_getters::single_input_view_for_tab;
 use warp::root_view::SubshellCommandArg;
 use warp::terminal::shell::ShellType;
 use warp::terminal::warpify::settings::AddedSubshellCommands;
-use warpui::integration::{AssertionOutcome, TestStep};
-use warpui::windowing::state::ApplicationStage;
-use warpui::windowing::WindowManager;
-use warpui::{async_assert, UpdateModel};
+use cuteui::integration::{AssertionOutcome, TestStep};
+use cuteui::windowing::state::ApplicationStage;
+use cuteui::windowing::WindowManager;
+use cuteui::{async_assert, UpdateModel};
 
 use super::{new_builder, Builder};
 use crate::util::skip_if_powershell_core_2303;

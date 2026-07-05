@@ -6,8 +6,8 @@
 mod channel_config;
 
 use anyhow::Result;
-use warp_core::channel::{Channel, ChannelState};
-use warp_core::features;
+use cute_core::channel::{Channel, ChannelState};
+use cute_core::features;
 
 // Simple wrapper around cute::run() for feature preview channel builds.
 fn main() -> Result<()> {

@@ -1,12 +1,11 @@
 use std::sync::Arc;
 
 use strum_macros::IntoStaticStr;
-use warp_util::path::LineAndColumnArg;
-use warpui::keymap::BindingId;
-use warpui::{EntityId, WindowId};
+use cute_util::path::LineAndColumnArg;
+use cuteui::keymap::BindingId;
+use cuteui::{EntityId, WindowId};
 
 use crate::ai::agent::conversation::AIConversationId;
-use crate::drive::CloudObjectTypeAndId;
 use crate::launch_configs::launch_config::LaunchConfig;
 use crate::search::command_palette::new_session::{NewSessionOption, NewSessionOptionId};
 use crate::search::mixer::SearchMixer;
@@ -29,7 +28,7 @@ pub enum CommandPaletteItemAction {
         id: SyncId,
     },
     ViewInWarpDrive {
-        id: CloudObjectTypeAndId,
+        id: String,
     },
     InvokeEnvironmentVariables {
         id: SyncId,
@@ -116,12 +115,7 @@ impl CommandPaletteItemAction {
             CommandPaletteItemAction::OpenLaunchConfiguration { .. } => {
                 ItemSummary::LaunchConfiguration
             }
-            CommandPaletteItemAction::ViewInWarpDrive { id } => match id {
-                CloudObjectTypeAndId::Notebook(_)
-                | CloudObjectTypeAndId::Folder(_)
-                | CloudObjectTypeAndId::GenericStringObject { .. } => ItemSummary::CloudObject,
-                CloudObjectTypeAndId::Workflow(id) => ItemSummary::Workflow { id: *id },
-            },
+            CommandPaletteItemAction::ViewInWarpDrive { .. } => ItemSummary::CloudObject,
             CommandPaletteItemAction::OpenFile {
                 path,
                 project_directory,

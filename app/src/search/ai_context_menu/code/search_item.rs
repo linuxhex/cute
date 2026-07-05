@@ -1,10 +1,10 @@
 use fuzzy_match::FuzzyMatchResult;
 use ordered_float::OrderedFloat;
-use warpui::elements::{
+use cuteui::elements::{
     ConstrainedBox, Container, CrossAxisAlignment, Flex, Highlight, Icon, ParentElement, Text,
 };
-use warpui::fonts::{Properties, Weight};
-use warpui::{AppContext, Element, SingletonEntity};
+use cuteui::fonts::{Properties, Weight};
+use cuteui::{AppContext, Element, SingletonEntity};
 
 // Import CodeSymbol from the data_source module
 use super::data_source::CodeSymbol;

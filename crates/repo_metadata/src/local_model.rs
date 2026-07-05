@@ -9,9 +9,9 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use futures::future::{self, BoxFuture, FutureExt as _};
-use warp_core::{safe_warn, send_telemetry_from_ctx};
-use warp_util::sync::Condition;
-use warpui::ModelHandle;
+use cute_core::{safe_warn, send_telemetry_from_ctx};
+use cute_util::sync::Condition;
+use cuteui::ModelHandle;
 
 /// Represents either a file or directory in a repository.
 #[derive(Debug, Clone)]
@@ -20,7 +20,7 @@ pub enum RepoContent<'a> {
     Directory(&'a FileTreeDirectoryEntryState),
 }
 
-use warp_util::standardized_path::StandardizedPath;
+use cute_util::standardized_path::StandardizedPath;
 
 use crate::entry::{BuildTreeError, BuildTreeOptions, Entry, FileId, IgnoredPathStrategy};
 use crate::repository::Repository;
@@ -32,7 +32,7 @@ cfg_if::cfg_if! {
         use crate::entry::repo_watch_filter;
         use crate::repositories::{DetectedRepositories, DetectedRepositoriesEvent};
         use watcher::{BulkFilesystemWatcher, BulkFilesystemWatcherEvent};
-        use warpui::SingletonEntity as _;
+        use cuteui::SingletonEntity as _;
 
         /// Duration between filesystem watch events in seconds
         const FILESYSTEM_WATCHER_DEBOUNCE_SECS: u64 = 1;
@@ -40,7 +40,7 @@ cfg_if::cfg_if! {
 }
 
 use ignore::gitignore::Gitignore;
-use warpui::ModelContext;
+use cuteui::ModelContext;
 
 use crate::file_tree_store::{
     FileTreeDirectoryEntryState, FileTreeEntry, FileTreeEntryState, FileTreeFileMetadata,
@@ -1123,7 +1123,7 @@ impl LocalRepoMetadataModel {
     }
 }
 
-impl warpui::Entity for LocalRepoMetadataModel {
+impl cuteui::Entity for LocalRepoMetadataModel {
     type Event = RepositoryMetadataEvent;
 }
 

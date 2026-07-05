@@ -1,4 +1,4 @@
-use warpui::elements::{DraggableState, MouseStateHandle};
+use cuteui::elements::{DraggableState, MouseStateHandle};
 
 use super::FileTreeItem;
 use crate::appearance::Appearance;

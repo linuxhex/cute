@@ -21,7 +21,7 @@ When an AI agent runs in an SSH session, the `ApplyFileDiffs` tool is disabled b
 - `app/src/ai/blocklist/controller.rs (86-121)` — `SessionContext`
 - `app/src/ai/agent/api/impl.rs (146-206)` — `get_supported_tools`; gates tools on session type
 - `crates/remote_server/src/manager.rs (134-139)` — `RemoteServerManager::client_for_host`
-- `crates/warp_files/src/lib.rs (95-106)` — `FileBackend::Remote`; already supports remote save/delete
+- `crates/cute_files/src/lib.rs (95-106)` — `FileBackend::Remote`; already supports remote save/delete
 
 ## Current State
 
@@ -243,7 +243,7 @@ sequenceDiagram
 - **Proto round-trip test**: Add a test in `protocol_tests.rs` for `ReadFile` / `ReadFileResponse` encode/decode.
 - **`handle_read_file` server test**: Verify the handler reads existing files, returns `exists: false` for missing files, and returns an error for unreadable files.
 - **Unit tests for remote path**: Since local and remote share a single codepath, existing `diff_application_tests.rs` covers the core logic. Additional tests can pass a mock `read_file` closure that simulates remote behavior (e.g. returning `ReadError` for connectivity failures) without needing to mock `RemoteServerClient` directly.
-- **Regression**: Run existing `diff_application_tests.rs` and `cargo nextest run -p warp_files` to verify local path is unchanged.
+- **Regression**: Run existing `diff_application_tests.rs` and `cargo nextest run -p cute_files` to verify local path is unchanged.
 - **Integration**: Manually test agent mode in an SSH session — verify `ApplyFileDiffs` appears in supported tools, diff preview renders correctly, accept/save writes to the remote host, and the LLM receives updated file context after acceptance.
 
 ## Follow-ups

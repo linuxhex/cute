@@ -1,15 +1,15 @@
 use std::sync::Arc;
 
 use pathfinder_geometry::vector::{Vector2F, vec2f};
-use warp_core::ui::Icon;
-use warp_core::ui::appearance::Appearance;
-use warpui::assets::asset_cache::AssetSource;
-use warpui::elements::{
+use cute_core::ui::Icon;
+use cute_core::ui::appearance::Appearance;
+use cuteui::assets::asset_cache::AssetSource;
+use cuteui::elements::{
     CacheOption, Dismiss, DispatchEventResult, EventHandler, Image, Shrinkable,
 };
-use warpui::keymap::Keystroke;
-use warpui::prelude::stack::*;
-use warpui::prelude::*;
+use cuteui::keymap::Keystroke;
+use cuteui::prelude::stack::*;
+use cuteui::prelude::*;
 
 use crate::{Component, Options as _, button};
 
@@ -308,17 +308,17 @@ impl button::Theme for ButtonTheme {
         &self,
         button_state: button::State,
         _appearance: &Appearance,
-    ) -> Option<warp_core::ui::theme::Fill> {
+    ) -> Option<cute_core::ui::theme::Fill> {
         match button_state {
             button::State::Default => None,
-            button::State::Hovered => Some(warp_core::ui::theme::Fill::white().with_opacity(10)),
-            button::State::Pressed => Some(warp_core::ui::theme::Fill::white().with_opacity(15)),
+            button::State::Hovered => Some(cute_core::ui::theme::Fill::white().with_opacity(10)),
+            button::State::Pressed => Some(cute_core::ui::theme::Fill::white().with_opacity(15)),
         }
     }
 
     fn text_color(
         &self,
-        _background: Option<warp_core::ui::theme::Fill>,
+        _background: Option<cute_core::ui::theme::Fill>,
         _appearance: &Appearance,
     ) -> ColorU {
         ColorU::new(255, 255, 255, 255)

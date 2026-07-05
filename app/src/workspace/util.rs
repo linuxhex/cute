@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use warpui::elements::MouseStateHandle;
-use warpui::{AppContext, EntityId, SingletonEntity, ViewContext, ViewHandle, WindowId};
+use cuteui::elements::MouseStateHandle;
+use cuteui::{AppContext, EntityId, SingletonEntity, ViewContext, ViewHandle, WindowId};
 
 use super::OneTimeModalModel;
 use crate::appearance::Appearance;
@@ -17,6 +17,7 @@ pub struct PaneViewLocator {
 }
 
 #[derive(Default)]
+#[allow(dead_code)]
 pub(super) struct WorkspaceMouseStates {
     pub(super) new_tab_button: MouseStateHandle,
     pub(super) new_tab_menu: MouseStateHandle,
@@ -345,7 +346,7 @@ pub fn get_context_target_terminal_view(
 pub fn get_terminal_background_fill(
     window_id: WindowId,
     app: &AppContext,
-) -> warpui::elements::Fill {
+) -> cuteui::elements::Fill {
     let theme = Appearance::as_ref(app).theme();
     let terminal_opacity = get_terminal_background_opacity(window_id, app);
     theme.background().with_opacity(terminal_opacity).into()

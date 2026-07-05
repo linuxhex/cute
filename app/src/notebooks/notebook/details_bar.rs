@@ -1,12 +1,12 @@
 //! Components for the notebook header.
 
-use warpui::elements::{
+use cuteui::elements::{
     Container, CrossAxisAlignment, Flex, Highlight, MainAxisAlignment, MainAxisSize,
     MouseStateHandle, ParentElement, Shrinkable,
 };
-use warpui::platform::Cursor;
-use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::{AppContext, Element, SingletonEntity};
+use cuteui::platform::Cursor;
+use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
+use cuteui::{AppContext, Element, SingletonEntity};
 
 use super::super::active_notebook_data::ActiveNotebookData;
 use super::{NotebookAction, EDIT_BUTTON_MARGIN};
@@ -65,7 +65,7 @@ impl DetailsBar {
                     appearance,
                     |ctx, _, breadcrumb| {
                         ctx.dispatch_typed_action(NotebookAction::ViewInWarpDrive(
-                            breadcrumb.kind.into_item_id(),
+                            breadcrumb.kind.clone().into_item_id(),
                         ));
                     },
                 ),

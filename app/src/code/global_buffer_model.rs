@@ -9,28 +9,28 @@ use lsp::types::TextDocumentContentChangeEvent;
 use lsp::{LspManagerModel, LspServerLogLevel, LspServerModel};
 use string_offset::{ByteOffset, CharOffset};
 use vec1::vec1;
-use warp_core::features::FeatureFlag;
-use warp_core::safe_error;
-use warp_editor::content::buffer::{Buffer, ToBufferCharOffset};
-use warp_editor::content::diff::{text_diff, TextDiff};
-use warp_editor::content::edit::PreciseDelta;
-use warp_editor::content::version::BufferVersion;
-use warp_util::content_version::ContentVersion;
-use warp_util::file::{FileId, FileLoadError, FileSaveError};
-use warp_util::host_id::HostId;
-use warp_util::remote_path::RemotePath;
-use warp_util::standardized_path::StandardizedPath;
-use warpui::{Entity, ModelContext, ModelHandle, SingletonEntity, WeakModelHandle};
+use cute_core::features::FeatureFlag;
+use cute_core::safe_error;
+use cute_editor::content::buffer::{Buffer, ToBufferCharOffset};
+use cute_editor::content::diff::{text_diff, TextDiff};
+use cute_editor::content::edit::PreciseDelta;
+use cute_editor::content::version::BufferVersion;
+use cute_util::content_version::ContentVersion;
+use cute_util::file::{FileId, FileLoadError, FileSaveError};
+use cute_util::host_id::HostId;
+use cute_util::remote_path::RemotePath;
+use cute_util::standardized_path::StandardizedPath;
+use cuteui::{Entity, ModelContext, ModelHandle, SingletonEntity, WeakModelHandle};
 
 use super::buffer_location::{LocalOrRemotePath, SyncClock};
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "local_fs")] {
         use lsp::LspManagerModelEvent;
-        use warp_files::{FileModelEvent, FileModel};
-        use warp_editor::content::text::IndentBehavior;
-        use warp_editor::content::text::IndentUnit;
-        use warp_editor::content::buffer::EditOrigin;
+        use cute_files::{FileModelEvent, FileModel};
+        use cute_editor::content::text::IndentBehavior;
+        use cute_editor::content::text::IndentUnit;
+        use cute_editor::content::buffer::EditOrigin;
     }
 }
 
@@ -921,7 +921,7 @@ impl GlobalBufferModel {
         // Subscribe to buffer events for LSP sync.
         let path_clone = path.clone();
         ctx.subscribe_to_model(&buffer, move |me, event, ctx| {
-            use warp_editor::content::buffer::BufferEvent;
+            use cute_editor::content::buffer::BufferEvent;
 
             let Some(state) = me.buffers.get(&file_id) else {
                 return;
@@ -1060,7 +1060,7 @@ impl GlobalBufferModel {
 
         let path_clone = path.to_path_buf();
         ctx.subscribe_to_model(&buffer, move |me, event, ctx| {
-            use warp_editor::content::buffer::BufferEvent;
+            use cute_editor::content::buffer::BufferEvent;
 
             let Some(state) = me.buffers.get(&file_id) else {
                 me.log_lsp_sync_debug(
@@ -1208,7 +1208,7 @@ impl GlobalBufferModel {
         line_numbers: Vec<usize>,
         ctx: &mut ModelContext<Self>,
     ) -> Option<Vec<(usize, String)>> {
-        use warp_editor::content::text::LineCount;
+        use cute_editor::content::text::LineCount;
 
         if line_numbers.is_empty() {
             return Some(Vec::new());
@@ -1784,7 +1784,7 @@ impl GlobalBufferModel {
     // ── Public accessors ──────────────────────────────────────────────
 
     /// Returns the buffer text content for a given `FileId`.
-    pub fn content_for_file(&self, file_id: FileId, ctx: &warpui::AppContext) -> Option<String> {
+    pub fn content_for_file(&self, file_id: FileId, ctx: &cuteui::AppContext) -> Option<String> {
         let state = self.buffers.get(&file_id)?;
         let buffer = state.buffer.upgrade(ctx)?;
         Some(buffer.as_ref(ctx).text().into_string())
@@ -2102,14 +2102,14 @@ impl GlobalBufferModel {
     pub(crate) fn seed_remote_buffer_for_test(
         &mut self,
         host_id: HostId,
-        path: warp_util::standardized_path::StandardizedPath,
+        path: cute_util::standardized_path::StandardizedPath,
         content: &str,
         server_version: u64,
         ctx: &mut ModelContext<Self>,
     ) -> BufferState {
         let remote_path = RemotePath::new(host_id, path);
         let location = LocalOrRemotePath::Remote(remote_path.clone());
-        let file_id = warp_util::file::FileId::new();
+        let file_id = cute_util::file::FileId::new();
         let buffer = ctx.add_model(|_| Buffer::default());
         let version = ContentVersion::new();
         buffer.update(ctx, |buf, ctx| {

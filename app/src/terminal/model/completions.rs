@@ -1,4 +1,4 @@
-use warp_completer::completer::{Match, MatchedSuggestion, Suggestion, SuggestionType};
+use cute_completer::completer::{Match, MatchedSuggestion, Suggestion, SuggestionType};
 
 /// The completions data coming from the shell.
 ///

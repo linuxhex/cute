@@ -32,7 +32,7 @@ The implementation needs to satisfy four constraints at once:
 - `ui/src/elements/table/mod.rs (117-240)` — shared `Table`, `TableConfig`, and column sizing API
 - `ui/src/elements/table/mod.rs (517-980)` — `Table` layout behavior, including intrinsic measurement and viewport sizing
 - `ui/src/elements/table/mod.rs (1002-1478)` — selection and scroll behavior for the shared table element
-- `warp_core/src/features.rs` — `FeatureFlag` definitions and dogfood/default channel enablement
+- `cute_core/src/features.rs` — `FeatureFlag` definitions and dogfood/default channel enablement
 
 ## Current State
 
@@ -70,7 +70,7 @@ Those defaults are reasonable for a general-purpose scrollable table, but not fo
 Add a dedicated feature flag named `BlocklistMarkdownTableRendering` and wire it through the normal Warp feature-flag plumbing:
 - add `blocklist_markdown_table_rendering` to `app/Cargo.toml`
 - map that Cargo feature to `FeatureFlag::BlocklistMarkdownTableRendering` in `app/src/lib.rs`
-- add the new enum variant in `warp_core/src/features.rs`
+- add the new enum variant in `cute_core/src/features.rs`
 - enable it by default for dogfood builds via `DOGFOOD_FLAGS`
 
 The new structured table rendering should only activate when this flag is enabled. When disabled, AI block list responses should continue to detect tables and render them with the pre-feature monospace scrollable table block.

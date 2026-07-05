@@ -23,8 +23,8 @@ This is gated behind a new feature flag `CloudModeInputV2`. When the flag is off
 - `app/src/ai/blocklist/agent_view/agent_input_footer/mod.rs` (183-757, 2326-2398) — `AgentInputFooter` owns the mic, file/image, profile/model selector views and the theme structs. V2 reuses those view handles via accessors rather than duplicating construction/event wiring.
 - `app/src/terminal/input.rs` (1598-1600, 2140-2159, 3173-3175, 13462-13529) — where `AgentInputFooter` and `HarnessSelector` are constructed on `Input`, and where `render_input_box` lives. V2 adds a new `cloud_mode_input_v2` field on `Input`.
 - `crates/warp_features/src/lib.rs` — `FeatureFlag` enum + `DOGFOOD_FLAGS`.
-- `crates/warp_core/src/ui/theme/color.rs` (485-560) — `internal_colors::{neutral_2, neutral_3, fg_overlay_1, text_sub, ...}` used for V2 theme tokens.
-- `crates/warp_core/src/ui/icons.rs` — `Icon::{Globe4, GitBranch, Microphone, Image, OzCloud, ChevronDown}` already exist. No new icons for this PR.
+- `crates/cute_core/src/ui/theme/color.rs` (485-560) — `internal_colors::{neutral_2, neutral_3, fg_overlay_1, text_sub, ...}` used for V2 theme tokens.
+- `crates/cute_core/src/ui/icons.rs` — `Icon::{Globe4, GitBranch, Microphone, Image, OzCloud, ChevronDown}` already exist. No new icons for this PR.
 
 ### Figma → theme token mapping
 

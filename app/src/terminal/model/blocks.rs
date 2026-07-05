@@ -12,12 +12,12 @@ use instant::SystemTime;
 use selection::BlockListSelection;
 pub use selection::SelectionRange;
 use sum_tree::{Dimension, Item, SeekBias, SumTree};
-use warp_core::features::FeatureFlag;
-use warp_terminal::model::{KeyboardModes, KeyboardModesApplyBehavior};
-use warpui::color::ColorU;
-use warpui::r#async::executor::Background;
-use warpui::units::{IntoLines, IntoPixels, Lines};
-use warpui::{record_trace_event, AppContext, EntityId, ViewHandle};
+use cute_core::features::FeatureFlag;
+use cute_terminal::model::{KeyboardModes, KeyboardModesApplyBehavior};
+use cuteui::color::ColorU;
+use cuteui::r#async::executor::Background;
+use cuteui::units::{IntoLines, IntoPixels, Lines};
+use cuteui::{record_trace_event, AppContext, EntityId, ViewHandle};
 
 use super::ansi::{Handler, InputBufferValue};
 use super::block::{BlockId, BlockSize, BlockState, SerializedAIMetadata};

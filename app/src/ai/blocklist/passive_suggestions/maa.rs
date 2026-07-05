@@ -4,9 +4,9 @@ use ai::agent::action::{AIAgentActionType, FileEdit};
 use ai::diff_validation::ParsedDiff;
 use chrono::{DateTime, Utc};
 use parking_lot::FairMutex;
-use warp_core::features::FeatureFlag;
-use warpui::r#async::SpawnedFutureHandle;
-use warpui::{Entity, EntityId, ModelContext, ModelHandle, SingletonEntity};
+use cute_core::features::FeatureFlag;
+use cuteui::r#async::SpawnedFutureHandle;
+use cuteui::{Entity, EntityId, ModelContext, ModelHandle, SingletonEntity};
 
 use super::super::controller::{BlocklistAIController, BlocklistAIControllerEvent};
 use crate::ai::agent::api::generate_multi_agent_output;
@@ -36,12 +36,12 @@ cfg_if::cfg_if! {
     if #[cfg(feature = "local_fs")] {
         use std::{path::PathBuf, time::Duration};
         use crate::ai::blocklist::{read_local_file_context, BlocklistAIPermissions};
-        use warp_terminal::shell::ShellLaunchData;
+        use cute_terminal::shell::ShellLaunchData;
         use crate::util::link_detection::{detect_file_paths, DetectedLinkType};
         use crate::util::openable_file_type::is_binary_file;
         use ai::agent::FileLocations;
-        use warpui::AppContext;
-        use warpui::r#async::FutureExt as AsyncFutureExt;
+        use cuteui::AppContext;
+        use cuteui::r#async::FutureExt as AsyncFutureExt;
         use itertools::Itertools;
     }
 }

@@ -10,17 +10,17 @@ use std::collections::HashMap;
 
 use pathfinder_color::ColorU;
 use pathfinder_geometry::rect::RectF;
-use warp_core::features::FeatureFlag;
-use warpui::elements::new_scrollable::{NewScrollable, ScrollableAppearance, SingleAxisConfig};
-use warpui::elements::{
+use cute_core::features::FeatureFlag;
+use cuteui::elements::new_scrollable::{NewScrollable, ScrollableAppearance, SingleAxisConfig};
+use cuteui::elements::{
     Border, ChildView, Clipped, ClippedScrollStateHandle, ConstrainedBox, Container, CornerRadius,
     CrossAxisAlignment, DragAxis, Draggable, DraggableState, Empty, Expanded, Fill, Flex,
     Hoverable, MinSize, MouseStateHandle, ParentElement, Radius, SavePosition, ScrollbarWidth,
     Text, DEFAULT_UI_LINE_HEIGHT_RATIO,
 };
-use warpui::fonts::{Properties, Style, Weight};
-use warpui::platform::Cursor;
-use warpui::{
+use cuteui::fonts::{Properties, Style, Weight};
+use cuteui::platform::Cursor;
+use cuteui::{
     AppContext, BlurContext, Element, Entity, EntityId, FocusContext, ModelHandle, SingletonEntity,
     TypedActionView, View, ViewContext, ViewHandle,
 };
@@ -634,7 +634,7 @@ fn render_header(
     let ui_font_size = appearance.ui_font_size();
     Hoverable::new(header_mouse_state.clone(), move |_state| {
         let chevron =
-            ConstrainedBox::new(chevron_icon.to_warpui_icon(sub_text_color.into()).finish())
+            ConstrainedBox::new(chevron_icon.to_cuteui_icon(sub_text_color.into()).finish())
                 .with_height(16.)
                 .with_width(16.)
                 .finish();
@@ -757,7 +757,7 @@ fn render_row(props: RenderRowProps<'_>) -> Box<dyn Element> {
 
         let drag_handle: Box<dyn Element> = ConstrainedBox::new(
             TerminalIcon::DragIndicator
-                .to_warpui_icon(dimmed_color.into())
+                .to_cuteui_icon(dimmed_color.into())
                 .finish(),
         )
         .with_height(24.)

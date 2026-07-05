@@ -1,18 +1,18 @@
 use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::Vector2F;
 use settings::Setting;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::Icon;
-use warpui::elements::{
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::Icon;
+use cuteui::elements::{
     ConstrainedBox, Container, CrossAxisAlignment, Empty, Expanded, Flex, Hoverable, MainAxisSize,
     MouseStateHandle, ParentElement, SavePosition, Shrinkable, Text,
 };
-use warpui::fonts::Weight::Bold;
-use warpui::fonts::{Properties, Style};
-use warpui::platform::Cursor;
-use warpui::prelude::{Border, CornerRadius, Radius};
-use warpui::text_layout::ClipConfig;
-use warpui::{
+use cuteui::fonts::Weight::Bold;
+use cuteui::fonts::{Properties, Style};
+use cuteui::platform::Cursor;
+use cuteui::prelude::{Border, CornerRadius, Radius};
+use cuteui::text_layout::ClipConfig;
+use cuteui::{
     AppContext, Element, Entity, EntityId, EventContext, ModelHandle, SingletonEntity,
     TypedActionView, View, ViewContext,
 };
@@ -180,7 +180,7 @@ where
 {
     Hoverable::new(mouse_state, move |state| {
         let container = Container::new(
-            ConstrainedBox::new(icon.to_warpui_icon(icon_color.into()).finish())
+            ConstrainedBox::new(icon.to_cuteui_icon(icon_color.into()).finish())
                 .with_height(20.)
                 .with_width(20.)
                 .finish(),
@@ -244,7 +244,7 @@ impl View for AgentViewEntryBlock {
         "EnterAgentBlock"
     }
 
-    fn render(&self, app: &warpui::AppContext) -> Box<dyn warpui::Element> {
+    fn render(&self, app: &cuteui::AppContext) -> Box<dyn cuteui::Element> {
         if self.agent_view_controller.as_ref(app).is_fullscreen() {
             return Empty::new().finish();
         }

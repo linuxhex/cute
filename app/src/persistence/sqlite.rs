@@ -26,10 +26,10 @@ use pathfinder_geometry::rect::RectF;
 use pathfinder_geometry::vector::Vector2F;
 use persistence::model::AMBIENT_AGENT_PANE_KIND;
 use uuid::Uuid;
-use warp_graphql::scalars::time::ServerTimestamp;
-use warpui::platform::FullscreenState;
-use warpui::windowing::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH};
-use warpui::{AppContext, SingletonEntity};
+use cute_graphql::scalars::time::ServerTimestamp;
+use cuteui::platform::FullscreenState;
+use cuteui::windowing::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH};
+use cuteui::{AppContext, SingletonEntity};
 
 use super::agent::{delete_agent_conversations, upsert_agent_conversation};
 use super::block_list::{
@@ -50,21 +50,12 @@ use super::{
     StartedCommandMetadata, WriterHandles,
 };
 use crate::ai::agent::conversation::AIConversationId;
-use crate::ai::ambient_agent_types::scheduled::{
-    CloudScheduledAmbientAgent, CloudScheduledAmbientAgentModel,
-};
 use crate::ai::ambient_agent_types::AmbientAgentTaskId;
-use crate::ai::cloud_environments::{
-    CloudAmbientAgentEnvironment, CloudAmbientAgentEnvironmentModel,
-};
 use crate::ai::document::ai_document_model::AIDocumentId;
-use crate::ai::execution_profiles::{CloudAIExecutionProfile, CloudAIExecutionProfileModel};
-use crate::ai::facts::{CloudAIFact, CloudAIFactModel};
-use crate::ai::mcp::templatable::{CloudTemplatableMCPServer, CloudTemplatableMCPServerModel};
-use crate::ai::mcp::templatable_installation::VariableValue;
 use crate::ai::mcp::{
-    CloudMCPServer, CloudMCPServerModel, TemplatableMCPServer, TemplatableMCPServerInstallation,
+    TemplatableMCPServer, TemplatableMCPServerInstallation,
 };
+use crate::ai::mcp::templatable_installation::VariableValue;
 use crate::ai::persisted_workspace::EnablementState;
 use crate::app_state::{
     AIFactPaneSnapshot, AmbientAgentPaneSnapshot, AppState, BranchSnapshot, CodePaneSnapShot,
@@ -76,21 +67,8 @@ use crate::app_state::{
 use crate::auth::auth_manager::PersistedCurrentUserInformation;
 use crate::auth::auth_state::AuthStateProvider;
 use crate::auth::UserUid;
-use crate::cloud_object::model::actions::{
-    object_action_from_persisted, ObjectAction, ObjectActionSubtype,
-};
-use crate::cloud_object::model::generic_string_model::{CloudStringObject, GenericStringObjectId};
-use crate::cloud_object::{
-    CloudObject, CloudObjectMetadata, CloudObjectPermissions, CloudObjectStatuses,
-    CloudObjectSyncStatus, JsonObjectType, NumInFlightRequests, ObjectIdType, ObjectType, Owner,
-    Revision, RevisionAndLastEditor, ServerCreationInfo, GENERIC_STRING_OBJECT_PREFIX,
-    JSON_OBJECT_PREFIX,
-};
 use crate::code::editor_management::CodeSource;
-use crate::drive::folders::{CloudFolder, CloudFolderModel, FolderId};
 use crate::drive::OpenWarpDriveObjectSettings;
-use crate::env_vars::{CloudEnvVarCollection, CloudEnvVarCollectionModel};
-use crate::notebooks::{CloudNotebook, CloudNotebookModel, NotebookId};
 use crate::persistence::agent::read_agent_conversations;
 use crate::persistence::block_list::{get_all_restored_blocks, read_ai_queries};
 use crate::persistence::model::{
@@ -98,19 +76,30 @@ use crate::persistence::model::{
     ProjectRules, UserProfile, CODE_REVIEW_PANE_KIND, GET_STARTED_PANE_KIND,
 };
 use crate::server::ids::{ClientId, HashableId, ServerId, SyncId, ToServerId};
-use crate::settings::cloud_preferences::{CloudPreference, CloudPreferenceModel};
+use crate::notebooks::NotebookId;
+use crate::workflows::WorkflowId;
 use crate::settings_view::SettingsSection;
 use crate::suggestions::ignored_suggestions_model::SuggestionType;
 use crate::tab::SelectedTabColor;
 use crate::terminal::history::PersistedCommand;
 use crate::terminal::ShellLaunchData;
 use crate::themes::theme::AnsiColorIdentifier;
-use crate::workflows::workflow_enum::{CloudWorkflowEnum, CloudWorkflowEnumModel};
-use crate::workflows::{CloudWorkflow, CloudWorkflowModel, WorkflowId};
 use crate::workspaces::user_profiles::{user_profile_from_persistence, UserProfileWithUID};
 use crate::workspaces::workspace::{Workspace as WorkspaceMetadata, WorkspaceUid};
 use crate::workspaces::{MembershipRole, Team as TeamMetadata, TeamMember};
 use crate::{report_error, report_if_error, safe_info};
+
+// Cloud object imports
+use crate::cloud_object::{
+    CloudObject, CloudObjectMetadata, CloudObjectPermissions, CloudObjectStatuses,
+    CloudObjectSyncStatus, GENERIC_STRING_OBJECT_PREFIX,
+    NumInFlightRequests, ObjectIdType, ObjectType, Owner, Revision, RevisionAndLastEditor,
+    ServerCreationInfo,
+};
+use crate::cloud_object::model::actions::{ObjectAction, ObjectActionSubtype, object_action_from_persisted};
+use crate::cloud_object::model::generic_string_model::{CloudStringObject, GenericStringObjectId};
+use crate::cloud_object::models::{CloudNotebook, CloudWorkflow};
+use crate::drive::folders::{CloudFolder, FolderId};
 
 diesel::define_sql_function! {
     fn json_extract(target: diesel::sql_types::Text, path: diesel::sql_types::Text) -> diesel::sql_types::Text;
@@ -121,7 +110,7 @@ diesel::define_sql_function! {
 const CHANNEL_SIZE: usize = 1024;
 const COMMANDS_COUNT_LIMIT: i64 = 10000;
 
-use warp_server_client::persistence::{upsert_cloud_object, CloudObjectId};
+use cute_server_client::persistence::{upsert_cloud_object, CloudObjectId};
 
 const WARP_SQLITE_FILE_NAME: &str = "warp.sqlite";
 
@@ -341,7 +330,7 @@ pub(super) fn init_db(scope: &PersistenceScope) -> Result<SqliteConnection> {
 }
 
 fn migrate_old_sqlite_into_secure_container_if_needed(db_path: &Path) {
-    let old_db_path = warp_core::paths::state_dir().join(WARP_SQLITE_FILE_NAME);
+    let old_db_path = cute_core::paths::state_dir().join(WARP_SQLITE_FILE_NAME);
     if old_db_path == db_path || !old_db_path.exists() || db_path.exists() {
         return;
     }
@@ -415,8 +404,8 @@ pub fn database_file_path_for_scope(scope: &PersistenceScope) -> PathBuf {
 }
 
 fn app_database_file_path() -> PathBuf {
-    warp_core::paths::secure_state_dir()
-        .unwrap_or_else(warp_core::paths::state_dir)
+    cute_core::paths::secure_state_dir()
+        .unwrap_or_else(cute_core::paths::state_dir)
         .join(WARP_SQLITE_FILE_NAME)
 }
 
@@ -620,13 +609,13 @@ fn handle_model_event(event: ModelEvent, connection: &mut SqliteConnection) -> a
         ModelEvent::IncrementRetryCount(id) => {
             increment_retry_count(connection, id).context("error incrementing retry count")
         }
-        ModelEvent::DeleteObjects { ids } => {
+        ModelEvent::DeleteObjects(ids) => {
             delete_objects(connection, ids).context("error deleting objects")
         }
         ModelEvent::UpdateObjectAfterServerCreation {
             client_id,
             server_creation_info,
-        } => update_object_after_server_creation(connection, client_id, server_creation_info)
+        } => update_object_after_server_creation(connection, client_id.to_hash(), server_creation_info)
             .context("error executing object creation succeeded callback"),
         ModelEvent::UpsertCodebaseIndexMetadata { index_metadata } => {
             save_codebase_index_metadata(connection, *index_metadata)
@@ -653,7 +642,8 @@ fn handle_model_event(event: ModelEvent, connection: &mut SqliteConnection) -> a
                 .context("error setting current workspace")
         }
         ModelEvent::UpdateObjectMetadata { id, metadata } => {
-            update_object_metadata(connection, id, metadata).context("error updating metadata")
+            update_object_metadata(connection, id, to_cloud_object_metadata(&metadata))
+                .context("error updating metadata")
         }
         ModelEvent::InsertCommand { metadata } => {
             insert_command(connection, metadata).context("error inserting command")
@@ -760,9 +750,7 @@ fn handle_model_event(event: ModelEvent, connection: &mut SqliteConnection) -> a
         ModelEvent::SaveAIDocumentContent {
             document_id,
             content,
-            version,
-            title,
-        } => save_ai_document_content(connection, &document_id, &content, version, &title)
+        } => save_ai_document_content(connection, &document_id, &content)
             .context("error saving AI document content"),
     }
 }
@@ -1342,22 +1330,16 @@ fn save_pane_state(
     Ok(())
 }
 
-/// Update the content, version, and title of an AI document pane in SQLite.
+/// Update the content of an AI document pane in SQLite.
 fn save_ai_document_content(
     conn: &mut SqliteConnection,
-    doc_id: &str,
+    doc_id: &AIDocumentId,
     doc_content: &str,
-    doc_version: i32,
-    doc_title: &str,
 ) -> Result<()> {
     use schema::ai_document_panes::dsl::*;
 
-    diesel::update(ai_document_panes.filter(document_id.eq(doc_id)))
-        .set((
-            content.eq(Some(doc_content)),
-            version.eq(doc_version),
-            title.eq(Some(doc_title)),
-        ))
+    diesel::update(ai_document_panes.filter(document_id.eq(doc_id.to_string())))
+        .set(content.eq(Some(doc_content)))
         .execute(conn)?;
 
     Ok(())
@@ -2692,7 +2674,7 @@ fn read_node(conn: &mut SqliteConnection, node: model::PaneNode) -> Result<PaneN
 /// In the future, the awkwardness of the transaction interface is resolved in diesel 2.0.0.
 fn read_sqlite_data(
     conn: &mut SqliteConnection,
-    current_user_id: Option<UserUid>,
+    _current_user_id: Option<UserUid>,
 ) -> Result<PersistedData, Error> {
     use schema::windows::dsl::*;
 
@@ -2854,7 +2836,7 @@ fn read_sqlite_data(
         .load::<model::ObjectPermissions>(conn)?;
 
     // Cache metadata and permissions by id so that we aren't doing an n^2 lookups for each object type.
-    let metadata_by_id = object_metadata
+    let _metadata_by_id = object_metadata
         .into_iter()
         .map(|metadata| {
             let object_type = if metadata
@@ -2871,265 +2853,13 @@ fn read_sqlite_data(
             ((metadata.shareable_object_id, object_type), metadata)
         })
         .collect::<HashMap<_, _>>();
-    let permissions_by_id = object_permissions
+    let _permissions_by_id = object_permissions
         .into_iter()
         .map(|permissions| (permissions.object_metadata_id, permissions))
         .collect::<HashMap<_, _>>();
 
-    let mut cloud_objects: Vec<Box<dyn CloudObject>> = Vec::new();
-    cloud_objects.extend(
-        schema::workflows::dsl::workflows
-            .load::<model::Workflow>(conn)?
-            .iter()
-            .filter_map(|workflow| {
-                metadata_by_id
-                    .get(&(
-                        workflow.id,
-                        ObjectType::Workflow.sqlite_object_type_as_str().to_string(),
-                    ))
-                    .and_then(|metadata| {
-                        let workflow_content = serde_json::from_str(workflow.data.as_str()).ok();
-                        let workflow_id = id_from_metadata::<WorkflowId>(metadata);
-                        let permissions = permissions_by_id.get(&metadata.id)?;
-                        let cloud_object_permissions =
-                            to_cloud_object_permissions(permissions, current_user_id)?;
-                        workflow_content
-                            .zip(workflow_id)
-                            .map(|(content, workflow_id)| {
-                                let boxed: Box<dyn CloudObject> = Box::new(CloudWorkflow::new(
-                                    workflow_id,
-                                    CloudWorkflowModel::new(content),
-                                    to_cloud_object_metadata(metadata),
-                                    cloud_object_permissions,
-                                ));
-                                boxed
-                            })
-                    })
-            })
-            .collect::<Vec<_>>(),
-    );
-
-    cloud_objects.extend(
-        schema::notebooks::dsl::notebooks
-            .load::<model::Notebook>(conn)?
-            .iter()
-            .filter_map(|notebook| {
-                metadata_by_id
-                    .get(&(
-                        notebook.id,
-                        ObjectType::Notebook.sqlite_object_type_as_str().to_string(),
-                    ))
-                    .and_then(|metadata| {
-                        let notebook_id = id_from_metadata::<NotebookId>(metadata);
-                        let permissions = permissions_by_id.get(&metadata.id)?;
-                        let cloud_object_permissions =
-                            to_cloud_object_permissions(permissions, current_user_id)?;
-                        notebook_id.map(|server_id| {
-                            let ai_document_id =
-                                notebook.ai_document_id.as_ref().and_then(|doc_id_str| {
-                                    AIDocumentId::try_from(doc_id_str.as_str()).ok()
-                                });
-                            let boxed: Box<dyn CloudObject> = Box::new(CloudNotebook::new(
-                                server_id,
-                                CloudNotebookModel {
-                                    title: notebook.title.clone().unwrap_or_default(),
-                                    data: notebook.data.clone().unwrap_or_default(),
-                                    ai_document_id,
-                                    conversation_id: None,
-                                },
-                                to_cloud_object_metadata(metadata),
-                                cloud_object_permissions,
-                            ));
-                            boxed
-                        })
-                    })
-            })
-            .collect::<Vec<_>>(),
-    );
-
-    cloud_objects.extend(
-        schema::folders::dsl::folders
-            .load::<model::Folder>(conn)?
-            .iter()
-            .filter_map(|folder| {
-                metadata_by_id
-                    .get(&(
-                        folder.id,
-                        ObjectType::Folder.sqlite_object_type_as_str().to_string(),
-                    ))
-                    .and_then(|metadata| {
-                        let folder_id = id_from_metadata::<FolderId>(metadata);
-                        let permissions = permissions_by_id.get(&metadata.id)?;
-                        let cloud_object_permissions =
-                            to_cloud_object_permissions(permissions, current_user_id)?;
-                        folder_id.map(|server_id| {
-                            let boxed: Box<dyn CloudObject> = Box::new(CloudFolder::new(
-                                server_id,
-                                CloudFolderModel {
-                                    name: folder.name.clone(),
-                                    is_open: folder.is_open,
-                                    is_warp_pack: folder.is_warp_pack,
-                                },
-                                to_cloud_object_metadata(metadata),
-                                cloud_object_permissions,
-                            ));
-                            boxed
-                        })
-                    })
-            })
-            .collect::<Vec<_>>(),
-    );
-
-    cloud_objects.extend(
-        schema::generic_string_objects::dsl::generic_string_objects
-            .load::<model::GenericStringObject>(conn)?
-            .iter()
-            .filter_map(|object| {
-                metadata_by_id
-                    .get(&(object.id, GENERIC_STRING_OBJECT_PREFIX.to_owned()))
-                    .and_then(|metadata| {
-                        let object_id = id_from_metadata::<GenericStringObjectId>(metadata);
-                        let permissions = permissions_by_id.get(&metadata.id)?;
-                        let cloud_object_permissions =
-                            to_cloud_object_permissions(permissions, current_user_id)?;
-                        let json_object_type: JsonObjectType = metadata
-                            .object_type
-                            .strip_prefix(&format!(
-                                "{GENERIC_STRING_OBJECT_PREFIX}{JSON_OBJECT_PREFIX}"
-                            ))?
-                            .try_into()
-                            .ok()?;
-                        object_id.and_then(|server_id| match json_object_type {
-                            JsonObjectType::Preference => {
-                                let model = CloudPreferenceModel::deserialize_owned(&object.data);
-                                model.ok().map(|model| {
-                                    let boxed: Box<dyn CloudObject> =
-                                        Box::new(CloudPreference::new(
-                                            server_id,
-                                            model,
-                                            to_cloud_object_metadata(metadata),
-                                            cloud_object_permissions,
-                                        ));
-                                    boxed
-                                })
-                            }
-                            JsonObjectType::EnvVarCollection => {
-                                let model =
-                                    CloudEnvVarCollectionModel::deserialize_owned(&object.data);
-                                model.ok().map(|model| {
-                                    let boxed: Box<dyn CloudObject> =
-                                        Box::new(CloudEnvVarCollection::new(
-                                            server_id,
-                                            model,
-                                            to_cloud_object_metadata(metadata),
-                                            cloud_object_permissions,
-                                        ));
-                                    boxed
-                                })
-                            }
-                            JsonObjectType::WorkflowEnum => {
-                                let model = CloudWorkflowEnumModel::deserialize_owned(&object.data);
-                                model.ok().map(|model| {
-                                    let boxed: Box<dyn CloudObject> =
-                                        Box::new(CloudWorkflowEnum::new(
-                                            server_id,
-                                            model,
-                                            to_cloud_object_metadata(metadata),
-                                            cloud_object_permissions,
-                                        ));
-                                    boxed
-                                })
-                            }
-                            JsonObjectType::AIFact => {
-                                let model = CloudAIFactModel::deserialize_owned(&object.data);
-                                model.ok().map(|model| {
-                                    let boxed: Box<dyn CloudObject> = Box::new(CloudAIFact::new(
-                                        server_id,
-                                        model,
-                                        to_cloud_object_metadata(metadata),
-                                        cloud_object_permissions,
-                                    ));
-                                    boxed
-                                })
-                            }
-                            JsonObjectType::MCPServer => {
-                                let model = CloudMCPServerModel::deserialize_owned(&object.data);
-                                model.ok().map(|model| {
-                                    let boxed: Box<dyn CloudObject> =
-                                        Box::new(CloudMCPServer::new(
-                                            server_id,
-                                            model,
-                                            to_cloud_object_metadata(metadata),
-                                            cloud_object_permissions,
-                                        ));
-                                    boxed
-                                })
-                            }
-                            JsonObjectType::TemplatableMCPServer => {
-                                let model =
-                                    CloudTemplatableMCPServerModel::deserialize_owned(&object.data);
-                                model.ok().map(|model| {
-                                    let boxed: Box<dyn CloudObject> =
-                                        Box::new(CloudTemplatableMCPServer::new(
-                                            server_id,
-                                            model,
-                                            to_cloud_object_metadata(metadata),
-                                            cloud_object_permissions,
-                                        ));
-                                    boxed
-                                })
-                            }
-                            JsonObjectType::AIExecutionProfile => {
-                                let model =
-                                    CloudAIExecutionProfileModel::deserialize_owned(&object.data);
-                                model.ok().map(|model| {
-                                    let boxed: Box<dyn CloudObject> =
-                                        Box::new(CloudAIExecutionProfile::new(
-                                            server_id,
-                                            model,
-                                            to_cloud_object_metadata(metadata),
-                                            cloud_object_permissions,
-                                        ));
-                                    boxed
-                                })
-                            }
-                            JsonObjectType::CloudEnvironment => {
-                                let model = CloudAmbientAgentEnvironmentModel::deserialize_owned(
-                                    &object.data,
-                                );
-                                model.ok().map(|model| {
-                                    let boxed: Box<dyn CloudObject> =
-                                        Box::new(CloudAmbientAgentEnvironment::new(
-                                            server_id,
-                                            model,
-                                            to_cloud_object_metadata(metadata),
-                                            cloud_object_permissions,
-                                        ));
-                                    boxed
-                                })
-                            }
-                            JsonObjectType::ScheduledAmbientAgent => {
-                                let model = CloudScheduledAmbientAgentModel::deserialize_owned(
-                                    &object.data,
-                                );
-                                model.ok().map(|model| {
-                                    let boxed: Box<dyn CloudObject> =
-                                        Box::new(CloudScheduledAmbientAgent::new(
-                                            server_id,
-                                            model,
-                                            to_cloud_object_metadata(metadata),
-                                            cloud_object_permissions,
-                                        ));
-                                    boxed
-                                })
-                            }
-                            // TODO: Implement CloudAgentConfig model when full sync support is added
-                            JsonObjectType::CloudAgentConfig => None,
-                        })
-                    })
-            })
-            .collect::<Vec<_>>(),
-    );
+    let cloud_objects: Vec<Box<dyn CloudObject>> = Vec::new();
+    // Cloud objects loading removed with cloud services
 
     let db_teams: Vec<model::Team> = schema::teams::dsl::teams.load(conn)?;
 
@@ -3500,11 +3230,13 @@ fn clear_user_profiles(conn: &mut SqliteConnection) -> Result<(), Error> {
 
 fn record_time_of_next_refresh(
     conn: &mut SqliteConnection,
-    timestamp: DateTime<Utc>,
+    timestamp: i64,
 ) -> Result<(), Error> {
     use schema::cloud_objects_refreshes::dsl::*;
     let refresh = NewCloudObjectsRefresh {
-        time_of_next_refresh: timestamp.naive_utc(),
+        time_of_next_refresh: chrono::DateTime::from_timestamp_millis(timestamp)
+            .map(|dt| dt.naive_utc())
+            .unwrap_or_else(|| chrono::Utc::now().naive_utc()),
     };
     conn.transaction::<(), Error, _>(|conn| {
         diesel::delete(cloud_objects_refreshes).execute(conn)?;
@@ -3646,52 +3378,87 @@ fn sync_object_actions(
 
 fn delete_objects(
     conn: &mut SqliteConnection,
-    ids: Vec<(SyncId, ObjectIdType)>,
+    ids: Vec<String>,
 ) -> Result<(), Error> {
     conn.transaction::<(), Error, _>(|conn| {
-        for (sync_id, object_id_type) in ids {
-            match object_id_type {
-                ObjectIdType::Notebook => delete_cloud_object(
-                    conn,
-                    sync_id,
-                    object_id_type,
-                    Box::new(|conn, notebook_id| {
-                        use schema::notebooks::dsl::*;
-                        diesel::delete(notebooks.filter(id.eq(notebook_id))).execute(conn)?;
-                        Ok(())
-                    }),
-                )?,
-                ObjectIdType::Workflow => delete_cloud_object(
-                    conn,
-                    sync_id,
-                    object_id_type,
-                    Box::new(|conn, workflow_id| {
-                        use schema::workflows::dsl::*;
-                        diesel::delete(workflows.filter(id.eq(workflow_id))).execute(conn)?;
-                        Ok(())
-                    }),
-                )?,
-                ObjectIdType::Folder => delete_cloud_object(
-                    conn,
-                    sync_id,
-                    object_id_type,
-                    Box::new(|conn, folder_id| {
-                        use schema::folders::dsl::*;
-                        diesel::delete(folders.filter(id.eq(folder_id))).execute(conn)?;
-                        Ok(())
-                    }),
-                )?,
-                ObjectIdType::GenericStringObject => delete_cloud_object(
-                    conn,
-                    sync_id,
-                    object_id_type,
-                    Box::new(|conn, gso_id| {
-                        use schema::generic_string_objects::dsl::*;
-                        diesel::delete(generic_string_objects.filter(id.eq(gso_id)))
-                            .execute(conn)?;
-                        Ok(())
-                    }),
-                )?,
+        for hashed_id in ids {
+            let object_id_type = if hashed_id.starts_with("Notebook-") {
+                ObjectIdType::Notebook
+            } else if hashed_id.starts_with("Workflow-") {
+                ObjectIdType::Workflow
+            } else if hashed_id.starts_with("Folder-") {
+                ObjectIdType::Folder
+            } else if hashed_id.starts_with("GenericStringObject-") {
+                ObjectIdType::GenericStringObject
+            } else {
+                continue;
+            };
+
+            let sync_id = match object_id_type {
+                ObjectIdType::Notebook => {
+                    crate::cloud_object::models::notebook::NotebookId::from_hash(&hashed_id)
+                        .map(|id| id.into())
+                        .or_else(|| ClientId::from_hash(&hashed_id).map(SyncId::ClientId))
+                }
+                ObjectIdType::Workflow => {
+                    crate::cloud_object::models::workflow::WorkflowId::from_hash(&hashed_id)
+                        .map(|id| id.into())
+                        .or_else(|| ClientId::from_hash(&hashed_id).map(SyncId::ClientId))
+                }
+                ObjectIdType::Folder => {
+                    ClientId::from_hash(&hashed_id).map(SyncId::ClientId)
+                }
+                ObjectIdType::GenericStringObject => {
+                    crate::server::ids::GenericStringObjectId::from_hash(&hashed_id)
+                        .map(|id| SyncId::ServerId(id.into()))
+                        .or_else(|| ClientId::from_hash(&hashed_id).map(SyncId::ClientId))
+                }
+            };
+
+            if let Some(sync_id) = sync_id {
+                match object_id_type {
+                    ObjectIdType::Notebook => delete_cloud_object(
+                        conn,
+                        sync_id,
+                        object_id_type,
+                        Box::new(|conn, notebook_id| {
+                            use schema::notebooks::dsl::*;
+                            diesel::delete(notebooks.filter(id.eq(notebook_id))).execute(conn)?;
+                            Ok(())
+                        }),
+                    )?,
+                    ObjectIdType::Workflow => delete_cloud_object(
+                        conn,
+                        sync_id,
+                        object_id_type,
+                        Box::new(|conn, workflow_id| {
+                            use schema::workflows::dsl::*;
+                            diesel::delete(workflows.filter(id.eq(workflow_id))).execute(conn)?;
+                            Ok(())
+                        }),
+                    )?,
+                    ObjectIdType::Folder => delete_cloud_object(
+                        conn,
+                        sync_id,
+                        object_id_type,
+                        Box::new(|conn, folder_id| {
+                            use schema::folders::dsl::*;
+                            diesel::delete(folders.filter(id.eq(folder_id))).execute(conn)?;
+                            Ok(())
+                        }),
+                    )?,
+                    ObjectIdType::GenericStringObject => delete_cloud_object(
+                        conn,
+                        sync_id,
+                        object_id_type,
+                        Box::new(|conn, gso_id| {
+                            use schema::generic_string_objects::dsl::*;
+                            diesel::delete(generic_string_objects.filter(id.eq(gso_id)))
+                                .execute(conn)?;
+                            Ok(())
+                        }),
+                    )?,
+                }
             }
         }
         Ok(())

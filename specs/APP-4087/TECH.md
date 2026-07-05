@@ -6,7 +6,7 @@ The technical goal is to preserve centralized watching while separating three pa
 - `config_local_dir()` for platform-specific local config such as settings and preferences
 - a new Warp home config directory helper for user-facing Warp Skills and MCP, preserving `.warp*` home-relative names and channel/profile isolation across all OSes
 ## Relevant code
-- `crates/warp_core/src/paths.rs` — owns app data/config paths and the new Warp home config directory helpers.
+- `crates/cute_core/src/paths.rs` — owns app data/config paths and the new Warp home config directory helpers.
 - `app/src/warp_managed_paths_watcher.rs` — singleton watcher for safe Warp-managed roots and app-local wrappers around the core helpers.
 - `app/src/lib.rs` — startup registration for the Warp watcher and watch root preparation.
 - `app/src/ai/skills/file_watchers/skill_watcher.rs` — subscribes to Warp watcher events and filters Warp home skill updates.
@@ -18,7 +18,7 @@ The technical goal is to preserve centralized watching while separating three pa
 - `app/src/ai/mcp/mod.rs` — defines `MCPProvider::home_config_path`, `home_config_file_path`, and `mcp_provider_from_file_path`.
 - `app/src/user_config/native.rs` — consumes Warp watcher updates for themes, workflows, launch configs, tab configs, and settings.
 ## Path helper design
-Add purpose-specific helpers in `warp_core::paths`:
+Add purpose-specific helpers in `cute_core::paths`:
 - `warp_home_config_dir_name() -> String`
 - `warp_home_config_dir() -> Option<PathBuf>`
 - `warp_home_skills_dir() -> Option<PathBuf>`
@@ -41,7 +41,7 @@ The implementation must not recursively watch all of `~/.warp` or all possible `
 If the Warp home config paths do not exist, the watcher should not fail the session. Startup disk parsing and cold resolution should still work when files exist, and future creation behavior can be handled separately if needed.
 ## Skill watcher consumption
 `SkillWatcher` subscribes to `WarpManagedPathsWatcher`.
-Initial Warp skill loading reads from `warp_managed_skill_dirs()`, which resolves to `warp_core::paths::warp_home_skills_dir()` when home exists.
+Initial Warp skill loading reads from `warp_managed_skill_dirs()`, which resolves to `cute_core::paths::warp_home_skills_dir()` when home exists.
 Incremental handling filters updates by the current environment’s Warp home skills directory:
 ```text
 for skills_dir in warp_managed_skill_dirs() {
@@ -53,7 +53,7 @@ for skills_dir in warp_managed_skill_dirs() {
 `SkillProvider::Warp` remains excluded from generic home-provider watching. The generic home-provider watcher must not be used to watch `.warp*` parents.
 ## Skill resolver cold-start behavior
 `resolve_skill_spec` checks home/global skill directories from disk after cached home matches and before project resolution.
-The resolver fallback scans home provider paths in provider precedence order. For `SkillProvider::Warp`, `home_skills_path(SkillProvider::Warp)` resolves to `warp_core::paths::warp_home_skills_dir()`.
+The resolver fallback scans home provider paths in provider precedence order. For `SkillProvider::Warp`, `home_skills_path(SkillProvider::Warp)` resolves to `cute_core::paths::warp_home_skills_dir()`.
 Full-path skill specs keep existing root-relative behavior and should not start accepting arbitrary absolute paths.
 ## Skill path classification
 Skill path classification helpers classify the current environment’s Warp home skills directory as the home Warp skills path:
@@ -73,9 +73,9 @@ let was_deleted = update deletes or moves out mcp_path.config_path
 let was_added = update adds/modifies or moves into mcp_path.config_path
 handle_single_config_update(mcp_path.root_path, MCPProvider::Warp, mcp_path.config_path, was_deleted, was_added)
 ```
-The config path is `warp_core::paths::warp_home_mcp_config_file_path()`. The logical root path remains `dirs::home_dir()` so `FileBasedMCPManager` treats it as user-scoped MCP config.
+The config path is `cute_core::paths::warp_home_mcp_config_file_path()`. The logical root path remains `dirs::home_dir()` so `FileBasedMCPManager` treats it as user-scoped MCP config.
 ## MCP path classification
-`home_config_file_path(MCPProvider::Warp)` returns `warp_core::paths::warp_home_mcp_config_file_path()`.
+`home_config_file_path(MCPProvider::Warp)` returns `cute_core::paths::warp_home_mcp_config_file_path()`.
 `mcp_provider_from_file_path` recognizes the exact Warp home MCP path first, then continues to fall back to project-config suffix matching for project configs.
 ## Preserve user config behavior
 `WarpConfig` keeps consuming `WarpManagedPathsWatcher` for themes, workflows, launch configs, tab configs, and settings. Its filtering remains path-specific:
@@ -107,13 +107,13 @@ The config path is `warp_core::paths::warp_home_mcp_config_file_path()`. The log
 - Let `SkillWatcher` register a home provider watcher for Warp again. Rejected because `DirectoryWatcher` would watch a `.warp*` parent recursively for skills, which can reintroduce worktree events.
 - Add separate filesystem watchers in `SkillWatcher` and `FileMCPWatcher`. Rejected because the central watcher was introduced specifically to make Warp-managed path filtering and exclusions auditable in one place.
 ## Testing and validation
-- Add or update `warp_core::paths` tests for Warp home config directory, Skills directory, and MCP config path helpers.
+- Add or update `cute_core::paths` tests for Warp home config directory, Skills directory, and MCP config path helpers.
 - Add or update `resolve_skill_spec` tests for resolving a simple skill name from a Warp home skills directory without relying on `SkillManager`.
 - Add or update watcher helper tests for current-environment Warp home Skills and MCP helper paths.
 - Add or update skill utility tests showing the current-environment Warp home skills directory classifies as a Warp home skill path.
 - Add or update MCP helper tests showing the current-environment Warp home MCP file classifies as `MCPProvider::Warp`.
 - Run targeted commands such as:
-  - `cargo test -p warp_core --lib paths`
+  - `cargo test -p cute_core --lib paths`
   - `cargo test -p ai skills::skill_provider --lib`
   - `cargo test -p warp --lib resolve_from_root_path_by_directory_scan`
   - `cargo test -p warp --lib file_watchers::utils`

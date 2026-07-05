@@ -1,4 +1,4 @@
-use warpui::AppContext;
+use cuteui::AppContext;
 
 use super::{CloudObject, GenericStringObjectFormat, JsonObjectType, ObjectType};
 use crate::server::cloud_objects::update_manager::{

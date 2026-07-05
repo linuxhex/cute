@@ -1,4 +1,4 @@
-use warpui::{Entity, ModelContext, SingletonEntity};
+use cuteui::{Entity, ModelContext, SingletonEntity};
 
 use super::CloudEnvVarCollectionModel;
 use crate::cloud_object::breadcrumbs::ContainingObject;
@@ -62,7 +62,7 @@ impl ActiveEnvVarCollectionData {
     fn handle_cloud_model_event(&mut self, event: &CloudModelEvent, ctx: &mut ModelContext<Self>) {
         if let CloudModelEvent::ObjectMoved { type_and_id, .. } = event {
             if let Some(env_var_collection_id) = type_and_id.as_generic_string_object_id() {
-                if self.is_active_env_var_collection(env_var_collection_id) {
+                if self.is_active_env_var_collection(*env_var_collection_id) {
                     ctx.emit(ActiveEnvVarCollectionDataEvent::BreadcrumbsChanged)
                 }
             }
@@ -200,7 +200,8 @@ impl ActiveEnvVarCollectionData {
     pub fn access_level(&self, app: &AppContext) -> SharingAccessLevel {
         match &self.active_env_var_collection {
             ActiveEnvVarCollection::CommittedEnvVarCollection(sync_id) => {
-                CloudViewModel::as_ref(app).access_level(&sync_id.uid(), app)
+                let client_access = CloudViewModel::as_ref(app).access_level(&sync_id.uid(), app);
+                cute_graphql::object_permissions::AccessLevel::from(client_access).into()
             }
             ActiveEnvVarCollection::None | ActiveEnvVarCollection::NewEnvVarCollection(_) => {
                 SharingAccessLevel::Full

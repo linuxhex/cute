@@ -1,14 +1,14 @@
 use std::collections::HashSet;
 
 use itertools::{Either, Itertools};
-use warp_editor::editor::NavigationKey;
-use warpui::accessibility::{AccessibilityContent, WarpA11yRole};
-use warpui::elements::{
+use cute_editor::editor::NavigationKey;
+use cuteui::accessibility::{AccessibilityContent, WarpA11yRole};
+use cuteui::elements::{
     Clipped, ConstrainedBox, Container, CrossAxisAlignment, Flex, ParentElement, Shrinkable, Text,
 };
-use warpui::fonts::{FamilyId, Properties, Style, Weight};
-use warpui::presenter::ChildView;
-use warpui::{
+use cuteui::fonts::{FamilyId, Properties, Style, Weight};
+use cuteui::presenter::ChildView;
+use cuteui::{
     Action, AppContext, Element, Entity, FocusContext, ModelContext, ModelHandle, SingletonEntity,
     TypedActionView, View, ViewContext, ViewHandle,
 };
@@ -909,7 +909,7 @@ impl<T: Action + Clone> View for SearchBar<T> {
             let magnifying_glass = Container::new(
                 ConstrainedBox::new(
                     Icon::Search
-                        .to_warpui_icon(blended_colors::text_sub(theme, theme.surface_2()).into())
+                        .to_cuteui_icon(blended_colors::text_sub(theme, theme.surface_2()).into())
                         .finish(),
                 )
                 .with_height(size)

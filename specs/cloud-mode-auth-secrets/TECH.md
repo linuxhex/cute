@@ -26,7 +26,7 @@ The cloud mode input V2 composing UI lets users select a non-Oz harness (e.g. Cl
 
 ### GraphQL client crate
 
-- `crates/warp_graphql` — cynic-based GraphQL query modules. **Will add** `list_harness_auth_secrets` query module.
+- `crates/cute_graphql` — cynic-based GraphQL query modules. **Will add** `list_harness_auth_secrets` query module.
 
 ## Current State
 
@@ -39,7 +39,7 @@ The cloud mode input V2 composing UI lets users select a non-Oz harness (e.g. Cl
 
 ### 1. GraphQL query: `harnessAuthSecrets`
 
-**New file**: `crates/warp_graphql/src/queries/list_harness_auth_secrets.rs`
+**New file**: `crates/cute_graphql/src/queries/list_harness_auth_secrets.rs`
 
 Add a cynic query module for the server's `harnessAuthSecrets` query. The input takes an `AgentHarness` enum; the output reuses the existing `ManagedSecret` fragment.
 

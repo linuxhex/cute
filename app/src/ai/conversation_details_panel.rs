@@ -8,23 +8,23 @@ use chrono::{DateTime, Duration, Local};
 use instant::Instant;
 use parking_lot::RwLock;
 use pathfinder_color::ColorU;
-use warp_cli::agent::Harness;
-use warp_cli::skill::SkillSpec;
-use warp_core::channel::ChannelState;
-use warp_core::ui::color::coloru_with_opacity;
-use warpui::clipboard::ClipboardContent;
-use warpui::elements::new_scrollable::{NewScrollable, SingleAxisConfig};
-use warpui::elements::{
+use cute_cli::agent::Harness;
+use cute_cli::skill::SkillSpec;
+use cute_core::channel::ChannelState;
+use cute_core::ui::color::coloru_with_opacity;
+use cuteui::clipboard::ClipboardContent;
+use cuteui::elements::new_scrollable::{NewScrollable, SingleAxisConfig};
+use cuteui::elements::{
     resizable_state_handle, Border, ChildView, ClippedScrollStateHandle, ConstrainedBox, Container,
     CornerRadius, CrossAxisAlignment, DragBarSide, Empty, Expanded, Flex, MainAxisAlignment,
     MainAxisSize, MouseStateHandle, ParentElement, Radius, Resizable, ResizableStateHandle,
     SelectableArea, SelectionHandle, Shrinkable, Text, Wrap,
 };
-use warpui::fonts::{Properties, Weight};
-use warpui::keymap::FixedBinding;
-use warpui::platform::Cursor;
-use warpui::ui_components::components::UiComponent;
-use warpui::{
+use cuteui::fonts::{Properties, Weight};
+use cuteui::keymap::FixedBinding;
+use cuteui::platform::Cursor;
+use cuteui::ui_components::components::UiComponent;
+use cuteui::{
     AppContext, Element, Entity, SingletonEntity, TypedActionView, View, ViewContext, ViewHandle,
 };
 
@@ -354,7 +354,7 @@ impl ConversationDetailsData {
             .as_ref()
             .and_then(|config| config.environment_id.clone());
 
-        let credits = task.credits_used();
+        let credits = task.credits_used().map(|c| c as f32);
 
         let skill_spec = task
             .agent_config_snapshot
@@ -377,19 +377,17 @@ impl ConversationDetailsData {
                 display_status: Some(AgentRunDisplayStatus::from_task(task, app)),
                 error_message,
                 environment_id,
-                conversation_id: task.conversation_id().map(str::to_string),
+                conversation_id: task.conversation_id().map(|id| id.to_string()),
             },
             // Intentionally uses task.title; revisit when product decides
             // whether to also show the short orchestrator label here.
             title: task.title.clone(),
             created_at: Some(task.created_at.with_timezone(&Local)),
-            artifacts: task.artifacts.clone(),
+            artifacts: vec![],
             credits,
-            run_time: task.run_time(),
+            run_time: task.run_time().and_then(|d| Duration::from_std(d).ok()),
             open_action,
-            creator: task
-                .creator
-                .as_ref()
+            creator: Some(&task.creator)
                 .filter(|c| c.display_name.is_some())
                 .map(PrincipalInfo::from),
             executor: task.executor.as_ref().map(PrincipalInfo::from),
@@ -438,7 +436,7 @@ impl ConversationDetailsData {
             // (which always reads `entry.display.request_usage`).
             let credits = task
                 .and_then(AmbientAgentTask::credits_used)
-                .or(entry.display.request_usage);
+                .or_else(|| entry.display.request_usage.map(|c| c as f64));
             let skill_spec = task
                 .and_then(|task| task.agent_config_snapshot.as_ref())
                 .and_then(|config| config.skill_spec.as_ref())
@@ -461,8 +459,8 @@ impl ConversationDetailsData {
                 creator,
                 executor,
                 created_at,
-                credits,
-                run_time: task.and_then(AmbientAgentTask::run_time),
+                credits: credits.map(|c| c as f32),
+                run_time: task.and_then(AmbientAgentTask::run_time).and_then(|d| Duration::from_std(d).ok()),
                 artifacts: entry.display.artifacts.clone(),
                 open_action,
                 source_prompt,
@@ -601,7 +599,7 @@ pub enum ConversationDetailsPanelAction {
 }
 
 pub fn init(app: &mut AppContext) {
-    use warpui::keymap::macros::*;
+    use cuteui::keymap::macros::*;
 
     app.register_fixed_bindings([FixedBinding::custom(
         CustomAction::Copy,
@@ -929,16 +927,16 @@ impl ConversationDetailsPanel {
             .unwrap_or_else(|| AvatarContent::DisplayName(creator.display_name.clone()));
         let avatar = Avatar::new(
             avatar_content,
-            warpui::ui_components::components::UiComponentStyles {
+            cuteui::ui_components::components::UiComponentStyles {
                 width: Some(20.),
                 height: Some(20.),
-                border_radius: Some(warpui::elements::CornerRadius::with_all(
-                    warpui::elements::Radius::Percentage(50.),
+                border_radius: Some(cuteui::elements::CornerRadius::with_all(
+                    cuteui::elements::Radius::Percentage(50.),
                 )),
                 background: Some(blended_colors::accent(theme).into()),
                 font_color: Some(ColorU::black()),
                 font_family_id: Some(appearance.ui_font_family()),
-                font_weight: Some(warpui::fonts::Weight::Bold),
+                font_weight: Some(cuteui::fonts::Weight::Bold),
                 font_size: Some(small_font_size),
                 ..Default::default()
             },
@@ -1095,7 +1093,7 @@ impl ConversationDetailsPanel {
         if fetch_error.is_access_denied() {
             let icon_color = blended_colors::text_sub(theme, theme.surface_1());
             let notice_icon =
-                ConstrainedBox::new(Icon::Info.to_warpui_icon(icon_color.into()).finish())
+                ConstrainedBox::new(Icon::Info.to_cuteui_icon(icon_color.into()).finish())
                     .with_width(STATUS_ICON_SIZE)
                     .with_height(STATUS_ICON_SIZE)
                     .finish();
@@ -1143,7 +1141,7 @@ impl ConversationDetailsPanel {
 
         let error_icon = ConstrainedBox::new(
             Icon::Triangle
-                .to_warpui_icon(theme.ansi_fg_red().into())
+                .to_cuteui_icon(theme.ansi_fg_red().into())
                 .finish(),
         )
         .with_width(STATUS_ICON_SIZE)
@@ -1202,7 +1200,7 @@ impl ConversationDetailsPanel {
             }
         };
 
-        let status_icon = ConstrainedBox::new(icon.to_warpui_icon(color.into()).finish())
+        let status_icon = ConstrainedBox::new(icon.to_cuteui_icon(color.into()).finish())
             .with_width(STATUS_ICON_SIZE)
             .with_height(STATUS_ICON_SIZE)
             .finish();
@@ -1262,7 +1260,7 @@ impl ConversationDetailsPanel {
         let icon_fill = harness_display::icon_fill_on_circle(harness, theme);
         let icon_glyph = ConstrainedBox::new(
             harness_display::icon_for(harness)
-                .to_warpui_icon(icon_fill)
+                .to_cuteui_icon(icon_fill)
                 .finish(),
         )
         .with_width(HARNESS_ICON_IN_CIRCLE)
@@ -1313,7 +1311,7 @@ impl ConversationDetailsPanel {
         let ui_font_size = appearance.ui_font_size();
         let sub_color = blended_colors::text_sub(theme, theme.surface_1());
 
-        let icon = ConstrainedBox::new(Icon::Warp.to_warpui_icon(theme.foreground()).finish())
+        let icon = ConstrainedBox::new(Icon::Warp.to_cuteui_icon(theme.foreground()).finish())
             .with_width(20.)
             .with_height(20.)
             .finish();
@@ -1672,7 +1670,7 @@ impl ConversationDetailsPanel {
         let duration = COPY_FEEDBACK_DURATION;
         ctx.spawn(
             async move {
-                warpui::r#async::Timer::after(duration).await;
+                cuteui::r#async::Timer::after(duration).await;
             },
             |me, _, ctx| {
                 ctx.notify();
@@ -2010,7 +2008,7 @@ impl View for ConversationDetailsPanel {
             },
             theme.nonactive_ui_detail().into(),
             theme.active_ui_detail().into(),
-            warpui::elements::Fill::None,
+            cuteui::elements::Fill::None,
         )
         .finish();
 
@@ -2043,7 +2041,7 @@ impl View for ConversationDetailsPanel {
 
         // On mobile, add background and skip Resizable
         #[cfg(target_family = "wasm")]
-        if warpui::platform::wasm::is_mobile_device() {
+        if cuteui::platform::wasm::is_mobile_device() {
             return Container::new(panel_content)
                 .with_background(theme.surface_1())
                 .finish();

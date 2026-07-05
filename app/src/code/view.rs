@@ -5,28 +5,28 @@ use lsp::LspManagerModel;
 use pathfinder_color::ColorU;
 use pathfinder_geometry::rect::RectF;
 use pathfinder_geometry::vector::vec2f;
-use warp_core::channel::{Channel, ChannelState};
-use warp_core::features::FeatureFlag;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::icons::ICON_DIMENSIONS;
-use warp_editor::render::element::VerticalExpansionBehavior;
-use warp_util::path::LineAndColumnArg;
+use cute_core::channel::{Channel, ChannelState};
+use cute_core::features::FeatureFlag;
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::icons::ICON_DIMENSIONS;
+use cute_editor::render::element::VerticalExpansionBehavior;
+use cute_util::path::LineAndColumnArg;
 #[cfg(feature = "local_fs")]
-use warpui::clipboard::ClipboardContent;
-use warpui::elements::{
+use cuteui::clipboard::ClipboardContent;
+use cuteui::elements::{
     AcceptedByDropTarget, Align, Border, ChildAnchor, ChildView, Clipped, ConstrainedBox,
     Container, CornerRadius, CrossAxisAlignment, Draggable, DraggableState, DropTarget, Empty,
     Expanded, Flex, Hoverable, MainAxisAlignment, MainAxisSize, MouseStateHandle,
     OffsetPositioning, Padding, ParentAnchor, ParentElement, ParentOffsetBounds, Radius, Rect,
     SavePosition, Shrinkable, Stack, Text,
 };
-use warpui::fonts::{Properties, Style, Weight};
-use warpui::keymap::EditableBinding;
-use warpui::text::point::Point;
-use warpui::text_layout::ClipConfig;
-use warpui::ui_components::button::ButtonVariant;
-use warpui::ui_components::components::UiComponent;
-use warpui::{
+use cuteui::fonts::{Properties, Style, Weight};
+use cuteui::keymap::EditableBinding;
+use cuteui::text::point::Point;
+use cuteui::text_layout::ClipConfig;
+use cuteui::ui_components::button::ButtonVariant;
+use cuteui::ui_components::components::UiComponent;
+use cuteui::{
     id, AppContext, Element, Entity, ModelHandle, SingletonEntity, TypedActionView, View,
     ViewContext, ViewHandle, WindowId,
 };
@@ -386,8 +386,8 @@ impl CodeView {
                             ctx,
                         )
                         .with_horizontal_scrollbar_appearance(
-                            warpui::elements::new_scrollable::ScrollableAppearance::new(
-                                warpui::elements::ScrollbarWidth::Auto,
+                            cuteui::elements::new_scrollable::ScrollableAppearance::new(
+                                cuteui::elements::ScrollbarWidth::Auto,
                                 true,
                             ),
                         )
@@ -430,8 +430,8 @@ impl CodeView {
                 ctx,
             )
             .with_horizontal_scrollbar_appearance(
-                warpui::elements::new_scrollable::ScrollableAppearance::new(
-                    warpui::elements::ScrollbarWidth::Auto,
+                cuteui::elements::new_scrollable::ScrollableAppearance::new(
+                    cuteui::elements::ScrollbarWidth::Auto,
                     true,
                 ),
             )
@@ -1030,8 +1030,8 @@ impl CodeView {
                 tv.try_send_text_to_cli_agent_or_rich_input(prompt, ctx)
             }) {
                 let _destination = match routing {
-                    CliAgentRouting::RichInput => CodeContextDestination::RichInput,
-                    CliAgentRouting::Pty => CodeContextDestination::Pty,
+                    CliAgentRouting::RichInput => CodeContextDestination::RICH_INPUT,
+                    CliAgentRouting::Pty => CodeContextDestination::PTY,
                 };
                 return;
             }

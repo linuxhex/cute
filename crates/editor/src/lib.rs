@@ -1,4 +1,5 @@
 pub mod content;
+pub mod cursor;
 pub mod decoration;
 pub mod editor;
 pub mod model;

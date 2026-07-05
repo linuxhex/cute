@@ -127,12 +127,20 @@
 3. **第三步**：物理删除模块文件和 crate
 4. 每步保证 `cargo check` 通过
 
-#### 结论
-- 当前编译状态：通过（0 errors, 328 warnings）
-- 物理删除云模块是大规模重构，需后续多次执行
-- 本次执行完成：编译错误修复 + 引用深度评估 + 删除策略制定
+#### 本地 UI 功能恢复（2026-07-05）
 
----
+**问题**：去云化后启动可能卡在 Agent 引导页，或只显示 Warp Home 占位而非终端/侧栏。
+
+**原因**：
+- `root_view` 在 `OpenWarpNewSettingsModes` + `AgentOnboarding` 开启时，未登录前引导会挡住 workspace
+- 空 workspace 在 `CreateNewSession` 关闭时会走 Warp Home + Warp Drive 路径（本地模式不应走此路径）
+- 云相关一次性弹窗（Oz/OpenWarp/Orchestration）可能遮挡主界面
+
+**修复**（保留去云删除，仅适配）：
+- `root_view.rs`：`skip_login` 跳过登录前引导，标记本地 onboarding 已完成，直接进入 workspace
+- `workspace/view.rs`：`skip_login` 强制走终端 tab 创建路径；屏蔽 Warp Drive palette/对象打开
+- `one_time_modal_model.rs`：`skip_login` 跳过云弹窗并在启动时标记已处理
+
 
 ## 推演结论
 

@@ -1,14 +1,14 @@
 use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::Vector2F;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::Icon;
-use warpui::elements::{
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::Icon;
+use cuteui::elements::{
     Align, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, DropShadow, Flex,
     MainAxisAlignment, ParentElement as _, Radius, Shrinkable,
 };
-use warpui::fonts::Weight;
-use warpui::ui_components::components::{BorderStyle, Coords, UiComponent as _, UiComponentStyles};
-use warpui::{
+use cuteui::fonts::Weight;
+use cuteui::ui_components::components::{BorderStyle, Coords, UiComponent as _, UiComponentStyles};
+use cuteui::{
     AppContext, Element, Entity, FocusContext, SingletonEntity as _, TypedActionView, View,
     ViewContext, ViewHandle,
 };
@@ -158,7 +158,7 @@ impl View for GlowingEditor {
         let agent_icon = Container::new(
             ConstrainedBox::new(
                 Icon::AgentMode
-                    .to_warpui_icon(theme.sub_text_color(theme.background()))
+                    .to_cuteui_icon(theme.sub_text_color(theme.background()))
                     .finish(),
             )
             .with_height(font_size)

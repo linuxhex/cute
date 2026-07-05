@@ -8,8 +8,8 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use warp_completer::completer::CommandOutput;
-use warp_core::SessionId;
+use cute_completer::completer::CommandOutput;
+use cute_core::SessionId;
 
 use super::{CommandExecutor, ExecuteCommandOptions};
 use crate::remote_server::client::RemoteServerClient;

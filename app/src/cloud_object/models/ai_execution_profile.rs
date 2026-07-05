@@ -1,14 +1,14 @@
 use std::path::PathBuf;
 
 use ai::LLMId;
-use warp_server_client::{
+use cute_server_client::{
     cloud_object::{GenericCloudObject, GenericServerObject, GenericStringModel, JsonObjectType},
     ids::GenericStringObjectId,
 };
 use lazy_static::lazy_static;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use warp_core::{channel::ChannelState, features::FeatureFlag};
+use cute_core::{channel::ChannelState, features::FeatureFlag};
 
 use super::{JsonModel, JsonSerializer};
 

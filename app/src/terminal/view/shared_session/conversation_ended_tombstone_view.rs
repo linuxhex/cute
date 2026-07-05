@@ -1,14 +1,14 @@
 use std::path::Path;
 
-use warp_core::paths::home_relative_path;
-use warp_core::ui::icons::Icon;
-use warp_core::ui::theme::{AnsiColorIdentifier, Fill};
-use warpui::elements::{
+use cute_core::paths::home_relative_path;
+use cute_core::ui::icons::Icon;
+use cute_core::ui::theme::{AnsiColorIdentifier, Fill};
+use cuteui::elements::{
     Border, ChildView, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Empty,
     Expanded, Flex, MainAxisSize, Padding, ParentElement, Radius, Shrinkable, Text,
 };
-use warpui::fonts::{Properties, Weight};
-use warpui::{
+use cuteui::fonts::{Properties, Weight};
+use cuteui::{
     AppContext, Element, Entity, EntityId, SingletonEntity, TypedActionView, View, ViewContext,
     ViewHandle,
 };
@@ -118,9 +118,7 @@ impl TombstoneDisplayData {
             self.title = Some(task.title.clone());
         }
 
-        if let Some(source) = &task.source {
-            self.source = Some(source.display_name().to_string());
-        }
+        self.source = Some(task.source.display_name().to_string());
         if let Some(config) = &task.agent_config_snapshot {
             // FIXME: this can be the orchestrator agent name, not a skill.
             self.skill_name = config.name.clone();
@@ -137,16 +135,30 @@ impl TombstoneDisplayData {
         // the full credit cost (inference + compute). This matches what we show in
         // the details panel.
         if let Some(run_time) = task.run_time() {
-            self.run_time = Some(human_readable_precise_duration(run_time));
+            self.run_time = Some(human_readable_precise_duration(
+                chrono::Duration::from_std(run_time)
+                    .unwrap_or_else(|_| chrono::Duration::zero()),
+            ));
         }
         if let Some(credits) = task.credits_used() {
-            self.credits = Some(format_credits(credits));
+            self.credits = Some(format_credits(credits as f32));
         }
 
         // Surface task artifacts (plans, PRs, files, screenshots) for third-party
         // harness runs.
         if !task.artifacts.is_empty() {
-            self.artifacts = task.artifacts;
+            self.artifacts = task
+                .artifacts
+                .into_iter()
+                .map(|attachment| Artifact::File {
+                    artifact_uid: attachment.file_id,
+                    filepath: attachment.filename.clone(),
+                    filename: attachment.filename,
+                    mime_type: attachment.mime_type,
+                    description: None,
+                    size_bytes: None,
+                })
+                .collect();
         }
     }
 }
@@ -265,7 +277,7 @@ impl ConversationEndedTombstoneView {
                 }
                 ArtifactButtonsRowEvent::CopyBranch { branch } => {
                     ctx.clipboard()
-                        .write(warpui::clipboard::ClipboardContent::plain_text(
+                        .write(cuteui::clipboard::ClipboardContent::plain_text(
                             branch.clone(),
                         ));
                 }
@@ -338,7 +350,7 @@ impl ConversationEndedTombstoneView {
             Fill::Solid(theme.ansi_fg_green())
         };
         let icon_element = Container::new(
-            ConstrainedBox::new(icon.to_warpui_icon(icon_color).finish())
+            ConstrainedBox::new(icon.to_cuteui_icon(icon_color).finish())
                 .with_height(14.)
                 .with_width(14.)
                 .finish(),
@@ -481,7 +493,7 @@ impl ConversationEndedTombstoneView {
         #[cfg(target_family = "wasm")]
         {
             // Don't show on mobile devices - they can't use the desktop app
-            if !warpui::platform::wasm::is_mobile_device() {
+            if !cuteui::platform::wasm::is_mobile_device() {
                 if let Some(ref open_in_warp_button) = self.open_in_warp_button {
                     row.add_child(ChildView::new(open_in_warp_button).finish());
                     has_button = true;

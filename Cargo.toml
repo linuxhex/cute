@@ -16,14 +16,15 @@ default-members = [
   "crates/graphql",
   "crates/markdown_parser",
   "crates/sum_tree",
-  "crates/warpui",
-  "crates/warp_completer",
-  "crates/warp_terminal",
-  "crates/warp_util",
+  "crates/cuteui",
+  "crates/cute_completer",
+  "crates/cute_terminal",
+  "crates/cute_util",
 ]
 
 [workspace.package]
-authors = ["Warp Team <dev@warp.dev>"]
+authors = ["Cute Team <dev@cute.dev>"]
+edition = "2021"
 license = "AGPL-3.0-only"
 publish = false
 
@@ -56,6 +57,7 @@ onboarding = { path = "crates/onboarding" }
 persistence = { path = "crates/persistence" }
 prevent_sleep = { path = "crates/prevent_sleep" }
 repo_metadata = { path = "crates/repo_metadata" }
+session-sharing-protocol = { path = "crates/session_sharing_protocol" }
 settings = { path = "crates/settings" }
 settings_value = { path = "crates/settings_value", default-features = false }
 settings_value_derive = { path = "crates/settings_value_derive" }
@@ -68,28 +70,28 @@ vim = { path = "crates/vim" }
 virtual-fs = { path = "crates/virtual_fs" }
 voice_input = { path = "crates/voice_input" }
 cute = { path = "app" }
-warp_assets = { path = "crates/warp_assets" }
-warp_cli = { path = "crates/warp_cli" }
-warp_completer = { path = "crates/warp_completer" }
-warp_core = { path = "crates/warp_core" }
-warp_editor = { path = "crates/editor" }
-warp_features = { path = "crates/warp_features" }
-warp_files = { path = "crates/warp_files" }
-warp_graphql = { path = "crates/graphql" }
-warp_graphql_schema = { path = "crates/warp_graphql_schema" }
-warp_isolation_platform = { path = "crates/isolation_platform" }
-warp_js = { path = "crates/warp_js" }
-warp_logging = { path = "crates/warp_logging" }
-warp_managed_secrets = { path = "crates/managed_secrets" }
-warp_ripgrep = { path = "crates/warp_ripgrep" }
-warp_search_core = { path = "crates/warp_search_core" }
-warp_server_client = { path = "crates/warp_server_client" }
-warp_terminal = { path = "crates/warp_terminal" }
-warp_util = { path = "crates/warp_util" }
-warp_web_event_bus = { path = "crates/warp_web_event_bus" }
-warpui = { path = "crates/warpui" }
-warpui_core = { path = "crates/warpui_core" }
-warpui_extras = { path = "crates/warpui_extras", default-features = false }
+cute_assets = { path = "crates/cute_assets" }
+cute_cli = { path = "crates/cute_cli" }
+cute_completer = { path = "crates/cute_completer" }
+cute_core = { path = "crates/cute_core" }
+cute_editor = { path = "crates/editor" }
+cute_features = { path = "crates/cute_features" }
+cute_files = { path = "crates/cute_files" }
+cute_graphql = { path = "crates/graphql" }
+cute_graphql_schema = { path = "crates/cute_graphql_schema" }
+cute_isolation_platform = { path = "crates/isolation_platform" }
+cute_js = { path = "crates/cute_js" }
+cute_logging = { path = "crates/cute_logging" }
+cute_managed_secrets = { path = "crates/managed_secrets" }
+cute_ripgrep = { path = "crates/cute_ripgrep" }
+cute_search_core = { path = "crates/cute_search_core" }
+cute_server_client = { path = "crates/cute_server_client" }
+cute_terminal = { path = "crates/cute_terminal" }
+cute_util = { path = "crates/cute_util" }
+cute_web_event_bus = { path = "crates/cute_web_event_bus" }
+cuteui = { path = "crates/cuteui" }
+cuteui_core = { path = "crates/cuteui_core" }
+cuteui_extras = { path = "crates/cuteui_extras", default-features = false }
 watcher = { path = "crates/watcher" }
 websocket = { path = "crates/websocket" }
 
@@ -249,7 +251,6 @@ serde_json = { version = "1.0", features = ["raw_value"] }
 serde_urlencoded = "0.7"
 serde_with = "2.0.1"
 serde_yaml = "0.8"
-session-sharing-protocol = { git = "https://github.com/warpdotdev/session-sharing-protocol.git", rev = "5a0ad6135809feee9da2e9efae8bd6b54b89172e" }
 similar = { version = "2.7", features = ["inline"] }
 simplelog = "0.12.2"
 smallvec = "1.6.1"
@@ -406,7 +407,7 @@ split-debuginfo = "unpacked"
 
 [profile.dev.package]
 # Improve the performance of core terminal logic.
-warp_terminal.opt-level = 3
+cute_terminal.opt-level = 3
 # Minimize the runtime overhead of CPU profiling at the cost of a small
 # increase in compile time for this crate.
 backtrace.opt-level = 3

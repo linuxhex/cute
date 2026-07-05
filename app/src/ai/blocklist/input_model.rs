@@ -13,11 +13,11 @@ pub use input_classifier::{InputClassifierDecisionSource, InputType};
 use instant::Instant;
 use parking_lot::FairMutex;
 use serde::{Deserialize, Serialize};
-use session_sharing_protocol::common::{InputMode, InputType as ProtocolInputType};
+use session_sharing_protocol::common::InputMode;
 use settings::Setting as _;
-use warp_completer::completer::CompletionContext;
-use warp_core::features::FeatureFlag;
-use warpui::{AppContext, Entity, EntityId, ModelContext, ModelHandle, SingletonEntity};
+use cute_completer::completer::CompletionContext;
+use cute_core::features::FeatureFlag;
+use cuteui::{AppContext, Entity, EntityId, ModelContext, ModelHandle, SingletonEntity};
 
 /// The source of the final input type decision applied to the user input.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -181,12 +181,10 @@ impl InputConfig {
 
 impl From<InputConfig> for InputMode {
     fn from(config: InputConfig) -> Self {
-        let protocol_input_type = match config.input_type {
-            InputType::Shell => ProtocolInputType::Shell,
-            InputType::AI => ProtocolInputType::AI,
-        };
-
-        InputMode::new(protocol_input_type, config.is_locked)
+        match config.input_type {
+            InputType::AI => InputMode::Agent,
+            InputType::Shell => InputMode::Terminal,
+        }
     }
 }
 
@@ -828,7 +826,7 @@ impl BlocklistAIInputModel {
                     futures_lite::future::yield_now().await;
 
                     let input =
-                        warp_completer::util::expand_aliases(input, &completion_context).await;
+                        cute_completer::util::expand_aliases(input, &completion_context).await;
 
                     futures_lite::future::yield_now().await;
 

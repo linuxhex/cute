@@ -6,8 +6,8 @@ use instant::Duration;
 use reqwest::header::CONTENT_TYPE;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
-use warp_core::channel::ChannelState;
-use warp_core::operating_system_info::OperatingSystemInfo;
+use cute_core::channel::ChannelState;
+use cute_core::operating_system_info::OperatingSystemInfo;
 
 use crate::error::{UserFacingError, UserFacingErrorInterface};
 use crate::request_context::{ClientContext, OsContext, RequestContext};

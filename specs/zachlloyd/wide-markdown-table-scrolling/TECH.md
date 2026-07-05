@@ -162,7 +162,7 @@ Each numbered invariant in `PRODUCT.md` maps to at least one test or verificatio
 ### Pre-merge gates
 - `cargo fmt`
 - `cargo clippy --workspace --all-targets --all-features --tests -- -D warnings`
-- `cargo check -p warp_editor` and `cargo check -p warpui_core`
+- `cargo check -p cute_editor` and `cargo check -p warpui_core`
 - Targeted `cargo nextest run --no-fail-fast --workspace ...` for the regressions listed above.
 
 ## Risks and mitigations

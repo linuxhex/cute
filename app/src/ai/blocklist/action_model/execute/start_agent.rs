@@ -1,9 +1,11 @@
+#![allow(dead_code)]
+
 use std::collections::HashMap;
 
 use futures::future::BoxFuture;
 use futures::FutureExt;
-use warp_cli::agent::Harness;
-use warpui::{Entity, ModelContext, SingletonEntity};
+use cute_cli::agent::Harness;
+use cuteui::{Entity, ModelContext, SingletonEntity};
 
 use super::{ActionExecution, AnyActionExecution, ExecuteActionInput, PreprocessActionInput};
 use crate::ai::agent::conversation::{AIConversationId, ConversationStatus};

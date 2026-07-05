@@ -1,4 +1,4 @@
-use warpui::{ModelHandle, ViewContext, ViewHandle};
+use cuteui::{ModelHandle, ViewContext, ViewHandle};
 
 use super::{AgentInputFooter, AgentInputFooterEvent};
 use crate::context_chips::display_chip::{DisplayChip, GitLineChanges, PromptDisplayChipEvent};

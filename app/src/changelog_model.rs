@@ -10,9 +10,9 @@ use itertools::Itertools;
 use markdown_parser::{parse_markdown, FormattedText};
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng as _};
-use warpui::assets::asset_cache::{AssetCache, AssetSource};
-use warpui::image_cache::ImageType;
-use warpui::{Entity, ModelContext, SingletonEntity};
+use cuteui::assets::asset_cache::{AssetCache, AssetSource};
+use cuteui::image_cache::ImageType;
+use cuteui::{Entity, ModelContext, SingletonEntity};
 
 use crate::channel::{Channel, ChannelState};
 use crate::features::{FeatureFlag, PREVIEW_FLAGS};

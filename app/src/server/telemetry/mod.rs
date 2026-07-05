@@ -1,5 +1,6 @@
 //! Telemetry module stub - telemetry functionality has been removed.
 //! This module provides stub types to maintain compatibility.
+#![allow(dead_code)]
 
 pub mod secret_redaction;
 
@@ -11,22 +12,22 @@ use strum_macros::{EnumDiscriminants, EnumIter};
 pub struct LaunchConfigUiLocation;
 
 impl LaunchConfigUiLocation {
-    pub const AppMenu: Self = Self;
-    pub const CommandPalette: Self = Self;
-    pub const Uri: Self = Self;
-    pub const TabMenu: Self = Self;
+    pub const APP_MENU: Self = Self;
+    pub const COMMAND_PALETTE: Self = Self;
+    pub const URI: Self = Self;
+    pub const TAB_MENU: Self = Self;
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub struct AnonymousUserSignupEntrypoint;
 
 impl AnonymousUserSignupEntrypoint {
-    pub const SignUpButton: Self = Self;
-    pub const SignUpAIPrompt: Self = Self;
-    pub const LoginGatedFeature: Self = Self;
-    pub const HitDriveObjectLimit: Self = Self;
-    pub const Unknown: Self = Self;
-    pub const RenotificationBlock: Self = Self;
+    pub const SIGN_UP_BUTTON: Self = Self;
+    pub const SIGN_UP_AI_PROMPT: Self = Self;
+    pub const LOGIN_GATED_FEATURE: Self = Self;
+    pub const HIT_DRIVE_OBJECT_LIMIT: Self = Self;
+    pub const UNKNOWN: Self = Self;
+    pub const RENOTIFICATION_BLOCK: Self = Self;
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -47,107 +48,107 @@ pub enum PaletteSource {
 pub struct AgentModeEntrypoint;
 
 impl AgentModeEntrypoint {
-    pub const AgentManagementView: Self = Self;
-    pub const NewPaneBinding: Self = Self;
+    pub const AGENT_MANAGEMENT_VIEW: Self = Self;
+    pub const NEW_PANE_BINDING: Self = Self;
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub struct CodeContextDestination;
 
 impl CodeContextDestination {
-    pub const RichInput: Self = Self;
-    pub const Pty: Self = Self;
+    pub const RICH_INPUT: Self = Self;
+    pub const PTY: Self = Self;
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub struct PtySpawnMode;
 
 impl PtySpawnMode {
-    pub const FallbackToDirect: Self = Self;
-    pub const Direct: Self = Self;
+    pub const FALLBACK_TO_DIRECT: Self = Self;
+    pub const DIRECT: Self = Self;
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ImageProtocol;
 
 impl ImageProtocol {
-    pub const Kitty: Self = Self;
-    pub const ITerm: Self = Self;
+    pub const KITTY: Self = Self;
+    pub const ITERM: Self = Self;
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub struct InteractionSource;
 
 impl InteractionSource {
-    pub const Keybinding: Self = Self;
-    pub const Button: Self = Self;
+    pub const KEYBINDING: Self = Self;
+    pub const BUTTON: Self = Self;
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ToggleBlockFilterSource;
 
 impl ToggleBlockFilterSource {
-    pub const Binding: Self = Self;
-    pub const ContextMenu: Self = Self;
+    pub const BINDING: Self = Self;
+    pub const CONTEXT_MENU: Self = Self;
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub struct AgentModeRewindEntrypoint;
 
 impl AgentModeRewindEntrypoint {
-    pub const ContextMenu: Self = Self;
-    pub const Button: Self = Self;
-    pub const SlashCommand: Self = Self;
+    pub const CONTEXT_MENU: Self = Self;
+    pub const BUTTON: Self = Self;
+    pub const SLASH_COMMAND: Self = Self;
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub struct CLIAgentType;
 
 impl CLIAgentType {
-    pub const Claude: Self = Self;
-    pub const Gemini: Self = Self;
-    pub const Codex: Self = Self;
-    pub const Amp: Self = Self;
-    pub const Droid: Self = Self;
-    pub const OpenCode: Self = Self;
-    pub const Copilot: Self = Self;
-    pub const Pi: Self = Self;
-    pub const Cursor: Self = Self;
-    pub const Auggie: Self = Self;
-    pub const Goose: Self = Self;
-    pub const Hermes: Self = Self;
-    pub const Qoder: Self = Self;
-    pub const Trae: Self = Self;
-    pub const Unknown: Self = Self;
-    pub const Vibe: Self = Self;
+    pub const CLAUDE: Self = Self;
+    pub const GEMINI: Self = Self;
+    pub const CODEX: Self = Self;
+    pub const AMP: Self = Self;
+    pub const DROID: Self = Self;
+    pub const OPEN_CODE: Self = Self;
+    pub const COPILOT: Self = Self;
+    pub const PI: Self = Self;
+    pub const CURSOR: Self = Self;
+    pub const AUGGIE: Self = Self;
+    pub const GOOSE: Self = Self;
+    pub const HERMES: Self = Self;
+    pub const QODER: Self = Self;
+    pub const TRAE: Self = Self;
+    pub const UNKNOWN: Self = Self;
+    pub const VIBE: Self = Self;
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub struct DownloadSource;
 
 impl DownloadSource {
-    pub const Homebrew: Self = Self;
-    pub const Website: Self = Self;
+    pub const HOMEBREW: Self = Self;
+    pub const WEBSITE: Self = Self;
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub struct CloseTarget;
 
 impl CloseTarget {
-    pub const Pane: Self = Self;
-    pub const Tab: Self = Self;
-    pub const Window: Self = Self;
-    pub const App: Self = Self;
-    pub const EditorTab: Self = Self;
+    pub const PANE: Self = Self;
+    pub const TAB: Self = Self;
+    pub const WINDOW: Self = Self;
+    pub const APP: Self = Self;
+    pub const EDITOR_TAB: Self = Self;
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub struct OpenedWarpAISource;
 
 impl OpenedWarpAISource {
-    pub const FromAICommandSearch: Self = Self;
-    pub const HelpWithBlock: Self = Self;
-    pub const HelpWithTextSelection: Self = Self;
+    pub const FROM_AI_COMMAND_SEARCH: Self = Self;
+    pub const HELP_WITH_BLOCK: Self = Self;
+    pub const HELP_WITH_TEXT_SELECTION: Self = Self;
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -155,30 +156,30 @@ pub struct PromptChoice;
 
 impl PromptChoice {
     pub const PS1: Self = Self;
-    pub const Default: Self = Self;
-    pub const Custom: Self = Self;
+    pub const DEFAULT: Self = Self;
+    pub const CUSTOM: Self = Self;
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub struct PluginChipTelemetryKind;
 
 impl PluginChipTelemetryKind {
-    pub const Install: Self = Self;
-    pub const Update: Self = Self;
+    pub const INSTALL: Self = Self;
+    pub const UPDATE: Self = Self;
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub struct PromptSuggestionFallbackReason;
 
 impl PromptSuggestionFallbackReason {
-    pub const NoReadFilesPermission: Self = Self;
-    pub const SSHRemoteSession: Self = Self;
-    pub const MissingFile: Self = Self;
-    pub const FailedToRetrieveFile: Self = Self;
-    pub const FileTooManyLines: Self = Self;
-    pub const FileTooManyBytes: Self = Self;
-    pub const FailedToSendAIRequest: Self = Self;
-    pub const AIQueryTimeout: Self = Self;
+    pub const NO_READ_FILES_PERMISSION: Self = Self;
+    pub const SSH_REMOTE_SESSION: Self = Self;
+    pub const MISSING_FILE: Self = Self;
+    pub const FAILED_TO_RETRIEVE_FILE: Self = Self;
+    pub const FILE_TOO_MANY_LINES: Self = Self;
+    pub const FILE_TOO_MANY_BYTES: Self = Self;
+    pub const FAILED_TO_SEND_AI_REQUEST: Self = Self;
+    pub const AI_QUERY_TIMEOUT: Self = Self;
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -194,15 +195,15 @@ impl NotebookTelemetryMetadata {
 pub struct AddTabWithShellSource;
 
 impl AddTabWithShellSource {
-    pub const CommandPalette: Self = Self;
+    pub const COMMAND_PALETTE: Self = Self;
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub struct MCPTemplateInstallationSource;
 
 impl MCPTemplateInstallationSource {
-    pub const Shared: Self = Self;
-    pub const Local: Self = Self;
+    pub const SHARED: Self = Self;
+    pub const LOCAL: Self = Self;
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
@@ -257,16 +258,16 @@ pub enum AgentModeCitation {
 pub struct AICommandSearchEntrypoint;
 
 impl AICommandSearchEntrypoint {
-    pub const ShortHandTrigger: Self = Self;
-    pub const Keybinding: Self = Self;
+    pub const SHORT_HAND_TRIGGER: Self = Self;
+    pub const KEYBINDING: Self = Self;
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub struct LinkOpenMethod;
 
 impl LinkOpenMethod {
-    pub const CmdClick: Self = Self;
-    pub const MiddleClick: Self = Self;
+    pub const CMD_CLICK: Self = Self;
+    pub const MIDDLE_CLICK: Self = Self;
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -276,16 +277,16 @@ pub struct NotificationAgentVariant;
 pub struct PromptSuggestionViewType;
 
 impl PromptSuggestionViewType {
-    pub const AgentView: Self = Self;
-    pub const TerminalView: Self = Self;
+    pub const AGENT_VIEW: Self = Self;
+    pub const TERMINAL_VIEW: Self = Self;
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub struct SaveAsWorkflowModalSource;
 
 impl SaveAsWorkflowModalSource {
-    pub const Block: Self = Self;
-    pub const Input: Self = Self;
+    pub const BLOCK: Self = Self;
+    pub const INPUT: Self = Self;
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Default)]
@@ -377,7 +378,7 @@ pub enum TelemetryEvent {
     },
 }
 
-impl warp_core::telemetry::TelemetryEvent for TelemetryEvent {
+impl cute_core::telemetry::TelemetryEvent for TelemetryEvent {
     fn name(&self) -> &'static str {
         match self {
             TelemetryEvent::Stub => "Stub",
@@ -410,8 +411,8 @@ impl warp_core::telemetry::TelemetryEvent for TelemetryEvent {
         }
     }
 
-    fn enablement_state(&self) -> warp_core::telemetry::EnablementState {
-        warp_core::telemetry::EnablementState::Always
+    fn enablement_state(&self) -> cute_core::telemetry::EnablementState {
+        cute_core::telemetry::EnablementState::Always
     }
 
     fn payload(&self) -> Option<serde_json::Value> {
@@ -422,12 +423,12 @@ impl warp_core::telemetry::TelemetryEvent for TelemetryEvent {
         false
     }
 
-    fn event_descs() -> impl Iterator<Item = Box<dyn warp_core::telemetry::TelemetryEventDesc>> {
-        warp_core::telemetry::enum_events::<Self>()
+    fn event_descs() -> impl Iterator<Item = Box<dyn cute_core::telemetry::TelemetryEventDesc>> {
+        cute_core::telemetry::enum_events::<Self>()
     }
 }
 
-impl warp_core::telemetry::TelemetryEventDesc for TelemetryEventDiscriminants {
+impl cute_core::telemetry::TelemetryEventDesc for TelemetryEventDiscriminants {
     fn name(&self) -> &'static str {
         match self {
             TelemetryEventDiscriminants::Stub => "Stub",
@@ -460,17 +461,17 @@ impl warp_core::telemetry::TelemetryEventDesc for TelemetryEventDiscriminants {
         }
     }
 
-    fn enablement_state(&self) -> warp_core::telemetry::EnablementState {
-        warp_core::telemetry::EnablementState::Always
+    fn enablement_state(&self) -> cute_core::telemetry::EnablementState {
+        cute_core::telemetry::EnablementState::Always
     }
 }
 
-warp_core::register_telemetry_event!(TelemetryEvent);
+cute_core::register_telemetry_event!(TelemetryEvent);
 
 pub mod context_provider {
     //! Context provider for telemetry
-    use warp_core::telemetry::TelemetryContextProvider;
-    use warpui::AppContext;
+    use cute_core::telemetry::TelemetryContextProvider;
+    use cuteui::AppContext;
 
     pub struct AppTelemetryContextProvider;
 

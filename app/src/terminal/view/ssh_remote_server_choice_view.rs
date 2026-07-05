@@ -1,7 +1,7 @@
 //! Stub for ssh_remote_server_choice_view after remote_server removal.
 
-use warp_core::SessionId;
-use warpui::{AppContext, Entity, View, ViewContext, TypedActionView};
+use cute_core::SessionId;
+use cuteui::{AppContext, Entity, View, ViewContext, TypedActionView};
 
 /// Stub SshRemoteServerChoiceView.
 pub struct SshRemoteServerChoiceView {
@@ -40,8 +40,8 @@ impl View for SshRemoteServerChoiceView {
         "SshRemoteServerChoiceView"
     }
 
-    fn render(&self, _app: &AppContext) -> Box<dyn warpui::Element> {
-        Box::new(warpui::elements::Empty::new())
+    fn render(&self, _app: &AppContext) -> Box<dyn cuteui::Element> {
+        Box::new(cuteui::elements::Empty::new())
     }
 }
 

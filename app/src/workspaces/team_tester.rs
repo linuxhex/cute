@@ -1,4 +1,4 @@
-use warpui::{Entity, ModelContext, SingletonEntity};
+use cuteui::{Entity, ModelContext, SingletonEntity};
 
 /// Minimal TeamTesterStatus model for local version.
 /// In the cloud version, this manages team tester specific polling and data refresh.

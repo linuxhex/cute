@@ -49,7 +49,7 @@ All file references are at HEAD on `master`.
 ### Renderer entry point
 
 - `app/src/appearance.rs:34` re-exports `Appearance` from
-  `warp_core::ui::appearance`.
+  `cute_core::ui::appearance`.
 - `app/src/appearance.rs:40–47` — `AppearanceManager`; subscribes to
   `ThemeSettings` (line 51) and pushes changes into `Appearance`.
 - `Appearance` today owns one `WarpTheme`. Per-tab overrides require
@@ -526,7 +526,7 @@ This addresses Oz concern 3 (`Appearance::theme_for` cannot return
 `&WarpTheme` for arbitrary overrides because `Appearance` only owns the
 global `WarpTheme` today).
 
-`Appearance` is extended in `warp_core::ui::appearance`:
+`Appearance` is extended in `cute_core::ui::appearance`:
 
 ```rust
 pub struct Appearance {
@@ -839,7 +839,7 @@ name to avoid typos.
 - `TabSnapshot::color()` returns the same value with and without
   `theme_state` populated (color and theme are independent — #19).
 
-`app/src/appearance.rs` (or `warp_core` tests):
+`app/src/appearance.rs` (or `cute_core` tests):
 
 - `Appearance::theme_for(None)` returns the same `Arc` as
   `Appearance::theme()`.

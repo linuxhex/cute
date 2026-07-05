@@ -29,7 +29,7 @@ The notification toast and mailbox UI need visual updates to match new Figma des
 - `app/src/terminal/cli_agent_sessions/mod.rs:39-48` — `CLIAgentSessionContext` (cwd, project, query, etc. — no branch field currently)
 
 ### Existing text primitives
-- `warp_core/src/ui/builder.rs:826-840` — `wrappable_text` (the text component used in notifications)
+- `cute_core/src/ui/builder.rs:826-840` — `wrappable_text` (the text component used in notifications)
 - No existing max-lines / line-clamp primitive in the UI framework.
 
 ## Current State

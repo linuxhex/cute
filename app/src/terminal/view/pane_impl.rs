@@ -1,17 +1,17 @@
 //! This module contains the implementation of `BackingView` for `TerminalView`, as well as
 //! business logic for integrating the terminal view with the pane infra (`crate::pane_group`).
 use settings::Setting as _;
-use warp_core::context_flag::ContextFlag;
-use warpui::elements::{
+use cute_core::context_flag::ContextFlag;
+use cuteui::elements::{
     ConstrainedBox, CrossAxisAlignment, Flex, MainAxisAlignment, MainAxisSize,
     ParentElement, Shrinkable,
 };
-use warpui::prelude::{ChildView, Container};
-use warpui::text_layout::ClipConfig;
-use warpui::ui_components::components::UiComponent;
+use cuteui::prelude::{ChildView, Container};
+use cuteui::text_layout::ClipConfig;
+use cuteui::ui_components::components::UiComponent;
 #[cfg(not(target_arch = "wasm32"))]
-use warpui::ui_components::components::UiComponentStyles;
-use warpui::{
+use cuteui::ui_components::components::UiComponentStyles;
+use cuteui::{
     AppContext, Element, ModelHandle, SingletonEntity, TypedActionView, ViewContext,
     WeakModelHandle,
 };
@@ -109,30 +109,6 @@ impl TerminalView {
             });
     }
 
-    /// Set the pane title from the current working directory path.
-    /// Cute: Tab names always show the working directory, not AI conversation titles.
-    pub(super) fn update_pane_configuration(&mut self, ctx: &mut ViewContext<Self>) {
-        // Cute: Use working directory path as pane title
-        let new_pane_title = self
-            .pwd()
-            .and_then(|p| {
-                std::path::PathBuf::from(&p)
-                    .file_name()
-                    .map(|n| n.to_string_lossy().to_string())
-            })
-            .unwrap_or_else(|| self.terminal_title.clone());
-
-        self.is_using_conversation_for_pane_header_title = false;
-        self.pane_configuration.update(ctx, |pane_config, ctx| {
-            pane_config.set_title(new_pane_title, ctx);
-            if FeatureFlag::AgentView.is_enabled() {
-                pane_config.refresh_pane_header_overflow_menu_items(ctx);
-            }
-            pane_config.notify_header_content_changed(ctx);
-        });
-        self.update_agent_view_pane_header(ctx);
-    }
-
     /// Returns the shareable object for the active agent view conversation, if any.
     fn agent_view_shareable_object(&self, _ctx: &ViewContext<Self>) -> Option<ShareableObject> {
         None
@@ -183,7 +159,7 @@ impl TerminalView {
     /// Renders the back button for the pane header, or an empty element if the
     /// back button should not be shown.
     fn maybe_render_header_back_button(&self, app: &AppContext) -> Box<dyn Element> {
-        if !FeatureFlag::AgentView.is_enabled() || warpui::platform::is_mobile_device() {
+        if !FeatureFlag::AgentView.is_enabled() || cuteui::platform::is_mobile_device() {
             return Flex::row().finish();
         }
 
@@ -267,7 +243,7 @@ impl TerminalView {
                 Some(
                     ConstrainedBox::new(
                         icons::Icon::Sharing
-                            .to_warpui_icon(shared_session_indicator_color(appearance).into())
+                            .to_cuteui_icon(shared_session_indicator_color(appearance).into())
                             .finish(),
                     )
                     .with_height(appearance.ui_font_size())
@@ -534,7 +510,7 @@ impl BackingView for TerminalView {
 
         // Shared-session related items.
         let shared_session_status = model.shared_session_status();
-        let is_ambient_agent = self.is_ambient_agent_session(ctx);
+        let is_ambient_agent = self.is_ambient_agent_session_with_model(&model, ctx);
         if shared_session_status.is_sharer_or_viewer() {
             if !is_ambient_agent {
                 items.push(
@@ -721,7 +697,7 @@ impl TerminalView {
             return Some(
                 ConstrainedBox::new(
                     icons::Icon::AlertTriangle
-                        .to_warpui_icon(appearance.theme().ui_error_color().into())
+                        .to_cuteui_icon(appearance.theme().ui_error_color().into())
                         .finish(),
                 )
                 .with_height(font_size)
@@ -734,7 +710,7 @@ impl TerminalView {
         if let Some(shell_indicator_type) = self.shell_indicator_type {
             let shell_indicator_icon = shell_indicator_type
                 .to_icon()
-                .to_warpui_icon(
+                .to_cuteui_icon(
                     blended_colors::text_sub(appearance.theme(), appearance.theme().background())
                         .into(),
                 )
@@ -788,10 +764,6 @@ impl TerminalView {
             hide_role_change_button,
             app,
         ))
-    }
-
-    pub fn is_ambient_agent_session(&self, ctx: &AppContext) -> bool {
-        false
     }
 
     fn selected_conversation_for_user_facing_chrome<'a>(

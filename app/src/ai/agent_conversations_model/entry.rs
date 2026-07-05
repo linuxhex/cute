@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use session_sharing_protocol::common::SessionId;
-use warp_cli::agent::Harness;
-use warpui::{AppContext, SingletonEntity};
+use cute_cli::agent::Harness;
+use cuteui::{AppContext, SingletonEntity};
 
 use super::{
     artifacts_match_filter, AgentManagementFilters, AgentRunDisplayStatus, ArtifactFilter,
@@ -299,13 +299,13 @@ pub(super) fn conversation_id_shadowed_by_task(
 
 pub(super) fn task_creator_name(task: &AmbientAgentTask, app: &AppContext) -> Option<String> {
     task.creator_display_name().or_else(|| {
-        let uid = task.creator.as_ref().map(|creator| &creator.uid)?;
+        let uid = &task.creator.uid;
         UserProfiles::as_ref(app).displayable_identifier_for_uid(UserUid::new(uid))
     })
 }
 
 pub(super) fn task_creator_uid(task: &AmbientAgentTask) -> Option<String> {
-    task.creator.as_ref().map(|creator| creator.uid.clone())
+    Some(task.creator.uid.clone())
 }
 
 fn current_user_name(app: &AppContext) -> Option<String> {
@@ -324,7 +324,7 @@ fn task_session_id(task: &AmbientAgentTask) -> Option<SessionId> {
 }
 
 fn task_session_status(task: &AmbientAgentTask) -> SessionStatus {
-    if task.active_run_execution().session_id.is_some() {
+    if task.active_run_execution().and_then(|e| e.session_id).is_some() {
         SessionStatus::Available
     } else if (Utc::now() - task.created_at) > SESSION_EXPIRATION_TIME {
         SessionStatus::Expired
@@ -334,7 +334,7 @@ fn task_session_status(task: &AmbientAgentTask) -> SessionStatus {
 }
 
 fn task_run_time(task: &AmbientAgentTask) -> Option<String> {
-    task.run_time().map(human_readable_precise_duration)
+    task.run_time().map(|d| human_readable_precise_duration(chrono::Duration::from_std(d).unwrap_or_else(|_| chrono::Duration::zero())))
 }
 
 fn task_harness(task: &AmbientAgentTask) -> Option<Harness> {
@@ -415,7 +415,7 @@ pub(super) fn entry_for_task(
     let status = AgentRunDisplayStatus::from_task(task, app);
     let has_active_session_id = task
         .active_execution_session_id()
-        .and_then(parse_session_id)
+        .and_then(|s| parse_session_id(&s))
         .is_some();
     let has_open_ambient_session = ActiveAgentViewsModel::as_ref(app)
         .get_terminal_view_id_for_ambient_task(task.task_id)
@@ -425,7 +425,7 @@ pub(super) fn entry_for_task(
         || local_conversation_id.is_some()
         || server_conversation_token.is_some();
     let can_copy_link = task.has_active_execution()
-        && task.active_run_execution().session_link.is_some()
+        && task.active_run_execution().and_then(|e| e.session_link).is_some()
         || server_conversation_token.is_some();
 
     AgentConversationEntry {
@@ -446,10 +446,7 @@ pub(super) fn entry_for_task(
             creator: AgentConversationPrincipal {
                 name: task_creator_name(task, app),
                 uid: task_creator_uid(task),
-                principal_type: task
-                    .creator
-                    .as_ref()
-                    .and_then(|c| PrincipalType::parse(&c.creator_type)),
+                principal_type: PrincipalType::parse(&task.creator.creator_type),
             },
             executor: task
                 .executor
@@ -459,10 +456,10 @@ pub(super) fn entry_for_task(
                     uid: Some(executor.uid.clone()),
                     principal_type: PrincipalType::parse(&executor.creator_type),
                 }),
-            request_usage: task.credits_used(),
+            request_usage: task.credits_used().map(|v| v as f32),
             run_time: task_run_time(task),
             session_status: Some(task_session_status(task)),
-            source: task.source.clone(),
+            source: Some(task.source.clone()),
             working_directory: conversation_metadata
                 .and_then(|metadata| metadata.initial_working_directory.clone()),
             environment_id: task
@@ -470,7 +467,7 @@ pub(super) fn entry_for_task(
                 .as_ref()
                 .and_then(|snapshot| snapshot.environment_id.clone()),
             harness: task_harness(task),
-            artifacts: task.artifacts.clone(),
+            artifacts: Vec::new(), // TaskAttachment -> Artifact conversion not implemented
         },
         backing: AgentConversationBackingData {
             has_loaded_conversation: local_conversation_id

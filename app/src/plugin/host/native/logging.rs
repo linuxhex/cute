@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use warpui::r#async::block_on;
-use warpui::r#async::executor::Background;
+use cuteui::r#async::block_on;
+use cuteui::r#async::executor::Background;
 
 use crate::plugin::service::{LogService, LogServiceRequest};
 

@@ -5,20 +5,20 @@ use std::future::Future;
 use std::sync::Arc;
 use std::time::Duration;
 
-use futures::TryFutureExt;
 use inquire::{InquireError, Select};
-use warp_cli::agent::Harness;
-use warp_cli::environment::{EnvironmentCreateArgs, EnvironmentUpdateArgs};
-use warpui::r#async::FutureExt;
-use warpui::{AppContext, GetSingletonModelHandle, SingletonEntity as _, UpdateModel};
+use cute_cli::agent::Harness;
+use cute_cli::environment::{EnvironmentCreateArgs, EnvironmentUpdateArgs};
+use cuteui::r#async::FutureExt;
+use cuteui::{AppContext, GetSingletonModelHandle, SingletonEntity as _, UpdateModel};
 
 use crate::ai::agent::conversation::ServerAIConversationMetadata;
-use crate::ai::agent_sdk::driver::{AgentDriverError, WARP_DRIVE_SYNC_TIMEOUT};
+use crate::ai::agent_sdk::driver::AgentDriverError;
 use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::ai::cloud_environments::CloudAmbientAgentEnvironment;
+use crate::cloud_object::{CloudObject as _, CloudObjectLookup as _};
 use crate::ai::llms::{LLMId, LLMPreferences};
 use crate::auth::auth_state::AuthStateProvider;
-use crate::cloud_object::{CloudObject, CloudObjectLookup as _, Owner};
+use crate::cloud_object::Owner;
 use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::server_api::ai::AIClient;
@@ -135,13 +135,27 @@ where
 }
 
 /// Refresh Warp Drive before executing an operation.
-pub fn refresh_warp_drive(
+pub fn refresh_cute_drive(
     ctx: &AppContext,
 ) -> impl Future<Output = anyhow::Result<()>> + Send + 'static {
-    UpdateManager::as_ref(ctx)
-        .initial_load_complete()
-        .with_timeout(WARP_DRIVE_SYNC_TIMEOUT)
-        .map_err(|_| anyhow::anyhow!("Timed out waiting for Warp Drive to sync"))
+    let load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
+    async move {
+        if load_complete {
+            Ok(())
+        } else {
+            Err(anyhow::anyhow!("Warp Drive not loaded"))
+        }
+    }
+}
+
+/// Alias for `refresh_cute_drive` for backwards compatibility.
+pub fn refresh_warp_drive<C>(
+    ctx: &mut C,
+) -> impl Future<Output = anyhow::Result<()>> + Send + 'static
+where
+    C: GetSingletonModelHandle + UpdateModel,
+{
+    refresh_workspace_metadata(ctx)
 }
 
 /// Fetch the conversation's server metadata and validate that its harness matches the caller's
@@ -252,7 +266,7 @@ impl EnvironmentChoice {
 
             // If there are no synced environments, require the user to create one or use --no-environment.
             if options.len() == 1 {
-                let cli_name = warp_cli::binary_name().unwrap_or_else(|| "warp".to_string());
+                let cli_name = cute_cli::binary_name().unwrap_or_else(|| "warp".to_string());
                 return Err(ResolveConfigurationError::Other(anyhow::anyhow!(
                     "No environments are configured for this account.\n\
 You can create an environment with `{cli_name} environment create`.\n\

@@ -1,16 +1,16 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
 
-use warp_core::ui::theme::color::internal_colors;
-use warp_core::ui::Icon;
-use warpui::elements::{
+use cute_core::ui::theme::color::internal_colors;
+use cute_core::ui::Icon;
+use cuteui::elements::{
     Border, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Empty, Flex, Hoverable,
     MainAxisSize, MouseStateHandle, ParentElement, Radius, Text,
 };
-use warpui::fonts::{Properties, Weight};
-use warpui::platform::Cursor;
-use warpui::text_layout::ClipConfig;
-use warpui::{AppContext, Element, Entity, SingletonEntity, TypedActionView, View, ViewContext};
+use cuteui::fonts::{Properties, Weight};
+use cuteui::platform::Cursor;
+use cuteui::text_layout::ClipConfig;
+use cuteui::{AppContext, Element, Entity, SingletonEntity, TypedActionView, View, ViewContext};
 
 use crate::ai::agent::conversation::AIConversationId;
 use crate::ai::blocklist::agent_view::orchestration_pill_bar::{
@@ -406,7 +406,7 @@ impl ConversationUsageView {
 
                 if *is_byok {
                     model_elements.push(
-                        ConstrainedBox::new(Icon::Key.to_warpui_icon(text_color.into()).finish())
+                        ConstrainedBox::new(Icon::Key.to_cuteui_icon(text_color.into()).finish())
                             .with_width(font_size)
                             .with_height(font_size)
                             .finish(),
@@ -696,7 +696,7 @@ impl ConversationUsageView {
                         .with_selectable(false)
                         .finish();
                 let icon_element =
-                    ConstrainedBox::new(icon.to_warpui_icon(link_color.into()).finish())
+                    ConstrainedBox::new(icon.to_cuteui_icon(link_color.into()).finish())
                         .with_width(icon_size)
                         .with_height(icon_size)
                         .finish();

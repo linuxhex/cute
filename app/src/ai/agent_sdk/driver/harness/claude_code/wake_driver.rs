@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::collections::HashMap;
 use std::ffi::OsString;
 use std::path::PathBuf;
@@ -6,8 +8,8 @@ use std::sync::Arc;
 use anyhow::{Context, Result};
 use shell_words::quote as shell_quote;
 use uuid::Uuid;
-use warp_cli::agent::Harness;
-use warp_graphql::ai::AgentTaskState;
+use cute_cli::agent::Harness;
+use cute_graphql::ai::AgentTaskState;
 
 use super::super::claude_transcript::{
     claude_config_dir, write_envelope, write_session_index_entry, ClaudeTranscriptEnvelope,
@@ -181,12 +183,12 @@ impl ClaudeHarness {
     }
 
     pub(super) async fn prepare_local_wake_command(
-        server_api: Arc<ServerApi>,
+        _server_api: Arc<ServerApi>,
         task_id: AmbientAgentTaskId,
         parent_run_id: Option<String>,
         working_dir: Option<PathBuf>,
         mut remote: ClaudeWakeRemoteContext,
-        wake_message: Option<AgentMessageEventMetadata>,
+        _wake_message: Option<AgentMessageEventMetadata>,
     ) -> Result<String> {
         let working_dir = working_dir.unwrap_or_else(|| remote.envelope.cwd.clone());
         prepare_claude_environment_config(&working_dir, &HashMap::new())

@@ -14,11 +14,11 @@ use crate::view_components::action_button::{
 };
 use crate::view_components::dropdown::{Dropdown, DropdownItem};
 use markdown_parser::parse_markdown;
-use warpui::elements::Shrinkable;
-use warpui::fonts::{Properties, Weight};
-use warpui::keymap::Keystroke;
-use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::{
+use cuteui::elements::Shrinkable;
+use cuteui::fonts::{Properties, Weight};
+use cuteui::keymap::Keystroke;
+use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
+use cuteui::{
     elements::{
         Align, Border, ChildView, ConstrainedBox, Container, CrossAxisAlignment, Empty, Flex,
         FormattedTextElement, HighlightedHyperlink, Hoverable, MainAxisAlignment, MouseStateHandle,
@@ -27,7 +27,7 @@ use warpui::{
     platform::Cursor,
     AppContext, Element, Entity, FocusContext, TypedActionView, View, ViewHandle,
 };
-use warpui::{SingletonEntity, ViewContext};
+use cuteui::{SingletonEntity, ViewContext};
 
 use crate::ai::mcp::{TemplatableMCPServer, TemplatableMCPServerManager, TemplateVariable};
 
@@ -35,9 +35,9 @@ use crate::ui_components::{
     avatar::{Avatar, AvatarContent},
     blended_colors,
 };
-use warpui::elements::{CornerRadius, Padding, Radius};
+use cuteui::elements::{CornerRadius, Padding, Radius};
 
-use warp_core::ui::{external_product_icon::ExternalProductIcon, icons::Icon};
+use cute_core::ui::{external_product_icon::ExternalProductIcon, icons::Icon};
 
 pub enum InstallationModalBodyEvent {
     Cancel,
@@ -279,7 +279,7 @@ impl InstallationModalBody {
                     let mut icon = Container::new(
                         ConstrainedBox::new(
                             Icon::X
-                                .to_warpui_icon(theme.active_ui_text_color())
+                                .to_cuteui_icon(theme.active_ui_text_color())
                                 .finish(),
                         )
                         .with_width(16.)
@@ -421,7 +421,7 @@ impl InstallationModalBody {
     fn render_source_indicator(is_shared: bool, appearance: &Appearance) -> Box<dyn Element> {
         let info_icon = ConstrainedBox::new(
             Icon::Info
-                .to_warpui_icon(appearance.theme().disabled_ui_text_color())
+                .to_cuteui_icon(appearance.theme().disabled_ui_text_color())
                 .finish(),
         )
         .with_width(16.)

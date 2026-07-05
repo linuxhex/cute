@@ -1,10 +1,10 @@
 use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::vec2f;
-use warp_core::ui::icons::Icon as WarpIcon;
-use warp_core::ui::theme::color::internal_colors;
-use warp_core::ui::theme::{Fill as WarpThemeFill, WarpTheme};
-use warpui::assets::asset_cache::AssetSource;
-use warpui::elements::{
+use cute_core::ui::icons::Icon as WarpIcon;
+use cute_core::ui::theme::color::internal_colors;
+use cute_core::ui::theme::{Fill as WarpThemeFill, WarpTheme};
+use cuteui::assets::asset_cache::AssetSource;
+use cuteui::elements::{
     CacheOption, ChildAnchor, ConstrainedBox, Container, CornerRadius, Element, Empty, Image,
     OffsetPositioning, ParentAnchor, ParentElement, ParentOffsetBounds, Radius, Stack,
 };
@@ -216,7 +216,7 @@ pub(crate) fn render_icon_with_status_with_animation(
 
     match variant {
         IconWithStatusVariant::Neutral { icon, icon_color } => render_neutral_circle(
-            icon.to_warpui_icon(icon_color).finish(),
+            icon.to_cuteui_icon(icon_color).finish(),
             internal_colors::fg_overlay_2(theme),
             total_size,
         ),
@@ -248,7 +248,7 @@ pub(crate) fn render_icon_with_status_with_animation(
             };
             // Cute: Use animation for running agents
             let circle = render_circle_with_animation(
-                oz_glyph.to_warpui_icon(glyph_color).finish(),
+                oz_glyph.to_cuteui_icon(glyph_color).finish(),
                 circle_background,
                 total_size,
                 animation_phase,
@@ -289,10 +289,10 @@ pub(crate) fn render_icon_with_status_with_animation(
                 let icon_element = agent
                     .icon()
                     .map(|icon| {
-                        icon.to_warpui_icon(WarpThemeFill::Solid(icon_color))
+                        icon.to_cuteui_icon(WarpThemeFill::Solid(icon_color))
                             .finish()
                     })
-                    .unwrap_or_else(|| WarpIcon::Terminal.to_warpui_icon(sub_text).finish());
+                    .unwrap_or_else(|| WarpIcon::Terminal.to_cuteui_icon(sub_text).finish());
                 let circle = render_circle_with_animation(
                     icon_element,
                     ThemeFill::Solid(brand_color),
@@ -498,7 +498,7 @@ fn render_with_cloud_status_badge(
     let cloud_diameter = cloud_icon_size(total_size);
     let cloud = ConstrainedBox::new(
         WarpIcon::CloudFilled
-            .to_warpui_icon(theme.foreground())
+            .to_cuteui_icon(theme.foreground())
             .finish(),
     )
     .with_width(cloud_diameter)
@@ -510,7 +510,7 @@ fn render_with_cloud_status_badge(
             let (icon, color) = status.status_icon_and_color(theme, StatusColorStyle::Cloud);
             let inner = status_in_cloud_size(total_size);
             let status_icon =
-                ConstrainedBox::new(icon.to_warpui_icon(WarpThemeFill::Solid(color)).finish())
+                ConstrainedBox::new(icon.to_cuteui_icon(WarpThemeFill::Solid(color)).finish())
                     .with_width(inner)
                     .with_height(inner)
                     .finish();
@@ -577,7 +577,7 @@ fn render_with_optional_status_badge(
     let (icon, color) = status.status_icon_and_color(theme, StatusColorStyle::Standard);
     let badge_icon_diameter = badge_icon_size(total_size, badge_style);
     let pad = badge_padding(total_size, badge_style);
-    let badge_icon = ConstrainedBox::new(icon.to_warpui_icon(WarpThemeFill::Solid(color)).finish())
+    let badge_icon = ConstrainedBox::new(icon.to_cuteui_icon(WarpThemeFill::Solid(color)).finish())
         .with_width(badge_icon_diameter)
         .with_height(badge_icon_diameter)
         .finish();

@@ -9,11 +9,11 @@ use repo_metadata::{
     local_model::GetContentsArgs, RepoContent, RepoMetadataModel, RepositoryIdentifier,
 };
 use walkdir::{DirEntry, WalkDir};
-use warp_util::{
+use cute_util::{
     local_or_remote_path::LocalOrRemotePath, remote_path::RemotePath,
     standardized_path::StandardizedPath,
 };
-use warpui::AppContext;
+use cuteui::AppContext;
 
 use crate::cute_managed_paths_watcher::cute_managed_skill_dirs;
 

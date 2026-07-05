@@ -14,92 +14,94 @@ use itertools::Itertools;
 #[cfg(test)]
 use mockall::automock;
 use prost::Message;
-use warp_core::channel::ChannelState;
-use warp_core::report_error;
-use warp_graphql::ai::{AgentTaskState, PlatformErrorCode};
-use warp_graphql::client::Operation;
-use warp_graphql::mutations::confirm_file_artifact_upload::{
+use cute_core::channel::ChannelState;
+use cute_core::report_error;
+use cute_graphql::ai::{AgentTaskState, PlatformErrorCode};
+use cute_graphql::client::Operation;
+use cute_graphql::mutations::confirm_file_artifact_upload::{
     ConfirmFileArtifactUpload, ConfirmFileArtifactUploadInput, ConfirmFileArtifactUploadResult,
     ConfirmFileArtifactUploadVariables,
 };
-use warp_graphql::mutations::create_agent_task::{
+use cute_graphql::mutations::create_agent_task::{
     CreateAgentTask, CreateAgentTaskInput, CreateAgentTaskResult, CreateAgentTaskVariables,
 };
-use warp_graphql::mutations::create_file_artifact_upload_target::{
+use cute_graphql::mutations::create_file_artifact_upload_target::{
     CreateFileArtifactUploadTarget, CreateFileArtifactUploadTargetInput,
     CreateFileArtifactUploadTargetResult, CreateFileArtifactUploadTargetVariables,
 };
-use warp_graphql::mutations::delete_ai_conversation::{
+use cute_graphql::mutations::delete_ai_conversation::{
     DeleteAIConversation, DeleteAIConversationVariables, DeleteConversationInput,
     DeleteConversationResult,
 };
-use warp_graphql::mutations::generate_code_embeddings::{
+use cute_graphql::mutations::generate_code_embeddings::{
     GenerateCodeEmbeddings, GenerateCodeEmbeddingsInput, GenerateCodeEmbeddingsResult,
     GenerateCodeEmbeddingsVariables,
 };
-use warp_graphql::mutations::generate_commands::{
+use cute_graphql::mutations::generate_commands::{
     GenerateCommands, GenerateCommandsInput, GenerateCommandsResult, GenerateCommandsStatus,
     GenerateCommandsVariables,
 };
-use warp_graphql::mutations::generate_dialogue::{
+use cute_graphql::mutations::generate_dialogue::{
     GenerateDialogue, GenerateDialogueInput,
     GenerateDialogueResult as GenerateDialogueResultGraphql, GenerateDialogueStatus,
     GenerateDialogueVariables, TranscriptPart as TranscriptPartGraphql,
 };
-use warp_graphql::mutations::generate_metadata_for_command::{
-    GenerateMetadataForCommand, GenerateMetadataForCommandInput, GenerateMetadataForCommandResult,
-    GenerateMetadataForCommandStatus, GenerateMetadataForCommandVariables,
+use cute_graphql::mutations::generate_metadata_for_command::{
+    GenerateMetadataForCommand, GenerateMetadataForCommandFailureType,
+    GenerateMetadataForCommandInput, GenerateMetadataForCommandResult,
+    GenerateMetadataForCommandStatus, GenerateMetadataForCommandSuccess,
+    GenerateMetadataForCommandVariables,
 };
-use warp_graphql::mutations::populate_merkle_tree_cache::{
+use cute_graphql::mutations::populate_merkle_tree_cache::{
     PopulateMerkleTreeCache, PopulateMerkleTreeCacheResult, PopulateMerkleTreeCacheVariables,
 };
-use warp_graphql::mutations::request_bonus::{
+use cute_graphql::mutations::request_bonus::{
     ProvideNegativeFeedbackResponseForAiConversation,
     ProvideNegativeFeedbackResponseForAiConversationInput,
     ProvideNegativeFeedbackResponseForAiConversationVariables, RequestsRefundedResult,
 };
-use warp_graphql::mutations::update_agent_task::{
+use cute_graphql::mutations::update_agent_task::{
     AgentTaskStatusMessageInput, UpdateAgentTask, UpdateAgentTaskInput, UpdateAgentTaskResult,
     UpdateAgentTaskVariables,
 };
-use warp_graphql::mutations::update_merkle_tree::{
+use cute_graphql::mutations::update_merkle_tree::{
     MerkleTreeNode, UpdateMerkleTree, UpdateMerkleTreeInput, UpdateMerkleTreeResult,
     UpdateMerkleTreeVariables,
 };
-use warp_graphql::queries::codebase_context_config::{
+use cute_graphql::queries::codebase_context_config::{
     CodebaseContextConfigQuery, CodebaseContextConfigResult, CodebaseContextConfigVariables,
 };
-use warp_graphql::queries::free_available_models::{
+use cute_graphql::queries::free_available_models::{
     FreeAvailableModels, FreeAvailableModelsInput, FreeAvailableModelsResult,
     FreeAvailableModelsVariables,
 };
-use warp_graphql::queries::get_available_harnesses::{
+use cute_graphql::queries::get_available_harnesses::{
     GetAvailableHarnesses, GetAvailableHarnessesVariables,
 };
-use warp_graphql::queries::get_feature_model_choices::{
+use cute_graphql::queries::get_feature_model_choices::{
     GetFeatureModelChoices, GetFeatureModelChoicesVariables,
 };
-use warp_graphql::queries::get_relevant_fragments::{
+use cute_graphql::queries::get_relevant_fragments::{
     GetRelevantFragmentsQuery, GetRelevantFragmentsResult, GetRelevantFragmentsVariables,
 };
 #[cfg(not(feature = "agent_mode_evals"))]
-use warp_graphql::queries::get_request_limit_info::{
+use cute_graphql::queries::get_request_limit_info::{
     GetRequestLimitInfo, GetRequestLimitInfoVariables,
 };
-use warp_graphql::queries::get_scheduled_agent_history::{
+use cute_graphql::queries::get_scheduled_agent_history::{
     GetScheduledAgentHistory, GetScheduledAgentHistoryVariables, ScheduledAgentHistory,
     ScheduledAgentHistoryInput, ScheduledAgentHistoryResult,
 };
-use warp_graphql::queries::rerank_fragments::{
+use cute_graphql::queries::rerank_fragments::{
     RerankFragments, RerankFragmentsResult, RerankFragmentsVariables,
 };
-use warp_graphql::queries::sync_merkle_tree::{
+use cute_graphql::queries::sync_merkle_tree::{
     SyncMerkleTree, SyncMerkleTreeInput, SyncMerkleTreeResult, SyncMerkleTreeVariables,
 };
-use warp_graphql::queries::task_attachments::{
+use cute_graphql::queries::task_attachments::{
     Task as TaskAttachmentsQuery, TaskInput, TaskResult, TaskVariables,
 };
-use warp_graphql::queries::task_git_credentials::{
+use cute_graphql::queries::task_git_credentials::{
     TaskGitCredentials, TaskGitCredentialsInput, TaskGitCredentialsResult,
     TaskGitCredentialsVariables,
 };
@@ -118,7 +120,7 @@ use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 // Re-export ambient agent types for backwards compatibility
 pub use crate::ai::ambient_agent_types::{
     task::{AttachmentInput, TaskAttachment},
-    AgentConfigSnapshot, AgentSource, AmbientAgentTask, AmbientAgentTaskState, TaskStatusMessage,
+    AgentConfigSnapshot, AgentSource, AmbientAgentTask, AmbientAgentTaskState,
 };
 use crate::ai::artifacts::Artifact;
 use crate::ai::generate_code_review_content::api::{
@@ -138,7 +140,10 @@ use crate::ai_assistant::execution_context::WarpAiExecutionContext;
 use crate::ai_assistant::requests::GenerateDialogueResult;
 use crate::ai_assistant::utils::TranscriptPart;
 use crate::ai_assistant::{AIGeneratedCommand, GenerateCommandsFromNaturalLanguageError};
-use crate::drive::workflows::ai_assist::{GeneratedCommandMetadata, GeneratedCommandMetadataError};
+use crate::drive::workflows::ai_assist::{
+    GeneratedCommandMetadata, GeneratedCommandMetadataError,
+};
+use crate::workflows::workflow::Argument;
 use crate::persistence::model::ConversationUsageMetadata;
 use crate::server::graphql::{
     default_request_options, get_request_context, get_user_facing_error_message,
@@ -780,9 +785,7 @@ pub(crate) fn build_list_agent_runs_url(limit: i32, filter: &TaskListFilter) -> 
     }
     if let Some(states) = filter.states.as_ref() {
         for state in states {
-            if let Some(value) = state.as_query_param() {
-                push("state", value);
-            }
+            push("state", state.as_query_param());
         }
     }
     if let Some(source) = filter.source.as_ref() {
@@ -1287,7 +1290,7 @@ pub trait AIClient: 'static + Send + Sync {
 }
 
 fn into_file_artifact_record(
-    artifact: warp_graphql::mutations::create_file_artifact_upload_target::FileArtifact,
+    artifact: cute_graphql::mutations::create_file_artifact_upload_target::FileArtifact,
 ) -> FileArtifactRecord {
     FileArtifactRecord {
         artifact_uid: artifact.artifact_uid.into_inner(),
@@ -1370,9 +1373,9 @@ impl ServerApi {
 /// dropped, because a server-provided field we can't represent will almost certainly
 /// cause the upload to fail.
 fn convert_upload_field(
-    field: warp_graphql::mutations::create_file_artifact_upload_target::FileArtifactUploadField,
+    field: cute_graphql::mutations::create_file_artifact_upload_target::FileArtifactUploadField,
 ) -> anyhow::Result<UploadField> {
-    use warp_graphql::mutations::create_file_artifact_upload_target::FileArtifactUploadFieldValue;
+    use cute_graphql::mutations::create_file_artifact_upload_target::FileArtifactUploadFieldValue;
 
     let value = match field.value {
         FileArtifactUploadFieldValue::StaticUploadFieldValue(v) => {
@@ -1493,7 +1496,7 @@ impl AIClient for ServerApi {
         &self,
         command: String,
     ) -> Result<GeneratedCommandMetadata, GeneratedCommandMetadataError> {
-        let default_err = GeneratedCommandMetadataError::Other;
+        let default_err = GeneratedCommandMetadataError::ParsingError;
         let variables = GenerateMetadataForCommandVariables {
             input: GenerateMetadataForCommandInput { command },
             request_context: get_request_context(),
@@ -1518,11 +1521,11 @@ impl AIClient for ServerApi {
                         failure,
                     ) => Err(failure.type_.into()),
                     GenerateMetadataForCommandStatus::Unknown => {
-                        Err(GeneratedCommandMetadataError::Other)
+                        Err(GeneratedCommandMetadataError::ParsingError)
                     }
                 }
             }
-            _ => Err(GeneratedCommandMetadataError::Other),
+            _ => Err(GeneratedCommandMetadataError::ParsingError),
         }
     }
 
@@ -1543,7 +1546,7 @@ impl AIClient for ServerApi {
         let response = self.send_graphql_request(operation, None).await?;
 
         match response.user {
-            warp_graphql::queries::get_request_limit_info::UserResult::UserOutput(user_output) => {
+            cute_graphql::queries::get_request_limit_info::UserResult::UserOutput(user_output) => {
                 let request_limit_info = user_output.user.request_limit_info.into();
 
                 let workspace_bonus_grants = user_output
@@ -1579,10 +1582,10 @@ impl AIClient for ServerApi {
                     bonus_grants,
                 })
             }
-            warp_graphql::queries::get_request_limit_info::UserResult::UserFacingError(e) => {
+            cute_graphql::queries::get_request_limit_info::UserResult::UserFacingError(e) => {
                 Err(anyhow!(get_user_facing_error_message(e)))
             }
-            warp_graphql::queries::get_request_limit_info::UserResult::Unknown => {
+            cute_graphql::queries::get_request_limit_info::UserResult::Unknown => {
                 Err(anyhow!("failed to get request limit info"))
             }
         }
@@ -1596,9 +1599,9 @@ impl AIClient for ServerApi {
         let response = self.send_graphql_request(operation, None).await?;
 
         match response.user {
-            warp_graphql::queries::get_feature_model_choices::UserResult::UserOutput(
-                warp_graphql::queries::get_feature_model_choices::UserOutput {
-                    user: warp_graphql::queries::get_feature_model_choices::User { mut workspaces },
+            cute_graphql::queries::get_feature_model_choices::UserResult::UserOutput(
+                cute_graphql::queries::get_feature_model_choices::UserOutput {
+                    user: cute_graphql::queries::get_feature_model_choices::User { mut workspaces },
                 },
             ) if !workspaces.is_empty() => {
                 // This is safe (`remove()` can panic) because we ensure workspaces is non-empty
@@ -1617,7 +1620,7 @@ impl AIClient for ServerApi {
         let response = self.send_graphql_request(operation, None).await?;
 
         match response.user {
-            warp_graphql::queries::get_available_harnesses::UserResult::UserOutput(output) => {
+            cute_graphql::queries::get_available_harnesses::UserResult::UserOutput(output) => {
                 Ok(output
                     .user
                     .available_harnesses
@@ -1639,7 +1642,7 @@ impl AIClient for ServerApi {
                     })
                     .collect())
             }
-            warp_graphql::queries::get_available_harnesses::UserResult::Unknown => {
+            cute_graphql::queries::get_available_harnesses::UserResult::Unknown => {
                 Err(anyhow!("Failed to get available harnesses"))
             }
         }
@@ -1668,7 +1671,7 @@ impl AIClient for ServerApi {
         let response = operation
             .send_request(
                 self.client.clone(),
-                warp_graphql::client::RequestOptions {
+                cute_graphql::client::RequestOptions {
                     auth_token,
                     ..default_request_options()
                 },
@@ -1978,7 +1981,7 @@ impl AIClient for ServerApi {
         &self,
         server_conversation_token: ServerConversationToken,
     ) -> anyhow::Result<(ConversationData, ServerAIConversationMetadata), anyhow::Error> {
-        use warp_graphql::queries::list_ai_conversations::{
+        use cute_graphql::queries::list_ai_conversations::{
             ListAIConversations, ListAIConversationsInput, ListAIConversationsResult,
             ListAIConversationsVariables,
         };
@@ -2030,11 +2033,11 @@ impl AIClient for ServerApi {
         &self,
         server_conversation_token: ServerConversationToken,
     ) -> anyhow::Result<AIAgentConversationFormat, anyhow::Error> {
-        use warp_graphql::queries::get_ai_conversation_format::{
+        use cute_graphql::queries::get_ai_conversation_format::{
             GetAIConversationFormat, GetAIConversationFormatResult,
             GetAIConversationFormatVariables,
         };
-        use warp_graphql::queries::list_ai_conversations::ListAIConversationsInput;
+        use cute_graphql::queries::list_ai_conversations::ListAIConversationsInput;
 
         let conversation_id = server_conversation_token.as_str().to_string();
         let operation = GetAIConversationFormat::build(GetAIConversationFormatVariables {
@@ -2529,13 +2532,13 @@ impl AIClient for ServerApi {
 
 }
 
-impl TryFrom<warp_graphql::queries::get_feature_model_choices::FeatureModelChoice>
+impl TryFrom<cute_graphql::queries::get_feature_model_choices::FeatureModelChoice>
     for ModelsByFeature
 {
     type Error = anyhow::Error;
 
     fn try_from(
-        value: warp_graphql::queries::get_feature_model_choices::FeatureModelChoice,
+        value: cute_graphql::queries::get_feature_model_choices::FeatureModelChoice,
     ) -> Result<Self, Self::Error> {
         Ok(Self {
             agent_mode: value.agent_mode.try_into()?,
@@ -2546,10 +2549,10 @@ impl TryFrom<warp_graphql::queries::get_feature_model_choices::FeatureModelChoic
     }
 }
 
-impl TryFrom<warp_graphql::workspace::FeatureModelChoice> for ModelsByFeature {
+impl TryFrom<cute_graphql::workspace::FeatureModelChoice> for ModelsByFeature {
     type Error = anyhow::Error;
 
-    fn try_from(value: warp_graphql::workspace::FeatureModelChoice) -> Result<Self, Self::Error> {
+    fn try_from(value: cute_graphql::workspace::FeatureModelChoice) -> Result<Self, Self::Error> {
         Ok(Self {
             agent_mode: value.agent_mode.try_into()?,
             coding: value.coding.try_into()?,
@@ -2559,11 +2562,11 @@ impl TryFrom<warp_graphql::workspace::FeatureModelChoice> for ModelsByFeature {
     }
 }
 
-impl TryFrom<warp_graphql::queries::get_feature_model_choices::AvailableLlms> for AvailableLLMs {
+impl TryFrom<cute_graphql::queries::get_feature_model_choices::AvailableLlms> for AvailableLLMs {
     type Error = anyhow::Error;
 
     fn try_from(
-        value: warp_graphql::queries::get_feature_model_choices::AvailableLlms,
+        value: cute_graphql::queries::get_feature_model_choices::AvailableLlms,
     ) -> Result<Self, Self::Error> {
         Self::new(
             value.default_id.into(),
@@ -2573,10 +2576,10 @@ impl TryFrom<warp_graphql::queries::get_feature_model_choices::AvailableLlms> fo
     }
 }
 
-impl TryFrom<warp_graphql::workspace::AvailableLlms> for AvailableLLMs {
+impl TryFrom<cute_graphql::workspace::AvailableLlms> for AvailableLLMs {
     type Error = anyhow::Error;
 
-    fn try_from(value: warp_graphql::workspace::AvailableLlms) -> Result<Self, Self::Error> {
+    fn try_from(value: cute_graphql::workspace::AvailableLlms) -> Result<Self, Self::Error> {
         Self::new(
             value.default_id.into(),
             value.choices.into_iter().map(LLMInfo::from),
@@ -2585,8 +2588,8 @@ impl TryFrom<warp_graphql::workspace::AvailableLlms> for AvailableLLMs {
     }
 }
 
-impl From<warp_graphql::queries::get_feature_model_choices::LlmInfo> for LLMInfo {
-    fn from(value: warp_graphql::queries::get_feature_model_choices::LlmInfo) -> Self {
+impl From<cute_graphql::queries::get_feature_model_choices::LlmInfo> for LLMInfo {
+    fn from(value: cute_graphql::queries::get_feature_model_choices::LlmInfo) -> Self {
         let host_configs = {
             let mut map = std::collections::HashMap::new();
             for config in value.host_configs {
@@ -2624,8 +2627,8 @@ impl From<warp_graphql::queries::get_feature_model_choices::LlmInfo> for LLMInfo
     }
 }
 
-impl From<warp_graphql::workspace::LlmInfo> for LLMInfo {
-    fn from(value: warp_graphql::workspace::LlmInfo) -> Self {
+impl From<cute_graphql::workspace::LlmInfo> for LLMInfo {
+    fn from(value: cute_graphql::workspace::LlmInfo) -> Self {
         let host_configs = {
             let mut map = std::collections::HashMap::new();
             for config in value.host_configs {
@@ -2663,10 +2666,10 @@ impl From<warp_graphql::workspace::LlmInfo> for LLMInfo {
     }
 }
 
-impl From<warp_graphql::queries::get_feature_model_choices::RoutingHostConfig>
+impl From<cute_graphql::queries::get_feature_model_choices::RoutingHostConfig>
     for RoutingHostConfig
 {
-    fn from(value: warp_graphql::queries::get_feature_model_choices::RoutingHostConfig) -> Self {
+    fn from(value: cute_graphql::queries::get_feature_model_choices::RoutingHostConfig) -> Self {
         Self {
             enabled: value.enabled,
             model_routing_host: value.model_routing_host.into(),
@@ -2674,8 +2677,8 @@ impl From<warp_graphql::queries::get_feature_model_choices::RoutingHostConfig>
     }
 }
 
-impl From<warp_graphql::workspace::RoutingHostConfig> for RoutingHostConfig {
-    fn from(value: warp_graphql::workspace::RoutingHostConfig) -> Self {
+impl From<cute_graphql::workspace::RoutingHostConfig> for RoutingHostConfig {
+    fn from(value: cute_graphql::workspace::RoutingHostConfig) -> Self {
         Self {
             enabled: value.enabled,
             model_routing_host: value.model_routing_host.into(),
@@ -2683,19 +2686,19 @@ impl From<warp_graphql::workspace::RoutingHostConfig> for RoutingHostConfig {
     }
 }
 
-impl From<warp_graphql::queries::get_feature_model_choices::LlmModelHost> for LLMModelHost {
-    fn from(value: warp_graphql::queries::get_feature_model_choices::LlmModelHost) -> Self {
+impl From<cute_graphql::queries::get_feature_model_choices::LlmModelHost> for LLMModelHost {
+    fn from(value: cute_graphql::queries::get_feature_model_choices::LlmModelHost) -> Self {
         match value {
-            warp_graphql::queries::get_feature_model_choices::LlmModelHost::DirectApi => {
+            cute_graphql::queries::get_feature_model_choices::LlmModelHost::DirectApi => {
                 LLMModelHost::DirectApi
             }
-            warp_graphql::queries::get_feature_model_choices::LlmModelHost::AwsBedrock => {
+            cute_graphql::queries::get_feature_model_choices::LlmModelHost::AwsBedrock => {
                 LLMModelHost::AwsBedrock
             }
-            warp_graphql::queries::get_feature_model_choices::LlmModelHost::CustomEndpoint => {
+            cute_graphql::queries::get_feature_model_choices::LlmModelHost::CustomEndpoint => {
                 LLMModelHost::CustomEndpoint
             }
-            warp_graphql::queries::get_feature_model_choices::LlmModelHost::Other(value) => {
+            cute_graphql::queries::get_feature_model_choices::LlmModelHost::Other(value) => {
                 report_error!(anyhow!(
                     "Unknown LlmModelHost '{value}'. Make sure to update client GraphQL types!"
                 ));
@@ -2705,23 +2708,23 @@ impl From<warp_graphql::queries::get_feature_model_choices::LlmModelHost> for LL
     }
 }
 
-impl From<warp_graphql::queries::get_feature_model_choices::LlmProvider> for LLMProvider {
-    fn from(value: warp_graphql::queries::get_feature_model_choices::LlmProvider) -> Self {
+impl From<cute_graphql::queries::get_feature_model_choices::LlmProvider> for LLMProvider {
+    fn from(value: cute_graphql::queries::get_feature_model_choices::LlmProvider) -> Self {
         match value {
-            warp_graphql::queries::get_feature_model_choices::LlmProvider::Openai => {
+            cute_graphql::queries::get_feature_model_choices::LlmProvider::Openai => {
                 LLMProvider::OpenAI
             }
-            warp_graphql::queries::get_feature_model_choices::LlmProvider::Anthropic => {
+            cute_graphql::queries::get_feature_model_choices::LlmProvider::Anthropic => {
                 LLMProvider::Anthropic
             }
-            warp_graphql::queries::get_feature_model_choices::LlmProvider::Google => {
+            cute_graphql::queries::get_feature_model_choices::LlmProvider::Google => {
                 LLMProvider::Google
             }
-            warp_graphql::queries::get_feature_model_choices::LlmProvider::Xai => LLMProvider::Xai,
-            warp_graphql::queries::get_feature_model_choices::LlmProvider::Unknown => {
+            cute_graphql::queries::get_feature_model_choices::LlmProvider::Xai => LLMProvider::Xai,
+            cute_graphql::queries::get_feature_model_choices::LlmProvider::Unknown => {
                 LLMProvider::Unknown
             }
-            warp_graphql::queries::get_feature_model_choices::LlmProvider::Other(value) => {
+            cute_graphql::queries::get_feature_model_choices::LlmProvider::Other(value) => {
                 report_error!(anyhow!(
                     "Invalid LlmProvider '{value}'. Make sure to update client GraphQL types!"
                 ));
@@ -2731,15 +2734,15 @@ impl From<warp_graphql::queries::get_feature_model_choices::LlmProvider> for LLM
     }
 }
 
-impl From<warp_graphql::workspace::LlmProvider> for LLMProvider {
-    fn from(value: warp_graphql::workspace::LlmProvider) -> Self {
+impl From<cute_graphql::workspace::LlmProvider> for LLMProvider {
+    fn from(value: cute_graphql::workspace::LlmProvider) -> Self {
         match value {
-            warp_graphql::workspace::LlmProvider::Openai => LLMProvider::OpenAI,
-            warp_graphql::workspace::LlmProvider::Anthropic => LLMProvider::Anthropic,
-            warp_graphql::workspace::LlmProvider::Google => LLMProvider::Google,
-            warp_graphql::workspace::LlmProvider::Xai => LLMProvider::Xai,
-            warp_graphql::workspace::LlmProvider::Unknown => LLMProvider::Unknown,
-            warp_graphql::workspace::LlmProvider::Other(value) => {
+            cute_graphql::workspace::LlmProvider::Openai => LLMProvider::OpenAI,
+            cute_graphql::workspace::LlmProvider::Anthropic => LLMProvider::Anthropic,
+            cute_graphql::workspace::LlmProvider::Google => LLMProvider::Google,
+            cute_graphql::workspace::LlmProvider::Xai => LLMProvider::Xai,
+            cute_graphql::workspace::LlmProvider::Unknown => LLMProvider::Unknown,
+            cute_graphql::workspace::LlmProvider::Other(value) => {
                 report_error!(anyhow!(
                     "Invalid LlmProvider '{value}'. Make sure to update client GraphQL types!"
                 ));
@@ -2749,8 +2752,8 @@ impl From<warp_graphql::workspace::LlmProvider> for LLMProvider {
     }
 }
 
-impl From<warp_graphql::queries::get_feature_model_choices::LlmSpec> for LLMSpec {
-    fn from(value: warp_graphql::queries::get_feature_model_choices::LlmSpec) -> Self {
+impl From<cute_graphql::queries::get_feature_model_choices::LlmSpec> for LLMSpec {
+    fn from(value: cute_graphql::queries::get_feature_model_choices::LlmSpec) -> Self {
         Self {
             cost: value.cost as f32,
             quality: value.quality as f32,
@@ -2759,8 +2762,8 @@ impl From<warp_graphql::queries::get_feature_model_choices::LlmSpec> for LLMSpec
     }
 }
 
-impl From<warp_graphql::workspace::LlmSpec> for LLMSpec {
-    fn from(value: warp_graphql::workspace::LlmSpec) -> Self {
+impl From<cute_graphql::workspace::LlmSpec> for LLMSpec {
+    fn from(value: cute_graphql::workspace::LlmSpec) -> Self {
         Self {
             cost: value.cost as f32,
             quality: value.quality as f32,
@@ -2769,8 +2772,8 @@ impl From<warp_graphql::workspace::LlmSpec> for LLMSpec {
     }
 }
 
-impl From<warp_graphql::queries::get_feature_model_choices::LlmUsageMetadata> for LLMUsageMetadata {
-    fn from(value: warp_graphql::queries::get_feature_model_choices::LlmUsageMetadata) -> Self {
+impl From<cute_graphql::queries::get_feature_model_choices::LlmUsageMetadata> for LLMUsageMetadata {
+    fn from(value: cute_graphql::queries::get_feature_model_choices::LlmUsageMetadata) -> Self {
         Self {
             request_multiplier: value.request_multiplier.max(1) as usize,
             credit_multiplier: value.credit_multiplier.map(|v| v as f32),
@@ -2778,8 +2781,8 @@ impl From<warp_graphql::queries::get_feature_model_choices::LlmUsageMetadata> fo
     }
 }
 
-impl From<warp_graphql::workspace::LlmUsageMetadata> for LLMUsageMetadata {
-    fn from(value: warp_graphql::workspace::LlmUsageMetadata) -> Self {
+impl From<cute_graphql::workspace::LlmUsageMetadata> for LLMUsageMetadata {
+    fn from(value: cute_graphql::workspace::LlmUsageMetadata) -> Self {
         Self {
             request_multiplier: value.request_multiplier.max(1) as usize,
             credit_multiplier: value.credit_multiplier.map(|v| v as f32),
@@ -2787,51 +2790,51 @@ impl From<warp_graphql::workspace::LlmUsageMetadata> for LLMUsageMetadata {
     }
 }
 
-impl From<warp_graphql::queries::get_feature_model_choices::DisableReason> for DisableReason {
-    fn from(value: warp_graphql::queries::get_feature_model_choices::DisableReason) -> Self {
+impl From<cute_graphql::queries::get_feature_model_choices::DisableReason> for DisableReason {
+    fn from(value: cute_graphql::queries::get_feature_model_choices::DisableReason) -> Self {
         match value {
-            warp_graphql::queries::get_feature_model_choices::DisableReason::AdminDisabled => {
+            cute_graphql::queries::get_feature_model_choices::DisableReason::AdminDisabled => {
                 DisableReason::AdminDisabled
             }
-            warp_graphql::queries::get_feature_model_choices::DisableReason::OutOfRequests => {
+            cute_graphql::queries::get_feature_model_choices::DisableReason::OutOfRequests => {
                 DisableReason::OutOfRequests
             }
-            warp_graphql::queries::get_feature_model_choices::DisableReason::ProviderOutage => {
+            cute_graphql::queries::get_feature_model_choices::DisableReason::ProviderOutage => {
                 DisableReason::ProviderOutage
             }
-            warp_graphql::queries::get_feature_model_choices::DisableReason::RequiresUpgrade => {
+            cute_graphql::queries::get_feature_model_choices::DisableReason::RequiresUpgrade => {
                 DisableReason::RequiresUpgrade
             }
-            warp_graphql::queries::get_feature_model_choices::DisableReason::Other(_) => {
+            cute_graphql::queries::get_feature_model_choices::DisableReason::Other(_) => {
                 DisableReason::Unavailable
             }
         }
     }
 }
 
-impl From<warp_graphql::workspace::DisableReason> for DisableReason {
-    fn from(value: warp_graphql::workspace::DisableReason) -> Self {
+impl From<cute_graphql::workspace::DisableReason> for DisableReason {
+    fn from(value: cute_graphql::workspace::DisableReason) -> Self {
         match value {
-            warp_graphql::workspace::DisableReason::AdminDisabled => DisableReason::AdminDisabled,
-            warp_graphql::workspace::DisableReason::OutOfRequests => DisableReason::OutOfRequests,
-            warp_graphql::workspace::DisableReason::ProviderOutage => DisableReason::ProviderOutage,
-            warp_graphql::workspace::DisableReason::RequiresUpgrade => {
+            cute_graphql::workspace::DisableReason::AdminDisabled => DisableReason::AdminDisabled,
+            cute_graphql::workspace::DisableReason::OutOfRequests => DisableReason::OutOfRequests,
+            cute_graphql::workspace::DisableReason::ProviderOutage => DisableReason::ProviderOutage,
+            cute_graphql::workspace::DisableReason::RequiresUpgrade => {
                 DisableReason::RequiresUpgrade
             }
-            warp_graphql::workspace::DisableReason::Other(_) => DisableReason::Unavailable,
+            cute_graphql::workspace::DisableReason::Other(_) => DisableReason::Unavailable,
         }
     }
 }
 
 // Conversions for AIConversationMetadata from GraphQL types
 
-fn convert_harness(harness: warp_graphql::ai::AgentHarness) -> AIAgentHarness {
+fn convert_harness(harness: cute_graphql::ai::AgentHarness) -> AIAgentHarness {
     match harness {
-        warp_graphql::ai::AgentHarness::Oz => AIAgentHarness::Oz,
-        warp_graphql::ai::AgentHarness::ClaudeCode => AIAgentHarness::ClaudeCode,
-        warp_graphql::ai::AgentHarness::Gemini => AIAgentHarness::Gemini,
-        warp_graphql::ai::AgentHarness::Codex => AIAgentHarness::Codex,
-        warp_graphql::ai::AgentHarness::Other(value) => {
+        cute_graphql::ai::AgentHarness::Oz => AIAgentHarness::Oz,
+        cute_graphql::ai::AgentHarness::ClaudeCode => AIAgentHarness::ClaudeCode,
+        cute_graphql::ai::AgentHarness::Gemini => AIAgentHarness::Gemini,
+        cute_graphql::ai::AgentHarness::Codex => AIAgentHarness::Codex,
+        cute_graphql::ai::AgentHarness::Other(value) => {
             report_error!(anyhow!(
                 "Invalid AgentHarness '{value}'. Make sure to update client GraphQL types!"
             ));
@@ -2841,15 +2844,15 @@ fn convert_harness(harness: warp_graphql::ai::AgentHarness) -> AIAgentHarness {
 }
 
 fn convert_block_snapshot_format(
-    format: warp_graphql::ai::SerializedBlockFormat,
+    format: cute_graphql::ai::SerializedBlockFormat,
 ) -> AIAgentSerializedBlockFormat {
     match format {
-        warp_graphql::ai::SerializedBlockFormat::JsonV1 => AIAgentSerializedBlockFormat::JsonV1,
+        cute_graphql::ai::SerializedBlockFormat::JsonV1 => AIAgentSerializedBlockFormat::JsonV1,
     }
 }
 
 fn convert_conversation_format(
-    format: warp_graphql::ai::AIConversationFormat,
+    format: cute_graphql::ai::AIConversationFormat,
 ) -> AIAgentConversationFormat {
     AIAgentConversationFormat {
         has_task_list: format.has_task_list,
@@ -2873,10 +2876,10 @@ fn convert_usage_metadata(
     }
 }
 
-impl TryFrom<warp_graphql::ai::AIConversation> for ServerAIConversationMetadata {
+impl TryFrom<cute_graphql::ai::AIConversation> for ServerAIConversationMetadata {
     type Error = anyhow::Error;
 
-    fn try_from(value: warp_graphql::ai::AIConversation) -> Result<Self, Self::Error> {
+    fn try_from(value: cute_graphql::ai::AIConversation) -> Result<Self, Self::Error> {
         let usage = convert_usage_metadata(
             value.usage.usage_metadata.summarized,
             value.usage.usage_metadata.context_window_usage,
@@ -2913,13 +2916,13 @@ impl TryFrom<warp_graphql::ai::AIConversation> for ServerAIConversationMetadata 
     }
 }
 
-impl TryFrom<warp_graphql::queries::list_ai_conversations::AIConversationMetadata>
+impl TryFrom<cute_graphql::queries::list_ai_conversations::AIConversationMetadata>
     for ServerAIConversationMetadata
 {
     type Error = anyhow::Error;
 
     fn try_from(
-        value: warp_graphql::queries::list_ai_conversations::AIConversationMetadata,
+        value: cute_graphql::queries::list_ai_conversations::AIConversationMetadata,
     ) -> Result<Self, Self::Error> {
         let usage = convert_usage_metadata(
             value.usage.usage_metadata.summarized,
@@ -3151,3 +3154,34 @@ impl ServerApi {
 #[cfg(test)]
 #[path = "ai_tests.rs"]
 mod tests;
+
+impl From<GenerateMetadataForCommandSuccess> for GeneratedCommandMetadata {
+    fn from(value: GenerateMetadataForCommandSuccess) -> Self {
+        Self {
+            title: value.title,
+            description: value.description,
+            command: value.parameterized_command,
+            arguments: value
+                .parameters
+                .into_iter()
+                .map(|p| Argument {
+                    name: p.name,
+                    arg_type: crate::workflows::workflow::ArgumentType::Text,
+                    description: Some(p.description),
+                    default_value: Some(p.value),
+                })
+                .collect(),
+        }
+    }
+}
+
+impl From<GenerateMetadataForCommandFailureType> for GeneratedCommandMetadataError {
+    fn from(value: GenerateMetadataForCommandFailureType) -> Self {
+        match value {
+            GenerateMetadataForCommandFailureType::RateLimited => {
+                GeneratedCommandMetadataError::RateLimited
+            }
+            _ => GeneratedCommandMetadataError::ParsingError,
+        }
+    }
+}

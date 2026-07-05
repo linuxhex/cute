@@ -6,16 +6,16 @@
 //! overlay, while settings consumers can render the sections inline.
 
 use pathfinder_geometry::vector::vec2f;
-use warp_core::ui::theme::Fill;
-use warpui::elements::{
+use cute_core::ui::theme::Fill;
+use cuteui::elements::{
     Align, Border, ChildAnchor, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment,
     Expanded, Flex, Hoverable, MainAxisAlignment, MainAxisSize, MouseStateHandle,
     OffsetPositioning, ParentAnchor, ParentElement, ParentOffsetBounds, Radius, Stack,
 };
-use warpui::platform::Cursor;
-use warpui::ui_components::button::ButtonVariant;
-use warpui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
-use warpui::{Action, Element};
+use cuteui::platform::Cursor;
+use cuteui::ui_components::button::ButtonVariant;
+use cuteui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
+use cuteui::{Action, Element};
 
 use super::{ChipConfigurator, ChipConfiguratorAction};
 use crate::Appearance;
@@ -130,7 +130,7 @@ fn render_header(title: &str, appearance: &Appearance) -> Box<dyn Element> {
         .span(title.to_string())
         .with_style(UiComponentStyles {
             font_size: Some(MODAL_TITLE_FONT_SIZE),
-            font_weight: Some(warpui::fonts::Weight::Bold),
+            font_weight: Some(cuteui::fonts::Weight::Bold),
             ..Default::default()
         })
         .build()
@@ -170,7 +170,7 @@ fn render_section_label(label: &str, appearance: &Appearance) -> Box<dyn Element
         .span(label.to_string())
         .with_style(UiComponentStyles {
             font_size: Some(MODAL_CONTENT_FONT_SIZE),
-            font_weight: Some(warpui::fonts::Weight::Semibold),
+            font_weight: Some(cuteui::fonts::Weight::Semibold),
             ..Default::default()
         })
         .build()

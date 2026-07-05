@@ -1,12 +1,12 @@
 use itertools::Itertools as _;
-use warpui::elements::ChildView;
-use warpui::{
+use cuteui::elements::ChildView;
+use cuteui::{
     Element as _, Entity, SingletonEntity as _, TypedActionView, View, ViewAsRef, ViewContext,
     ViewHandle,
 };
 
 use crate::cloud_object::model::persistence::{CloudModel, CloudModelEvent};
-use crate::cloud_object::{CloudObject as _, GenericStringObjectFormat, JsonObjectType};
+use crate::cloud_object::CloudObject as _;
 use crate::drive::CloudObjectTypeAndId;
 use crate::server::ids::SyncId;
 use crate::view_components::{DropdownItem, FilterableDropdown, FilterableDropdownOrientation};
@@ -107,12 +107,11 @@ impl EnvVarSelector {
                 if matches!(
                     type_and_id,
                     CloudObjectTypeAndId::GenericStringObject {
-                        object_type: GenericStringObjectFormat::Json(
-                            JsonObjectType::EnvVarCollection
-                        ),
+                        object_type,
                         ..
-                    }
-                ) {
+                    } if object_type.contains("EnvVarCollection")
+                ) || matches!(type_and_id, CloudObjectTypeAndId::EnvVarCollection(_))
+                {
                     self.refresh_dropdown_items(ctx);
                 }
             }
@@ -130,7 +129,7 @@ impl View for EnvVarSelector {
         "EnvVarSelector"
     }
 
-    fn render(&self, _app: &warpui::AppContext) -> Box<dyn warpui::Element> {
+    fn render(&self, _app: &cuteui::AppContext) -> Box<dyn cuteui::Element> {
         ChildView::new(&self.dropdown).finish()
     }
 }

@@ -1,5 +1,5 @@
 pub use crate::cloud_object::models::{AIFact, AIMemory, CloudAIFact, CloudAIFactModel};
-use warp_core::ui::appearance::Appearance;
+use cute_core::ui::appearance::Appearance;
 
 use crate::cloud_object::model::generic_string_model::StringModel;
 use crate::cloud_object::model::json_model::JsonModel;
@@ -69,10 +69,10 @@ impl StringModel for AIFact {
     ) -> Option<Box<dyn WarpDriveItem>> {
         Some(Box::new(WarpDriveAIFact::new(
             CloudObjectTypeAndId::GenericStringObject {
-                object_type: GenericStringObjectFormat::Json(JsonObjectType::AIFact),
+                object_type: GenericStringObjectFormat::Json(JsonObjectType::AIFact).to_string(),
                 id,
             },
-            ai_fact.clone(),
+            ai_fact.model().string_model.display_name(),
         )))
     }
 }

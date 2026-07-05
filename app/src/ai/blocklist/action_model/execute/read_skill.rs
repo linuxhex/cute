@@ -1,6 +1,6 @@
 use ai::agent::action_result::{AnyFileContent, FileContext};
 use futures::future::{BoxFuture, FutureExt};
-use warpui::{Entity, ModelContext, SingletonEntity};
+use cuteui::{Entity, ModelContext, SingletonEntity};
 
 use super::{ActionExecution, AnyActionExecution, ExecuteActionInput, PreprocessActionInput};
 use crate::ai::agent::{AIAgentActionType, ReadSkillRequest, ReadSkillResult};

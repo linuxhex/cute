@@ -1,4 +1,4 @@
-use warpui::{SingletonEntity, UpdateView};
+use cuteui::{SingletonEntity, UpdateView};
 
 use super::{
     fork_label_for_query, mark_feature_used_and_write_to_user_defaults, AIAgentExchangeId,
@@ -14,7 +14,7 @@ impl TerminalView {
     pub(super) fn ai_block_copying_menu_items(
         &self,
         ai_block_view_id: EntityId,
-        ai_conversation_id: AIConversationId,
+        _ai_conversation_id: AIConversationId,
         hovered_link: Option<RichContentLink>,
         model: &TerminalModel,
         ctx: &mut ViewContext<Self>,
@@ -420,7 +420,7 @@ impl TerminalView {
                         ai_block_view_id,
                         exchange_id: ai_exchange_id,
                         conversation_id: ai_conversation_id,
-                        entrypoint: AgentModeRewindEntrypoint::ContextMenu,
+                        entrypoint: AgentModeRewindEntrypoint::CONTEXT_MENU,
                     })
                     .into_item(),
             );

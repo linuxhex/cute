@@ -1,7 +1,7 @@
 use std::fmt;
 use std::ops::{Index, IndexMut};
 
-use warpui::color::ColorU;
+use cuteui::color::ColorU;
 
 use crate::terminal::model::ansi::color_index;
 use crate::themes::theme::{AnsiColors, WarpTheme};

@@ -1,12 +1,12 @@
 use settings::Setting as _;
-use warp_core::ui::Icon;
-use warpui::elements::{
+use cute_core::ui::Icon;
+use cuteui::elements::{
     ChildView, ConstrainedBox, Container, CrossAxisAlignment, Flex, MainAxisAlignment,
     MainAxisSize, MouseStateHandle, ParentElement, Shrinkable, SizeConstraintCondition,
     SizeConstraintSwitch, Text,
 };
-use warpui::ui_components::components::UiComponent;
-use warpui::{
+use cuteui::ui_components::components::UiComponent;
+use cuteui::{
     AppContext, Element, Entity, EventContext, SingletonEntity, TypedActionView, View, ViewContext,
     ViewHandle,
 };
@@ -128,7 +128,7 @@ impl View for AwsBedrockCredentialsErrorView {
         let make_alert_icon = || {
             ConstrainedBox::new(
                 Icon::AlertTriangle
-                    .to_warpui_icon(error_color(theme).into())
+                    .to_cuteui_icon(error_color(theme).into())
                     .finish(),
             )
             .with_width(icon_size(app))

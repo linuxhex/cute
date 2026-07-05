@@ -1,5 +1,5 @@
-use warpui::windowing::{StateEvent, WindowManager};
-use warpui::{Entity, ModelContext, SingletonEntity};
+use cuteui::windowing::{StateEvent, WindowManager};
+use cuteui::{Entity, ModelContext, SingletonEntity};
 
 #[cfg(target_os = "macos")]
 mod mac;

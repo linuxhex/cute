@@ -1,0 +1,12 @@
+[package]
+name = "session-sharing-protocol"
+version = "0.1.0"
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+uuid = { workspace = true }
+pathfinder_color = { workspace = true }

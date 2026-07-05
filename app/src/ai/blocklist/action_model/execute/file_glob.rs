@@ -5,9 +5,9 @@ use std::time::Duration;
 use futures::future::BoxFuture;
 use futures::FutureExt;
 use itertools::Itertools;
-use warp_core::features::FeatureFlag;
-use warpui::r#async::FutureExt as AsyncFutureExt;
-use warpui::{AppContext, Entity, EntityId, ModelContext, ModelHandle, SingletonEntity};
+use cute_core::features::FeatureFlag;
+use cuteui::r#async::FutureExt as AsyncFutureExt;
+use cuteui::{AppContext, Entity, EntityId, ModelContext, ModelHandle, SingletonEntity};
 
 use crate::ai::agent::conversation::AIConversationId;
 use crate::ai::agent::{

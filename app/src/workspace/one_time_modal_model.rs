@@ -1,6 +1,6 @@
 use settings::Setting as _;
-use warp_core::features::FeatureFlag;
-use warpui::{Entity, ModelContext, SingletonEntity, WindowId};
+use cute_core::features::FeatureFlag;
+use cuteui::{Entity, ModelContext, SingletonEntity, WindowId};
 
 use super::hoa_onboarding;
 use crate::ai::blocklist::agent_view::toolbar_item::AgentToolbarItemKind;
@@ -99,6 +99,21 @@ impl OneTimeModalModel {
                 });
             }
         });
+
+        // Cute OMJF-11111: 本地模式启动时标记云弹窗已处理，避免后续误触发
+        if cfg!(feature = "skip_login") {
+            AISettings::handle(ctx).update(ctx, |settings, ctx| {
+                let _ = settings.did_check_to_trigger_oz_launch_modal.set_value(true, ctx);
+                let _ = settings
+                    .did_check_to_trigger_orchestration_launch_modal
+                    .set_value(true, ctx);
+            });
+            GeneralSettings::handle(ctx).update(ctx, |settings, ctx| {
+                let _ = settings
+                    .did_check_to_trigger_openwarp_launch_modal
+                    .set_value(true, ctx);
+            });
+        }
 
         Self {
             is_build_plan_migration_modal_open: false,
@@ -221,6 +236,11 @@ impl OneTimeModalModel {
     }
 
     fn check_and_trigger_all_modals(&mut self, ctx: &mut ModelContext<Self>) {
+        // Cute OMJF-11111: 本地模式不展示云相关一次性弹窗
+        if cfg!(feature = "skip_login") {
+            return;
+        }
+
         // Never show one-time modals on WASM.
         if cfg!(target_family = "wasm") {
             return;

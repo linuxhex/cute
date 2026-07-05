@@ -7,14 +7,14 @@
 //! then connected worker hosts, then the user's most recent custom slug,
 //! then a "Custom host…" entry.
 
-use warp_core::ui::theme::Fill;
-use warpui::elements::{
+use cute_core::ui::theme::Fill;
+use cuteui::elements::{
     Border, ChildAnchor, ChildView, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment,
     Expanded, Flex, Hoverable, MainAxisAlignment, MainAxisSize, MouseStateHandle, ParentElement,
     PositionedElementAnchor, Radius,
 };
-use warpui::platform::Cursor;
-use warpui::{
+use cuteui::platform::Cursor;
+use cuteui::{
     AppContext, Element, Entity, SingletonEntity, TypedActionView, View, ViewContext, ViewHandle,
 };
 
@@ -387,7 +387,7 @@ impl HostPicker {
         let mouse_state = self.clear_mouse_state.clone();
         Hoverable::new(mouse_state, move |_| {
             ConstrainedBox::new(
-                Container::new(Icon::X.to_warpui_icon(icon_fill).finish())
+                Container::new(Icon::X.to_cuteui_icon(icon_fill).finish())
                     .with_uniform_padding(2.)
                     .finish(),
             )

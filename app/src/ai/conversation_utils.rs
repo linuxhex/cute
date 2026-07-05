@@ -1,9 +1,8 @@
-use warpui::{AppContext, EntityId, SingletonEntity};
+use cuteui::{AppContext, EntityId, SingletonEntity};
 
 use crate::ai::agent::conversation::AIConversationId;
 use crate::ai::agent_conversations_model::AgentConversationsModel;
 use crate::ai::blocklist::history_model::BlocklistAIHistoryModel;
-use crate::server::server_api::ServerApiProvider;
 
 /// Delete a conversation from the blocklist, local storage, and the cloud.
 pub fn delete_conversation(
@@ -12,7 +11,6 @@ pub fn delete_conversation(
     ctx: &mut AppContext,
 ) {
     let server_conversation_token = get_server_conversation_token(&conversation_id, ctx);
-    let server_api = ServerApiProvider::as_ref(ctx).get_ai_client();
 
     BlocklistAIHistoryModel::handle(ctx).update(ctx, |history, model_ctx| {
         history.delete_conversation(conversation_id, terminal_view_id, model_ctx);
@@ -42,13 +40,10 @@ pub fn remove_conversation(
     delete_from_cloud: bool,
     ctx: &mut AppContext,
 ) {
-    let (server_conversation_token, server_api) = if delete_from_cloud {
-        (
-            get_server_conversation_token(&conversation_id, ctx),
-            Some(ServerApiProvider::as_ref(ctx).get_ai_client()),
-        )
+    let _server_conversation_token = if delete_from_cloud {
+        get_server_conversation_token(&conversation_id, ctx)
     } else {
-        (None, None)
+        None
     };
 
     BlocklistAIHistoryModel::handle(ctx).update(ctx, |history, model_ctx| {

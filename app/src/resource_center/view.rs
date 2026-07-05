@@ -1,17 +1,17 @@
 use vec1::{vec1, Vec1};
-use warp_core::features::FeatureFlag;
-use warp_core::ui::builder::AnimatedButtonOptions;
-use warpui::elements::{
+use cute_core::features::FeatureFlag;
+use cute_core::ui::builder::AnimatedButtonOptions;
+use cuteui::elements::{
     Align, Border, ConstrainedBox, Container, CrossAxisAlignment, Element, Flex, Icon,
     MainAxisAlignment, MainAxisSize, MouseStateHandle, ParentElement, SavePosition, Shrinkable,
 };
-use warpui::fonts::Weight;
-use warpui::platform::Cursor;
-use warpui::presenter::ChildView;
-use warpui::ui_components::button::ButtonVariant;
-use warpui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
-use warpui::windowing::{StateEvent, WindowManager};
-use warpui::{
+use cuteui::fonts::Weight;
+use cuteui::platform::Cursor;
+use cuteui::presenter::ChildView;
+use cuteui::ui_components::button::ButtonVariant;
+use cuteui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
+use cuteui::windowing::{StateEvent, WindowManager};
+use cuteui::{
     AppContext, Entity, EntityId, FocusContext, ModelHandle, SingletonEntity, TypedActionView,
     View, ViewContext, ViewHandle, WindowId,
 };

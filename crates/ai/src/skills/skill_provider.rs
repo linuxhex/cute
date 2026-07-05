@@ -9,11 +9,11 @@ use std::sync::LazyLock;
 use dirs::home_dir;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString, VariantNames};
-use warp_core::ui::color::CLAUDE_ORANGE;
-use warp_core::ui::icons::Icon;
-use warp_core::ui::theme::Fill;
-use warp_util::local_or_remote_path::LocalOrRemotePath;
-use warp_util::standardized_path::StandardizedPath;
+use cute_core::ui::color::CLAUDE_ORANGE;
+use cute_core::ui::icons::Icon;
+use cute_core::ui::theme::Fill;
+use cute_util::local_or_remote_path::LocalOrRemotePath;
+use cute_util::standardized_path::StandardizedPath;
 
 /// Represents a skill provider/origin (Agents, Claude, Codex, or Warp).
 #[derive(
@@ -160,7 +160,7 @@ pub fn provider_rank(provider: SkillProvider) -> usize {
 
 pub fn home_skills_path(provider: SkillProvider) -> Option<PathBuf> {
     if provider == SkillProvider::Warp {
-        return warp_core::paths::warp_home_skills_dir();
+        return cute_core::paths::warp_home_skills_dir();
     }
     let definition = SKILL_PROVIDER_DEFINITIONS
         .iter()
@@ -222,22 +222,22 @@ mod tests {
     use super::{
         get_provider_for_path, get_scope_for_path, home_skills_path, SkillProvider, SkillScope,
     };
-    use warp_util::host_id::HostId;
-    use warp_util::local_or_remote_path::LocalOrRemotePath;
-    use warp_util::remote_path::RemotePath;
-    use warp_util::standardized_path::StandardizedPath;
+    use cute_util::host_id::HostId;
+    use cute_util::local_or_remote_path::LocalOrRemotePath;
+    use cute_util::remote_path::RemotePath;
+    use cute_util::standardized_path::StandardizedPath;
 
     #[test]
     fn warp_home_skills_path_uses_warp_home_path() {
         assert_eq!(
             home_skills_path(SkillProvider::Warp),
-            warp_core::paths::warp_home_skills_dir()
+            cute_core::paths::warp_home_skills_dir()
         );
     }
 
     #[test]
     fn warp_home_skill_path_is_home_warp_skill() {
-        let Some(warp_home_skills_dir) = warp_core::paths::warp_home_skills_dir() else {
+        let Some(warp_home_skills_dir) = cute_core::paths::warp_home_skills_dir() else {
             eprintln!("Skipping test: home directory not available");
             return;
         };

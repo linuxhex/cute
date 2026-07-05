@@ -4,8 +4,8 @@ use std::sync::Arc;
 
 use futures_util::stream::AbortHandle;
 use markdown_parser::markdown_parser::parse_markdown_to_raw_text;
-use warpui::r#async::SpawnedFutureHandle;
-use warpui::{Entity, EntityId, ModelContext, SingletonEntity, WeakViewHandle, WindowId};
+use cuteui::r#async::SpawnedFutureHandle;
+use cuteui::{Entity, EntityId, ModelContext, SingletonEntity, WeakViewHandle, WindowId};
 
 use super::notebook::NotebookView;
 use super::CloudNotebook;
@@ -142,7 +142,7 @@ impl NotebookManager {
     fn handle_cloud_model_event(&mut self, event: &CloudModelEvent, ctx: &mut ModelContext<Self>) {
         if let CloudModelEvent::ObjectUpdated { type_and_id, .. } = event {
             if let Some(notebook_id) = type_and_id.as_notebook_id() {
-                self.update_raw_text_for_notebook(notebook_id, ctx);
+                self.update_raw_text_for_notebook(*notebook_id, ctx);
             }
         }
     }

@@ -1,11 +1,11 @@
 use std::ops::Range;
 
-use warpui::elements::Point;
-use warpui::event::DispatchedEvent;
-use warpui::geometry::rect::RectF;
-use warpui::geometry::vector::Vector2F;
-use warpui::units::IntoPixels;
-use warpui::{
+use cuteui::elements::Point;
+use cuteui::event::DispatchedEvent;
+use cuteui::geometry::rect::RectF;
+use cuteui::geometry::vector::Vector2F;
+use cuteui::units::IntoPixels;
+use cuteui::{
     AfterLayoutContext, AppContext, Element, EventContext, LayoutContext, ModelHandle,
     PaintContext, SizeConstraint, WeakViewHandle,
 };

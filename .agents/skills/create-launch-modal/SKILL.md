@@ -20,7 +20,7 @@ Create a one-time launch modal — the feature-announcement design used for laun
 - [ ] Workspace wiring in `app/src/workspace/view.rs` and `app/src/workspace/mod.rs`
 - [ ] Debug actions in `app/src/workspace/action.rs`
 - [ ] Hero image at `app/assets/async/png/onboarding/<name>_launch_banner.png`
-- [ ] Any custom icons added to `crates/warp_core/src/ui/icons.rs` + SVG in `app/assets/bundled/svg/`
+- [ ] Any custom icons added to `crates/cute_core/src/ui/icons.rs` + SVG in `app/assets/bundled/svg/`
 
 ---
 
@@ -28,7 +28,7 @@ Create a one-time launch modal — the feature-announcement design used for laun
 
 If the modal uses icons not yet in the `Icon` enum, add them before writing the view.
 
-In `crates/warp_core/src/ui/icons.rs`:
+In `crates/cute_core/src/ui/icons.rs`:
 
 ```rust
 // Add to enum

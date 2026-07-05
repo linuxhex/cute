@@ -6,20 +6,20 @@ use chrono::{DateTime, Utc};
 use comfy_table::Cell;
 use inquire::{Confirm, InquireError, Password};
 use serde::Serialize;
-use warp_cli::agent::OutputFormat;
-use warp_cli::scope::ObjectScope;
-use warp_cli::secret::{
+use cute_cli::agent::OutputFormat;
+use cute_cli::scope::ObjectScope;
+use cute_cli::secret::{
     AnthropicMethod, CodexMethod, CreateProvider, CreateSecretArgs, DeleteSecretArgs,
     ListSecretsArgs, SecretCommand, SecretType, UpdateSecretArgs, ValueArgs,
 };
-use warp_cli::GlobalOptions;
-use warp_core::features::FeatureFlag;
-use warp_graphql::managed_secrets::{ManagedSecret, ManagedSecretType};
-use warp_graphql::object::SpaceType;
-use warp_managed_secrets::client::SecretOwner;
-use warp_managed_secrets::{ManagedSecretManager, ManagedSecretValue};
-use warpui::platform::TerminationMode;
-use warpui::{AppContext, SingletonEntity as _};
+use cute_cli::GlobalOptions;
+use cute_core::features::FeatureFlag;
+use cute_graphql::managed_secrets::{ManagedSecret, ManagedSecretType};
+use cute_graphql::object::SpaceType;
+use cute_managed_secrets::client::SecretOwner;
+use cute_managed_secrets::{ManagedSecretManager, ManagedSecretValue};
+use cuteui::platform::TerminationMode;
+use cuteui::{AppContext, SingletonEntity as _};
 
 use super::output::{self, TableFormat};
 use crate::auth::UserUid;

@@ -1,10 +1,10 @@
 use pathfinder_color::ColorU;
-use warpui::elements::{
+use cuteui::elements::{
     Align, ChildView, ClippedScrollStateHandle, ClippedScrollable, CrossAxisAlignment, Dismiss,
     Element, Flex, MouseStateHandle, ParentElement, ScrollbarWidth,
 };
-use warpui::ui_components::components::UiComponent;
-use warpui::{
+use cuteui::ui_components::components::UiComponent;
+use cuteui::{
     AppContext, Entity, FocusContext, SingletonEntity, TypedActionView, View, ViewContext,
     ViewHandle,
 };
@@ -13,6 +13,7 @@ use crate::ai::ambient_agent_types::github_auth_url::{AuthSource, GithubAuthRedi
 use crate::ai::cloud_environments::{self, CloudAmbientAgentEnvironmentModel};
 use crate::appearance::Appearance;
 use crate::modal::MODAL_BACKDROP_OPACITY;
+
 use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::ids::{ClientId, SyncId};
 use crate::settings_view::update_environment_form::{
@@ -185,11 +186,11 @@ impl HandoffEnvironmentCreationModal {
             ScrollbarWidth::Auto,
             theme.nonactive_ui_text_color().into(),
             theme.active_ui_text_color().into(),
-            warpui::elements::Fill::None,
+            cuteui::elements::Fill::None,
         )
         .finish();
 
-        let padded_form = warpui::elements::Container::new(scrollable_form)
+        let padded_form = cuteui::elements::Container::new(scrollable_form)
             .with_uniform_padding(8.)
             .finish();
 
@@ -210,7 +211,7 @@ impl HandoffEnvironmentCreationModal {
             })
             .finish();
 
-        warpui::elements::Container::new(Align::new(dialog).finish())
+        cuteui::elements::Container::new(Align::new(dialog).finish())
             .with_background_color(ColorU::new(0, 0, 0, MODAL_BACKDROP_OPACITY))
             .with_corner_radius(app.windows().window_corner_radius())
             .finish()

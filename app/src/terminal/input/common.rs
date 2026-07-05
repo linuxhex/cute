@@ -2,18 +2,18 @@ use std::sync::Arc;
 
 use pathfinder_geometry::vector::vec2f;
 use vim::vim::{VimMode, VimState};
-use warp_completer::completer::Description;
-use warp_core::features::FeatureFlag;
-use warpui::elements::{
+use cute_completer::completer::Description;
+use cute_core::features::FeatureFlag;
+use cuteui::elements::{
     AnchorPair, Border, ChildAnchor, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment,
     DispatchEventResult, Element, EventHandler, Flex, OffsetPositioning, OffsetType, ParentAnchor,
     ParentElement, ParentOffsetBounds, PositionedElementOffsetBounds, PositioningAxis, Radius,
     Shrinkable, Stack, Text, XAxisAnchor,
 };
-use warpui::fonts::Weight;
-use warpui::presenter::ChildView;
-use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::{AppContext, SingletonEntity};
+use cuteui::fonts::Weight;
+use cuteui::presenter::ChildView;
+use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
+use cuteui::{AppContext, SingletonEntity};
 
 use crate::appearance::Appearance;
 use crate::settings::{AISettings, InputSettings};
@@ -43,17 +43,17 @@ pub(super) fn render_vim_status(vim_state: &VimState, appearance: &Appearance) -
     let theme = appearance.theme();
     let ansi_colors = theme.terminal_colors().bright;
     let icon = match vim_state.mode {
-        VimMode::Normal => Icon::VimNormalMode.to_warpui_icon(ansi_colors.green.into()),
+        VimMode::Normal => Icon::VimNormalMode.to_cuteui_icon(ansi_colors.green.into()),
         VimMode::Insert => {
             use crate::themes::theme::Blend;
-            Icon::VimInsertMode.to_warpui_icon(
+            Icon::VimInsertMode.to_cuteui_icon(
                 theme
                     .background()
                     .blend(&theme.foreground().with_opacity(50)),
             )
         }
-        VimMode::Visual(_) => Icon::VimVisualMode.to_warpui_icon(ansi_colors.blue.into()),
-        VimMode::Replace => Icon::VimReplaceMode.to_warpui_icon(ansi_colors.red.into()),
+        VimMode::Visual(_) => Icon::VimVisualMode.to_cuteui_icon(ansi_colors.blue.into()),
+        VimMode::Replace => Icon::VimReplaceMode.to_cuteui_icon(ansi_colors.red.into()),
     };
     Container::new(
         Flex::row()

@@ -1,6 +1,7 @@
 mod action;
 mod agent_view;
 pub mod ambient_agent;
+use ambient_agent::AmbientAgentViewModelEvent;
 mod block_banner;
 pub mod block_onboarding;
 pub(crate) mod blocklist_filter;
@@ -31,14 +32,19 @@ use crate::ai::block_context::BlockContext;
 use crate::global_resource_handles::GlobalResourceHandlesProvider;
 pub(crate) mod docker_sandbox;
 mod link_detection;
-mod open_in_warp;
+mod open_in_cute;
+/// Backward compatibility re-export module.
+/// The open_in_warp module has been renamed to open_in_cute.
+pub mod open_in_warp {
+    pub use super::open_in_cute::*;
+}
 mod pane_impl;
 mod passive_suggestions;
 mod pending_user_query;
 #[cfg(not(target_family = "wasm"))]
 pub(crate) mod plugin_instructions_block;
 pub mod rich_content;
-mod shared_session;
+pub(crate) mod shared_session;
 mod shell_terminated_banner;
 pub mod ssh_file_upload;
 mod tab_metadata;
@@ -118,7 +124,8 @@ use session_sharing_protocol::common::{
 };
 use session_sharing_protocol::sharer::{RoleUpdateReason, SessionEndedReason};
 use settings::{Setting, ToggleableSetting};
-use shared_session::{SharedSessionAdapter, Viewer};
+use crate::terminal::view::shared_session::{SharedSessionAdapter, Viewer};
+use crate::terminal::shared_session::{RoleChangeOpenSource, RoleChangeCloseSource};
 use ssh_file_upload::{FileUpload, FileUploadEvent};
 use ssh_remote_server_choice_view::{SshRemoteServerChoiceView, SshRemoteServerChoiceViewEvent};
 use ssh_remote_server_failed_banner::{
@@ -128,26 +135,26 @@ use sum_tree::SeekBias;
 use use_agent_footer::UseAgentToolbar;
 use uuid::Uuid;
 use vec1::vec1;
-use warp_core::channel::ChannelState;
-use warp_core::command::ExitCode;
-use warp_core::context_flag::ContextFlag;
-use warp_core::r#async::debounce;
-use warp_core::semantic_selection::SemanticSelection;
-use warp_core::user_preferences::GetUserPreferences as _;
-use warp_util::local_or_remote_path::LocalOrRemotePath;
+use cute_core::channel::ChannelState;
+use cute_core::command::ExitCode;
+use cute_core::context_flag::ContextFlag;
+use cute_core::r#async::debounce;
+use cute_core::semantic_selection::SemanticSelection;
+use cute_core::user_preferences::GetUserPreferences as _;
+use cute_util::local_or_remote_path::LocalOrRemotePath;
 #[cfg(feature = "local_fs")]
-use warp_util::path::LineAndColumnArg;
-use warp_util::path::ShellFamily;
-use warpui::accessibility::{AccessibilityContent, ActionAccessibilityContent, WarpA11yRole};
-use warpui::assets::asset_cache::{AssetCache, AssetCacheEvent};
-use warpui::clipboard::ClipboardContent;
-use warpui::clipboard_utils::get_image_filepaths_from_paths;
-use warpui::elements::new_scrollable::{
+use cute_util::path::LineAndColumnArg;
+use cute_util::path::ShellFamily;
+use cuteui::accessibility::{AccessibilityContent, ActionAccessibilityContent, WarpA11yRole};
+use cuteui::assets::asset_cache::{AssetCache, AssetCacheEvent};
+use cuteui::clipboard::ClipboardContent;
+use cuteui::clipboard_utils::get_image_filepaths_from_paths;
+use cuteui::elements::new_scrollable::{
     AxisConfiguration, ClippedAxisConfiguration, DualAxisConfig, NewScrollableElement,
     ScrollableAppearance, SingleAxisConfig,
 };
-use warpui::elements::shimmering_text::ShimmeringTextStateHandle;
-use warpui::elements::{
+use cuteui::elements::shimmering_text::ShimmeringTextStateHandle;
+use cuteui::elements::{
     get_rich_content_position_id, Align, Border, ChildAnchor, ChildView, Clipped,
     ClippedScrollStateHandle, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment,
     DispatchEventResult, DropTarget, DropTargetData, Empty, EventHandler, Expanded, Fill, Flex,
@@ -156,20 +163,20 @@ use warpui::elements::{
     Radius, Rect, SavePosition, ScrollStateHandle, Scrollable, ScrollableElement, ScrollbarWidth,
     Shrinkable, Stack, Text,
 };
-use warpui::event::ModifiersState;
-use warpui::fonts::{Cache as FontCache, FamilyId, Properties};
-use warpui::geometry::vector::{vec2f, Vector2F};
-use warpui::image_cache::ImageType;
-use warpui::keymap::Keystroke;
-use warpui::notification::{NotificationSendError, RequestPermissionsOutcome, UserNotification};
-use warpui::platform::{Cursor, OperatingSystem};
-use warpui::r#async::executor::Background;
-use warpui::r#async::{SpawnedFutureHandle, Timer};
-use warpui::text::SelectionType;
-use warpui::ui_components::components::UiComponent;
-use warpui::units::{IntoLines, IntoPixels, Lines, Pixels};
-use warpui::windowing::WindowManager;
-use warpui::{
+use cuteui::event::ModifiersState;
+use cuteui::fonts::{Cache as FontCache, FamilyId, Properties};
+use cuteui::geometry::vector::{vec2f, Vector2F};
+use cuteui::image_cache::ImageType;
+use cuteui::keymap::Keystroke;
+use cuteui::notification::{NotificationSendError, RequestPermissionsOutcome, UserNotification};
+use cuteui::platform::{Cursor, OperatingSystem};
+use cuteui::r#async::executor::Background;
+use cuteui::r#async::{SpawnedFutureHandle, Timer};
+use cuteui::text::SelectionType;
+use cuteui::ui_components::components::UiComponent;
+use cuteui::units::{IntoLines, IntoPixels, Lines, Pixels};
+use cuteui::windowing::WindowManager;
+use cuteui::{
     end_trace_after_next, record_trace_event, windowing, AccessibilityData, AppContext,
     BlurContext, CursorInfo, Element, Entity, EntityId, EventContext, FocusContext, ModelAsRef,
     ModelHandle, SingletonEntity, Tracked, TypedActionView, View, ViewAsRef, ViewContext,
@@ -465,9 +472,6 @@ use crate::terminal::session_settings::{
     ToolbarChipSelection, DEFAULT_THRESHOLD_FOR_LONG_RUNNING_NOTIFICATION,
 };
 use crate::terminal::settings::{TerminalSettings, TerminalSettingsChangedEvent};
-use crate::terminal::shared_session::role_change_modal::{
-    RoleChangeCloseSource, RoleChangeOpenSource,
-};
 use crate::terminal::shared_session::{
     SharedSessionActionSource, SharedSessionScrollbackType, SharedSessionSource,
     SharedSessionStatus,
@@ -1216,8 +1220,8 @@ impl SizeUpdateBuilder {
                         // Viewer-driven sizing is active; use our own natural size.
                         new_size
                     } else if let Some(size) = sharer_size {
-                        let rows = size.num_rows.max(new_size.rows);
-                        let cols = size.num_cols.max(new_size.columns);
+                        let rows = size.rows.max(new_size.rows);
+                        let cols = size.columns.max(new_size.columns);
                         new_size.with_rows_and_columns(rows, cols)
                     } else {
                         new_size
@@ -2298,6 +2302,7 @@ pub struct TerminalViewRenderContext {
 }
 
 #[derive(Default)]
+#[allow(dead_code)]
 struct TerminalViewMouseStates {
     grid_link_tooltip: MouseStateHandle,
     rich_content_link_tooltip: MouseStateHandle,
@@ -2417,6 +2422,7 @@ impl DropTargetData for TerminalDropTargetData {
     }
 }
 
+#[allow(dead_code)]
 pub struct TerminalView {
     pub model: Arc<FairMutex<TerminalModel>>,
     view_handle: WeakViewHandle<Self>,
@@ -2598,14 +2604,14 @@ pub struct TerminalView {
     ///   2. Whether this View's window is the active window.
     ///
     /// We need to derive and cache this state on this View in order to correctly implement focus
-    /// reporting. Because focus is window-scoped, i.e. warpui does not consider activating a
+    /// reporting. Because focus is window-scoped, i.e. cuteui does not consider activating a
     /// different window as blurring the focused View in the previously active window, we cannot
-    /// simply rely on the warpui::View::on_blur and on_focus methods to report focus-in/out to the
+    /// simply rely on the cuteui::View::on_blur and on_focus methods to report focus-in/out to the
     /// PTY, as those methods will not trigger when changing active windows. The singleton model
-    /// [`warpui::windowing::State`] will allow us to subscribe to active window change. So, we can
+    /// [`cuteui::windowing::State`] will allow us to subscribe to active window change. So, we can
     /// subscribe to that and have that callback also report focus-in/out. However, that will still
     /// leave cases for potential double-reporting, as a single click can trigger both
-    /// [`warpui::View::on_focus`] and emit a [`warpui::windowing::StateEvent`]. This field will
+    /// [`cuteui::View::on_focus`] and emit a [`cuteui::windowing::StateEvent`]. This field will
     /// guard against that double- reporting case, though it needs to be kept in sync with the
     /// focused view and active window.
     is_focused_and_active: bool,
@@ -2803,9 +2809,9 @@ pub struct TerminalView {
     /// Mouse state handle for the conversation details panel toggle button in the pane header.
     /// Only available on non-WASM platforms (WASM uses a per-window button instead).
     #[cfg(not(target_arch = "wasm32"))]
-    conversation_details_panel_toggle_mouse_state: warpui::elements::MouseStateHandle,
+    conversation_details_panel_toggle_mouse_state: cuteui::elements::MouseStateHandle,
     /// Mouse state handle for the ambient agent cancel button in the pane header.
-    ambient_agent_cancel_mouse_state: warpui::elements::MouseStateHandle,
+    ambient_agent_cancel_mouse_state: cuteui::elements::MouseStateHandle,
 
     /// First-time cloud agent setup view (full-screen overlay for creating initial environment).
     first_time_cloud_agent_setup_view: ViewHandle<ambient_agent::FirstTimeCloudAgentSetupView>,
@@ -2901,6 +2907,7 @@ enum BlockMetadataUpdateSource {
     Osc7,
 }
 
+#[allow(dead_code)]
 impl TerminalView {
     /// Returns the path to the current repository, if any.
     pub fn current_repo_path(&self) -> Option<&LocalOrRemotePath> {
@@ -2916,7 +2923,12 @@ impl TerminalView {
     }
 
     fn is_nested_cloud_mode(&self, app: &AppContext) -> bool {
-        if !self.is_ambient_agent_session(app) {
+        let model = self.model.lock();
+        self.is_nested_cloud_mode_with_model(&model, app)
+    }
+
+    fn is_nested_cloud_mode_with_model(&self, model: &TerminalModel, app: &AppContext) -> bool {
+        if !self.is_ambient_agent_session_with_model(model, app) {
             return false;
         }
 
@@ -4909,6 +4921,39 @@ impl TerminalView {
         }
     }
 
+    fn handle_ambient_agent_event(
+        &mut self,
+        _event: &AmbientAgentViewModelEvent,
+        _ctx: &mut ViewContext<Self>,
+    ) {
+        // Stub implementation - no-op for local version
+    }
+
+    fn handle_first_time_cloud_agent_setup_event(
+        &mut self,
+        _event: &(),
+        _ctx: &mut ViewContext<Self>,
+    ) {
+        // Stub implementation - no-op for local version
+    }
+
+    fn maybe_insert_setup_command_blocks(
+        &mut self,
+        _block_id: BlockId,
+        _ctx: &mut ViewContext<Self>,
+    ) {
+        // Stub implementation - no-op for local version
+    }
+
+    fn enter_cloud_agent_view(&mut self, _initial_prompt: String, _ctx: &mut ViewContext<Self>) {
+        // Stub implementation - no-op for local version
+    }
+
+    fn render_ambient_agent_progress(&self, _appearance: &crate::appearance::Appearance, _app: &AppContext) -> Box<dyn Element> {
+        // Stub implementation - return empty element
+        cuteui::elements::Empty::new().finish()
+    }
+
     fn handle_legacy_passive_suggestions_event(
         &mut self,
         _: ModelHandle<LegacyPassiveSuggestionsModel>,
@@ -6824,7 +6869,7 @@ impl TerminalView {
     }
 
     #[cfg(any(test, feature = "integration_tests"))]
-    pub fn sessions<'a, A: warpui::ModelAsRef>(&self, ctx: &'a A) -> &'a Sessions {
+    pub fn sessions<'a, A: cuteui::ModelAsRef>(&self, ctx: &'a A) -> &'a Sessions {
         self.sessions.as_ref(ctx)
     }
 
@@ -7054,6 +7099,16 @@ impl TerminalView {
     ) {
     }
 
+    fn fetch_and_update_conversation_details_panel(&mut self, _ctx: &mut ViewContext<Self>) {
+        if self.is_conversation_details_panel_open {
+            // Refresh the conversation details panel data
+        }
+    }
+
+    fn refresh_conversation_details_panel_if_open(&mut self, _ctx: &mut ViewContext<Self>) {
+        // Stub implementation - refresh panel if open
+    }
+
     pub fn active_session(&self) -> &ModelHandle<ActiveSession> {
         &self.active_session
     }
@@ -7119,7 +7174,7 @@ impl TerminalView {
         });
     }
 
-    fn should_suppress_ambient_setup_input_sync(&self, app: &AppContext) -> bool {
+    fn should_suppress_ambient_setup_input_sync(&self, _app: &AppContext) -> bool {
         false
     }
 
@@ -7218,7 +7273,9 @@ impl TerminalView {
             return false;
         }
 
-        if model.shared_session_status().is_view_pending() && !self.is_ambient_agent_session(app) {
+        if model.shared_session_status().is_view_pending()
+            && !self.is_ambient_agent_session_with_model(model, app)
+        {
             return false;
         }
 
@@ -7919,7 +7976,7 @@ impl TerminalView {
         });
     }
 
-    /// Receiving the warpui::Event::KeyDown event from a child element.
+    /// Receiving the cuteui::Event::KeyDown event from a child element.
     /// Generally, this should be control characters rather than printable characters.
     fn keydown_on_terminal(&mut self, characters: &str, ctx: &mut ViewContext<Self>) {
         if self.is_long_running() {
@@ -7963,7 +8020,7 @@ impl TerminalView {
 
         was_bootstrap_script_echoed || is_shared_session_executor
     }
-    /// Receiving a warpui::Event::TypedCharacters event from a child element.
+    /// Receiving a cuteui::Event::TypedCharacters event from a child element.
     /// We can assume `characters` consists of all printable characters, and therefore,
     /// can go into the input box.
     fn typed_characters_on_terminal(&mut self, characters: &str, ctx: &mut ViewContext<Self>) {
@@ -8577,7 +8634,7 @@ impl TerminalView {
         ctx: &mut ViewContext<Self>,
     ) {
         // Stop the pending timeout on warpification.
-        self.warpify_state.abort_ssh_warpify_timeout();
+        self.warpify_state.abort_ssh_cuteify_timeout();
         match &reason {
             WarpificationUnavailableReason::TmuxNotInstalled {
                 system_details,
@@ -8868,7 +8925,7 @@ impl TerminalView {
                 handle: ssh_success_block_handle,
             });
         let active_session_id = self.active_block_session_id();
-        self.warpify_state.on_warpify_start(active_session_id);
+        self.warpify_state.on_cuteify_start(active_session_id);
         self.refresh_warp_prompt(ctx);
     }
 
@@ -8888,7 +8945,7 @@ impl TerminalView {
             }
             SshWarpifyBlockEvent::Interrupt => {
                 dismiss_ssh_warpify_block(self, ctx);
-                self.warpify_state.abort_ssh_warpify_timeout();
+                self.warpify_state.abort_ssh_cuteify_timeout();
                 self.user_write_ctrl_c_to_pty(ctx);
             }
             SshWarpifyBlockEvent::WarpifySession => {
@@ -8917,7 +8974,7 @@ impl TerminalView {
             }
             SshInstallTmuxBlockEvent::Interrupt => {
                 cancel_tmux_install(self, ctx);
-                self.warpify_state.abort_ssh_warpify_timeout();
+                self.warpify_state.abort_ssh_cuteify_timeout();
                 self.user_write_ctrl_c_to_pty(ctx);
             }
             SshInstallTmuxBlockEvent::InstallTmuxAndWarpify(install_source) => {
@@ -9227,9 +9284,9 @@ impl TerminalView {
     fn prompt_suggestion_view_type(&self, ctx: &ViewContext<Self>) -> PromptSuggestionViewType {
         if FeatureFlag::AgentView.is_enabled() && self.agent_view_controller.as_ref(ctx).is_active()
         {
-            PromptSuggestionViewType::AgentView
+            PromptSuggestionViewType::AGENT_VIEW
         } else {
-            PromptSuggestionViewType::TerminalView
+            PromptSuggestionViewType::TERMINAL_VIEW
         }
     }
 
@@ -9715,7 +9772,7 @@ impl TerminalView {
         match action {
             AnonymousUserLoginBannerAction::SignUp => {
                 ctx.emit(Event::SignupAnonymousUser {
-                    entrypoint: AnonymousUserSignupEntrypoint::LoginGatedFeature,
+                    entrypoint: AnonymousUserSignupEntrypoint::LOGIN_GATED_FEATURE,
                 });
                 self.remove_anonymous_user_ai_sign_up_banner(ctx);
             }
@@ -10311,7 +10368,7 @@ impl TerminalView {
         };
         let escape_char = session.shell_family().escape_char();
         let Some(top_level_command) =
-            warp_completer::parsers::simple::top_level_command(command, escape_char)
+            cute_completer::parsers::simple::top_level_command(command, escape_char)
         else {
             return false;
         };
@@ -11053,7 +11110,7 @@ impl TerminalView {
                             |_, _| (),
                         );
                         self.warpify_state
-                            .add_auto_warpify_abort_handle(auto_warpify_abort_handle);
+                            .add_auto_cuteify_abort_handle(auto_warpify_abort_handle);
                     } else {
                         // Wait 1 second before showing the banner, just to make sure the
                         // command stays running for a bit. If the command fails instantly,
@@ -11172,7 +11229,7 @@ impl TerminalView {
                         }
                     }
 
-                    self.maybe_insert_setup_command_blocks(block_id, ctx);
+                    self.maybe_insert_setup_command_blocks(block_id.clone(), ctx);
 
                     self.set_current_state(TerminalViewState::LongRunning, ctx);
                     ctx.emit(Event::BlockStarted {
@@ -11194,7 +11251,7 @@ impl TerminalView {
                 // avoid an attempt to trigger bootstrapping if the subshell command failed. If the
                 // future already resolved, abort has no effect. We handle this as early as possible
                 // because the abort is time sensitive.
-                self.warpify_state.abort_auto_warpify();
+                self.warpify_state.abort_auto_cuteify();
 
                 let active_session = self
                     .active_block_session_id()
@@ -11235,7 +11292,7 @@ impl TerminalView {
                 let active_session_id = self.active_block_session_id();
                 if let Some(block_id) = self
                     .warpify_state
-                    .get_completed_warpify_session_id(active_session_id, ctx)
+                    .get_completed_cuteify_session_id(active_session_id, ctx)
                 {
                     self.remove_ssh_block_by_id(block_id);
                 }
@@ -11296,7 +11353,7 @@ impl TerminalView {
                 if self.is_login_shell_bootstrapped {
                     let _ = ctx.spawn(
                         async move {
-                            warpui::r#async::Timer::after(EXECUTE_PENDING_COMMAND_DELAY).await;
+                            cuteui::r#async::Timer::after(EXECUTE_PENDING_COMMAND_DELAY).await;
                         },
                         Self::execute_pending_command,
                     );
@@ -11335,14 +11392,14 @@ impl TerminalView {
                                     .and_then(|session| {
                                         let escape_char = session.shell_family().escape_char();
                                         let cmd =
-                                            warp_completer::parsers::simple::top_level_command(
+                                            cute_completer::parsers::simple::top_level_command(
                                                 command,
                                                 escape_char,
                                             )?;
                                         let cmd = session
                                             .alias_value(cmd.as_str())
                                             .and_then(|alias| {
-                                                warp_completer::parsers::simple::top_level_command(
+                                                cute_completer::parsers::simple::top_level_command(
                                                     alias,
                                                     escape_char,
                                                 )
@@ -11438,9 +11495,8 @@ impl TerminalView {
                         let id_and_type = CloudObjectTypeAndId::GenericStringObject {
                             object_type: GenericStringObjectFormat::Json(
                                 JsonObjectType::EnvVarCollection,
-                            ),
-
-                            id: *cloud_env_var_collection_id,
+                            ).to_string(),
+                            id: cloud_env_var_collection_id.clone(),
                         };
                         UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
                             update_manager.record_object_action(
@@ -11721,7 +11777,7 @@ impl TerminalView {
                     .warpify_state
                     .ssh_block_state()
                     .and_then(|s| s.get_system_details(ctx));
-                self.warpify_state.abort_ssh_warpify_timeout();
+                self.warpify_state.abort_ssh_cuteify_timeout();
                 self.add_ssh_error_block(
                     WarpificationUnavailableReason::TmuxInstallFailed {
                         system_details,
@@ -11757,7 +11813,7 @@ impl TerminalView {
 
                 ctx.spawn(
                     async {
-                        warpui::r#async::Timer::after(*TRIGGER_RC_FILE_SUBSHELL_BOOTSTRAP_DELAY)
+                        cuteui::r#async::Timer::after(*TRIGGER_RC_FILE_SUBSHELL_BOOTSTRAP_DELAY)
                             .await
                     },
                     move |me, _, ctx| {
@@ -11904,6 +11960,8 @@ impl TerminalView {
             ModelEvent::RemoteServerBlockRequested { session_id } => {
                 self.show_ssh_remote_server_choice_block(*session_id, ctx);
             }
+            // Stub implementation - no-op for local version.
+            ModelEvent::SaveAIDocumentContent => {}
         }
     }
 
@@ -12569,7 +12627,7 @@ impl TerminalView {
         );
 
         // If we were waiting for a successful warpification, it's come. Stop the timeout.
-        self.warpify_state.abort_ssh_warpify_timeout();
+        self.warpify_state.abort_ssh_cuteify_timeout();
 
         if bootstrap_event.subshell_info.is_some() {
             self.add_bootstrap_success_block(bootstrap_event, ctx);
@@ -12915,7 +12973,6 @@ impl TerminalView {
                         EntrypointType::Onboarding {
                             chip_type: *chip_type,
                         },
-                        None,
                         ctx,
                     )
                 });
@@ -13699,6 +13756,16 @@ fn fork_label_for_query(query: &str) -> String {
 }
 
 impl TerminalView {
+    /// Stub method for start_cloud_mode - returns None since cloud mode is not available in stub.
+    pub fn start_cloud_mode(
+        &mut self,
+        _forked_conversation_id: Option<crate::server::ids::SyncId>,
+        _ctx: &mut ViewContext<Self>,
+    ) -> Option<(ViewHandle<Self>, ModelHandle<crate::terminal::view::ambient_agent::AmbientAgentViewModel>)> {
+        // Stub implementation - cloud mode not available
+        None
+    }
+
     fn start_agent_onboarding_tutorial(
         &mut self,
         version: AgentOnboardingVersion,
@@ -14985,7 +15052,7 @@ impl TerminalView {
     fn start_bootstrap_timer(&self, duration: Duration, ctx: &mut ViewContext<Self>) {
         let _ = ctx.spawn(
             async move {
-                warpui::r#async::Timer::after(duration).await;
+                cuteui::r#async::Timer::after(duration).await;
             },
             Self::on_bootstrap_failed_timer_complete,
         );
@@ -15077,6 +15144,31 @@ impl TerminalView {
         )
     }
 
+    pub fn is_ambient_agent_session(&self, ctx: &AppContext) -> bool {
+        let model = self.model.lock();
+        self.is_ambient_agent_session_with_model(&model, ctx)
+    }
+
+    /// 调用方已持有 `TerminalModel` 锁时使用，避免二次加锁死锁。
+    fn is_ambient_agent_session_with_model(
+        &self,
+        model: &TerminalModel,
+        ctx: &AppContext,
+    ) -> bool {
+        model.is_shared_ambient_agent_session()
+            || self
+                .ambient_agent_view_model
+                .as_ref()
+                .is_some_and(|ambient_model| ambient_model.as_ref(ctx).is_ambient_agent())
+    }
+
+    pub fn update_pane_configuration(&mut self, ctx: &mut ViewContext<Self>) {
+        self.pane_configuration.update(ctx, |pane_config, ctx| {
+            pane_config.notify_header_content_changed(ctx);
+        });
+        ctx.notify();
+    }
+
     fn resize_internal(&mut self, size_update: SizeUpdate, ctx: &mut ViewContext<Self>) {
         // Viewer-driven sizing: report the viewer's natural size to the sharer.
         // This runs before the early-return so the initial report on viewer join
@@ -15147,8 +15239,8 @@ impl TerminalView {
                 }
                 ctx.emit(Event::ReportViewerTerminalSize {
                     window_size: SessionSharingWindowSize {
-                        num_rows: new_natural.0,
-                        num_cols: new_natural.1,
+                        rows: new_natural.0,
+                        columns: new_natural.1,
                     },
                 });
             }
@@ -15438,7 +15530,8 @@ impl TerminalView {
             .as_ref()
             .map(|model| model.as_ref(ctx).ui_state.error_selected_text.clone());
         if let Some(error_selected_text) = error_selected_text {
-            if let Some(text) = error_selected_text.read().clone().filter(|t| !t.is_empty()) {
+            let text = error_selected_text.read().clone();
+            if !text.is_empty() {
                 ctx.clipboard().write(ClipboardContent::plain_text(text));
                 return;
             }
@@ -15843,7 +15936,7 @@ impl TerminalView {
                 ]);
                 items.append(&mut vec![MenuItemFields::new("Toggle block filter")
                     .with_on_select_action(TerminalAction::ToggleBlockFilterOnSelectedOrLastBlock(
-                        ToggleBlockFilterSource::ContextMenu,
+                        ToggleBlockFilterSource::CONTEXT_MENU,
                     ))
                     .with_key_shortcut_label(keybinding_name_to_display_string(
                         TOGGLE_BLOCK_FILTER_KEYBINDING,
@@ -16014,7 +16107,7 @@ impl TerminalView {
                                         ai_block_view_id: *rich_content_view_id,
                                         exchange_id: ai_metadata.exchange_id,
                                         conversation_id: ai_metadata.conversation_id,
-                                        entrypoint: AgentModeRewindEntrypoint::ContextMenu,
+                                        entrypoint: AgentModeRewindEntrypoint::CONTEXT_MENU,
                                     })
                                     .into_item(),
                             );
@@ -16511,7 +16604,7 @@ impl TerminalView {
 
         self.open_workflow_modal_with_command(
             selected_block_contents,
-            SaveAsWorkflowModalSource::Block,
+            SaveAsWorkflowModalSource::BLOCK,
             ctx,
         );
     }
@@ -17238,7 +17331,7 @@ impl TerminalView {
         }
 
         if should_directly_open_link {
-            self.maybe_open_link(LinkOpenMethod::CmdClick, position, ctx);
+            self.maybe_open_link(LinkOpenMethod::CMD_CLICK, position, ctx);
         }
     }
 
@@ -17317,7 +17410,7 @@ impl TerminalView {
         if self.highlighted_link.is_some() {
             // Middle click should open a highlighted link if there is one.
             if let Some(position) = position {
-                self.maybe_open_link(LinkOpenMethod::MiddleClick, position, ctx);
+                self.maybe_open_link(LinkOpenMethod::MIDDLE_CLICK, position, ctx);
             }
         } else {
             // Otherwise, assume that the user wants to middle-click paste.
@@ -18024,7 +18117,7 @@ impl TerminalView {
             selected_input_text
         };
 
-        self.open_workflow_modal_with_command(command, SaveAsWorkflowModalSource::Input, ctx);
+        self.open_workflow_modal_with_command(command, SaveAsWorkflowModalSource::INPUT, ctx);
     }
 
     fn toggle_input_hint_text(&mut self, ctx: &mut ViewContext<Self>) {
@@ -19587,7 +19680,7 @@ impl TerminalView {
         {
             AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
                 auth_manager.attempt_login_gated_feature(
-                    "Share Block",
+                    crate::workspace::WorkspaceAction::OpenShareSessionModal(0),
                     AuthViewVariant::ShareRequirementCloseable,
                     ctx,
                 )
@@ -19909,19 +20002,19 @@ impl TerminalView {
                 attachments,
             } => {
                 ctx.emit(Event::SendAgentPrompt {
-                    server_conversation_token: *server_conversation_token,
+                    server_conversation_token: server_conversation_token.clone(),
                     prompt: prompt.clone(),
                     attachments: attachments.clone(),
                 });
             }
-            InputEvent::SubmitCloudFollowup { prompt } => {
+            InputEvent::SubmitCloudFollowup { prompt: _ } => {
                 self.show_error_toast("Couldn't continue this cloud task.".to_string(), ctx);
             }
             InputEvent::CancelSharedSessionConversation {
                 server_conversation_token,
             } => {
                 ctx.emit(Event::CancelSharedSessionConversation {
-                    server_conversation_token: *server_conversation_token,
+                    server_conversation_token: server_conversation_token.clone(),
                 });
             }
             InputEvent::ClearSelectedBlock => self.clear_selected_blocks(ctx),
@@ -19953,7 +20046,7 @@ impl TerminalView {
                 if is_accept_prompt_suggestion_bound_to_cmd_enter(ctx) {
                     self.resolve_passive_suggestion(
                         PromptSuggestionResolution::Accept {
-                            interaction_source: InteractionSource::Keybinding,
+                            interaction_source: InteractionSource::KEYBINDING,
                         },
                         ctx,
                     );
@@ -19963,7 +20056,7 @@ impl TerminalView {
                 if is_accept_prompt_suggestion_bound_to_ctrl_enter(ctx) {
                     self.resolve_passive_suggestion(
                         PromptSuggestionResolution::Accept {
-                            interaction_source: InteractionSource::Keybinding,
+                            interaction_source: InteractionSource::KEYBINDING,
                         },
                         ctx,
                     );
@@ -19991,7 +20084,7 @@ impl TerminalView {
                 }
             },
             InputEvent::EnterCloudAgentView { initial_prompt } => {
-                self.enter_cloud_agent_view(initial_prompt.clone(), ctx);
+                self.enter_cloud_agent_view(initial_prompt.clone().unwrap_or_default(), ctx);
             }
             InputEvent::CreateDockerSandbox => {
                 if !FeatureFlag::LocalDockerSandbox.is_enabled() {
@@ -20371,8 +20464,8 @@ impl TerminalView {
 
     pub(crate) fn enter_ambient_agent_setup(
         &mut self,
-        initial_prompt: Option<String>,
-        ctx: &mut ViewContext<Self>,
+        _initial_prompt: Option<String>,
+        _ctx: &mut ViewContext<Self>,
     ) {
         // Ambient agent setup can only be done inside a shared session viewer; otherwise the backing terminal manager is incorrect.
         return;
@@ -21596,9 +21689,9 @@ impl TerminalView {
                 SessionType::WarpifiedRemote { host_id } => host_id,
                 SessionType::Local => return None,
             }?;
-            let std_path = warp_util::standardized_path::StandardizedPath::try_new(cwd_str).ok()?;
+            let std_path = cute_util::standardized_path::StandardizedPath::try_new(cwd_str).ok()?;
             Some(LocalOrRemotePath::Remote(
-                warp_util::remote_path::RemotePath::new(host_id, std_path),
+                cute_util::remote_path::RemotePath::new(host_id, std_path),
             ))
         }
     }
@@ -21690,11 +21783,11 @@ impl TerminalView {
         let icon = Container::new(
             ConstrainedBox::new(if has_active_filter {
                 icons::Icon::FilterFunnelFilled
-                    .to_warpui_icon(appearance.theme().accent())
+                    .to_cuteui_icon(appearance.theme().accent())
                     .finish()
             } else {
                 icons::Icon::FilterFunnel
-                    .to_warpui_icon(
+                    .to_cuteui_icon(
                         appearance
                             .theme()
                             .sub_text_color(appearance.theme().surface_2()),
@@ -22184,7 +22277,7 @@ impl TerminalView {
         let (rows, columns) = if let Some(Viewer { sharer_size, .. }) = self.shared_session_viewer()
         {
             sharer_size
-                .map(|s| (s.num_rows, s.num_cols))
+                .map(|s| (s.rows, s.columns))
                 .unwrap_or((self.size_info.rows(), self.size_info.columns()))
         } else {
             (self.size_info.rows(), self.size_info.columns())
@@ -23254,7 +23347,7 @@ impl TerminalView {
         }
 
         // Iterate from end backwards, reverting all diffs in each AIBlock from this conversation until the block the user clicked on (inclusive)
-        let mut num_blocks_reverted = 0;
+        let mut _num_blocks_reverted = 0;
         for rich_content in self.rich_content_views.iter().rev() {
             if let Some(ai_metadata) = rich_content.ai_block_metadata() {
                 // Only revert blocks from the same conversation
@@ -23262,7 +23355,7 @@ impl TerminalView {
                     ai_metadata.ai_block_handle.update(ctx, |block, ctx| {
                         block.revert_all_diffs(ctx);
                     });
-                    num_blocks_reverted += 1;
+                    _num_blocks_reverted += 1;
                     if ai_metadata.ai_block_handle.id() == ai_block_view_id {
                         break;
                     }
@@ -23644,6 +23737,7 @@ impl TerminalView {
         });
         env_var_collection_block.update(ctx, |block, ctx| block.focus(ctx));
 
+        let cloud_object_type_and_id = cloud_object_type_and_id.clone();
         ctx.subscribe_to_view(&env_var_collection_block, move |me, block, event, ctx| {
             let event = event.clone();
             match event {
@@ -23662,9 +23756,9 @@ impl TerminalView {
                         },
                     }));
 
-                    UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
+                    UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
                         update_manager.record_object_action(
-                            cloud_object_type_and_id,
+                            cloud_object_type_and_id.clone(),
                             ObjectActionType::Execute,
                             None,
                             ctx,
@@ -23982,7 +24076,7 @@ impl TerminalView {
                 && session.shell_family() == ShellFamily::Posix
                 && is_in_long_running_command;
             if is_msys2_long_running {
-                let input = warpui::clipboard_utils::escaped_paths_str(paths, None);
+                let input = cuteui::clipboard_utils::escaped_paths_str(paths, None);
                 self.typed_characters_on_terminal(&input, ctx);
                 return;
             }
@@ -23993,7 +24087,7 @@ impl TerminalView {
             let paths = if session.is_wsl() {
                 paths_converted = paths
                     .iter()
-                    .map(|p| warp_util::path::convert_windows_path_to_wsl(p))
+                    .map(|p| cute_util::path::convert_windows_path_to_wsl(p))
                     .collect::<Vec<_>>();
                 paths_converted.as_slice()
             } else {
@@ -24001,7 +24095,7 @@ impl TerminalView {
             };
 
             let input =
-                warpui::clipboard_utils::escaped_paths_str(paths, Some(self.shell_family(ctx)));
+                cuteui::clipboard_utils::escaped_paths_str(paths, Some(self.shell_family(ctx)));
             self.typed_characters_on_terminal(&input, ctx);
         }
     }
@@ -24103,7 +24197,7 @@ impl TerminalView {
             .ssh_block_state()
             .and_then(|s| s.get_system_details(ctx))
             .to_owned();
-        self.warpify_state.add_ssh_warpify_timeout_handle(ctx.spawn(
+        self.warpify_state.add_ssh_cuteify_timeout_handle(ctx.spawn(
             async move {
                 Timer::after(duration).await;
                 (timeout_id, active_block_id, system_details)
@@ -24144,7 +24238,7 @@ impl TerminalView {
                 let active_block_id = self.model.lock().block_list().active_block_id().clone();
                 ctx.spawn(
                     async {
-                        warpui::r#async::Timer::after(Duration::from_secs(3)).await;
+                        cuteui::r#async::Timer::after(Duration::from_secs(3)).await;
                         active_block_id
                     },
                     move |terminal_view, active_block_id, _| {
@@ -24777,7 +24871,7 @@ impl TypedActionView for TerminalView {
                         ai_block_view_id,
                         *exchange_id,
                         *conversation_id,
-                        AgentModeRewindEntrypoint::SlashCommand,
+                        AgentModeRewindEntrypoint::SLASH_COMMAND,
                         ctx,
                     );
                 } else {
@@ -25214,7 +25308,7 @@ impl TypedActionView for TerminalView {
             AttemptLoginGatedFeature => {
                 AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
                     auth_manager.attempt_login_gated_feature(
-                        "Upgrade AI Usage",
+                        crate::workspace::WorkspaceAction::AttemptLoginGatedAIUpgrade,
                         AuthViewVariant::RequireLoginCloseable,
                         ctx,
                     )
@@ -25317,7 +25411,7 @@ impl TypedActionView for TerminalView {
                     }
                     images.push(ui_components::lightbox::LightboxImage {
                         source: ui_components::lightbox::LightboxImageSource::Resolved {
-                            asset_source: warpui::assets::asset_cache::AssetSource::Raw {
+                            asset_source: cuteui::assets::asset_cache::AssetSource::Raw {
                                 id: asset_id,
                             },
                         },
@@ -25691,7 +25785,7 @@ impl TypedActionView for TerminalView {
                 let mut draft_text = self.input.as_ref(ctx).buffer_text(ctx);
                 draft_text.truncate(draft_text.trim_end().len());
                 let initial_prompt = (!draft_text.trim().is_empty()).then_some(draft_text);
-                self.enter_cloud_agent_view(initial_prompt, ctx);
+                self.enter_cloud_agent_view(initial_prompt.unwrap_or_default(), ctx);
             }
             StartNewAgentConversation => {
                 self.input.update(ctx, |input, ctx| {
@@ -25855,7 +25949,7 @@ impl View for TerminalView {
                         .with_child(column.finish())
                 } else {
                     let is_view_pending_clause = model.shared_session_status().is_view_pending()
-                        && !self.is_ambient_agent_session(app);
+                        && !self.is_ambient_agent_session_with_model(&model, app);
                     let is_loading_transcript = model.is_loading_conversation_transcript();
                     let should_show_loading = is_view_pending_clause || is_loading_transcript;
                     let output_area = if should_show_loading {
@@ -26306,7 +26400,7 @@ impl View for TerminalView {
 
             Container::new(
                 Flex::row()
-                    .with_main_axis_size(warpui::elements::MainAxisSize::Max)
+                    .with_main_axis_size(cuteui::elements::MainAxisSize::Max)
                     .with_cross_axis_alignment(CrossAxisAlignment::Stretch)
                     .with_child(Shrinkable::new(1., final_element).finish())
                     .with_child(panel_with_background)
@@ -26345,7 +26439,7 @@ impl View for TerminalView {
         }
     }
 
-    fn keymap_context(&self, app: &AppContext) -> warpui::keymap::Context {
+    fn keymap_context(&self, app: &AppContext) -> cuteui::keymap::Context {
         let mut context = Self::default_keymap_context();
         context.map.insert(
             "TerminalView_BlockSelectionCardinality",
@@ -26436,7 +26530,9 @@ impl View for TerminalView {
             }
         }
 
-        if self.is_ambient_agent_session(app) && !self.is_nested_cloud_mode(app) {
+        if self.is_ambient_agent_session_with_model(&model_lock, app)
+            && !self.is_nested_cloud_mode_with_model(&model_lock, app)
+        {
             context.set.insert(init::ROOT_CLOUD_MODE_PANE_KEY);
         }
 

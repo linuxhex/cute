@@ -6,14 +6,14 @@ use std::sync::Arc;
 use fuzzy_match::{match_indices_case_insensitive, FuzzyMatchResult};
 use instant::Instant;
 use pathfinder_geometry::vector::vec2f;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::builder::MIN_FONT_SIZE;
-use warp_core::ui::theme::color::internal_colors;
-use warp_core::ui::theme::Fill;
-use warp_editor::editor::NavigationKey;
-use warpui::clipboard::ClipboardContent;
-use warpui::color::ColorU;
-use warpui::elements::{
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::builder::MIN_FONT_SIZE;
+use cute_core::ui::theme::color::internal_colors;
+use cute_core::ui::theme::Fill;
+use cute_editor::editor::NavigationKey;
+use cuteui::clipboard::ClipboardContent;
+use cuteui::color::ColorU;
+use cuteui::elements::{
     Border, ChildAnchor, ChildView, ClippedScrollStateHandle, ClippedScrollable, ConstrainedBox,
     Container, CornerRadius, CrossAxisAlignment, Dismiss, DispatchEventResult, DropShadow, Empty,
     EventHandler, Flex, Highlight, Hoverable, MainAxisAlignment, MainAxisSize, MouseInBehavior,
@@ -22,13 +22,13 @@ use warpui::elements::{
     ScrollStateHandle, Scrollable, ScrollableElement, ScrollbarWidth, Shrinkable, Stack, Text,
     UniformList, UniformListState,
 };
-use warpui::fonts::{Properties, Weight};
-use warpui::keymap::FixedBinding;
-use warpui::platform::Cursor;
-use warpui::r#async::Timer;
-use warpui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
-use warpui::units::Pixels;
-use warpui::{
+use cuteui::fonts::{Properties, Weight};
+use cuteui::keymap::FixedBinding;
+use cuteui::platform::Cursor;
+use cuteui::r#async::Timer;
+use cuteui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
+use cuteui::units::Pixels;
+use cuteui::{
     AppContext, Element, Entity, FocusContext, SingletonEntity as _, TypedActionView, View,
     ViewContext, ViewHandle, WindowId,
 };
@@ -128,7 +128,7 @@ const ENV_SIDE_CAR_OUTER_RADIUS: f32 = 6.;
 const ENV_SIDE_CAR_INNER_RADIUS: f32 = 4.;
 
 pub fn init(app: &mut AppContext) {
-    use warpui::keymap::macros::*;
+    use cuteui::keymap::macros::*;
 
     app.register_fixed_bindings([
         FixedBinding::new(
@@ -248,7 +248,7 @@ pub struct DisplayChipMenu {
 
     // Branch context menu state (right-click)
     branch_context_menu: Option<BranchContextMenu>,
-    branch_context_menu_position: Option<warpui::geometry::vector::Vector2F>,
+    branch_context_menu_position: Option<cuteui::geometry::vector::Vector2F>,
     branch_context_menu_mouse_states: Vec<MouseStateHandle>,
 }
 
@@ -288,7 +288,7 @@ pub enum DisplayChipMenuAction {
     Close,
     ShowBranchContextMenu {
         index: usize,
-        position: warpui::geometry::vector::Vector2F,
+        position: cuteui::geometry::vector::Vector2F,
     },
     ExecuteBranchAction {
         action: BranchContextMenuAction,
@@ -914,7 +914,7 @@ impl DisplayChipMenu {
         let image_key = format!("env-sidecar:{}:image", data.id);
 
         let icon = |icon: Icon| {
-            ConstrainedBox::new(icon.to_warpui_icon(Fill::Solid(label_text_color)).finish())
+            ConstrainedBox::new(icon.to_cuteui_icon(Fill::Solid(label_text_color)).finish())
                 .with_width(ENV_SIDE_CAR_ICON_SIZE)
                 .with_height(ENV_SIDE_CAR_ICON_SIZE)
                 .finish()
@@ -1037,7 +1037,7 @@ impl DisplayChipMenu {
             theme.nonactive_ui_detail().into(),
             theme.active_ui_detail().into(),
             // Leave the scrollbar gutter background transparent.
-            warpui::elements::Fill::None,
+            cuteui::elements::Fill::None,
         )
         .with_padding_start(0.)
         .with_padding_end(0.)
@@ -1131,7 +1131,7 @@ impl DisplayChipMenu {
                     updated_text.add_child(
                         Container::new(
                             ConstrainedBox::new(
-                                icon.to_warpui_icon(Fill::Solid(text_color)).finish(),
+                                icon.to_cuteui_icon(Fill::Solid(text_color)).finish(),
                             )
                             .with_height(icon_size)
                             .with_width(icon_size)
@@ -1332,7 +1332,7 @@ impl DisplayChipMenu {
                                 let glyph_size = ENV_MENU_ICON_SIZE;
 
                                 let icon_glyph = ConstrainedBox::new(
-                                    icon.to_warpui_icon(Fill::Solid(main_text)).finish(),
+                                    icon.to_cuteui_icon(Fill::Solid(main_text)).finish(),
                                 )
                                 .with_width(glyph_size)
                                 .with_height(glyph_size)
@@ -1359,7 +1359,7 @@ impl DisplayChipMenu {
                             left_side.add_child(
                                 Container::new(
                                     ConstrainedBox::new(
-                                        icon.to_warpui_icon(Fill::Solid(main_text)).finish(),
+                                        icon.to_cuteui_icon(Fill::Solid(main_text)).finish(),
                                     )
                                     .with_height(icon_size)
                                     .with_width(icon_size)
@@ -1520,7 +1520,7 @@ impl DisplayChipMenu {
             scrollbar_width,
             theme.nonactive_ui_detail().into(),
             theme.active_ui_detail().into(),
-            warpui::elements::Fill::None,
+            cuteui::elements::Fill::None,
         )
         .with_padding_end(0.)
         .with_padding_start(0.);
@@ -1658,7 +1658,7 @@ impl DisplayChipMenu {
                         .with_child(
                             Container::new(
                                 Icon::Warning
-                                    .to_warpui_icon(Fill::Solid(theme.ansi_fg_yellow()))
+                                    .to_cuteui_icon(Fill::Solid(theme.ansi_fg_yellow()))
                                     .finish(),
                             )
                             .with_margin_bottom(8.)
@@ -1705,7 +1705,7 @@ impl DisplayChipMenu {
             header_top.add_child(
                 Container::new(
                     ConstrainedBox::new(
-                        branch_icon.to_warpui_icon(Fill::Solid(icon_color)).finish(),
+                        branch_icon.to_cuteui_icon(Fill::Solid(icon_color)).finish(),
                     )
                     .with_width(font_size)
                     .with_height(font_size)
@@ -1748,7 +1748,7 @@ impl DisplayChipMenu {
                         .with_child(
                             Container::new(
                                 Icon::GitCommit
-                                    .to_warpui_icon(Fill::Solid(
+                                    .to_cuteui_icon(Fill::Solid(
                                         theme.sub_text_color(theme.surface_2()).into_solid(),
                                     ))
                                     .finish(),
@@ -1908,7 +1908,7 @@ impl DisplayChipMenu {
                     ScrollbarWidth::Auto,
                     theme.nonactive_ui_detail().into(),
                     theme.active_ui_detail().into(),
-                    warpui::elements::Fill::None,
+                    cuteui::elements::Fill::None,
                 )
                 .with_overlayed_scrollbar();
 
@@ -1927,7 +1927,7 @@ impl DisplayChipMenu {
                             .with_child(
                                 Container::new(
                                     Icon::GitCommit
-                                        .to_warpui_icon(Fill::Solid(
+                                        .to_cuteui_icon(Fill::Solid(
                                             theme.sub_text_color(theme.surface_2()).into_solid(),
                                         ))
                                         .finish(),
@@ -1959,7 +1959,7 @@ impl DisplayChipMenu {
                         .with_child(
                             Container::new(
                                 Icon::GitBranch
-                                    .to_warpui_icon(Fill::Solid(
+                                    .to_cuteui_icon(Fill::Solid(
                                         theme.sub_text_color(theme.surface_2()).into_solid(),
                                     ))
                                     .finish(),
@@ -2038,7 +2038,7 @@ impl DisplayChipMenu {
                         .with_cross_axis_alignment(CrossAxisAlignment::Center)
                         .with_child(
                             Icon::File
-                                .to_warpui_icon(Fill::Solid(
+                                .to_cuteui_icon(Fill::Solid(
                                     theme.sub_text_color(theme.surface_2()).into_solid(),
                                 ))
                                 .finish(),
@@ -2155,7 +2155,7 @@ impl DisplayChipMenu {
                     ScrollbarWidth::Auto,
                     theme.nonactive_ui_detail().into(),
                     theme.active_ui_detail().into(),
-                    warpui::elements::Fill::None,
+                    cuteui::elements::Fill::None,
                 )
                 .with_overlayed_scrollbar();
 
@@ -2186,7 +2186,7 @@ impl DisplayChipMenu {
                         .with_child(
                             Container::new(
                                 Icon::File
-                                    .to_warpui_icon(Fill::Solid(
+                                    .to_cuteui_icon(Fill::Solid(
                                         theme.sub_text_color(theme.surface_2()).into_solid(),
                                     ))
                                     .finish(),
@@ -2221,7 +2221,7 @@ impl DisplayChipMenu {
     fn show_branch_context_menu(
         &mut self,
         index: usize,
-        position: warpui::geometry::vector::Vector2F,
+        position: cuteui::geometry::vector::Vector2F,
         ctx: &mut ViewContext<Self>,
     ) {
         if index >= self.filtered_items.len() {
@@ -2301,7 +2301,7 @@ impl DisplayChipMenu {
             }
             BranchContextMenuAction::CopyBranchName { branch_name } => {
                 ctx.clipboard()
-                    .write(warpui::clipboard::ClipboardContent::plain_text(
+                    .write(cuteui::clipboard::ClipboardContent::plain_text(
                         branch_name.clone(),
                     ));
             }
@@ -2412,7 +2412,7 @@ impl DisplayChipMenu {
                     row.add_child(
                         Container::new(
                             ConstrainedBox::new(
-                                icon.to_warpui_icon(Fill::Solid(icon_color)).finish(),
+                                icon.to_cuteui_icon(Fill::Solid(icon_color)).finish(),
                             )
                             .with_width(icon_size)
                             .with_height(icon_size)
@@ -2608,7 +2608,7 @@ impl View for DisplayChipMenu {
                 } else {
                     theme.sub_text_color(theme.surface_2()).into_solid()
                 };
-                Icon::X.to_warpui_icon(Fill::Solid(icon_color)).finish()
+                Icon::X.to_cuteui_icon(Fill::Solid(icon_color)).finish()
             });
             let close_button = close_button
                 .on_click(|ctx, _, _| {

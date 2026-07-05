@@ -4,13 +4,13 @@
 
 The `ReadFiles` agent tool is disabled for remote SSH sessions. `get_supported_tools` skips `ToolType::ReadFiles` when `SessionType::WarpifiedRemote`, because the underlying `read_local_file_context` reads files via `async_fs`, `FileModel::read_text_file`, and local image processing — all local-only APIs.
 
-The remote server already runs on the host machine with full filesystem access and has access to the same dependencies (`warp_files`, `warp_util`, `mime_guess`). Rather than building a degraded client-side approximation, we push the file-reading logic to the server so the ReadFiles tool has full feature parity with local: line-range extraction, binary/image support, metadata, and size limits.
+The remote server already runs on the host machine with full filesystem access and has access to the same dependencies (`cute_files`, `cute_util`, `mime_guess`). Rather than building a degraded client-side approximation, we push the file-reading logic to the server so the ReadFiles tool has full feature parity with local: line-range extraction, binary/image support, metadata, and size limits.
 
 ## Relevant Code
 
 - `app/src/ai/blocklist/action_model/execute/read_files.rs` — `ReadFilesExecutor`; dispatches to `read_local_file_context`
 - `app/src/ai/blocklist/action_model/execute.rs:941` — `read_local_file_context`; per-file reading logic (metadata, binary detection, text/binary read, image processing, byte limits)
-- `crates/warp_files/src/lib.rs:528` — `FileModel::read_text_file`; line-range extraction and byte-limit truncation
+- `crates/cute_files/src/lib.rs:528` — `FileModel::read_text_file`; line-range extraction and byte-limit truncation
 - `crates/warp_util/src/file_type.rs:46` — `is_binary_file`; extension-based binary detection
 - `app/src/util/image.rs:96` — `process_image_for_agent`; image processing for LLM context
 - `crates/remote_server/proto/remote_server.proto:234-249` — current `ReadFile`/`ReadFileResponse`/`ReadFileSuccess` proto (too simple)

@@ -10,26 +10,26 @@ use pathfinder_geometry::rect::RectF;
 use pathfinder_geometry::vector::{vec2f, Vector2F};
 use smallvec::SmallVec;
 use vim::vim::{MotionType, VimMode};
-use warp_core::features::FeatureFlag;
-use warp_core::ui::appearance::DEFAULT_UI_FONT_SIZE;
-use warp_util::user_input::UserInput;
-use warpui::elements::{
+use cute_core::features::FeatureFlag;
+use cute_core::ui::appearance::DEFAULT_UI_FONT_SIZE;
+use cute_util::user_input::UserInput;
+use cuteui::elements::{
     AfterLayoutContext, ChildView, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment,
     Element, Event, EventContext, Flex, LayoutContext, PaintContext, ParentElement, Point, Radius,
     SizeConstraint, Text, DEFAULT_UI_LINE_HEIGHT_RATIO,
 };
-use warpui::event::{DispatchedEvent, KeyState, ModifiersState};
-use warpui::keymap::Keystroke;
-use warpui::platform::keyboard::KeyCode;
-use warpui::text_layout::{
+use cuteui::event::{DispatchedEvent, KeyState, ModifiersState};
+use cuteui::keymap::Keystroke;
+use cuteui::platform::keyboard::KeyCode;
+use cuteui::text_layout::{
     self, ComputeBaselinePositionArgs, LayoutCache, DEFAULT_TOP_BOTTOM_RATIO,
 };
-use warpui::text_selection_utils::{
+use cuteui::text_selection_utils::{
     calculate_tick_width, create_newline_tick_rect, selection_crosses_newline_row_based,
     NewlineTickParams,
 };
-use warpui::ui_components::components::UiComponent;
-use warpui::{AppContext, SingletonEntity, TaskId, ViewHandle};
+use cuteui::ui_components::components::UiComponent;
+use cuteui::{AppContext, SingletonEntity, TaskId, ViewHandle};
 
 use super::super::soft_wrap::{
     ClampDirection, DisplayPointAndClampDirection, FrameLayouts, SoftWrapPoint, SoftWrapState,
@@ -869,7 +869,7 @@ impl EditorElement {
                         cursor.origin.y() - cursor_height,
                     );
                     // New layer is started so avatars are rendered over text and prompt
-                    ctx.scene.start_layer(warpui::ClipBounds::None);
+                    ctx.scene.start_layer(cuteui::ClipBounds::None);
                     drawable_selections_data
                         .avatar
                         .paint(avatar_origin, ctx, app);
@@ -885,7 +885,7 @@ impl EditorElement {
                     cursor.origin.y() - icon_size.y() - VOICE_INPUT_ICON_CURSOR_GAP,
                 );
                 // New layer is started so voice icon is rendered over text and prompt
-                ctx.scene.start_layer(warpui::ClipBounds::None);
+                ctx.scene.start_layer(cuteui::ClipBounds::None);
                 element.paint(icon_origin, ctx, app);
                 ctx.scene.stop_layer();
             }
@@ -1480,7 +1480,7 @@ impl EditorElement {
         let cycle_next_command_hint = if self.should_show_cycle_next_command_hint(is_cycling, ctx) {
             let appearance = Appearance::as_ref(ctx);
             Some(
-                self.render_cycle_next_command_hint(warp_core::ui::theme::Fill::Solid(
+                self.render_cycle_next_command_hint(cute_core::ui::theme::Fill::Solid(
                     blended_colors::semantic_text_disabled(appearance.theme()),
                 )),
             )
@@ -1500,7 +1500,7 @@ impl EditorElement {
             .with_cross_axis_alignment(CrossAxisAlignment::End)
             .with_children([
                 Container::new(
-                    ConstrainedBox::new(Icon::ArrowDown.to_warpui_icon(color).finish())
+                    ConstrainedBox::new(Icon::ArrowDown.to_cuteui_icon(color).finish())
                         .with_max_height(icon_height)
                         .with_max_width(icon_height)
                         .finish(),

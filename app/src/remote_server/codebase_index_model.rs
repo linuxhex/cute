@@ -1,9 +1,9 @@
 //! Stub for RemoteCodebaseIndexModel after remote_server removal.
 
 use std::path::PathBuf;
-use warp_core::HostId;
-use warp_util::remote_path::RemotePath;
-use warpui::{Entity, ModelContext, SingletonEntity};
+use cute_core::HostId;
+use cute_util::remote_path::RemotePath;
+use cuteui::{Entity, ModelContext, SingletonEntity};
 
 /// Stub RemoteCodebaseIndexModel.
 pub struct RemoteCodebaseIndexModel {
@@ -158,8 +158,8 @@ pub struct RemoteCodebaseSearchContext {
 pub struct RemoteCodebaseIndexSettingsEntry {
     pub repo_path: String,
     pub state: RemoteCodebaseIndexState,
-    pub remote_path: Option<warp_util::remote_path::RemotePath>,
+    pub remote_path: Option<cute_util::remote_path::RemotePath>,
     pub host_label: Option<String>,
-    pub path: Option<warp_util::remote_path::RemotePath>,
+    pub path: Option<cute_util::remote_path::RemotePath>,
     pub status: RemoteCodebaseIndexStatus,
 }

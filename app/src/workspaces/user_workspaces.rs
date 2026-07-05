@@ -2,10 +2,10 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use regex::Regex;
-use warp_core::features::FeatureFlag;
-use warp_core::settings::{ChangeEventReason, Setting};
-use warp_graphql::workspace::FeatureModelChoice;
-use warpui::{AppContext, Entity, ModelContext, SingletonEntity, Tracked};
+use cute_core::features::FeatureFlag;
+use cute_core::settings::{ChangeEventReason, Setting};
+use cute_graphql::workspace::FeatureModelChoice;
+use cuteui::{AppContext, Entity, ModelContext, SingletonEntity, Tracked};
 
 use super::workspace::{DiscoverableTeam, MembershipRole, Team};
 #[cfg(test)]
@@ -108,7 +108,7 @@ pub struct WorkspacesMetadataResponse {
 // independent queries.
 pub struct WorkspacesMetadataWithPricing {
     pub metadata: WorkspacesMetadataResponse,
-    pub pricing_info: Option<warp_graphql::billing::PricingInfo>,
+    pub pricing_info: Option<cute_graphql::billing::PricingInfo>,
 }
 
 // Simplified: team creation not supported, but keep struct for compatibility
@@ -493,7 +493,7 @@ impl UserWorkspaces {
 
     // Maps an [`Owner`] into a [`Space`], based on the user's team memberships.
     // This is always possible, as unknown owners imply the shared space.
-    pub fn owner_to_space(&self, owner: Owner, ctx: &AppContext) -> Space {
+    pub fn owner_to_space(&self, owner: Owner, _ctx: &AppContext) -> Space {
         match owner {
             Owner::User { user_uid: _ } => Space::Personal,
             Owner::Team { team_uid } => {

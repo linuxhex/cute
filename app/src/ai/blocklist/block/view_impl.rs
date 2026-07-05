@@ -34,23 +34,23 @@ use common::get_highlight_ranges_for_find_matches;
 use itertools::Itertools;
 use pathfinder_color::ColorU;
 use settings::Setting as _;
-use warp_core::features::FeatureFlag;
-use warp_core::semantic_selection::SemanticSelection;
-use warp_core::ui::color::contrast::{
+use cute_core::features::FeatureFlag;
+use cute_core::semantic_selection::SemanticSelection;
+use cute_core::ui::color::contrast::{
     foreground_color_with_minimum_contrast, MinimumAllowedContrast,
 };
-use warp_core::ui::color::Rgb;
-use warp_core::ui::theme::{Fill, WarpTheme};
-use warpui::elements::{
+use cute_core::ui::color::Rgb;
+use cute_core::ui::theme::{Fill, WarpTheme};
+use cuteui::elements::{
     Align, Border, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Empty, Expanded,
     Flex, FormattedTextElement, Highlight, HighlightedRange, Hoverable, MainAxisAlignment,
     MainAxisSize, MouseStateHandle, ParentElement, Radius, SavePosition, SelectableArea, Text,
 };
-use warpui::fonts::Properties;
-use warpui::platform::Cursor;
-use warpui::text_layout::TextStyle;
-use warpui::ui_components::components::UiComponent;
-use warpui::{AppContext, Element, SingletonEntity, View, ViewContext};
+use cuteui::fonts::Properties;
+use cuteui::platform::Cursor;
+use cuteui::text_layout::TextStyle;
+use cuteui::ui_components::components::UiComponent;
+use cuteui::{AppContext, Element, SingletonEntity, View, ViewContext};
 
 use super::secret_redaction::SecretRedactionState;
 use super::{
@@ -91,7 +91,7 @@ use crate::workspace::WorkspaceAction;
 fn create_secret_gray_highlight() -> Highlight {
     Highlight::new().with_text_style(
         TextStyle::new()
-            .with_foreground_color(warpui::color::ColorU::new(128, 128, 128, 255))
+            .with_foreground_color(cuteui::color::ColorU::new(128, 128, 128, 255))
             .with_show_strikethrough(true),
     )
 }
@@ -130,7 +130,7 @@ fn add_slash_command_highlight(
 
         let current_properties = existing.properties();
         let mut bold_properties = current_properties;
-        bold_properties.weight = warpui::fonts::Weight::Bold;
+        bold_properties.weight = cuteui::fonts::Weight::Bold;
 
         Highlight::new()
             .with_text_style(updated_style)
@@ -138,7 +138,7 @@ fn add_slash_command_highlight(
     } else {
         // Create new highlight with default properties and bold weight
         let default_properties = Properties {
-            weight: warpui::fonts::Weight::Bold,
+            weight: cuteui::fonts::Weight::Bold,
             ..Default::default()
         };
         Highlight::new()
@@ -659,19 +659,18 @@ pub fn render_citation(
             let item = CloudModel::as_ref(app)
                 .get_by_uid(uid)?
                 .to_warp_drive_item(appearance)?;
-            (
-                item.icon(appearance, Some(theme.active_ui_text_color())),
-                item.display_name().unwrap_or(String::from("Untitled")),
-            )
+            let icon = item.icon().to_cuteui_icon(item.icon_color(appearance)).finish();
+            let name = item.display_name().unwrap_or(String::from("Untitled"));
+            (Some(icon), name)
         }
         AIAgentCitation::WarpDocumentation { .. } => {
-            let icon = Icon::Warp.to_warpui_icon(theme.foreground()).finish();
+            let icon = Icon::Warp.to_cuteui_icon(theme.foreground()).finish();
             let name = String::from("Warp Docs");
             (Some(icon), name)
         }
         AIAgentCitation::WebPage { url } => {
             let icon = Icon::LinkExternal
-                .to_warpui_icon(theme.foreground())
+                .to_cuteui_icon(theme.foreground())
                 .finish();
             let name = url.clone();
             (Some(icon), name)
@@ -725,7 +724,7 @@ pub fn render_citation(
 /// [`render_autonomy_checkbox_setting_speedbump_footer`].
 pub fn render_autonomy_dropdown_setting_speedbump_footer<A>(
     description: &'static str,
-    dropdown: &warpui::ViewHandle<crate::view_components::dropdown::Dropdown<A>>,
+    dropdown: &cuteui::ViewHandle<crate::view_components::dropdown::Dropdown<A>>,
     settings_link_handle: MouseStateHandle,
     app: &AppContext,
 ) -> Box<dyn Element>
@@ -751,7 +750,7 @@ where
             .with_margin_right(8.)
             .finish(),
         )
-        .with_child(warpui::elements::ChildView::new(dropdown).finish())
+        .with_child(cuteui::elements::ChildView::new(dropdown).finish())
         .with_child(
             Expanded::new(
                 1.,
@@ -964,8 +963,8 @@ impl View for AIBlock {
                                             // Get the display info from the participant
                                             // who sent this query.
                                             (
-                                                participant.info.profile_data.display_name.clone(),
-                                                participant.info.profile_data.photo_url.clone(),
+                                                participant.profile_data.display_name.clone(),
+                                                participant.profile_data.photo_url.clone(),
                                                 Some(participant.color),
                                             )
                                         },
@@ -1239,13 +1238,13 @@ impl View for AIBlock {
         selectable.finish()
     }
 
-    fn on_focus(&mut self, focus_ctx: &warpui::FocusContext, ctx: &mut ViewContext<Self>) {
+    fn on_focus(&mut self, focus_ctx: &cuteui::FocusContext, ctx: &mut ViewContext<Self>) {
         if focus_ctx.is_self_focused() {
             self.focus_subview_if_necessary(ctx);
         }
     }
 
-    fn keymap_context(&self, app: &AppContext) -> warpui::keymap::Context {
+    fn keymap_context(&self, app: &AppContext) -> cuteui::keymap::Context {
         let mut context = Self::default_keymap_context();
 
         if self

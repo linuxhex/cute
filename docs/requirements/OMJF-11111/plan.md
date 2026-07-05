@@ -34,7 +34,7 @@
 - 修改：`crates/warp_features/src/lib.rs`（如有 dead flag 清理）
 
 **实现要点：**
-- 从 `default` 移除：`cloud_mode*`、`ambient_agents_*`、`scheduled_ambient_agents`、`cloud_conversations`、`cloud_environments`、`handoff_*`、`oz_handoff`、`viewing_shared_sessions`、`creating_shared_sessions`、`shared_with_me`、`agent_shared_sessions`、`hoa_remote_control`、`remote_codebase_indexing`、`remote_code_review`、`loginless_conversion`、`api_key_*`、`warp_managed_secrets`、`sync_ambient_plans`、`git_credential_refresh` 等
+- 从 `default` 移除：`cloud_mode*`、`ambient_agents_*`、`scheduled_ambient_agents`、`cloud_conversations`、`cloud_environments`、`handoff_*`、`oz_handoff`、`viewing_shared_sessions`、`creating_shared_sessions`、`shared_with_me`、`agent_shared_sessions`、`hoa_remote_control`、`remote_codebase_indexing`、`remote_code_review`、`loginless_conversion`、`api_key_*`、`cute_managed_secrets`、`sync_ambient_plans`、`git_credential_refresh` 等
 - 保留：`agent_mode`、`mcp_server`（仅本地 MCP）、`git_operations_in_code_review`、`skip_login` 或等价本地模式
 - 新增/启用：`skip_login` 进入 default，确保无登录 gate
 

@@ -9,8 +9,8 @@ use warp::integration_testing::terminal::{
     execute_command_for_single_terminal_in_tab, execute_echo_str,
     wait_until_bootstrapped_single_pane_for_tab,
 };
-use warpui::event::{Event, ModifiersState};
-use warpui::integration::{TestStep, ARTIFACTS_DIR_ENV_VAR};
+use cuteui::event::{Event, ModifiersState};
+use cuteui::integration::{TestStep, ARTIFACTS_DIR_ENV_VAR};
 
 use crate::Builder;
 

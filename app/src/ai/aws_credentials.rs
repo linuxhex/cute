@@ -9,9 +9,9 @@ use futures::channel::oneshot::channel;
 use futures::future::BoxFuture;
 use tokio::sync::Mutex;
 use vec1::vec1;
-use warp_managed_secrets::client::IdentityTokenOptions;
-use warp_managed_secrets::ManagedSecretManager;
-use warpui::{ModelContext, ModelHandle, SingletonEntity};
+use cute_managed_secrets::client::IdentityTokenOptions;
+use cute_managed_secrets::ManagedSecretManager;
+use cuteui::{ModelContext, ModelHandle, SingletonEntity};
 
 use crate::settings::{AISettings, AISettingsChangedEvent};
 use crate::terminal::event::{AfterBlockCompletedEvent, BlockType, UserBlockCompleted};

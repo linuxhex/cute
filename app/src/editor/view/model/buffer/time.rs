@@ -36,6 +36,18 @@ impl std::fmt::Display for ReplicaId {
     }
 }
 
+impl From<String> for ReplicaId {
+    fn from(id: String) -> Self {
+        Self::new(id)
+    }
+}
+
+impl From<ReplicaId> for String {
+    fn from(replica_id: ReplicaId) -> Self {
+        replica_id.0.as_ref().clone()
+    }
+}
+
 /// A bare [lamport timestamp](https://en.wikipedia.org/wiki/Lamport_timestamp).
 /// Prefer to use the full [`Lamport`] type unless the replica ID is known / fixed.
 #[derive(

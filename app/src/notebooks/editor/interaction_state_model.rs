@@ -1,4 +1,4 @@
-use warpui::{Entity, ModelContext};
+use cuteui::{Entity, ModelContext};
 
 use crate::editor::InteractionState;
 

@@ -1,4 +1,4 @@
-use warpui::{Entity, ModelContext, SingletonEntity};
+use cuteui::{Entity, ModelContext, SingletonEntity};
 
 use crate::server::server_api::ai::ConnectedSelfHostedWorker;
 pub const WARP_WORKER_HOST: &str = "warp";

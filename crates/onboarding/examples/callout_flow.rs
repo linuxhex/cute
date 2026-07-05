@@ -8,17 +8,17 @@ use onboarding::OnboardingIntention;
 use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::vec2f;
 use rust_embed::RustEmbed;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::theme::{AnsiColor, AnsiColors, Details, Fill, TerminalColors, WarpTheme};
-use warpui::elements::{
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::theme::{AnsiColor, AnsiColors, Details, Fill, TerminalColors, WarpTheme};
+use cuteui::elements::{
     ChildAnchor, ChildView, ConstrainedBox, Container, Flex, MainAxisAlignment, MainAxisSize,
     OffsetPositioning, ParentElement, PositionedElementAnchor, PositionedElementOffsetBounds, Rect,
     SavePosition, Stack,
 };
-use warpui::fonts::{Cache, FamilyId, Weight};
-use warpui::prelude::CrossAxisAlignment;
-use warpui::ui_components::components::UiComponent;
-use warpui::{
+use cuteui::fonts::{Cache, FamilyId, Weight};
+use cuteui::prelude::CrossAxisAlignment;
+use cuteui::ui_components::components::UiComponent;
+use cuteui::{
     platform, AddWindowOptions, AppContext, AssetProvider, Element, Entity, SingletonEntity as _,
     TypedActionView, View, ViewContext, ViewHandle,
 };
@@ -173,7 +173,7 @@ impl TypedActionView for OnboardingExampleView {
 
 fn main() -> Result<()> {
     // Initialize logging for the onboarding binary.
-    warp_logging::init(warp_logging::LogConfig {
+    cute_logging::init(cute_logging::LogConfig {
         is_cli: false,
         log_destination: None,
         ..Default::default()

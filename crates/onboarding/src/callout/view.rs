@@ -1,9 +1,9 @@
 use ui_components::Component;
-use warp_core::ui::appearance::Appearance;
-use warpui::elements::Empty;
-use warpui::keymap::macros::*;
-use warpui::keymap::{FixedBinding, Keystroke};
-use warpui::{
+use cute_core::ui::appearance::Appearance;
+use cuteui::elements::Empty;
+use cuteui::keymap::macros::*;
+use cuteui::keymap::{FixedBinding, Keystroke};
+use cuteui::{
     AppContext, Element, Entity, EventContext, ModelHandle, SingletonEntity, TypedActionView, View,
     ViewContext,
 };

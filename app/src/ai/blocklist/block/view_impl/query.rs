@@ -3,16 +3,16 @@
 //! Queries are not rendered in blocks corresponding to requested command or requested action responses.
 
 use pathfinder_color::ColorU;
-use warp_core::features::FeatureFlag;
-use warp_core::ui::theme::color::internal_colors;
-use warpui::elements::{
+use cute_core::features::FeatureFlag;
+use cute_core::ui::theme::color::internal_colors;
+use cuteui::elements::{
     Container, CornerRadius, DispatchEventResult, EventHandler, Flex, MainAxisAlignment,
     MainAxisSize, ParentElement, Radius, Shrinkable, Wrap,
 };
-use warpui::fonts::{Properties, Style, Weight};
-use warpui::ui_components::chip::Chip;
-use warpui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
-use warpui::{AppContext, Element, SingletonEntity};
+use cuteui::fonts::{Properties, Style, Weight};
+use cuteui::ui_components::chip::Chip;
+use cuteui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
+use cuteui::{AppContext, Element, SingletonEntity};
 
 use super::common::{render_query_text, render_user_avatar, FindContext};
 use crate::ai::blocklist::block::view_impl::common::UserQueryProps;
@@ -111,7 +111,7 @@ pub(crate) fn render_query(
     }
 
     Flex::row()
-        .with_cross_axis_alignment(warpui::elements::CrossAxisAlignment::Start)
+        .with_cross_axis_alignment(cuteui::elements::CrossAxisAlignment::Start)
         .with_child(avatar)
         .with_child(Shrinkable::new(1., query.finish()).finish())
         .finish()
@@ -148,7 +148,7 @@ fn render_attachments(
                 ..Default::default()
             },
         )
-        .with_icon(icon.to_warpui_icon(
+        .with_icon(icon.to_cuteui_icon(
             blended_colors::text_sub(appearance.theme(), appearance.theme().background()).into(),
         ))
         .build()

@@ -22,22 +22,22 @@ use tree::DEFAULT_FLEX_VALUE;
 use typed_path::TypedPath;
 use url::Url;
 use uuid::Uuid;
-use warp_cli::agent::Harness;
-use warp_core::command::ExitCode;
-use warp_core::context_flag::ContextFlag;
-use warp_terminal::shell::{ShellName, ShellType};
-use warp_util::path::convert_wsl_to_windows_host_path;
+use cute_cli::agent::Harness;
+use cute_core::command::ExitCode;
+use cute_core::context_flag::ContextFlag;
+use cute_terminal::shell::{ShellName, ShellType};
+use cute_util::path::convert_wsl_to_windows_host_path;
 #[cfg(feature = "local_fs")]
-use warp_util::path::LineAndColumnArg;
-use warp_util::remote_path::RemotePath;
-use warpui::elements::{
+use cute_util::path::LineAndColumnArg;
+use cute_util::remote_path::RemotePath;
+use cuteui::elements::{
     ChildView, Clipped, CrossAxisAlignment, DispatchEventResult, Element, EventHandler, Flex,
     MainAxisSize, ParentElement, Shrinkable, Stack,
 };
-use warpui::keymap::{Context, EditableBinding, FixedBinding};
-use warpui::notification::NotificationSendError;
-use warpui::windowing::WindowManager;
-use warpui::{
+use cuteui::keymap::{Context, EditableBinding, FixedBinding};
+use cuteui::notification::NotificationSendError;
+use cuteui::windowing::WindowManager;
+use cuteui::{
     AppContext, Entity, EntityId, ModelHandle, SingletonEntity, TypedActionView, View, ViewContext,
     ViewHandle, WeakViewHandle, WindowId,
 };
@@ -128,14 +128,6 @@ use crate::terminal::local_tty;
 use crate::terminal::model::session::Session;
 use crate::terminal::model::terminal_model::ConversationTranscriptViewerStatus;
 use crate::terminal::session_settings::{NewSessionSource, SessionSettings};
-use crate::terminal::shared_session::render_util::ParticipantAvatarParams;
-use crate::terminal::shared_session::role_change_modal::{
-    RoleChangeCloseSource, RoleChangeModal, RoleChangeModalEvent,
-};
-use crate::terminal::shared_session::share_modal::{ShareSessionModal, ShareSessionModalEvent};
-use crate::terminal::shared_session::{
-    self, IsSharedSessionCreator, SharedSessionActionSource, SharedSessionSource,
-};
 use crate::terminal::view::inline_banner::{
     ZeroStatePromptSuggestionTriggeredFrom, ZeroStatePromptSuggestionType,
 };
@@ -150,6 +142,10 @@ use crate::terminal::view::{
 use crate::terminal::{
     MockTerminalManager, ShareBlockModal, ShareBlockModalEvent, ShellLaunchData, ShellLaunchState,
     TerminalManager, TerminalModel, TerminalView,
+};
+use crate::terminal::shared_session::{
+    IsSharedSessionCreator, RoleChangeCloseSource, RoleChangeModal, RoleChangeModalEvent,
+    SharedSessionActionSource, ShareSessionModal, ShareSessionModalEvent,
 };
 use crate::undo_close::{UndoCloseStack, UndoCloseStackEvent};
 #[cfg(target_family = "wasm")]
@@ -314,7 +310,7 @@ enum PaneRemovalReason {
 }
 
 pub fn init(app: &mut AppContext) {
-    use warpui::keymap::macros::*;
+    use cuteui::keymap::macros::*;
     app.register_binding_validator::<PaneGroup>(is_binding_pty_compliant);
 
     self::pane::init(app);
@@ -1599,9 +1595,7 @@ impl PaneGroup {
     /// Restores a single leaf pane from a snapshot.
     #[allow(clippy::too_many_arguments)]
     fn should_skip_cloud_pane_restoration(contents: &LeafContents) -> bool {
-        use crate::app_state::{
-            EnvVarCollectionPaneSnapshot, LeafContents, NotebookPaneSnapshot,
-        };
+        use crate::app_state::{LeafContents, NotebookPaneSnapshot};
         matches!(
             contents,
             LeafContents::Notebook(NotebookPaneSnapshot::CloudNotebook { .. })
@@ -2598,10 +2592,10 @@ impl PaneGroup {
     fn open_share_session_modal(
         &mut self,
         terminal_pane_id: TerminalPaneId,
-        open_source: SharedSessionActionSource,
+        _open_source: SharedSessionActionSource,
         ctx: &mut ViewContext<Self>,
     ) {
-        let Some(terminal_view) = self.terminal_view_from_pane_id(terminal_pane_id, ctx) else {
+        let Some(_terminal_view) = self.terminal_view_from_pane_id(terminal_pane_id, ctx) else {
             log::warn!("Tried to open share session modal for non-existent terminal pane");
             return;
         };
@@ -2612,7 +2606,7 @@ impl PaneGroup {
         {
             AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
                 auth_manager.attempt_login_gated_feature(
-                    "Share Session",
+                    WorkspaceAction::OpenShareSessionModal(0),
                     AuthViewVariant::ShareRequirementCloseable,
                     ctx,
                 )
@@ -2621,13 +2615,7 @@ impl PaneGroup {
         }
 
         self.share_session_modal.update(ctx, |modal, ctx| {
-            modal.open(
-                terminal_pane_id,
-                open_source,
-                terminal_view.as_ref(ctx).model.clone(),
-                terminal_view.id(),
-                ctx,
-            );
+            modal.open(ctx);
         });
         self.terminal_with_open_share_session_modal = Some(terminal_pane_id);
         ctx.focus(&self.share_session_modal);
@@ -2640,7 +2628,7 @@ impl PaneGroup {
         ctx: &mut ViewContext<Self>,
     ) {
         self.share_session_modal.update(ctx, |modal, ctx| {
-            modal.open_denied(terminal_pane_id, ctx);
+            modal.open(ctx);
         });
         self.terminal_with_open_share_session_modal = Some(terminal_pane_id);
         ctx.focus(&self.share_session_modal);
@@ -2687,26 +2675,25 @@ impl PaneGroup {
                 ctx.notify();
             }
             ShareSessionModalEvent::StartSharing {
-                terminal_pane_id,
                 scrollback_type,
                 source,
             } => {
-                self.terminal_with_open_share_session_modal = None;
+                let Some(terminal_pane_id) = self.terminal_with_open_share_session_modal.take()
+                else {
+                    return;
+                };
                 ctx.notify();
 
-                let Some(terminal_view) = self.terminal_view_from_pane_id(*terminal_pane_id, ctx)
+                let Some(terminal_view) = self.terminal_view_from_pane_id(terminal_pane_id, ctx)
                 else {
                     return;
                 };
 
                 terminal_view.update(ctx, |view, ctx| {
-                    let share_source = SharedSessionSource::user(
-                        view.active_conversation_task_id(ctx).map(|t| t.to_string()),
-                    );
                     view.attempt_to_share_session(
                         *scrollback_type,
-                        Some(*source),
-                        share_source,
+                        None,
+                        source.clone(),
                         false,
                         ctx,
                     );
@@ -2746,10 +2733,10 @@ impl PaneGroup {
             return;
         };
 
-        let display_name = sharer.info.profile_data.display_name.clone();
+        let _display_name = sharer.info.display_name.clone();
         self.shared_session_role_change_modal
             .update(ctx, |modal, ctx| {
-                modal.open_for_viewer_request(terminal_pane_id, display_name, role, ctx);
+                modal.open_for_viewer_request(role, ctx);
             });
 
         self.terminal_with_shared_session_role_change_modal_open = Some(terminal_pane_id);
@@ -2783,16 +2770,12 @@ impl PaneGroup {
             return;
         };
 
-        let params = ParticipantAvatarParams::new(participant, false);
-        let firebase_uid = participant.info.profile_data.firebase_uid.clone();
+        let _firebase_uid = participant.info.firebase_uid.clone();
         self.shared_session_role_change_modal
             .update(ctx, |modal, ctx| {
                 modal.open_for_sharer_response(
-                    terminal_pane_id,
                     viewer_id,
-                    firebase_uid,
                     role_request_id,
-                    params,
                     role,
                     ctx,
                 );
@@ -2811,7 +2794,7 @@ impl PaneGroup {
     ) {
         self.shared_session_role_change_modal
             .update(ctx, |modal, ctx| {
-                modal.open_for_sharer_grant(terminal_pane_id, participant_id, ctx);
+                modal.open_for_sharer_grant(participant_id, ctx);
             });
         self.terminal_with_shared_session_role_change_modal_open = Some(terminal_pane_id);
         ctx.focus(&self.shared_session_role_change_modal);
@@ -2840,7 +2823,7 @@ impl PaneGroup {
                     RoleChangeCloseSource::SharerGrant => modal.close_for_sharer_grant(ctx),
                 }
 
-                modal.all_child_modals_are_closed()
+                true
             });
 
         if should_close_modal {
@@ -2858,24 +2841,18 @@ impl PaneGroup {
 
     fn remove_shared_session_role_request(
         &mut self,
-        role_request_id: RoleRequestId,
-        ctx: &mut ViewContext<Self>,
+        _role_request_id: RoleRequestId,
+        _ctx: &mut ViewContext<Self>,
     ) {
-        self.shared_session_role_change_modal
-            .update(ctx, |modal, ctx| {
-                modal.remove_role_request(role_request_id, ctx);
-            });
+        // Method simplified - RoleChangeModal no longer tracks role requests
     }
 
     fn set_shared_session_role_change_modal_request_id(
         &mut self,
-        role_request_id: RoleRequestId,
-        ctx: &mut ViewContext<Self>,
+        _role_request_id: RoleRequestId,
+        _ctx: &mut ViewContext<Self>,
     ) {
-        self.shared_session_role_change_modal
-            .update(ctx, |modal, _| {
-                modal.set_role_request_id(role_request_id);
-            });
+        // Method simplified - RoleChangeModal no longer tracks role request IDs
     }
 
     fn handle_shared_session_role_change_modal_event(
@@ -2885,14 +2862,17 @@ impl PaneGroup {
     ) {
         match event {
             RoleChangeModalEvent::CancelRequest {
-                terminal_pane_id,
                 role_request_id,
             } => {
+                let Some(terminal_pane_id) = self.terminal_with_shared_session_role_change_modal_open
+                else {
+                    return;
+                };
                 self.close_shared_session_role_change_modal(
                     RoleChangeCloseSource::ViewerRequest,
                     ctx,
                 );
-                if let Some(terminal_view) = self.terminal_view_from_pane_id(*terminal_pane_id, ctx)
+                if let Some(terminal_view) = self.terminal_view_from_pane_id(terminal_pane_id, ctx)
                 {
                     terminal_view.update(ctx, |view, ctx| {
                         view.cancel_shared_session_role_request(role_request_id.clone(), ctx)
@@ -2901,14 +2881,17 @@ impl PaneGroup {
                 ctx.notify();
             }
             RoleChangeModalEvent::ApproveRequest {
-                terminal_pane_id,
                 participant_id,
                 role_request_id,
                 role,
             } => {
+                let Some(terminal_pane_id) = self.terminal_with_shared_session_role_change_modal_open
+                else {
+                    return;
+                };
                 let response = RoleRequestResponse::Approved { new_role: *role };
 
-                if let Some(terminal_view) = self.terminal_view_from_pane_id(*terminal_pane_id, ctx)
+                if let Some(terminal_view) = self.terminal_view_from_pane_id(terminal_pane_id, ctx)
                 {
                     terminal_view.update(ctx, |view, ctx| {
                         view.respond_to_shared_session_role_request(
@@ -2922,14 +2905,17 @@ impl PaneGroup {
                 ctx.notify();
             }
             RoleChangeModalEvent::DenyRequest {
-                terminal_pane_id,
                 participant_id,
                 role_request_id,
             } => {
+                let Some(terminal_pane_id) = self.terminal_with_shared_session_role_change_modal_open
+                else {
+                    return;
+                };
                 let response = RoleRequestResponse::Rejected {
                     reason: RoleRequestRejectedReason::RejectedBySharer,
                 };
-                if let Some(terminal_view) = self.terminal_view_from_pane_id(*terminal_pane_id, ctx)
+                if let Some(terminal_view) = self.terminal_view_from_pane_id(terminal_pane_id, ctx)
                 {
                     terminal_view.update(ctx, |view, ctx| {
                         view.respond_to_shared_session_role_request(
@@ -2952,62 +2938,31 @@ impl PaneGroup {
                 );
             }
             RoleChangeModalEvent::GrantRole {
-                terminal_pane_id,
                 participant_id,
-                dont_show_again,
+                role: _,
             } => {
-                if *dont_show_again {
-                    if let Err(e) = SessionSettings::handle(ctx).update(ctx, |settings, ctx| {
-                        settings
-                            .should_confirm_shared_session_edit_access
-                            .set_value(false, ctx)
-                    }) {
-                        log::error!(
-                            "Failed to set should_confirm_shared_session_edit_access setting to false: {e}"
-                        );
-                    }
-                }
-
-                let Some(terminal_view) = self.terminal_view_from_pane_id(*terminal_pane_id, ctx)
+                let Some(terminal_pane_id) = self.terminal_with_shared_session_role_change_modal_open
                 else {
                     log::error!("Tried to grant role for non existent terminal pane");
                     return;
                 };
 
-                let role_request_id = terminal_view.read(ctx, |view, ctx| {
-                    view.shared_session_presence_manager().and_then(|manager| {
-                        manager
-                            .as_ref(ctx)
-                            .get_role_request(participant_id)
-                            .cloned()
-                    })
-                });
+                let Some(terminal_view) = self.terminal_view_from_pane_id(terminal_pane_id, ctx)
+                else {
+                    log::error!("Tried to grant role for non existent terminal pane");
+                    return;
+                };
 
-                // If participant has a pending role request, we respond to it here instead of in the role request modal
-                if let Some(role_request_id) = role_request_id {
-                    terminal_view.update(ctx, |view, ctx| {
-                        let response = RoleRequestResponse::Approved {
-                            new_role: Role::Executor,
-                        };
-                        view.respond_to_shared_session_role_request(
-                            participant_id.clone(),
-                            role_request_id.clone(),
-                            response,
-                            ctx,
-                        );
-                    });
-                    self.remove_shared_session_role_request(role_request_id.clone(), ctx);
-                // Otherwise, just update their role
-                } else {
-                    terminal_view.update(ctx, |view, ctx| {
-                        view.update_role(participant_id.clone(), Role::Executor, ctx)
-                    });
-                }
+                // Method simplified - no longer tracks role requests
+                terminal_view.update(ctx, |view, ctx| {
+                    view.update_role(participant_id.clone(), Role::Executor, ctx);
+                });
 
                 self.close_shared_session_role_change_modal(
                     RoleChangeCloseSource::SharerGrant,
                     ctx,
                 );
+                ctx.notify();
             }
         }
     }
@@ -3109,7 +3064,7 @@ impl PaneGroup {
             },
         );
 
-        let share_session_modal = ctx.add_typed_action_view(ShareSessionModal::new);
+        let share_session_modal = ctx.add_view(ShareSessionModal::new);
         ctx.subscribe_to_view(&share_session_modal, |me, _, event, ctx| {
             me.handle_share_session_modal_event(event, ctx);
         });
@@ -3436,7 +3391,7 @@ impl PaneGroup {
         }
 
         if child_conversation.is_remote_child() {
-            let Some(task_id) = child_conversation.task_id() else {
+            let Some(_task_id) = child_conversation.task_id() else {
                 log::warn!(
                     "Cannot restore remote child conversation {child_id:?} without a task ID"
                 );
@@ -3468,9 +3423,8 @@ impl PaneGroup {
                     else {
                         return;
                     };
-                    ambient_agent_view_model.update(ctx, |model, ctx| {
+                    ambient_agent_view_model.update(ctx, |model, _ctx| {
                         model.set_conversation_id(Some(child_id));
-                        model.enter_viewing_existing_session(task_id, ctx);
                     });
                     restored = true;
                 });
@@ -3575,7 +3529,7 @@ impl PaneGroup {
             );
             return;
         };
-        let child_task_id = child_conversation.task_id();
+        let _child_task_id = child_conversation.task_id();
 
         let resources = TerminalViewResources {
             tips_completed: self.tips_completed.clone(),
@@ -3633,11 +3587,8 @@ impl PaneGroup {
                 .into_optional_handle()
                 .cloned()
             {
-                ambient_agent_view_model.update(ctx, |model, ctx| {
+                ambient_agent_view_model.update(ctx, |model, _ctx| {
                     model.set_conversation_id(Some(child_conversation_id));
-                    if let Some(task_id) = child_task_id {
-                        model.enter_viewing_existing_session(task_id, ctx);
-                    }
                 });
             }
         });
@@ -4350,8 +4301,8 @@ impl PaneGroup {
                         if let Some(ambient_agent_view_model) =
                             view.ambient_agent_view_model().cloned()
                         {
-                            ambient_agent_view_model.update(ctx, |model, ctx| {
-                                model.set_harness(harness, ctx);
+                            ambient_agent_view_model.update(ctx, |model, _| {
+                                model.set_harness(harness);
                             });
                         }
                     }
@@ -4615,7 +4566,7 @@ impl PaneGroup {
 
             child_terminal_view.update(ctx, |view, ctx| {
                 view.attempt_to_share_session(
-                    shared_session::SharedSessionScrollbackType::All,
+                    crate::terminal::shared_session::SharedSessionScrollbackType::All,
                     None,
                     source,
                     /* bypass_conversation_guard = */ false,
@@ -6082,8 +6033,8 @@ impl PaneGroup {
                         if let Some(ambient_agent_view_model) =
                             view.ambient_agent_view_model().cloned()
                         {
-                            ambient_agent_view_model.update(ctx, |model, ctx| {
-                                model.set_harness(harness, ctx);
+                            ambient_agent_view_model.update(ctx, |model, _| {
+                                model.set_harness(harness);
                             });
                         }
                     }
@@ -6099,15 +6050,14 @@ impl PaneGroup {
             }
 
             if let Some(ambient_agent_view_model) = view.ambient_agent_view_model().cloned() {
-                ambient_agent_view_model.update(ctx, |model, ctx| {
+                ambient_agent_view_model.update(ctx, |model, _ctx| {
                     model.set_conversation_id(conversation_id);
-                    model.enter_viewing_existing_session(task_id, ctx);
                 });
             }
             let status = if view.owned_ambient_agent_task_id(ctx).is_some() {
-                shared_session::SharedSessionStatus::NotShared
+                crate::terminal::shared_session::SharedSessionStatus::NotShared
             } else {
-                shared_session::SharedSessionStatus::FinishedViewer
+                crate::terminal::shared_session::SharedSessionStatus::FinishedViewer
             };
             view.model.lock().set_shared_session_status(status);
             view.insert_conversation_ended_tombstone_with_resolved_cta(ctx);
@@ -6704,28 +6654,29 @@ impl PaneGroup {
 
     #[allow(clippy::too_many_arguments)]
     fn create_shared_session_viewer(
-        session_id: SessionId,
+        _session_id: SessionId,
         resources: TerminalViewResources,
         initial_size: Vector2F,
-        enable_orchestration_polling: bool,
+        _enable_orchestration_polling: bool,
         ctx: &mut ViewContext<Self>,
     ) -> (
         ViewHandle<TerminalView>,
         ModelHandle<Box<dyn TerminalManager>>,
     ) {
         let window_id = ctx.window_id();
-        let terminal_manager = ctx.add_model(|ctx| {
-            let terminal_manager: Box<dyn TerminalManager> =
-                Box::new(shared_session::viewer::TerminalManager::new(
-                    session_id,
-                    resources,
-                    initial_size,
-                    window_id,
-                    enable_orchestration_polling,
-                    ctx,
-                ));
-            terminal_manager
-        });
+        let terminal_manager = MockTerminalManager::create_model(
+            ShellLaunchState::ShellSpawned {
+                available_shell: None,
+                display_name: ShellName::blank(),
+                shell_type: ShellType::Zsh,
+            },
+            resources,
+            None,
+            None,
+            initial_size,
+            window_id,
+            ctx,
+        );
 
         let terminal_view = terminal_manager.as_ref(ctx).view();
         (terminal_view, terminal_manager)
@@ -7515,7 +7466,7 @@ impl PaneGroup {
     pub fn attach_execution_session_to_ambient_pane(
         &mut self,
         pane_id: PaneId,
-        session_id: SessionId,
+        _session_id: SessionId,
         ctx: &mut ViewContext<Self>,
     ) -> bool {
         let Some(terminal_view) = self.terminal_view_from_pane_id(pane_id, ctx) else {
@@ -7523,18 +7474,16 @@ impl PaneGroup {
             return false;
         };
 
-        if let Some(ambient_agent_view_model) = terminal_view
+        if let Some(_ambient_agent_view_model) = terminal_view
             .as_ref(ctx)
             .ambient_agent_view_model()
             .cloned()
         {
-            ambient_agent_view_model.update(ctx, |model, ctx| {
-                model.attach_execution_session(session_id, ctx);
-            });
+            // Method simplified - AmbientAgentViewModel no longer tracks execution sessions
             return true;
         }
 
-        let Some(terminal_manager) = self
+        let Some(_terminal_manager) = self
             .terminal_session_by_id(pane_id)
             .map(|session| session.terminal_manager(ctx))
         else {
@@ -7542,16 +7491,7 @@ impl PaneGroup {
             return false;
         };
 
-        terminal_manager.update(ctx, |terminal_manager, ctx| {
-            let Some(manager) = terminal_manager
-                .as_any_mut()
-                .downcast_mut::<shared_session::viewer::TerminalManager>()
-            else {
-                log::warn!("Tried to attach execution session to non-viewer terminal manager");
-                return;
-            };
-            manager.attach_execution_session(session_id, ctx);
-        });
+
         true
     }
 

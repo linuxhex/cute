@@ -35,12 +35,12 @@ use vim::{
     vim_a_quote, vim_a_word, vim_find_char_on_line, vim_find_matching_bracket, vim_inner_block,
     vim_inner_paragraph, vim_inner_quote, vim_inner_word, vim_word_iterator_from_offset,
 };
-use warpui::accessibility::{AccessibilityContent, WarpA11yRole};
-use warpui::text::point::Point;
-use warpui::text::word_boundaries::WordBoundariesPolicy;
-use warpui::text::TextBuffer;
-use warpui::text_layout::TextStyle;
-use warpui::{AppContext, Entity, ModelAsRef, ModelContext, ModelHandle, SingletonEntity};
+use cuteui::accessibility::{AccessibilityContent, WarpA11yRole};
+use cuteui::text::point::Point;
+use cuteui::text::word_boundaries::WordBoundariesPolicy;
+use cuteui::text::TextBuffer;
+use cuteui::text_layout::TextStyle;
+use cuteui::{AppContext, Entity, ModelAsRef, ModelContext, ModelHandle, SingletonEntity};
 
 use self::buffer::Peer;
 use super::{movement, PlainTextEditorViewAction, SelectionInsertion, ValidInputType};
@@ -107,6 +107,15 @@ pub enum InteractionState {
     Selectable,
     /// Editor will ignore selection and edit actions. Editor is rendered with dimmed text and no cursor.
     Disabled,
+}
+
+impl From<&session_sharing_protocol::common::Role> for InteractionState {
+    fn from(role: &session_sharing_protocol::common::Role) -> Self {
+        match role {
+            session_sharing_protocol::common::Role::Reader => InteractionState::Selectable,
+            session_sharing_protocol::common::Role::Executor | session_sharing_protocol::common::Role::Full => InteractionState::Editable,
+        }
+    }
 }
 
 type StaticMutableModelCallback = fn(&mut EditorModel, &mut ModelContext<EditorModel>);

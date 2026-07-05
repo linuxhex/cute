@@ -1,11 +1,11 @@
 use std::path::Path;
 
-use warpui::elements::{
+use cuteui::elements::{
     Container, CrossAxisAlignment, Flex, MouseStateHandle, ParentElement, Text,
 };
-use warpui::fonts::{Properties, Weight};
-use warpui::geometry::vector::Vector2F;
-use warpui::{Element, EventContext};
+use cuteui::fonts::{Properties, Weight};
+use cuteui::geometry::vector::Vector2F;
+use cuteui::{Element, EventContext};
 
 use crate::appearance::Appearance;
 use crate::tab_configs::session_config::SessionType;

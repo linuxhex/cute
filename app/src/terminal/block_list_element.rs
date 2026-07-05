@@ -10,29 +10,29 @@ use enum_iterator::Sequence;
 use itertools::Itertools;
 use parking_lot::FairMutex;
 use pathfinder_color::ColorU;
-use session_sharing_protocol::common::{ParticipantId, Selection};
+use session_sharing_protocol::common::ParticipantId;
 use vec1::Vec1;
-use warp_core::semantic_selection::SemanticSelection;
-use warp_core::ui::builder::UiBuilder;
-use warp_core::ui::theme::AnsiColorIdentifier;
-use warp_util::user_input::UserInput;
-use warpui::elements::new_scrollable::{NewScrollableElement, ScrollableAxis};
-use warpui::elements::{
+use cute_core::semantic_selection::SemanticSelection;
+use cute_core::ui::builder::UiBuilder;
+use cute_core::ui::theme::AnsiColorIdentifier;
+use cute_util::user_input::UserInput;
+use cuteui::elements::new_scrollable::{NewScrollableElement, ScrollableAxis};
+use cuteui::elements::{
     Axis, Border, ChildAnchor, ClippedScrollStateHandle, ConstrainedBox, Container, CornerRadius,
     Hoverable, Icon, MouseStateHandle, OffsetPositioning, ParentAnchor, ParentElement,
     ParentOffsetBounds, Point, Radius, SavePosition, ScrollData, ScrollableElement, Stack, Text,
     ZIndex,
 };
-use warpui::event::{DispatchedEvent, KeyState, ModifiersState};
-use warpui::fonts::{FamilyId, Properties, Weight};
-use warpui::geometry::rect::RectF;
-use warpui::geometry::vector::{vec2f, Vector2F};
-use warpui::platform::keyboard::KeyCode;
-use warpui::platform::Cursor;
-use warpui::text::SelectionType;
-use warpui::ui_components::components::UiComponent;
-use warpui::units::{IntoLines, IntoPixels, Lines, Pixels};
-use warpui::{
+use cuteui::event::{DispatchedEvent, KeyState, ModifiersState};
+use cuteui::fonts::{FamilyId, Properties, Weight};
+use cuteui::geometry::rect::RectF;
+use cuteui::geometry::vector::{vec2f, Vector2F};
+use cuteui::platform::keyboard::KeyCode;
+use cuteui::platform::Cursor;
+use cuteui::text::SelectionType;
+use cuteui::ui_components::components::UiComponent;
+use cuteui::units::{IntoLines, IntoPixels, Lines, Pixels};
+use cuteui::{
     AfterLayoutContext, AppContext, ClipBounds, Element, EntityId, Event, EventContext,
     LayoutContext, ModelHandle, PaintContext, SingletonEntity as _, SizeConstraint,
 };
@@ -50,10 +50,9 @@ use super::model::mouse::{MouseAction, MouseButton, MouseState};
 use super::model::session::SessionId;
 use super::model::terminal_model::{SelectedBlocks, WithinBlock, WithinModel};
 use super::model::SecretHandle;
-use super::shared_session::presence_manager::{
-    text_selection_color, PresenceManager, MUTED_PARTICIPANT_COLOR,
-};
-use super::shared_session::render_util::SHARED_SESSION_AVATAR_DIAMETER;
+use super::shared_session::{PresenceManager, render_util::{
+    get_muted_participant_color, SHARED_SESSION_AVATAR_DIAMETER, text_selection_color,
+}};
 use super::view::{
     BlocklistAIRenderContext, InlineBannerId, RichContentMetadata, SeparatorId,
     SharedSessionBanners, TerminalEditor, TerminalViewRenderContext, BLOCK_BANNER_HEIGHT,
@@ -1136,11 +1135,11 @@ impl BlockListElement {
             let icon = Container::new(
                 ConstrainedBox::new(if FeatureFlag::AgentView.is_enabled() {
                     UIIcon::Icon::Paperclip
-                        .to_warpui_icon(icon_color.into())
+                        .to_cuteui_icon(icon_color.into())
                         .finish()
                 } else if FeatureFlag::AgentMode.is_enabled() {
                     UIIcon::Icon::Stars
-                        .to_warpui_icon(icon_color.into())
+                        .to_cuteui_icon(icon_color.into())
                         .finish()
                 } else {
                     Icon::new(AI_ASSISTANT_SVG_PATH, icon_color).finish()
@@ -1201,7 +1200,7 @@ impl BlockListElement {
             let icon = Container::new(
                 ConstrainedBox::new(
                     ui_components::icons::Icon::Save
-                        .to_warpui_icon(icon_color.into())
+                        .to_cuteui_icon(icon_color.into())
                         .finish(),
                 )
                 .with_height(16.)
@@ -1276,7 +1275,7 @@ impl BlockListElement {
     }
 
     /// We only want to process control characters here and return `false` for everything else.
-    /// That way, we'll receive a `warpui::Event::TypedCharacters` event for printable characters.
+    /// That way, we'll receive a `cuteui::Event::TypedCharacters` event for printable characters.
     /// So `TerminalAction::KeyDown` is for control characters only while
     /// `TerminalAction::TypedCharacters` is for characters that can go into the editor.
     fn key_down(&mut self, chars: &str, ctx: &mut EventContext) -> bool {
@@ -1570,7 +1569,7 @@ impl BlockListElement {
                                 .is_some_and(|block| block.is_active_and_long_running());
 
                             // On mobile, request soft keyboard so users can input
-                            if warpui::platform::is_mobile_device() && on_long_running_block {
+                            if cuteui::platform::is_mobile_device() && on_long_running_block {
                                 ctx.request_soft_keyboard();
                             }
 
@@ -2123,22 +2122,17 @@ impl BlockListElement {
         if let Some(presence_manager) = &self.presence_manager {
             let is_self_reconnecting = presence_manager.as_ref(app).is_reconnecting();
             for participant in presence_manager.as_ref(app).all_present_participants() {
-                let Selection::BlockText {
+                let session_sharing_protocol::common::Selection::BlockText {
+                    block_id: _,
                     start,
                     end,
                     is_reversed,
-                } = &participant.info.selection
+                } = &participant.selection
                 else {
                     continue;
                 };
-                let start = WithinBlock::<IndexPoint>::from_session_sharing_block_point(
-                    start.clone(),
-                    block_list,
-                );
-                let end = WithinBlock::<IndexPoint>::from_session_sharing_block_point(
-                    end.clone(),
-                    block_list,
-                );
+                let start = WithinBlock::<IndexPoint>::from_session_sharing_block_point(*start);
+                let end = WithinBlock::<IndexPoint>::from_session_sharing_block_point(*end);
 
                 // TODO: if either of these are None, we should probably find the closest, relevant point.
                 // For example, if there is displayed output in our grid and a remote selection is made
@@ -2174,7 +2168,7 @@ impl BlockListElement {
                     BlockListPoint::from_within_block_point(&end, block_list);
                 let range = SelectionRange::new(start_block_list_point, end_block_list_point);
                 let participant_color = if is_self_reconnecting {
-                    MUTED_PARTICIPANT_COLOR
+                    get_muted_participant_color()
                 } else {
                     participant.color
                 };
@@ -3910,7 +3904,7 @@ impl Element for BlockListElement {
                         // since that is the color that gets rendered last.
                         for participant in presence_manager
                             .as_ref(app)
-                            .get_participants_at_selected_block(*block_index, block_list)
+                            .get_participants_at_selected_block((*block_index).into(), block_list)
                             .into_iter()
                             .sorted_by(|a, b| b.participant.info.id.cmp(&a.participant.info.id))
                         {
@@ -3923,7 +3917,7 @@ impl Element for BlockListElement {
                                 continue;
                             }
                             let color: Fill = if is_self_reconnecting {
-                                MUTED_PARTICIPANT_COLOR
+                                get_muted_participant_color()
                             } else {
                                 participant.participant.color
                             }
@@ -4119,7 +4113,7 @@ impl Element for BlockListElement {
                                 None => 0.,
                             },
                             // Otherwise, we need to measure the prompt grid(s). Grids
-                            // aren't warpui::Elements, and hence their width isn't
+                            // aren't cuteui::Elements, and hence their width isn't
                             // straightforward to measure. We'll use the column index of the
                             // right-most non-empty cell as a proxy for width.
                             None => {

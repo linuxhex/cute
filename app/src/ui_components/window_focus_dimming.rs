@@ -1,9 +1,9 @@
-use warp_core::ui::color::coloru_with_opacity;
-use warpui::elements::{
+use cute_core::ui::color::coloru_with_opacity;
+use cuteui::elements::{
     ConstrainedBox, Element, Fill, Hoverable, MouseStateHandle, ParentElement, Rect, Stack,
 };
-use warpui::windowing::WindowManager;
-use warpui::{AppContext, SingletonEntity, WindowId};
+use cuteui::windowing::WindowManager;
+use cuteui::{AppContext, SingletonEntity, WindowId};
 
 use crate::window_settings::WindowSettings;
 use crate::workspace::panel_header_corner_radius;
@@ -23,7 +23,7 @@ impl WindowFocusDimming {
     /// unreliable due to soft keyboard management.
     pub fn is_window_focused(window_id: WindowId, ctx: &AppContext) -> bool {
         #[cfg(target_family = "wasm")]
-        if warpui::platform::wasm::is_mobile_device() {
+        if cuteui::platform::wasm::is_mobile_device() {
             return true;
         }
 
@@ -41,7 +41,7 @@ impl WindowFocusDimming {
         element: Box<dyn Element>,
         mouse_state: MouseStateHandle,
         height: f32,
-        background_color: warpui::color::ColorU,
+        background_color: cuteui::color::ColorU,
         window_id: WindowId,
         ctx: &AppContext,
     ) -> Box<dyn Element> {

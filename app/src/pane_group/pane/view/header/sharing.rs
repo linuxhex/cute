@@ -3,13 +3,13 @@
 //! This is tightly coupled to the pane header so that different overlays (context menus, the
 //! sharing dialog, and so on) are correctly displayed.
 
-use warp_core::features::FeatureFlag;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::theme::Fill;
-use warpui::elements::{ConstrainedBox, MouseStateHandle, ParentElement};
-use warpui::platform::Cursor;
-use warpui::ui_components::components::UiComponent;
-use warpui::{AppContext, Element, ViewContext, ViewHandle};
+use cute_core::features::FeatureFlag;
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::theme::Fill;
+use cuteui::elements::{ConstrainedBox, MouseStateHandle, ParentElement};
+use cuteui::platform::Cursor;
+use cuteui::ui_components::components::UiComponent;
+use cuteui::{AppContext, Element, ViewContext, ViewHandle};
 
 use super::{Event, OpenOverlay, PaneHeader, PaneHeaderAction};
 use crate::drive::sharing::dialog::{SharingDialog, SharingDialogEvent, SharingDialogSource};
@@ -65,17 +65,17 @@ impl<P: BackingView> PaneHeader<P> {
         &self.shared_content.sharing_dialog
     }
 
-    pub fn has_shareable_object<C: warpui::ViewAsRef>(&self, ctx: &C) -> bool {
+    pub fn has_shareable_object<C: cuteui::ViewAsRef>(&self, ctx: &C) -> bool {
         self.sharing_dialog().as_ref(ctx).has_target()
     }
 
-    pub fn has_shareable_shared_session<C: warpui::ViewAsRef>(&self, ctx: &C) -> bool {
+    pub fn has_shareable_shared_session<C: cuteui::ViewAsRef>(&self, ctx: &C) -> bool {
         self.sharing_dialog()
             .as_ref(ctx)
             .has_shared_session_target()
     }
 
-    pub fn is_sharing_dialog_enabled<C: warpui::ViewAsRef>(&self, ctx: &C) -> bool {
+    pub fn is_sharing_dialog_enabled<C: cuteui::ViewAsRef>(&self, ctx: &C) -> bool {
         let sharing_enabled = self.has_shareable_object(ctx);
         if self.has_shareable_shared_session(ctx) {
             sharing_enabled && FeatureFlag::SessionSharingAcls.is_enabled()

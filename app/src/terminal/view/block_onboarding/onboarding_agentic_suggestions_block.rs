@@ -3,17 +3,17 @@ use markdown_parser::weight::CustomWeight;
 use markdown_parser::{FormattedText, FormattedTextFragment, FormattedTextLine};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::theme::color::internal_colors;
-use warpui::elements::{
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::theme::color::internal_colors;
+use cuteui::elements::{
     Border, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Flex,
     FormattedTextElement, Hoverable, MainAxisAlignment, MainAxisSize, MouseStateHandle,
     ParentElement, Radius, Text, Wrap,
 };
-use warpui::keymap::Keystroke;
-use warpui::platform::Cursor;
-use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::{
+use cuteui::keymap::Keystroke;
+use cuteui::platform::Cursor;
+use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
+use cuteui::{
     AppContext, Element, Entity, ModelHandle, SingletonEntity, TypedActionView, View, ViewContext,
     WeakViewHandle,
 };
@@ -436,7 +436,7 @@ impl OnboardingAgenticSuggestionsBlock {
                 self.agent_suggestions[index]
                     .0
                     .icon
-                    .to_warpui_icon(main_text_color)
+                    .to_cuteui_icon(main_text_color)
                     .finish(),
             )
             .with_height(KEYBOARD_ICON_SIZE)
@@ -518,7 +518,7 @@ impl OnboardingAgenticSuggestionsBlock {
                         // Use a more muted background for disabled state
                         theme.surface_1()
                     } else {
-                        warp_core::ui::theme::Fill::Solid(internal_colors::neutral_1(theme))
+                        cute_core::ui::theme::Fill::Solid(internal_colors::neutral_1(theme))
                     };
 
                     let mut button_content =
@@ -630,7 +630,7 @@ impl OnboardingAgenticSuggestionsBlock {
                         Container::new(
                             ConstrainedBox::new(
                                 UIIcon::Icon::Loading
-                                    .to_warpui_icon(ai_brand_color(appearance.theme()).into())
+                                    .to_cuteui_icon(ai_brand_color(appearance.theme()).into())
                                     .finish(),
                             )
                             .with_height(icon_size)

@@ -4,12 +4,12 @@ use std::sync::Arc;
 
 use session_sharing_protocol::common::SessionId;
 use ui_components::lightbox;
-use warp_util::path::LineAndColumnArg;
-use warpui::accessibility::AccessibilityVerbosity;
-use warpui::geometry::rect::RectF;
-use warpui::geometry::vector::Vector2F;
-use warpui::platform::Cursor;
-use warpui::{EntityId, WeakViewHandle, WindowId};
+use cute_util::path::LineAndColumnArg;
+use cuteui::accessibility::AccessibilityVerbosity;
+use cuteui::geometry::rect::RectF;
+use cuteui::geometry::vector::Vector2F;
+use cuteui::platform::Cursor;
+use cuteui::{EntityId, WeakViewHandle, WindowId};
 
 use super::global_actions::{ForkFromExchange, ForkedConversationDestination};
 use super::tab_settings::{
@@ -307,7 +307,7 @@ pub enum WorkspaceAction {
     /// Toggle the branch selector menu for a specific pane.
     ToggleBranchMenu {
         pane_id: PaneId,
-        click_position: Option<warpui::geometry::vector::Vector2F>,
+        click_position: Option<cuteui::geometry::vector::Vector2F>,
     },
     /// Closes the focused panel. This happens as an explicit action from the user.
     ClosePanel,
@@ -547,7 +547,7 @@ pub enum WorkspaceAction {
     /// Open the workspace modal for creating a new managed auth secret.
     /// Dispatched by orchestration card pickers' "New API key…" item.
     OpenCreateAuthSecretModal {
-        harness: warp_cli::agent::Harness,
+        harness: cute_cli::agent::Harness,
     },
     /// Summarize the active AI conversation in the focused pane.
     SummarizeAIConversation {
@@ -746,8 +746,8 @@ impl From<&WorkspaceAction> for LoginGatedFeature {
     fn from(val: &WorkspaceAction) -> LoginGatedFeature {
         use WorkspaceAction::*;
         match val {
-            OpenShareSessionModal(_) => "Sharing a session",
-            _ => "Unknown reason",
+            OpenShareSessionModal(_) => LoginGatedFeature,
+            _ => LoginGatedFeature,
         }
     }
 }

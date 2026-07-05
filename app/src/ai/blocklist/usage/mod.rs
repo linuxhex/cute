@@ -1,6 +1,6 @@
-use warp_core::ui::theme::{Fill, WarpTheme};
-use warp_core::ui::Icon;
-use warpui::Element;
+use cute_core::ui::theme::{Fill, WarpTheme};
+use cute_core::ui::Icon;
+use cuteui::Element;
 
 pub mod conversation_usage_view;
 pub mod rollup;
@@ -45,5 +45,5 @@ pub fn render_context_window_usage_icon(
         color_override.unwrap_or_else(|| theme.main_text_color(theme.background()))
     };
 
-    icon.to_warpui_icon(fill).finish()
+    icon.to_cuteui_icon(fill).finish()
 }

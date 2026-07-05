@@ -7,13 +7,13 @@ use onboarding::components::onboarding_callout::{
 };
 use rust_embed::RustEmbed;
 use ui_components::Component as _;
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::theme::{AnsiColor, AnsiColors, Details, Fill, TerminalColors, WarpTheme};
-use warpui::color::ColorU;
-use warpui::elements::{Rect, Stack};
-use warpui::fonts::{Cache, FamilyId, Weight};
-use warpui::prelude::*;
-use warpui::{platform, AddWindowOptions, AssetProvider, ModelContext};
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::theme::{AnsiColor, AnsiColors, Details, Fill, TerminalColors, WarpTheme};
+use cuteui::color::ColorU;
+use cuteui::elements::{Rect, Stack};
+use cuteui::fonts::{Cache, FamilyId, Weight};
+use cuteui::prelude::*;
+use cuteui::{platform, AddWindowOptions, AssetProvider, ModelContext};
 
 #[derive(Clone, Copy, RustEmbed)]
 #[folder = "../../app/assets"]

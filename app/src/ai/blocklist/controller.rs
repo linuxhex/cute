@@ -6,7 +6,6 @@
 pub mod input_context;
 mod pending_response_streams;
 pub mod response_stream;
-pub(super) mod shared_session;
 mod slash_command;
 use std::collections::{HashMap, HashSet};
 #[cfg(not(target_family = "wasm"))]
@@ -19,14 +18,15 @@ use anyhow::anyhow;
 use chrono::{DateTime, Local};
 use input_context::{input_context_for_request, parse_context_attachments};
 use itertools::Itertools;
+use session_sharing_protocol::common::ParticipantId;
 use parking_lot::FairMutex;
 use pending_response_streams::PendingResponseStreams;
-use session_sharing_protocol::common::ParticipantId;
+
 pub use slash_command::*;
-use warp_core::assertions::safe_assert;
+use cute_core::assertions::safe_assert;
 use warp_multi_agent_api::{message, Task, ToolType};
-use warpui::r#async::{SpawnedFutureHandle, Timer};
-use warpui::{AppContext, Entity, EntityId, ModelContext, ModelHandle, SingletonEntity};
+use cuteui::r#async::{SpawnedFutureHandle, Timer};
+use cuteui::{AppContext, Entity, EntityId, ModelContext, ModelHandle, SingletonEntity};
 
 use self::response_stream::{ResponseStream, ResponseStreamEvent};
 use super::action_model::{BlocklistAIActionEvent, BlocklistAIActionModel};
@@ -107,7 +107,7 @@ impl SessionContext {
 
     /// Returns the remote host ID if this is a `WarpifiedRemote` session with
     /// a connected `RemoteServerClient`.
-    pub fn host_id(&self) -> Option<&warp_core::HostId> {
+    pub fn host_id(&self) -> Option<&cute_core::HostId> {
         match &self.session_type {
             Some(SessionType::WarpifiedRemote { host_id }) => host_id.as_ref(),
             Some(SessionType::Local) | None => None,
@@ -196,9 +196,11 @@ pub struct RequestInput {
     pub coding_model_id: LLMId,
     pub cli_agent_model_id: LLMId,
     pub computer_use_model_id: LLMId,
-    pub shared_session_response_initiator: Option<ParticipantId>,
     pub request_start_ts: DateTime<Local>,
     pub supported_tools_override: Option<Vec<ToolType>>,
+    /// The participant who initiated this request (for shared sessions).
+    /// For non-shared sessions, this is None.
+    pub shared_session_response_initiator: Option<ParticipantId>,
 }
 
 impl RequestInput {
@@ -206,7 +208,6 @@ impl RequestInput {
         inputs: Vec<AIAgentInput>,
         task_id: TaskId,
         active_session: &ModelHandle<ActiveSession>,
-        shared_session_response_initiator: Option<ParticipantId>,
         conversation_id: AIConversationId,
         terminal_view_id: EntityId,
         app: &AppContext,
@@ -214,7 +215,6 @@ impl RequestInput {
         let mut me = Self::new_with_common_fields(
             conversation_id,
             active_session,
-            shared_session_response_initiator,
             terminal_view_id,
             app,
         );
@@ -226,7 +226,6 @@ impl RequestInput {
         action_results: Vec<AIAgentActionResult>,
         context: Arc<[AIAgentContext]>,
         active_session: &ModelHandle<ActiveSession>,
-        shared_session_response_initiator: Option<ParticipantId>,
         conversation_id: AIConversationId,
         terminal_view_id: EntityId,
         app: &AppContext,
@@ -234,7 +233,6 @@ impl RequestInput {
         let mut me = Self::new_with_common_fields(
             conversation_id,
             active_session,
-            shared_session_response_initiator,
             terminal_view_id,
             app,
         );
@@ -262,7 +260,6 @@ impl RequestInput {
     fn new_with_common_fields(
         conversation_id: AIConversationId,
         active_session: &ModelHandle<ActiveSession>,
-        shared_session_response_initiator: Option<ParticipantId>,
         terminal_view_id: EntityId,
         app: &AppContext,
     ) -> Self {
@@ -296,9 +293,9 @@ impl RequestInput {
             coding_model_id,
             cli_agent_model_id,
             computer_use_model_id,
-            shared_session_response_initiator,
             request_start_ts: Local::now(),
             supported_tools_override: None,
+            shared_session_response_initiator: None,
         }
     }
 }
@@ -319,8 +316,6 @@ pub struct BlocklistAIController {
     terminal_view_id: EntityId,
 
     should_refresh_available_llms_on_stream_finish: bool,
-
-    shared_session_state: shared_session::SharedSessionState,
 
     /// Ambient agent task ID attached to this controller. This is a property of the controller, and not an individual
     /// conversation, because the ambient agent task driver owns the entire Warp window working on a task, and any
@@ -349,6 +344,12 @@ pub struct BlocklistAIController {
             Option<PassiveSuggestionTrigger>,
         )>,
     >,
+
+    /// The participant ID of the sharer in a shared session.
+    sharer_participant_id: Option<ParticipantId>,
+
+    /// The participant ID of the initiator of the current response.
+    current_response_initiator: Option<ParticipantId>,
 }
 
 enum InputQueryType {
@@ -586,13 +587,14 @@ impl BlocklistAIController {
             in_flight_response_streams: PendingResponseStreams::new(),
             terminal_view_id,
             should_refresh_available_llms_on_stream_finish: false,
-            shared_session_state: shared_session::SharedSessionState::default(),
             ambient_agent_task_id: None,
             attachments_download_dir: None,
             pending_auto_resume_handles: HashMap::new(),
             pending_local_claude_wakes: HashMap::new(),
             pending_passive_follow_ups: HashSet::new(),
             pending_passive_suggestion_results: HashMap::new(),
+            sharer_participant_id: None,
+            current_response_initiator: None,
         }
     }
 
@@ -607,18 +609,9 @@ impl BlocklistAIController {
         &mut self,
         input_query: InputQuery,
         entrypoint_type: EntrypointType,
-        // The shared session participant who initiated this query
-        // (None if this is not a shared session).
-        shared_session_participant_id: Option<ParticipantId>,
         is_queued_prompt: bool,
         ctx: &mut ModelContext<Self>,
     ) {
-        // Store the participant who initiated this query before sending
-        // so that send_query can use it when creating the exchange.
-        if let Some(participant_id) = shared_session_participant_id {
-            self.set_current_response_initiator(participant_id);
-        }
-
         let query = input_query.query().to_owned();
         let (conversation_id, task_id) = match input_query.which_task {
             WhichTask::NewConversation => {
@@ -757,7 +750,6 @@ impl BlocklistAIController {
                 inputs,
                 task_id,
                 &self.active_session,
-                self.get_current_response_initiator(),
                 conversation_id,
                 self.terminal_view_id,
                 ctx,
@@ -865,14 +857,12 @@ impl BlocklistAIController {
         query: String,
         static_query_type: Option<StaticQueryType>,
         entrypoint_type: EntrypointType,
-        participant_id: Option<ParticipantId>,
         ctx: &mut ModelContext<Self>,
     ) {
         self.send_user_query_in_new_conversation_internal(
             query,
             static_query_type,
             entrypoint_type,
-            participant_id,
             /*is_queued_prompt*/ false,
             ctx,
         );
@@ -887,14 +877,12 @@ impl BlocklistAIController {
         query: String,
         static_query_type: Option<StaticQueryType>,
         entrypoint_type: EntrypointType,
-        participant_id: Option<ParticipantId>,
         ctx: &mut ModelContext<Self>,
     ) {
         self.send_user_query_in_new_conversation_internal(
             query,
             static_query_type,
             entrypoint_type,
-            participant_id,
             /*is_queued_prompt*/ true,
             ctx,
         );
@@ -905,11 +893,9 @@ impl BlocklistAIController {
         query: String,
         static_query_type: Option<StaticQueryType>,
         entrypoint_type: EntrypointType,
-        participant_id: Option<ParticipantId>,
         is_queued_prompt: bool,
         ctx: &mut ModelContext<Self>,
     ) {
-        let participant_id = participant_id.or_else(|| self.get_sharer_participant_id());
         let running_command = {
             let terminal_model = self.terminal_model.lock();
             get_running_command(&terminal_model)
@@ -945,7 +931,6 @@ impl BlocklistAIController {
                     additional_attachments: HashMap::new(),
                 },
                 entrypoint_type,
-                participant_id,
                 is_queued_prompt,
                 ctx,
             );
@@ -961,7 +946,6 @@ impl BlocklistAIController {
                     additional_attachments: HashMap::new(),
                 },
                 entrypoint_type,
-                participant_id,
                 is_queued_prompt,
                 ctx,
             );
@@ -1080,7 +1064,7 @@ impl BlocklistAIController {
         &mut self,
         query: String,
         conversation_id: AIConversationId,
-        participant_id: Option<ParticipantId>,
+        _participant_id: Option<ParticipantId>,
         skip_running_command_detection: bool,
         additional_attachments: HashMap<String, AIAgentAttachment>,
         entrypoint_type: EntrypointType,
@@ -1179,7 +1163,6 @@ impl BlocklistAIController {
             }
         }
 
-        let participant_id = participant_id.or_else(|| self.get_sharer_participant_id());
         self.send_query(
             InputQuery {
                 which_task: WhichTask::Task {
@@ -1194,7 +1177,6 @@ impl BlocklistAIController {
                 additional_attachments,
             },
             entrypoint_type,
-            participant_id,
             is_queued_prompt,
             ctx,
         );
@@ -1206,7 +1188,6 @@ impl BlocklistAIController {
         query_type: ZeroStatePromptSuggestionType,
         ctx: &mut ModelContext<Self>,
     ) {
-        let participant_id = self.get_sharer_participant_id();
         self.send_query(
             InputQuery {
                 which_task: WhichTask::NewConversation,
@@ -1218,7 +1199,6 @@ impl BlocklistAIController {
                 additional_attachments: HashMap::new(),
             },
             EntrypointType::ZeroStateAgentModePromptSuggestion,
-            participant_id,
             /*is_queued_prompt*/ false,
             ctx,
         );
@@ -1230,7 +1210,7 @@ impl BlocklistAIController {
         ai_input: AIAgentInput,
         ctx: &mut ModelContext<Self>,
     ) {
-        let participant_id = self.get_sharer_participant_id();
+        let _participant_id = self.get_sharer_participant_id();
         let which_task = match self.context_model.as_ref(ctx).selected_conversation_id(ctx) {
             Some(id) => {
                 let Some(conversation) = BlocklistAIHistoryModel::as_ref(ctx).conversation(&id)
@@ -1254,7 +1234,6 @@ impl BlocklistAIController {
                 additional_attachments: HashMap::new(),
             },
             EntrypointType::UserInitiated,
-            participant_id,
             /*is_queued_prompt*/ false,
             ctx,
         )
@@ -1277,6 +1256,43 @@ impl BlocklistAIController {
         ctx: &mut ModelContext<Self>,
     ) {
         slash_command.send_request(self, /*is_queued_prompt*/ true, ctx);
+    }
+
+    /// Sets the sharer's participant ID for tracking query initiators in shared sessions.
+    pub fn set_sharer_participant_id(&mut self, participant_id: ParticipantId) {
+        self.sharer_participant_id = Some(participant_id);
+    }
+
+    /// Gets the sharer's participant ID in a shared session.
+    pub fn get_sharer_participant_id(&self) -> Option<&ParticipantId> {
+        self.sharer_participant_id.as_ref()
+    }
+
+    /// Executes an agent prompt for a shared session.
+    /// This is called when a viewer sends a prompt request to the sharer.
+    pub fn execute_agent_prompt_for_shared_session(
+        &mut self,
+        _prompt: String,
+        _server_conversation_token: Option<ServerConversationToken>,
+        _attachments: Vec<session_sharing_protocol::common::AgentAttachment>,
+        _participant_id: ParticipantId,
+        _ctx: &mut ModelContext<Self>,
+    ) {
+        // TODO: Implement proper shared session prompt execution
+        log::debug!("execute_agent_prompt_for_shared_session called (stub)");
+    }
+
+    /// Gets the participant ID of the initiator of the current response.
+    pub fn get_current_response_initiator(&self) -> Option<&ParticipantId> {
+        self.current_response_initiator.as_ref()
+    }
+
+    /// Sends a cancellation notification to viewers in a shared session.
+    pub fn send_cancellation_to_viewers(&self, _ctx: &ModelContext<Self>) {
+        let model = self.terminal_model.lock();
+        if model.shared_session_status().is_sharer() {
+            model.send_agent_cancellation_for_shared_session();
+        }
     }
 
     /// Mark a conversation to follow up after its actions complete and attempt to send immediately
@@ -1368,7 +1384,7 @@ impl BlocklistAIController {
             ctx,
         );
 
-        let participant_id = self.get_sharer_participant_id();
+        let _participant_id = self.get_sharer_participant_id();
         let trigger_type = trigger.as_ref().map(PassiveSuggestionTriggerType::from);
         log::debug!(
             "[passive-suggestions] sending result: trigger={}, trigger_type={:?}",
@@ -1390,7 +1406,6 @@ impl BlocklistAIController {
             EntrypointType::TriggerPassiveSuggestion {
                 trigger: trigger_type,
             },
-            participant_id,
             /*is_queued_prompt*/ false,
             ctx,
         );
@@ -1452,10 +1467,10 @@ impl BlocklistAIController {
         // subagent for LRC), or if one is already active. If so, we must not
         // piggyback orchestration events because the subagent cannot interpret
         // them and inserting events breaks tool_use/tool_result ordering.
-        let will_trigger_server_subagent = finished_results
+        let _will_trigger_server_subagent = finished_results
             .iter()
             .any(|r| r.result.triggers_server_subagent());
-        let has_active_subagent = BlocklistAIHistoryModel::as_ref(ctx)
+        let _has_active_subagent = BlocklistAIHistoryModel::as_ref(ctx)
             .conversation(&conversation_id)
             .is_some_and(|c| c.has_active_subagent());
 
@@ -1467,11 +1482,10 @@ impl BlocklistAIController {
             vec![],
             ctx,
         );
-        let mut request_input = RequestInput::for_actions_results(
+        let request_input = RequestInput::for_actions_results(
             finished_results,
             context,
             &self.active_session,
-            self.get_current_response_initiator(),
             conversation_id,
             self.terminal_view_id,
             ctx,
@@ -1481,7 +1495,7 @@ impl BlocklistAIController {
         // than waiting for a separate idle injection turn. Skip when a server
         // subagent is or will be active — events will be delivered via the idle
         // path once the subagent session ends.
-        let result = self.send_request_input(
+        let _result = self.send_request_input(
             request_input,
             None,
             /*default_to_follow_up_on_success*/ false,
@@ -1732,7 +1746,6 @@ impl BlocklistAIController {
                     inputs,
                     task_id,
                     &self.active_session,
-                    self.get_current_response_initiator(),
                     conversation_id,
                     self.terminal_view_id,
                     ctx,
@@ -1846,7 +1859,6 @@ impl BlocklistAIController {
                 inputs,
                 task_id,
                 &self.active_session,
-                self.get_current_response_initiator(),
                 conversation_id,
                 self.terminal_view_id,
                 ctx,
@@ -1887,7 +1899,6 @@ impl BlocklistAIController {
                 }],
                 new_conversation.get_root_task_id().clone(),
                 &self.active_session,
-                self.get_current_response_initiator(),
                 new_conversation.id(),
                 self.terminal_view_id,
                 ctx,
@@ -2000,7 +2011,6 @@ impl BlocklistAIController {
             inputs,
             task_id,
             &self.active_session,
-            self.get_current_response_initiator(),
             conversation_id,
             self.terminal_view_id,
             ctx,
@@ -2054,7 +2064,6 @@ impl BlocklistAIController {
                 inputs,
                 new_conversation.get_root_task_id().clone(),
                 &self.active_session,
-                self.get_current_response_initiator(),
                 new_conversation.id(),
                 self.terminal_view_id,
                 ctx,
@@ -2500,7 +2509,7 @@ impl BlocklistAIController {
 
                                 model.send_agent_response_for_shared_session(
                                     &event,
-                                    participant_id,
+                                    participant_id.cloned(),
                                     forked_from_token,
                                 );
                             }
@@ -2986,6 +2995,17 @@ impl BlocklistAIController {
             });
             ctx.emit(BlocklistAIControllerEvent::FreeTierLimitCheckTriggered);
         }
+    }
+
+    /// Handles a cancel action for a shared session conversation.
+    /// This is called when a viewer requests to cancel an agent conversation.
+    pub fn handle_shared_session_cancel_action(
+        &mut self,
+        server_conversation_token: session_sharing_protocol::common::ServerConversationToken,
+        _ctx: &mut ModelContext<Self>,
+    ) {
+        // TODO: Implement cancel action handling
+        log::info!("handle_shared_session_cancel_action called for token: {}", server_conversation_token);
     }
 }
 

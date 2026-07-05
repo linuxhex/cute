@@ -1,26 +1,27 @@
 use markdown_parser::{FormattedText, FormattedTextFragment, FormattedTextLine};
-use warp_core::channel::ChannelState;
-use warp_core::ui::theme::WarpTheme;
-use warpui::elements::{
+use cute_core::channel::ChannelState;
+use cute_core::ui::theme::WarpTheme;
+use cuteui::elements::{
     Border, Container, CrossAxisAlignment, Flex, HighlightedHyperlink, Hoverable, Icon,
     MainAxisAlignment, MainAxisSize, MouseStateHandle, ParentElement,
 };
-use warpui::keymap::FixedBinding;
-use warpui::platform::Cursor;
-use warpui::ui_components::button::ButtonVariant;
-use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::{
+use cuteui::keymap::FixedBinding;
+use cuteui::platform::Cursor;
+use cuteui::ui_components::button::ButtonVariant;
+use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
+use cuteui::{
     AppContext, BlurContext, Element, Entity, FocusContext, SingletonEntity, TypedActionView, View,
     ViewContext,
 };
 
 use crate::appearance::Appearance;
 use crate::terminal::model::ansi::WarpificationUnavailableReason;
+use crate::terminal::cuteify;
 use crate::terminal::warpify;
 use crate::terminal::warpify::render::{apply_spacing_styles, build_description_row};
 use crate::terminal::warpify::settings::WarpifySettings;
 use crate::ui_components::icons::Icon as UiIcon;
-use warp_core::session_id::SessionId;
+use cute_core::session_id::SessionId;
 
 const TMUX_NOT_INSTALLED_ERROR: &str =
     "tmux is not installed on the remote machine. Please install tmux and try again.";
@@ -111,7 +112,7 @@ pub struct SshErrorBlock {
 }
 
 pub fn init(app: &mut AppContext) {
-    use warpui::keymap::macros::*;
+    use cuteui::keymap::macros::*;
 
     app.register_fixed_bindings([
         FixedBinding::new(
@@ -180,7 +181,7 @@ impl SshErrorBlock {
         .with_margin_right(8.)
         .finish();
 
-        let right_hand_size = warpify::render::render_never_warpify_ssh_link(
+        let right_hand_size = cuteify::render::render_never_cuteify_ssh_link(
             &self.ssh_host,
             app,
             appearance,

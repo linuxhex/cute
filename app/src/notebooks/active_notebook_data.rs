@@ -1,10 +1,10 @@
-use warpui::{AppContext, Entity, ModelContext, SingletonEntity};
+use cuteui::{AppContext, Entity, ModelContext, SingletonEntity};
 
 use super::{CloudNotebookModel, NotebookId};
 use crate::ai::document::ai_document_model::AIDocumentId;
 use crate::cloud_object::breadcrumbs::ContainingObject;
 use crate::cloud_object::model::persistence::{CloudModel, CloudModelEvent};
-use crate::cloud_object::model::view::{CloudViewModel, Editor, EditorState};
+use crate::cloud_object::model::view::{CloudViewModel, Editor};
 use crate::cloud_object::{CloudObject, Owner, Space};
 use crate::drive::sharing::{ContentEditability, SharingAccessLevel};
 use crate::notebooks::CloudNotebook;
@@ -74,26 +74,11 @@ impl ActiveNotebookData {
 
     fn handle_cloud_model_event(&mut self, event: &CloudModelEvent, ctx: &mut ModelContext<Self>) {
         match event {
-            CloudModelEvent::NotebookEditorChangedFromServer { notebook_id } => {
-                if self.is_active_notebook(*notebook_id) {
-                    if let Some(new_editor) =
-                        CloudViewModel::as_ref(ctx).object_current_editor(&notebook_id.uid(), ctx)
-                    {
-                        if self.mode == Mode::Editing
-                            && matches!(new_editor.state, EditorState::OtherUserActive)
-                        {
-                            self.mode = Mode::View;
-                            ctx.emit(ActiveNotebookDataEvent::ModeChangedFromServer);
-                        }
-                    }
-                    ctx.notify();
-                }
-            }
             CloudModelEvent::ObjectMoved { type_and_id, .. } => {
                 if let Some(notebook_id) = type_and_id.as_notebook_id() {
                     // Update breadcrumb when a notebook is moved, whether by the user or a
                     // teammate.
-                    if self.is_active_notebook(notebook_id) {
+                    if self.is_active_notebook(*notebook_id) {
                         ctx.emit(ActiveNotebookDataEvent::BreadcrumbsChanged);
                     }
                 }
@@ -350,7 +335,8 @@ impl ActiveNotebookData {
     pub fn access_level(&self, app: &AppContext) -> SharingAccessLevel {
         match &self.active_notebook {
             ActiveNotebook::CommittedNotebook(object_id) => {
-                CloudViewModel::as_ref(app).access_level(&object_id.uid(), app)
+                let client_access = CloudViewModel::as_ref(app).access_level(&object_id.uid(), app);
+                cute_graphql::object_permissions::AccessLevel::from(client_access).into()
             }
             ActiveNotebook::None | ActiveNotebook::NewNotebook(_) => SharingAccessLevel::Full,
         }

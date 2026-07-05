@@ -1,10 +1,10 @@
 use std::borrow::Cow;
 
-use warp_core::ui::Icon;
-use warp_core::ui::appearance::Appearance;
-use warpui::fonts;
-use warpui::keymap::Keystroke;
-use warpui::prelude::stack;
+use cute_core::ui::Icon;
+use cute_core::ui::appearance::Appearance;
+use cuteui::fonts;
+use cuteui::keymap::Keystroke;
+use cuteui::prelude::stack;
 
 use super::Theme;
 use crate::{keyboard_shortcut, tooltip};

@@ -4,19 +4,19 @@ use std::sync::Arc;
 
 use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::{vec2f, Vector2F};
-use warp_core::features::FeatureFlag;
-use warp_core::ui::theme::color::internal_colors;
-use warp_core::ui::theme::Fill;
-use warpui::elements::{
+use cute_core::features::FeatureFlag;
+use cute_core::ui::theme::color::internal_colors;
+use cute_core::ui::theme::Fill;
+use cuteui::elements::{
     Border, ChildAnchor, ChildView, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment,
     Empty, Flex, Hoverable, MouseStateHandle, OffsetPositioning, ParentAnchor, ParentElement,
     ParentOffsetBounds, Radius, Stack, Text, DEFAULT_UI_LINE_HEIGHT_RATIO,
 };
-use warpui::fonts::{Cache, FamilyId, Properties, Weight};
-use warpui::keymap::Keystroke;
-use warpui::platform::Cursor;
-use warpui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
-use warpui::{
+use cuteui::fonts::{Cache, FamilyId, Properties, Weight};
+use cuteui::keymap::Keystroke;
+use cuteui::platform::Cursor;
+use cuteui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
+use cuteui::{
     AppContext, Element, Entity, EntityId, Gradient, ModelHandle, SingletonEntity, TypedActionView,
     View, ViewContext, ViewHandle,
 };
@@ -79,12 +79,12 @@ pub fn render_git_diff_stats_content(
     let icon_element = if has_changes {
         // Use file icon when there are changes
         Icon::File
-            .to_warpui_icon(Fill::Solid(internal_colors::neutral_6(theme)))
+            .to_cuteui_icon(Fill::Solid(internal_colors::neutral_6(theme)))
             .finish()
     } else {
         // Use diff icon when there are no changes
         Icon::Diff
-            .to_warpui_icon(Fill::Solid(internal_colors::neutral_6(theme)))
+            .to_cuteui_icon(Fill::Solid(internal_colors::neutral_6(theme)))
             .finish()
     };
 
@@ -509,9 +509,9 @@ impl GenericMenuItem for GitBranch {
     }
 
     fn right_side_element(&self, app: &AppContext) -> Option<Box<dyn Element>> {
-        use warp_core::ui::theme::color::internal_colors;
-        use warpui::elements::{Flex, MainAxisSize, Text};
-        use warpui::fonts::{Properties, Weight};
+        use cute_core::ui::theme::color::internal_colors;
+        use cuteui::elements::{Flex, MainAxisSize, Text};
+        use cuteui::fonts::{Properties, Weight};
 
         let appearance = Appearance::handle(app).as_ref(app);
         let theme = appearance.theme();
@@ -2134,7 +2134,7 @@ pub(crate) fn render_udi_chip(config: UdiChipConfig, appearance: &Appearance) ->
     if let Some(icon) = config.icon {
         content.add_child(
             Container::new(
-                ConstrainedBox::new(icon.to_warpui_icon(Fill::Solid(config.color)).finish())
+                ConstrainedBox::new(icon.to_cuteui_icon(Fill::Solid(config.color)).finish())
                     .with_height(icon_size)
                     .with_width(icon_size)
                     .finish(),

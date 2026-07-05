@@ -1,11 +1,11 @@
-use warpui::elements::{
+use cuteui::elements::{
     Align, ClippedScrollStateHandle, ClippedScrollable, Container, Element, Empty,
     Fill, Flex, Hoverable, MainAxisSize, MouseStateHandle, ParentElement, Shrinkable,
 };
-use warpui::platform::Cursor;
-use warpui::presenter::ChildView;
-use warpui::ui_components::components::{UiComponent, UiComponentStyles};
-use warpui::{
+use cuteui::platform::Cursor;
+use cuteui::presenter::ChildView;
+use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
+use cuteui::{
     AppContext, Entity, EntityId, ModelHandle, SingletonEntity, TypedActionView, View, ViewContext,
     ViewHandle, WindowId,
 };

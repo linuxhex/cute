@@ -2,15 +2,16 @@ use chrono::{DateTime, Utc};
 use comfy_table::Cell;
 use futures::future;
 use serde::Serialize;
-use warp_cli::agent::OutputFormat;
-use warp_cli::schedule::{
+use cute_cli::agent::OutputFormat;
+use cute_cli::schedule::{
     CreateScheduleArgs, DeleteScheduleArgs, GetScheduleArgs, PauseScheduleArgs, ScheduleCommand,
     ScheduleSubcommand, UnpauseScheduleArgs, UpdateScheduleArgs,
 };
-use warp_cli::GlobalOptions;
-use warp_graphql::queries::get_scheduled_agent_history::ScheduledAgentHistory;
-use warpui::platform::TerminationMode;
-use warpui::{AppContext, SingletonEntity};
+use cute_cli::GlobalOptions;
+use cute_graphql::queries::get_scheduled_agent_history::ScheduledAgentHistory;
+use cuteui::platform::TerminationMode;
+use cuteui::{AppContext, SingletonEntity};
+use crate::cloud_object::{CloudObject, CloudObjectLookup};
 
 use super::common::{EnvironmentChoice, ResolveConfigurationError};
 use super::output::{self, TableFormat};
@@ -18,7 +19,6 @@ use crate::ai::ambient_agent_types::scheduled::{
     CloudScheduledAmbientAgent, ScheduledAgentManager, ScheduledAmbientAgent, UpdateScheduleParams,
 };
 use crate::ai::ambient_agent_types::AgentConfigSnapshot;
-use crate::cloud_object::{CloudObject, CloudObjectLookup as _};
 use crate::server::ids::{ServerId, SyncId};
 use crate::util::time_format::format_approx_duration_from_now_utc;
 
@@ -43,8 +43,8 @@ pub fn run(
 fn create(ctx: &mut AppContext, args: CreateScheduleArgs) -> anyhow::Result<()> {
     ScheduledAgentManager::handle(ctx).update(ctx, move |_manager, ctx| {
         let refresh_future = super::common::refresh_workspace_metadata(ctx);
-        let warp_drive_sync_future = super::common::refresh_warp_drive(ctx);
-        let setup_future = future::try_join(refresh_future, warp_drive_sync_future);
+        let cute_drive_sync_future = super::common::refresh_cute_drive(ctx);
+        let setup_future = future::try_join(refresh_future, cute_drive_sync_future);
 
         ctx.spawn(setup_future, move |manager, setup_result, ctx| {
             if let Err(err) = setup_result {
@@ -150,7 +150,7 @@ fn create(ctx: &mut AppContext, args: CreateScheduleArgs) -> anyhow::Result<()> 
 
             // Print something here because scheduling an agent can take a while.
             println!("Scheduling agent {}...", config.name);
-            let create_future = manager.create_schedule(config, owner, ctx);
+            let create_future = manager.create_schedule(config, owner);
             ctx.spawn(create_future, |_manager, result, ctx| match result {
                 Ok(sync_id) => {
                     println!("Scheduled agent: {sync_id}");
@@ -339,15 +339,15 @@ fn pause(ctx: &mut AppContext, args: PauseScheduleArgs) -> anyhow::Result<()> {
     let schedule_id = SyncId::ServerId(ServerId::try_from(args.schedule_id)?);
 
     ScheduledAgentManager::handle(ctx).update(ctx, move |_manager, ctx| {
-        let warp_drive_sync_future = super::common::refresh_warp_drive(ctx);
-        ctx.spawn(warp_drive_sync_future, move |manager, result, ctx| {
+        let cute_drive_sync_future = super::common::refresh_cute_drive(ctx);
+        ctx.spawn(cute_drive_sync_future, move |manager, result, ctx| {
             if let Err(err) = result {
                 super::report_fatal_error(err, ctx);
                 return;
             }
 
             println!("Pausing agent...");
-            let pause_future = manager.pause_schedule(schedule_id, ctx);
+            let pause_future = manager.pause_schedule(schedule_id);
             ctx.spawn(pause_future, |_manager, result, ctx| match result {
                 Ok(()) => {
                     println!("Schedule paused");
@@ -367,15 +367,15 @@ fn unpause(ctx: &mut AppContext, args: UnpauseScheduleArgs) -> anyhow::Result<()
     let schedule_id = SyncId::ServerId(ServerId::try_from(args.schedule_id)?);
 
     ScheduledAgentManager::handle(ctx).update(ctx, move |_manager, ctx| {
-        let warp_drive_sync_future = super::common::refresh_warp_drive(ctx);
-        ctx.spawn(warp_drive_sync_future, move |manager, result, ctx| {
+        let cute_drive_sync_future = super::common::refresh_cute_drive(ctx);
+        ctx.spawn(cute_drive_sync_future, move |manager, result, ctx| {
             if let Err(err) = result {
                 super::report_fatal_error(err, ctx);
                 return;
             }
 
             println!("Resuming agent...");
-            let unpause_future = manager.unpause_schedule(schedule_id, ctx);
+            let unpause_future = manager.unpause_schedule(schedule_id);
             ctx.spawn(unpause_future, |_manager, result, ctx| match result {
                 Ok(()) => {
                     println!("Schedule unpaused");
@@ -396,8 +396,8 @@ fn update(ctx: &mut AppContext, args: UpdateScheduleArgs) -> anyhow::Result<()> 
 
     ScheduledAgentManager::handle(ctx).update(ctx, move |_manager, ctx| {
         let refresh_future = super::common::refresh_workspace_metadata(ctx);
-        let warp_drive_sync_future = super::common::refresh_warp_drive(ctx);
-        let setup_future = future::try_join(refresh_future, warp_drive_sync_future);
+        let cute_drive_sync_future = super::common::refresh_cute_drive(ctx);
+        let setup_future = future::try_join(refresh_future, cute_drive_sync_future);
 
         ctx.spawn(setup_future, move |manager, setup_result, ctx| {
             if let Err(err) = setup_result {
@@ -443,7 +443,7 @@ fn update(ctx: &mut AppContext, args: UpdateScheduleArgs) -> anyhow::Result<()> 
 
             let environment_id = match EnvironmentChoice::resolve_for_update(environment_args, ctx)
             {
-                Ok(choice) => choice.map(|c| match c {
+                Ok(choice) => choice.and_then(|c| match c {
                     EnvironmentChoice::None => None,
                     EnvironmentChoice::Environment { id, .. } => Some(id),
                 }),
@@ -514,7 +514,6 @@ fn update(ctx: &mut AppContext, args: UpdateScheduleArgs) -> anyhow::Result<()> 
                     skill_spec,
                     worker_host: args.worker_host,
                 },
-                ctx,
             );
             ctx.spawn(update_future, |_manager, result, ctx| match result {
                 Ok(()) => {
@@ -534,14 +533,14 @@ fn update(ctx: &mut AppContext, args: UpdateScheduleArgs) -> anyhow::Result<()> 
 /// List all scheduled agents available to the current user.
 fn list(ctx: &mut AppContext, output_format: OutputFormat) -> anyhow::Result<()> {
     ScheduledAgentManager::handle(ctx).update(ctx, move |_manager, ctx| {
-        let warp_drive_sync_future = super::common::refresh_warp_drive(ctx);
-        ctx.spawn(warp_drive_sync_future, move |manager, result, ctx| {
+        let cute_drive_sync_future = super::common::refresh_cute_drive(ctx);
+        ctx.spawn(cute_drive_sync_future, move |manager, result, ctx| {
             if let Err(err) = result {
                 super::report_fatal_error(err, ctx);
                 return;
             }
 
-            let mut schedules = manager.list_schedules(ctx);
+            let mut schedules = manager.list_schedules();
             schedules.sort_by_key(|schedule| schedule.model().string_model.name.clone());
 
             let futures = schedules.into_iter().map(|schedule| {
@@ -550,7 +549,7 @@ fn list(ctx: &mut AppContext, output_format: OutputFormat) -> anyhow::Result<()>
                 let scope = super::common::format_owner(&schedule.permissions().owner).to_string();
 
                 // TODO(ben): Consider a bulk lookup API for scheduled agent history.
-                let history_future = manager.fetch_schedule_history(sync_id, ctx);
+                let history_future = manager.fetch_schedule_history(sync_id);
 
                 async move {
                     // Try to fetch the scheduled agent history, but still show output if this fails.
@@ -594,8 +593,8 @@ fn get(
     let schedule_id = SyncId::ServerId(ServerId::try_from(args.schedule_id)?);
 
     ScheduledAgentManager::handle(ctx).update(ctx, move |_manager, ctx| {
-        let warp_drive_sync_future = super::common::refresh_warp_drive(ctx);
-        ctx.spawn(warp_drive_sync_future, move |manager, result, ctx| {
+        let cute_drive_sync_future = super::common::refresh_cute_drive(ctx);
+        ctx.spawn(cute_drive_sync_future, move |manager, result, ctx| {
             if let Err(err) = result {
                 super::report_fatal_error(err, ctx);
                 return;
@@ -614,7 +613,7 @@ fn get(
             let config = schedule.model().string_model.clone();
 
             // Don't hold references into the CloudObject store across an async spawn.
-            let history_future = manager.fetch_schedule_history(schedule_id, ctx);
+            let history_future = manager.fetch_schedule_history(schedule_id);
 
             ctx.spawn(history_future, move |_manager, history, ctx| {
                 let history = match history {
@@ -643,15 +642,15 @@ fn delete(ctx: &mut AppContext, args: DeleteScheduleArgs) -> anyhow::Result<()> 
     let schedule_id = SyncId::ServerId(ServerId::try_from(args.schedule_id)?);
 
     ScheduledAgentManager::handle(ctx).update(ctx, move |_manager, ctx| {
-        let warp_drive_sync_future = super::common::refresh_warp_drive(ctx);
-        ctx.spawn(warp_drive_sync_future, move |manager, result, ctx| {
+        let cute_drive_sync_future = super::common::refresh_cute_drive(ctx);
+        ctx.spawn(cute_drive_sync_future, move |manager, result, ctx| {
             if let Err(err) = result {
                 super::report_fatal_error(err, ctx);
                 return;
             }
 
             println!("Deleting agent...");
-            let delete_future = manager.delete_schedule(schedule_id, ctx);
+            let delete_future = manager.delete_schedule(schedule_id);
             ctx.spawn(delete_future, |_manager, result, ctx| match result {
                 Ok(()) => {
                     println!("Schedule deleted");

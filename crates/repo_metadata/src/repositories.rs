@@ -5,13 +5,13 @@ use std::path::{Path, PathBuf};
 use futures::future::{ready, Either};
 #[cfg(test)]
 use virtual_fs::{Stub, VirtualFS};
-use warp_util::host_id::HostId;
-use warp_util::local_or_remote_path::LocalOrRemotePath;
-use warp_util::remote_path::{RemoteNavigationResult, RemotePath};
-use warp_util::standardized_path::StandardizedPath;
+use cute_util::host_id::HostId;
+use cute_util::local_or_remote_path::LocalOrRemotePath;
+use cute_util::remote_path::{RemoteNavigationResult, RemotePath};
+use cute_util::standardized_path::StandardizedPath;
 #[cfg(test)]
-use warpui::r#async::FutureId;
-use warpui::{AppContext, Entity, ModelContext, ModelHandle, SingletonEntity};
+use cuteui::r#async::FutureId;
+use cuteui::{AppContext, Entity, ModelContext, ModelHandle, SingletonEntity};
 
 use crate::{DirectoryWatcher, Repository};
 

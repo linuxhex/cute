@@ -2,7 +2,7 @@
 
 use std::path::PathBuf;
 
-use warpui::{AppContext, Entity, SingletonEntity};
+use cuteui::{AppContext, Entity, SingletonEntity};
 
 use crate::ai::persisted_workspace::PersistedWorkspace;
 use crate::search::data_source::{Query, QueryResult};

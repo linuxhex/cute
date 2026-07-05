@@ -10,8 +10,8 @@ use itertools::Itertools;
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
 use rangemap::{RangeInclusiveMap, StepLite};
-use warpui::elements::SecretRange;
-use warpui::EntityId;
+use cuteui::elements::SecretRange;
+use cuteui::EntityId;
 
 use super::grid::grid_handler::GridHandler;
 use super::grid::{Dimensions as _, RespectDisplayedOutput};

@@ -1,13 +1,13 @@
 use std::path::PathBuf;
 
-use warp_core::ui::appearance::Appearance;
-use warpui::elements::{
+use cute_core::ui::appearance::Appearance;
+use cuteui::elements::{
     Align, ChildView, ClippedScrollStateHandle, ClippedScrollable, ConstrainedBox, Container,
     CrossAxisAlignment, Expanded, Flex, MainAxisAlignment, MainAxisSize, ParentElement,
     ScrollbarWidth,
 };
-use warpui::ui_components::components::UiComponent;
-use warpui::{
+use cuteui::ui_components::components::UiComponent;
+use cuteui::{
     AppContext, Element, Entity, FocusContext, ModelHandle, SingletonEntity, TypedActionView, View,
     ViewContext, ViewHandle,
 };
@@ -192,7 +192,7 @@ impl AIFactView {
                 .with_child(
                     ConstrainedBox::new(
                         Icon::CloudOffline
-                            .to_warpui_icon(
+                            .to_cuteui_icon(
                                 appearance
                                     .theme()
                                     .sub_text_color(appearance.theme().surface_2()),
@@ -277,7 +277,7 @@ impl View for AIFactView {
             ScrollbarWidth::Auto,
             appearance.theme().nonactive_ui_detail().into(),
             appearance.theme().active_ui_detail().into(),
-            warpui::elements::Fill::None,
+            cuteui::elements::Fill::None,
         )
         .finish()
     }
@@ -307,16 +307,16 @@ impl BackingView for AIFactView {
     fn handle_pane_header_overflow_menu_action(
         &mut self,
         _action: &Self::PaneHeaderOverflowMenuAction,
-        _ctx: &mut warpui::ViewContext<Self>,
+        _ctx: &mut cuteui::ViewContext<Self>,
     ) {
         self.handle_action(_action, _ctx)
     }
 
-    fn close(&mut self, ctx: &mut warpui::ViewContext<Self>) {
+    fn close(&mut self, ctx: &mut cuteui::ViewContext<Self>) {
         ctx.emit(AIFactViewEvent::Pane(PaneEvent::Close));
     }
 
-    fn focus_contents(&mut self, ctx: &mut warpui::ViewContext<Self>) {
+    fn focus_contents(&mut self, ctx: &mut cuteui::ViewContext<Self>) {
         self.focus(ctx);
     }
 
@@ -338,20 +338,20 @@ pub fn is_online(app: &AppContext) -> bool {
 }
 
 pub fn is_delete_allowed(ai_fact: CloudAIFact, app: &AppContext) -> bool {
-    let cloud_object_type_and_id = CloudObjectTypeAndId::GenericStringObject {
-        object_type: GenericStringObjectFormat::Json(JsonObjectType::AIFact),
-        id: ai_fact.sync_id(),
-    };
+    let cloud_object_type_and_id = CloudObjectTypeAndId::from_generic_string_object(
+        GenericStringObjectFormat::Json(JsonObjectType::AIFact),
+        ai_fact.sync_id(),
+    );
     is_online(app)
         && cloud_object_type_and_id.has_server_id()
         && !ai_fact.metadata().has_pending_online_only_change()
 }
 
 pub fn is_edit_allowed(ai_fact: CloudAIFact, app: &AppContext) -> bool {
-    let cloud_object_type_and_id = CloudObjectTypeAndId::GenericStringObject {
-        object_type: GenericStringObjectFormat::Json(JsonObjectType::AIFact),
-        id: ai_fact.sync_id(),
-    };
+    let cloud_object_type_and_id = CloudObjectTypeAndId::from_generic_string_object(
+        GenericStringObjectFormat::Json(JsonObjectType::AIFact),
+        ai_fact.sync_id(),
+    );
     is_online(app) || !cloud_object_type_and_id.has_server_id()
 }
 

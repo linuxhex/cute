@@ -8,14 +8,14 @@ use lsp::supported_servers::LSPServerType;
 use lsp_server_selector::{create_lsp_server_selector, LSPServerInfo};
 pub use model::{InitProjectModel, InitProjectModelEvent, InitStepKind};
 use model::{InitStepData, InitStepStatus};
-use warp_core::ui::theme::Fill;
-use warpui::elements::{
+use cute_core::ui::theme::Fill;
+use cuteui::elements::{
     Border, ChildView, Container, CrossAxisAlignment, Empty, Flex, MouseStateHandle, ParentElement,
     Text,
 };
-use warpui::ui_components::button::ButtonVariant;
-use warpui::ui_components::components::UiComponent;
-use warpui::{
+use cuteui::ui_components::button::ButtonVariant;
+use cuteui::ui_components::components::UiComponent;
+use cuteui::{
     AppContext, Element, Entity, ModelHandle, SingletonEntity, TypedActionView, View, ViewContext,
     ViewHandle,
 };
@@ -489,7 +489,7 @@ impl InitStepBlock {
     /// Renders a success completion state with check icon.
     fn render_success_completion(text: &str, app: &AppContext) -> Box<dyn Element> {
         RenderableAction::new(text, app)
-            .with_icon(Icon::Check.to_warpui_icon(Fill::success()).finish())
+            .with_icon(Icon::Check.to_cuteui_icon(Fill::success()).finish())
             .with_content_item_spacing()
             .render(app)
             .finish()
@@ -498,7 +498,7 @@ impl InitStepBlock {
     /// Renders a skipped/cancelled completion state with X icon.
     fn render_skipped_completion(text: &str, app: &AppContext) -> Box<dyn Element> {
         RenderableAction::new(text, app)
-            .with_icon(Icon::X.to_warpui_icon(Fill::error()).finish())
+            .with_icon(Icon::X.to_cuteui_icon(Fill::error()).finish())
             .with_content_item_spacing()
             .render(app)
             .finish()
@@ -665,7 +665,7 @@ impl InitStepBlock {
         match indexing_result {
             CodebaseIndexingResult::Accepted => {
                 RenderableAction::new("Codebase index started", app)
-                    .with_icon(Icon::Check.to_warpui_icon(Fill::success()).finish())
+                    .with_icon(Icon::Check.to_cuteui_icon(Fill::success()).finish())
                     .with_action_button(
                         Appearance::as_ref(app)
                             .ui_builder()
@@ -921,7 +921,7 @@ impl InitStepBlock {
                 button_disabled, ..
             } => {
                 let mut action = RenderableAction::new("Project rules configured", app)
-                    .with_icon(Icon::Check.to_warpui_icon(Fill::success()).finish());
+                    .with_icon(Icon::Check.to_cuteui_icon(Fill::success()).finish());
                 if init_completed {
                     action = action.with_action_button(Self::regenerate_button(
                         &mouse_states.regenerate_button,
@@ -933,7 +933,7 @@ impl InitStepBlock {
             }
             ProjectScopedRulesResult::AlreadyExists { button_disabled } => {
                 let mut action = RenderableAction::new("Project rules already configured", app)
-                    .with_icon(Icon::Check.to_warpui_icon(Fill::success()).finish());
+                    .with_icon(Icon::Check.to_cuteui_icon(Fill::success()).finish());
                 if init_completed {
                     action = action.with_action_button(Self::regenerate_button(
                         &mouse_states.regenerate_button,

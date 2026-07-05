@@ -11,7 +11,7 @@ The goal is to extend `LocalFileModel` into a unified `FileModel` that dispatche
 - `app/src/code/inline_diff.rs` — `InlineDiffView` struct and all `LocalFileModel` usage
 - `app/src/code/diff_viewer.rs (113-171)` — `DiffViewer` trait with `accept_and_save_diff`, `restore_diff_base` defaults
 - `app/src/ai/blocklist/inline_action/code_diff_view.rs (954-1005)` — `set_candidate_diffs()` which constructs `InlineDiffView` and calls `register_file()`
-- `crates/warp_files/src/lib.rs (282-315, 548-706)` — `LocalFileModel::register_file_path()`, `save()`, `delete()`
+- `crates/cute_files/src/lib.rs (282-315, 548-706)` — `LocalFileModel::register_file_path()`, `save()`, `delete()`
 - `crates/warp_util/src/standardized_path.rs` — `StandardizedPath` for platform-aware remote paths
 - `app/src/remote_server/manager.rs` — `RemoteServerManager` and `RemoteServerClient` (future remote implementation)
 
@@ -427,7 +427,7 @@ diff_viewer.update(ctx, |view, ctx| {
 
 ### File placement
 
-- `crates/warp_files/src/lib.rs` — `FileModel` (renamed from `LocalFileModel`), `FileBackend` enum, `register_remote_file()`
+- `crates/cute_files/src/lib.rs` — `FileModel` (renamed from `LocalFileModel`), `FileBackend` enum, `register_remote_file()`
 - No new files needed for the trait — the abstraction lives inside the singleton.
 
 ## End-to-end flow

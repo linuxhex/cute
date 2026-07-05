@@ -4,17 +4,17 @@ use std::sync::Arc;
 
 use itertools::Itertools;
 use lazy_static::lazy_static;
-use warp_util::path::LineAndColumnArg;
-use warpui::elements::{
+use cute_util::path::LineAndColumnArg;
+use cuteui::elements::{
     Align, Border, ChildView, Clipped, ClippedScrollStateHandle, ClippedScrollable, ConstrainedBox,
     Container, CornerRadius, Dismiss, DispatchEventResult, Empty, EventHandler, Fill, Flex,
     ParentElement, Radius, SavePosition, Shrinkable,
 };
-use warpui::event::KeyState;
-use warpui::keymap::BindingId;
-use warpui::platform::keyboard::KeyCode;
-use warpui::units::{IntoPixels, Pixels};
-use warpui::{
+use cuteui::event::KeyState;
+use cuteui::keymap::BindingId;
+use cuteui::platform::keyboard::KeyCode;
+use cuteui::units::{IntoPixels, Pixels};
+use cuteui::{
     AppContext, Element, Entity, EntityId, FocusContext, ModelHandle, SingletonEntity,
     TypedActionView, ViewContext, ViewHandle, WindowId,
 };
@@ -22,7 +22,6 @@ use warpui::{
 use super::super::palette_styles as styles;
 use super::CommandPaletteMixer;
 use crate::appearance::Appearance;
-use crate::drive::CloudObjectTypeAndId;
 use crate::features::FeatureFlag;
 use crate::palette::PaletteMode;
 use crate::root_view::OpenLaunchConfigArg;
@@ -93,8 +92,6 @@ pub enum Event {
     InvokeEnvironmentVariables { id: SyncId },
     /// Open a notebook identified by `id`.
     OpenNotebook { id: SyncId },
-    /// View the relevant object in the Warp Drive sidebar.
-    ViewInWarpDrive { id: CloudObjectTypeAndId },
     /// Open a file at the given path.
     OpenFile {
         path: String,
@@ -162,7 +159,7 @@ impl TypedActionView for View {
     }
 }
 
-impl warpui::View for View {
+impl cuteui::View for View {
     fn ui_name() -> &'static str {
         "CommandPaletteView"
     }
@@ -873,7 +870,7 @@ impl View {
                     OpenLaunchConfigArg {
                         open_in_active_window,
                         launch_config: config.deref().clone(),
-                        ui_location: LaunchConfigUiLocation::CommandPalette,
+                        ui_location: LaunchConfigUiLocation::COMMAND_PALETTE,
                     },
                 );
             }
@@ -884,9 +881,7 @@ impl View {
                 ctx.emit(Event::InvokeEnvironmentVariables { id })
             }
             CommandPaletteItemAction::OpenNotebook { id } => ctx.emit(Event::OpenNotebook { id }),
-            CommandPaletteItemAction::ViewInWarpDrive { id } => {
-                ctx.emit(Event::ViewInWarpDrive { id })
-            }
+            CommandPaletteItemAction::ViewInWarpDrive { .. } => {}
             CommandPaletteItemAction::NewSession { source } => {
                 self.dispatch_typed_action_on_view(source.action().deref(), ctx);
             }
@@ -998,11 +993,11 @@ impl View {
         self.close(ctx, Some(result_action.result_type()));
     }
 
-    /// Dispatches `action` to the correct window and [`warpui::View`] by using the current state of
+    /// Dispatches `action` to the correct window and [`cuteui::View`] by using the current state of
     /// the [`BindingSource`] model.
     fn dispatch_typed_action_on_view(
         &self,
-        action: &dyn warpui::Action,
+        action: &dyn cuteui::Action,
         ctx: &mut ViewContext<Self>,
     ) {
 

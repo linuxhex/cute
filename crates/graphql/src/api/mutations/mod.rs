@@ -1,6 +1,5 @@
 pub mod add_invite_link_domain_restriction;
 pub mod add_object_guests;
-pub mod bulk_create_objects;
 pub mod confirm_file_artifact_upload;
 pub mod create_agent_task;
 pub mod create_anonymous_user;
@@ -62,7 +61,6 @@ pub mod update_managed_secret;
 pub mod update_merkle_tree;
 pub mod update_notebook;
 pub mod update_object_guests;
-pub mod update_onboarding_survey_status;
 pub mod update_user_settings;
 pub mod update_workflow;
 pub mod update_workspace_settings;

@@ -21,15 +21,13 @@ use tokio::fs;
 use toolbar_item::AgentToolbarItemKind;
 #[cfg(feature = "voice_input")]
 use voice_input::{StartListeningError, VoiceSessionResult};
-use warp_cli::agent::Harness;
-use warp_core::context_flag::ContextFlag;
-use warp_core::report_if_error;
-use warp_core::ui::color::blend::Blend;
-use warp_core::ui::color::contrast::MinimumAllowedContrast;
-use warp_core::ui::color::ContrastingColor;
-use warp_core::ui::theme::color::internal_colors;
-use warp_core::ui::theme::{AnsiColorIdentifier, Fill};
-use warpui::elements::{
+use cute_cli::agent::Harness;
+use cute_core::context_flag::ContextFlag;
+use cute_core::report_if_error;
+use cute_core::ui::color::blend::Blend;
+use cute_core::ui::theme::color::internal_colors;
+use cute_core::ui::theme::{AnsiColorIdentifier, Fill};
+use cuteui::elements::{
     Border, ChildAnchor, ChildView, Clipped, ConstrainedBox, Container, CornerRadius,
     CrossAxisAlignment, DispatchEventResult, Element, EventHandler, Expanded, Flex,
     MainAxisAlignment, MainAxisSize, OffsetPositioning, ParentElement, PositionedElementAnchor,
@@ -37,10 +35,10 @@ use warpui::elements::{
     WrapFillEntireRun, DEFAULT_UI_LINE_HEIGHT_RATIO,
 };
 #[cfg(feature = "voice_input")]
-use warpui::r#async::SpawnedFutureHandle;
+use cuteui::r#async::SpawnedFutureHandle;
 #[cfg(not(target_family = "wasm"))]
-use warpui::r#async::Timer;
-use warpui::{
+use cuteui::r#async::Timer;
+use cuteui::{
     AppContext, Entity, EntityId, ModelHandle, SingletonEntity, TypedActionView, View, ViewContext,
     ViewHandle,
 };
@@ -156,8 +154,8 @@ enum PluginChipKind {
 impl From<PluginChipKind> for PluginChipTelemetryKind {
     fn from(kind: PluginChipKind) -> Self {
         match kind {
-            PluginChipKind::Install => PluginChipTelemetryKind::Install,
-            PluginChipKind::Update => PluginChipTelemetryKind::Update,
+            PluginChipKind::Install => PluginChipTelemetryKind::INSTALL,
+            PluginChipKind::Update => PluginChipTelemetryKind::UPDATE,
         }
     }
 }
@@ -1008,7 +1006,7 @@ impl AgentInputFooter {
     fn select_cli_file(&mut self, ctx: &mut ViewContext<Self>) {
         let window_id = ctx.window_id();
         let view_id = ctx.view_id();
-        let file_picker_config = warpui::platform::FilePickerConfiguration::new();
+        let file_picker_config = cuteui::platform::FilePickerConfiguration::new();
 
         ctx.open_file_picker(
             move |result, ctx| match result {
@@ -1347,7 +1345,7 @@ impl AgentInputFooter {
             "Installing Warp plugin...",
             "Failed to install Warp plugin",
             success_msg,
-            PluginChipTelemetryKind::Install,
+            PluginChipTelemetryKind::INSTALL,
             |manager| async move { manager.install().await },
             ctx,
         )
@@ -1364,7 +1362,7 @@ impl AgentInputFooter {
             "Updating Warp plugin...",
             "Failed to update Warp plugin",
             success_msg,
-            PluginChipTelemetryKind::Update,
+            PluginChipTelemetryKind::UPDATE,
             |manager| async move { manager.update().await },
             ctx,
         )
@@ -1713,8 +1711,8 @@ impl AgentInputFooter {
         // For key-based toggling, validate the key state against current voice state.
         if let voice_input::VoiceInputToggledFrom::Key { state } = source {
             match (&self.cli_voice_input_state, state) {
-                (CLIVoiceInputState::Stopped, warpui::event::KeyState::Released) => return,
-                (CLIVoiceInputState::Listening, warpui::event::KeyState::Pressed) => return,
+                (CLIVoiceInputState::Stopped, cuteui::event::KeyState::Released) => return,
+                (CLIVoiceInputState::Listening, cuteui::event::KeyState::Pressed) => return,
                 _ => {}
             }
         }
@@ -2113,7 +2111,7 @@ impl View for AgentInputFooter {
         "AgentViewFooter"
     }
 
-    fn render(&self, app: &warpui::AppContext) -> Box<dyn warpui::Element> {
+    fn render(&self, app: &cuteui::AppContext) -> Box<dyn cuteui::Element> {
         if self.should_render_cloud_mode_v2(app) {
             return self.render_cloud_mode_v2_footer(app);
         }
@@ -2303,7 +2301,7 @@ fn render_ftu_callout(
         .with_child(
             ConstrainedBox::new(
                 Icon::CalloutTriangleBorderDown
-                    .to_warpui_icon(Fill::Solid(theme.accent().into_solid()))
+                    .to_cuteui_icon(Fill::Solid(theme.accent().into_solid()))
                     .finish(),
             )
             .with_width(24.)
@@ -2313,7 +2311,7 @@ fn render_ftu_callout(
         .with_child(
             ConstrainedBox::new(
                 Icon::CalloutTriangleFillDown
-                    .to_warpui_icon(background)
+                    .to_cuteui_icon(background)
                     .finish(),
             )
             .with_width(24.)
@@ -2363,7 +2361,7 @@ pub enum AgentInputFooterAction {
 impl TypedActionView for AgentInputFooter {
     type Action = AgentInputFooterAction;
 
-    fn handle_action(&mut self, action: &Self::Action, ctx: &mut warpui::ViewContext<Self>) {
+    fn handle_action(&mut self, action: &Self::Action, ctx: &mut cuteui::ViewContext<Self>) {
         match action {
             #[cfg(feature = "voice_input")]
             AgentInputFooterAction::ToggleVoiceInput => {
@@ -2612,7 +2610,7 @@ impl ActionButtonTheme for AgentInputButtonTheme {
         true
     }
 
-    fn font_properties(&self) -> Option<warpui::fonts::Properties> {
+    fn font_properties(&self) -> Option<cuteui::fonts::Properties> {
         None
     }
 }
@@ -2675,7 +2673,7 @@ impl ActionButtonTheme for ActiveMicButtonTheme {
         true
     }
 
-    fn font_properties(&self) -> Option<warpui::fonts::Properties> {
+    fn font_properties(&self) -> Option<cuteui::fonts::Properties> {
         AgentInputButtonTheme.font_properties()
     }
 }

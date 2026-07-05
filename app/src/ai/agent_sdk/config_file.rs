@@ -2,7 +2,7 @@ use std::path::Path;
 
 use anyhow::Context as _;
 use serde_json::{Map, Value};
-use warp_cli::mcp::MCPSpec;
+use cute_cli::mcp::MCPSpec;
 
 use crate::ai::ambient_agent_types::AgentConfigSnapshot;
 

@@ -1,4 +1,5 @@
 //! Stub for remote server proto types after remote_server removal.
+#![allow(dead_code)]
 
 use serde::{Deserialize, Serialize};
 

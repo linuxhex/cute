@@ -8,14 +8,14 @@ use enclose::enclose;
 use itertools::Itertools;
 use settings::manager::SettingsManager;
 use settings::Setting as _;
-use warp_util::path::user_friendly_path;
-use warpui::actions::StandardAction;
-use warpui::keymap::{Keystroke, Trigger};
-use warpui::platform::menu::{
+use cute_util::path::user_friendly_path;
+use cuteui::actions::StandardAction;
+use cuteui::keymap::{Keystroke, Trigger};
+use cuteui::platform::menu::{
     CustomMenuItem, Menu, MenuBar, MenuItem, MenuItemProperties, MenuItemPropertyChanges,
 };
-use warpui::windowing::WindowManager;
-use warpui::{AppContext, SingletonEntity};
+use cuteui::windowing::WindowManager;
+use cuteui::{AppContext, SingletonEntity};
 
 use crate::ai::persisted_workspace::PersistedWorkspace;
 use crate::default_terminal::DefaultTerminal;
@@ -23,9 +23,7 @@ use crate::features::{runtime_flags_menu_items, FeatureFlag};
 use crate::report_if_error;
 use crate::root_view::OpenLaunchConfigArg;
 use crate::server::telemetry::LaunchConfigUiLocation;
-use crate::settings::{
-    AISettings, BlockVisibilitySettings, DebugSettings, DefaultSessionMode, SelectionSettings,
-};
+use crate::settings::{BlockVisibilitySettings, DebugSettings, SelectionSettings};
 use crate::terminal::alt_screen_reporting::AltScreenReporting;
 use crate::terminal::session_settings::SessionSettings;
 use crate::terminal::settings::{SpacingMode, TerminalSettings};
@@ -358,13 +356,12 @@ fn make_new_edit_menu(ctx: &AppContext) -> Menu {
 
 fn make_new_view_menu(ctx: &AppContext) -> Menu {
     let mut items = vec![
-        updateable_custom_item_without_checkmark(CustomAction::ToggleWarpDrive, ctx),
-        MenuItem::Separator,
         updateable_custom_item_without_checkmark(CustomAction::CommandPalette, ctx),
         updateable_custom_item_without_checkmark(CustomAction::NavigationPalette, ctx),
         updateable_custom_item_without_checkmark(CustomAction::LaunchConfigPalette, ctx),
         updateable_custom_item_without_checkmark(CustomAction::FilesPalette, ctx),
         updateable_custom_item_without_checkmark(CustomAction::ToggleProjectExplorer, ctx),
+        #[cfg(not(feature = "skip_login"))]
         updateable_custom_item_without_checkmark(CustomAction::ToggleConversationListView, ctx),
         updateable_custom_item_without_checkmark(CustomAction::ToggleGlobalSearch, ctx),
         MenuItem::Separator,
@@ -823,7 +820,7 @@ fn make_launch_config_menu_items(ctx: &mut AppContext) -> Vec<MenuItem> {
                     "root_view:open_launch_config",
                     &OpenLaunchConfigArg {
                         launch_config: config.clone(),
-                        ui_location: LaunchConfigUiLocation::AppMenu,
+                        ui_location: LaunchConfigUiLocation::APP_MENU,
                         open_in_active_window: false,
                     }
                 );
@@ -863,58 +860,8 @@ fn make_new_elements_menu_items(ctx: &AppContext) -> Vec<MenuItem> {
         MenuItem::Custom(CustomMenuItem::new(
             "New Terminal Tab",
             open_new_default_tab_or_window,
-            move |_props: &MenuItemProperties, ctx: &mut AppContext| {
-                let mut changes = MenuItemPropertyChanges::default();
-                let is_default_session_mode_agent =
-                    AISettings::handle(ctx).read(ctx, |ai_settings, ctx| {
-                        ai_settings.is_any_ai_enabled(ctx)
-                            && ai_settings.default_session_mode(ctx) == DefaultSessionMode::Agent
-                    });
-                let trigger = if is_default_session_mode_agent {
-                    Trigger::Custom(CustomAction::NewTerminalTab.into())
-                } else {
-                    Trigger::Custom(CustomAction::NewTab.into())
-                };
-                let binding = ctx
-                    .get_key_bindings()
-                    .find(|b| b.trigger == &trigger || b.original_trigger == Some(&trigger));
-                if let Some(binding) = binding {
-                    changes.keystroke = Some(bindings::trigger_to_keystroke(binding.trigger));
-                }
-                changes
-            },
+            no_updates,
             Some(Keystroke::parse("cmd-t").expect("Valid keystroke")),
-        )),
-        MenuItem::Custom(CustomMenuItem::new(
-            "New Agent Tab",
-            open_new_agent_tab_or_window,
-            move |_props: &MenuItemProperties, ctx: &mut AppContext| {
-                let mut changes = MenuItemPropertyChanges::default();
-                let (is_any_ai_enabled, is_default_session_mode_agent) = AISettings::handle(ctx)
-                    .read(ctx, |ai_settings, ctx| {
-                        let enabled = ai_settings.is_any_ai_enabled(ctx);
-                        let agent = enabled
-                            && ai_settings.default_session_mode(ctx) == DefaultSessionMode::Agent;
-                        (enabled, agent)
-                    });
-                if !is_any_ai_enabled {
-                    changes.disabled = Some(true);
-                    return changes;
-                }
-                let trigger = if is_default_session_mode_agent {
-                    Trigger::Custom(CustomAction::NewTab.into())
-                } else {
-                    Trigger::Custom(CustomAction::NewAgentTab.into())
-                };
-                let binding = ctx
-                    .get_key_bindings()
-                    .find(|b| b.trigger == &trigger || b.original_trigger == Some(&trigger));
-                if let Some(binding) = binding {
-                    changes.keystroke = Some(bindings::trigger_to_keystroke(binding.trigger));
-                }
-                changes
-            },
-            None,
         )),
         non_updateable_custom_item(CustomAction::NewFile, ctx),
     ];
@@ -964,16 +911,6 @@ fn custom_action_dispatcher(action: CustomAction) -> impl Fn(&mut AppContext) + 
 fn open_new_default_tab_or_window(ctx: &mut AppContext) {
     if let Some(wid) = WindowManager::handle(ctx).as_ref(ctx).active_window() {
         ctx.dispatch_custom_action(CustomAction::NewTab, wid)
-    } else {
-        open_new_window(ctx)
-    }
-}
-
-/// Dispatch events to open an agent tab in the active window
-/// or make a new window if there is no active window.
-fn open_new_agent_tab_or_window(ctx: &mut AppContext) {
-    if let Some(wid) = WindowManager::handle(ctx).as_ref(ctx).active_window() {
-        ctx.dispatch_custom_action(CustomAction::NewAgentTab, wid)
     } else {
         open_new_window(ctx)
     }

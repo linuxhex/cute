@@ -1,9 +1,9 @@
-use warp_core::ui::appearance::Appearance;
-use warp_core::ui::color::coloru_with_opacity;
-use warp_core::ui::theme::{Fill, WarpTheme};
-use warpui::color::ColorU;
-use warpui::elements::{ConstrainedBox, Container, CornerRadius, Radius};
-use warpui::Element;
+use cute_core::ui::appearance::Appearance;
+use cute_core::ui::color::coloru_with_opacity;
+use cute_core::ui::theme::{Fill, WarpTheme};
+use cuteui::color::ColorU;
+use cuteui::elements::{ConstrainedBox, Container, CornerRadius, Radius};
+use cuteui::Element;
 
 use crate::ai::agent::conversation::{ConversationStatus, StatusColorStyle};
 use crate::ai::agent_conversations_model::AgentRunDisplayStatus;
@@ -38,7 +38,7 @@ pub fn render_status_element(
     let (icon, color) = status.status_icon_and_color(theme);
 
     Container::new(
-        ConstrainedBox::new(icon.to_warpui_icon(Fill::from(color)).finish())
+        ConstrainedBox::new(icon.to_cuteui_icon(Fill::from(color)).finish())
             .with_width(icon_size)
             .with_height(icon_size)
             .finish(),

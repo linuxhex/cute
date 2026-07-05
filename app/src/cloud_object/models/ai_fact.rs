@@ -1,4 +1,4 @@
-use warp_server_client::{
+use cute_server_client::{
     cloud_object::{GenericCloudObject, GenericServerObject, GenericStringModel, JsonObjectType},
     ids::GenericStringObjectId,
 };
