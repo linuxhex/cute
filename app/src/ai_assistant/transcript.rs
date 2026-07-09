@@ -30,7 +30,6 @@ use super::utils::{
 use super::AI_ASSISTANT_SVG_PATH;
 use crate::appearance::Appearance;
 use crate::ui_components::blended_colors;
-use crate::workspaces::user_workspaces::UserWorkspaces;
 
 const TRANSCRIPT_POSITION_ID: &str = "ai_assistant::transcript";
 

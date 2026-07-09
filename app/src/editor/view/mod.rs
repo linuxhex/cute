@@ -2980,7 +2980,6 @@ impl EditorView {
 
         #[cfg(feature = "voice_input")]
         {
-            use crate::workspaces::user_workspaces::UserWorkspaces;
 
             ctx.subscribe_to_model(&UserWorkspaces::handle(ctx), |me, _handle, _event, ctx| {
                 me.update_voice_transcription_options(Self::voice_options(ctx), ctx);

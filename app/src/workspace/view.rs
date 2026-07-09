@@ -451,7 +451,6 @@ use crate::workspace::view::orchestration_launch_modal::{
 };
 use crate::workspace::view::right_panel::{RightPanelEvent, RightPanelView};
 use crate::workspace::{ForkFromExchange, ForkedConversationDestination};
-use crate::workspaces::user_workspaces::UserWorkspaces;
 use crate::{report_if_error, settings, AgentNotificationsModel, BlocklistAIHistoryModel, GlobalResourceHandles};
 
 /// The padding that should be applied to the workspace as a whole.

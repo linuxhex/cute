@@ -14,8 +14,6 @@ use crate::ai::agent::AIAgentExchangeId;
 use crate::auth::AuthStateProvider;
 use crate::server::server_api::ai::AIClient;
 use crate::settings::AISettings;
-use crate::workspaces::user_workspaces::UserWorkspaces;
-use crate::workspaces::workspace::WorkspaceUid;
 use crate::BlocklistAIHistoryModel;
 
 /// Threshold of ambient-only credits at which we surface upgrade/CTA UI.

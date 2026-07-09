@@ -16,7 +16,6 @@ use crate::server::ids::SyncId;
 use crate::workflows::manager::{WorkflowManager, WorkflowOpenSource};
 use crate::workflows::workflow_view::{WorkflowView, WorkflowViewEvent};
 use crate::workflows::{WorkflowSelectionSource, WorkflowSource, WorkflowType, WorkflowViewMode};
-use crate::workspaces::user_workspaces::UserWorkspaces;
 
 pub struct WorkflowPane {
     view: ViewHandle<PaneView<WorkflowView>>,

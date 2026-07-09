@@ -22,7 +22,6 @@ use crate::server::ids::SyncId;
 use crate::ui_components::blended_colors;
 use crate::workflows::workflow_view::{WorkflowView, WorkflowViewEvent};
 use crate::workflows::{WorkflowSelectionSource, WorkflowSource, WorkflowType};
-use crate::workspaces::user_workspaces::UserWorkspaces;
 
 const SUGGESTED_PROMPT_MODAL_HEADER: &str = "Prompt";
 

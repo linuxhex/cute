@@ -44,7 +44,6 @@ use crate::terminal::model::session::active_session::ActiveSession;
 use crate::terminal::model::session::Session;
 use crate::terminal::TerminalView;
 use crate::throttle::throttle;
-use crate::workspaces::user_workspaces::UserWorkspaces;
 
 /// The frequency at which we check for modifications and save the AI document to the server.
 /// Uses the same 2-second period as notebooks for consistency.

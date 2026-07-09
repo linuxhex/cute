@@ -6,7 +6,6 @@ use mockall::{automock, predicate::*};
 use super::ServerApi;
 use crate::cloud_stub_types::CloudObjectEventEntrypoint;
 use crate::server::ids::ServerId;
-use crate::workspaces::user_workspaces::{CreateTeamResponse, WorkspacesMetadataWithPricing};
 
 /// Minimal TeamClient trait for local version.
 /// In the cloud version, this provides many team-related API operations.

@@ -34,7 +34,6 @@ use crate::server::cloud_objects::update_manager::{
 use crate::server::ids::SyncId;
 use crate::ui_components::blended_colors;
 use crate::view_components::action_button::{ActionButton, PrimaryTheme};
-use crate::workspaces::user_workspaces::UserWorkspaces;
 
 const HEADER_TEXT: &str = "Suggested rule";
 const MAX_EDITOR_HEIGHT: f32 = 240.;

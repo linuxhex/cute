@@ -37,16 +37,7 @@ pub struct OneTimeModalModel {
 impl OneTimeModalModel {
     pub fn new(ctx: &mut ModelContext<Self>) -> Self {
         // Subscribe to UserWorkspaces to detect when sunsetted_to_build_ts changes
-        ctx.subscribe_to_model(
-            &crate::workspaces::user_workspaces::UserWorkspaces::handle(ctx),
-            |me, event, ctx| {
-                use crate::workspaces::user_workspaces::UserWorkspacesEvent;
-                if let UserWorkspacesEvent::SunsettedToBuildDataUpdated = event {
-                    // When sunsetted_to_build_ts is updated, check if we should show the modal
-                    me.check_and_trigger_build_plan_migration_modal(ctx);
-                }
-            },
-        );
+        // Note: Cloud workspaces module has been removed in local version
 
         // Subscribe to auth manager events to automatically trigger modal when user becomes onboarded
         ctx.subscribe_to_model(&AuthManager::handle(ctx), |me, event, ctx| {
@@ -414,8 +405,6 @@ impl OneTimeModalModel {
         &mut self,
         ctx: &mut ModelContext<Self>,
     ) -> bool {
-        use crate::workspaces::user_workspaces::UserWorkspaces;
-
         // Check if already dismissed
         let general_settings = GeneralSettings::as_ref(ctx);
         if *general_settings

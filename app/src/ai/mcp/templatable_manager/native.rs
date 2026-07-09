@@ -57,7 +57,6 @@ use crate::server::cloud_objects::UpdateManager;
 use crate::settings::AISettings;
 use crate::view_components::DismissibleToast;
 use crate::workspace::ToastStack;
-use crate::workspaces::user_workspaces::UserWorkspaces;
 use crate::GlobalResourceHandlesProvider;
 
 /// Checks if a CloudObjectTypeAndId is for a TemplatableMCPServer.

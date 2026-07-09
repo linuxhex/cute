@@ -46,7 +46,6 @@ use crate::view_components::{
     render_warning_box, SubmittableTextInput, SubmittableTextInputEvent, WarningBoxButtonConfig,
     WarningBoxConfig,
 };
-use crate::workspaces::user_workspaces::UserWorkspaces;
 use crate::ChannelState;
 
 const SUBMIT_BUTTON_FOCUSED: &str = "SubmitButtonFocused";

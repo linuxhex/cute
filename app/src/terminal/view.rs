@@ -530,7 +530,6 @@ use crate::workspace::{
     CommandSearchOptions, ForkAIConversationParams, ForkFromExchange,
     ForkedConversationDestination, OneTimeModalModel, ToastStack, WorkspaceAction,
 };
-use crate::workspaces::user_workspaces::{UserWorkspaces, UserWorkspacesEvent};
 use crate::{report_if_error, safe_error, safe_warn, AIAgentActionResultType, AIRequestUsageModel, ActiveSession as WindowActiveSession};
 
 lazy_static! {

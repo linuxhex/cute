@@ -34,7 +34,6 @@ use crate::server::cloud_objects::{
 use crate::server::ids::{ClientId, GenericStringObjectId, ServerId, SyncId};
 use crate::server::server_api::ServerApiProvider;
 use crate::util::time_format::format_approx_duration_from_now_utc;
-use crate::workspaces::user_profiles::UserProfiles;
 use crate::CloudObjectTypeAndId;
 
 const WARP_DEV_ENVIRONMENTS_REPO: &str = "https://github.com/warpdotdev/warp-dev-environments";

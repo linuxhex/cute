@@ -50,8 +50,6 @@ use crate::terminal::history::PersistedCommand;
 use crate::terminal::model::block::{SerializedAgentViewVisibility, SerializedBlock};
 use crate::terminal::model::session::SessionId;
 use crate::workflows::CloudWorkflow;
-use crate::workspaces::user_profiles::UserProfileWithUID;
-use crate::workspaces::workspace::{Workspace as WorkspaceMetadata, WorkspaceUid};
 use crate::cloud_stub_types::model::generic_string_model::CloudStringObject;
 use crate::cloud_stub_types::model::actions::ObjectAction;
 use crate::cloud_stub_types::{HashedSqliteId, RevisionAndLastEditor, ServerCreationInfo};
@@ -185,10 +183,11 @@ pub struct PersistedData {
     /// Session restoration data
     pub app_state: AppState,
 
-    pub workspaces: Vec<WorkspaceMetadata>,
-    pub current_workspace_uid: Option<WorkspaceUid>,
+    // Removed cloud workspace fields (local version)
+    // pub workspaces: Vec<WorkspaceMetadata>,
+    // pub current_workspace_uid: Option<WorkspaceUid>,
     pub command_history: Vec<PersistedCommand>,
-    pub user_profiles: Vec<UserProfileWithUID>,
+    // pub user_profiles: Vec<UserProfileWithUID>,
     pub ai_queries: Vec<PersistedAIInput>,
     pub codebase_indices: Vec<CodeWorkspaceMetadata>,
     pub workspace_language_servers: HashMap<PathBuf, HashMap<LSPServerType, EnablementState>>,
@@ -240,25 +239,27 @@ pub enum ModelEvent {
     DeleteBlocks(Vec<u8>),
     Snapshot(AppState),
     UpsertWorkflows(Vec<CloudWorkflow>),
-    UpsertWorkspace {
-        workspace: Box<WorkspaceMetadata>,
-    },
-    UpsertWorkspaces {
-        workspaces: Vec<WorkspaceMetadata>,
-    },
-    SetCurrentWorkspace {
-        workspace_uid: WorkspaceUid,
-    },
+    // Removed cloud workspace events (local version)
+    // UpsertWorkspace {
+    //     workspace: Box<WorkspaceMetadata>,
+    // },
+    // UpsertWorkspaces {
+    //     workspaces: Vec<WorkspaceMetadata>,
+    // },
+    // SetCurrentWorkspace {
+    //     workspace_uid: WorkspaceUid,
+    // },
     InsertCommand {
         metadata: StartedCommandMetadata,
     },
     UpdateFinishedCommand {
         metadata: FinishedCommandMetadata,
     },
-    UpsertUserProfiles {
-        profiles: Vec<UserProfileWithUID>,
-    },
-    ClearUserProfiles,
+    // Removed cloud user profile events (local version)
+    // UpsertUserProfiles {
+    //     profiles: Vec<UserProfileWithUID>,
+    // },
+    // ClearUserProfiles,
     // `PauseAndRemoveDatabase` and `ReconstructAndResume` are used to pause and resume the writer thread.
     // These are employed as part of Logout v0 to ensure that the writer thread
     // does not continue writing to the DB after the user has logged out and the DB is deleted.

@@ -50,8 +50,6 @@ use crate::ui_components::buttons::icon_button;
 use crate::ui_components::icons::Icon;
 use crate::util::links::PRIVACY_POLICY_URL;
 use crate::view_components::{Dropdown, DropdownItem};
-use crate::workspaces::user_workspaces::UserWorkspaces;
-use crate::workspaces::workspace::{
     AdminEnablementSetting, UgcCollectionEnablementSetting,
 };
 use crate::report_if_error;

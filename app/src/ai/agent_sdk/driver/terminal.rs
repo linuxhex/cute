@@ -34,7 +34,6 @@ use crate::terminal::shared_session::{IsSharedSessionCreator, SharedSessionSourc
 use crate::terminal::shell::ShellType;
 use crate::terminal::view::ConversationRestorationInNewPaneType;
 use crate::terminal::TerminalView;
-use crate::workspaces::user_workspaces::UserWorkspaces;
 
 /// Describes why an agent's session-sharing request failed.
 #[derive(Debug, thiserror::Error)]

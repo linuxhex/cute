@@ -63,7 +63,6 @@ use crate::view_components::{
     COPY_FEEDBACK_DURATION,
 };
 use crate::workspace::{ToastStack, WorkspaceAction};
-use crate::workspaces::user_workspaces::UserWorkspaces;
 
 mod new_environment_button;
 use new_environment_button::NewEnvironmentButtonView;

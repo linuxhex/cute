@@ -191,7 +191,6 @@ use crate::view_components::compactible_action_button::CompactibleActionButton;
 use crate::view_components::find::FindEvent;
 use crate::view_components::DismissibleToast;
 use crate::workspace::{ForkAIConversationParams, ForkedConversationDestination, WorkspaceAction};
-use crate::workspaces::user_workspaces::UserWorkspaces;
 use crate::{report_error, report_if_error, AIAgentTodoList, Appearance, FileEdit, LLMPreferences, ToastStack};
 
 /// The default display name used for the user if they have no associated display name.

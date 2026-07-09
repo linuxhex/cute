@@ -14,7 +14,6 @@ use crate::search::QueryFilter;
 use crate::server::ids::SyncId;
 use crate::settings::AISettings;
 use crate::workflows::{CloudWorkflowModel, WorkflowSource};
-use crate::workspaces::user_workspaces::UserWorkspaces;
 
 pub(crate) struct WorkflowMatchCandidate {
     pub id: SyncId,

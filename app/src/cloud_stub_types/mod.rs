@@ -198,8 +198,6 @@ use crate::persistence::ModelEvent;
 use crate::server::ids::{HashableId, ObjectUid, ServerId, ToServerId};
 use crate::util::time_format::format_approx_duration_from_now_utc;
 pub use crate::workflows::{CloudWorkflow, WorkflowSource};
-use crate::workspaces::user_profiles::UserProfiles;
-use crate::workspaces::user_workspaces::UserWorkspaces;
 
 // Re-export EditorLayout from util::openable_file_type
 

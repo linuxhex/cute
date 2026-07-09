@@ -84,9 +84,6 @@ use crate::tab::SelectedTabColor;
 use crate::terminal::history::PersistedCommand;
 use crate::terminal::ShellLaunchData;
 use crate::themes::theme::AnsiColorIdentifier;
-use crate::workspaces::user_profiles::{user_profile_from_persistence, UserProfileWithUID};
-use crate::workspaces::workspace::{Workspace as WorkspaceMetadata, WorkspaceUid};
-use crate::workspaces::{MembershipRole, Team as TeamMetadata, TeamMember};
 use crate::{report_error, report_if_error, safe_info};
 
 // Cloud object imports

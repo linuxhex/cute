@@ -62,7 +62,6 @@ use crate::ui_components::icons::Icon;
 use crate::view_components::action_button::{
     ActionButton, ActionButtonTheme, ButtonSize, NakedTheme, TooltipAlignment,
 };
-use crate::workspaces::user_workspaces::UserWorkspaces;
 use crate::BlocklistAIHistoryModel;
 
 pub enum AtContextMenuDisabledReason {

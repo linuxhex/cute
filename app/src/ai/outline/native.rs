@@ -20,7 +20,6 @@ use crate::settings::{
     AISettings, AISettingsChangedEvent, CodeSettings, CodeSettingsChangedEvent, InputSettings,
     InputSettingsChangedEvent,
 };
-use crate::workspaces::user_workspaces::UserWorkspaces;
 use crate::{safe_info, safe_warn};
 
 /// State for a repository outline, containing both the repository handle and the outline status.

@@ -55,7 +55,6 @@ use crate::ui_components::icons::Icon;
 use crate::util::bindings::CustomAction;
 use crate::view_components::ToastFlavor;
 use crate::workspace::WorkspaceAction;
-use crate::workspaces::user_workspaces::UserWorkspaces;
 
 const PADDING: f32 = 30.;
 const INNER_MARGIN: f32 = 20.;

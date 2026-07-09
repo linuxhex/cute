@@ -34,7 +34,6 @@ use crate::server::server_api::ai::{
     RunSortBy, RunSortOrder, SpawnAgentRequest, TaskListFilter,
 };
 use crate::util::time_format::format_approx_duration_from_now_utc;
-use crate::workspaces::user_workspaces::UserWorkspaces;
 use crate::ServerApiProvider;
 
 const MAX_LINE_WIDTH: usize = 90;

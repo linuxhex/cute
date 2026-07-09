@@ -5,7 +5,6 @@ use cute_core::features::FeatureFlag;
 use cuteui::{AppContext, SingletonEntity};
 
 use crate::settings::CodeSettings;
-use crate::workspaces::user_workspaces::UserWorkspaces;
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum CodebaseAutoIndexingSurface {

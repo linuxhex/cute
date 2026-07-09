@@ -8,7 +8,6 @@ use cuteui::platform::TerminationMode;
 use cuteui::{AppContext, ModelContext, SingletonEntity};
 
 use crate::ai::agent_sdk::output::{self, TableFormat};
-use crate::workspaces::user_workspaces::UserWorkspaces;
 
 /// Handle provider-related CLI commands.
 pub fn run(

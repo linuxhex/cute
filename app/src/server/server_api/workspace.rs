@@ -5,8 +5,6 @@ use mockall::{automock, predicate::*};
 
 use super::ServerApi;
 use crate::server::ids::ServerId;
-use crate::workspaces::user_workspaces::WorkspacesMetadataResponse;
-use crate::workspaces::workspace::AiOverages;
 
 #[cfg_attr(test, automock)]
 #[cfg_attr(not(target_family = "wasm"), async_trait)]

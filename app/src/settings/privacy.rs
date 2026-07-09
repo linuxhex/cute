@@ -23,7 +23,6 @@ use crate::server::server_api::auth::{AuthClient, SyncedUserSettings};
 use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::server_api::ServerApiProvider;
 use crate::terminal::safe_mode_settings::SafeModeSettings;
-use crate::workspaces::workspace::EnterpriseSecretRegex;
 
 pub trait RegexDisplayInfo {
     fn pattern(&self) -> &str;
