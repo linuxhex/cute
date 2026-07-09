@@ -70,8 +70,6 @@ mod shell_indicator;
 mod suggestions;
 mod system;
 mod tab;
-#[cfg(test)]
-mod test_util;
 mod throttle;
 mod tips;
 mod tracing;

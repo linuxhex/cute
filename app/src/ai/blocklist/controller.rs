@@ -103,7 +103,7 @@ impl SessionContext {
         &self.current_working_directory
     }
 
-    /// Returns the remote host ID if this is a `WarpifiedRemote` session with
+    /// Returns the remote host ID if this is a `CutefiedRemote` session with
     /// a connected `RemoteServerClient`.
     pub fn host_id(&self) -> Option<&cute_core::HostId> {
         match &self.session_type {
@@ -115,17 +115,17 @@ impl SessionContext {
     /// Returns `true` if this is a remote session (regardless of whether
     /// the remote server client is connected).
     pub fn is_remote(&self) -> bool {
-        matches!(self.session_type, Some(SessionType::WarpifiedRemote { .. }))
+        matches!(self.session_type, Some(SessionType::CutefiedRemote { .. }))
     }
 
     pub fn skill_path_origin(&self) -> SkillPathOrigin {
         match &self.session_type {
-            Some(SessionType::WarpifiedRemote {
+            Some(SessionType::CutefiedRemote {
                 host_id: Some(host_id),
             }) => SkillPathOrigin::Remote {
                 host_id: host_id.clone(),
             },
-            Some(SessionType::WarpifiedRemote { host_id: None }) => SkillPathOrigin::Unavailable,
+            Some(SessionType::CutefiedRemote { host_id: None }) => SkillPathOrigin::Unavailable,
             Some(SessionType::Local) | None => SkillPathOrigin::Local,
         }
     }
@@ -321,7 +321,7 @@ pub struct BlocklistAIController {
     ambient_agent_task_id: Option<AmbientAgentTaskId>,
 
     /// Per-session directory for downloading file attachments.
-    /// Set by the agent driver based on the workspace directory (e.g. `{working_dir}/.warp/attachments`).
+    /// Set by the agent driver based on the workspace directory (e.g. `{working_dir}/.cute/attachments`).
     attachments_download_dir: Option<std::path::PathBuf>,
 
     /// Pending auto-resume tasks that are waiting for network connectivity.

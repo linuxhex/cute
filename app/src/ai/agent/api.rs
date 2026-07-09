@@ -105,7 +105,7 @@ pub struct RequestParams {
     pub cli_agent_model: LLMId,
     pub computer_use_model: LLMId,
     pub is_memory_enabled: bool,
-    pub warp_drive_context_enabled: bool,
+    pub cute_drive_context_enabled: bool,
     pub context_window_limit: Option<u32>,
     pub mcp_context: Option<MCPContext>,
     pub planning_enabled: bool,
@@ -163,7 +163,7 @@ impl RequestParams {
     ) -> Self {
         let ai_settings = AISettings::as_ref(app);
         let is_memory_enabled = ai_settings.is_memory_enabled(app);
-        let warp_drive_context_enabled = ai_settings.is_warp_drive_context_enabled(app);
+        let cute_drive_context_enabled = ai_settings.is_cute_drive_context_enabled(app);
 
         // Build MCP context - either grouped by server or flat lists based on feature flag
         let mcp_context = if FeatureFlag::MCPGroupedServerContext.is_enabled() {
@@ -247,7 +247,7 @@ impl RequestParams {
                 api_key_manager.custom_model_providers_for_request(is_custom_inference_enabled)
             })
             .flatten();
-        let allow_use_of_warp_credits = false; // Simplified: local version does not use Warp credits fallback
+        let allow_use_of_cute_credits = false; // Simplified: local version does not use Cute credits fallback
 
         let app_execution_mode = AppExecutionMode::as_ref(app);
         let autonomy_level = if app_execution_mode.is_autonomous() {
@@ -326,13 +326,13 @@ impl RequestParams {
             cli_agent_model: request_input.cli_agent_model_id.clone(),
             computer_use_model: request_input.computer_use_model_id.clone(),
             is_memory_enabled,
-            warp_drive_context_enabled,
+            cute_drive_context_enabled,
             mcp_context,
             planning_enabled: true,
             should_redact_secrets,
             api_keys,
             custom_model_providers,
-            allow_use_of_warp_credits,
+            allow_use_of_cute_credits,
             autonomy_level,
             isolation_level,
             web_search_enabled,

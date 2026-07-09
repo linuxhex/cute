@@ -409,7 +409,7 @@ pub fn init(ctx: &mut AppContext) {
         // This might seem like a no-op since `ctrl-right` changes desktops on Mac by default.
         // However, many Mac users coming from fish shell have asked for this binding.
         // They've already disabled the desktop change shortcut, and are expecting that this
-        // binding also works in Warp. We should not break their workflow.
+        // binding also works in Cute. We should not break their workflow.
         FixedBinding::new(
             "ctrl-right",
             EditorAction::MoveForwardOneWord,
@@ -5638,7 +5638,7 @@ impl EditorView {
     }
 
     pub fn move_to_paragraph_start(&mut self, ctx: &mut ViewContext<Self>) {
-        // warp doesn't wrap the text, so basically each line is a paragraph.
+        // cute doesn't wrap the text, so basically each line is a paragraph.
         // this moves to the start of the paragraph (and the previous one if used multiple times).
         self.change_selections(ctx, |editor_model, ctx| {
             editor_model.move_cursor(
@@ -8472,7 +8472,7 @@ impl TypedActionView for EditorView {
             UnhandledModifierKey(keystroke) => {
                 if self.can_select(ctx) {
                     // This event helps us to keep track of what key bindings users
-                    // try to use in the editor but are currently not available in Warp.
+                    // try to use in the editor but are currently not available in Cute.
                     ctx.emit(Event::UnhandledModifierKeyOnEditor(keystroke.clone()))
                 }
             }

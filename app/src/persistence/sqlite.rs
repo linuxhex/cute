@@ -109,7 +109,7 @@ const COMMANDS_COUNT_LIMIT: i64 = 10000;
 
 use cute_server_client::persistence::{upsert_cloud_object, CloudObjectId};
 
-const WARP_SQLITE_FILE_NAME: &str = "warp.sqlite";
+const CUTE_SQLITE_FILE_NAME: &str = "cute.sqlite";
 
 /// When delete a cloud object, this callback is used to delete the cloud
 /// object. It takes the id of the cloud object to delete as a parameter.
@@ -223,7 +223,7 @@ unsafe fn init_logging() {
             // According to the docs, this error means that the database file was moved (or deleted),
             // so SQLite can't safely modify it and the rollback journal:
             //     https://www.sqlite.org/rescode.html#readonly_dbmoved
-            // This is mostly outside of Warp's control (e.g. the user or some system program is
+            // This is mostly outside of Cute's control (e.g. the user or some system program is
             // moving around files in the user data directory), so downgrade to a warning.
             (_, sqlite3::SQLITE_READONLY_DBMOVED) => log::Level::Warn,
             _ => log::Level::Error,
@@ -885,8 +885,8 @@ fn save_app_state(conn: &mut SqliteConnection, app_state: &AppState) -> Result<(
                 origin_y,
                 quake_mode: window.quake_mode,
                 universal_search_width: window.universal_search_width,
-                warp_ai_width: window.warp_ai_width,
-                warp_drive_index_width: window.warp_drive_index_width,
+                cute_ai_width: window.cute_ai_width,
+                cute_drive_index_width: window.cute_drive_index_width,
                 left_panel_open: Some(window.left_panel_open),
                 vertical_tabs_panel_open: Some(window.vertical_tabs_panel_open),
                 fullscreen_state: window.fullscreen_state as i32,
@@ -2353,7 +2353,7 @@ fn upsert_folders(
                     let new_folder = NewFolder {
                         name: folder_name,
                         is_open: folder_is_open,
-                        is_warp_pack: folder_is_cute_pack,
+                        is_cute_pack: folder_is_cute_pack,
                     };
                     diesel::insert_into(schema::folders::dsl::folders)
                         .values(new_folder)
@@ -2677,7 +2677,7 @@ fn read_node(conn: &mut SqliteConnection, node: model::PaneNode) -> Result<PaneN
 /// and makes it invalid to write the logic recursively. It's ok it's not in a
 /// transaction because we should be the only connection using the database.
 ///
-/// One notable exception is the case where there may be two warp apps running
+/// One notable exception is the case where there may be two cute apps running
 /// in the same bundle. In this case, we may read some garbage, but all that will
 /// happen is the user won't have session restoration.
 ///
@@ -2766,7 +2766,7 @@ fn read_sqlite_data(
 
             // The origin and size of the bound should be all null or all non-null.
             // Reject bounds smaller than the platform minimum window size so users
-            // with an already-corrupted warp.sqlite (see GH#10083) restore to
+            // with an already-corrupted cute.sqlite (see GH#10083) restore to
             // default geometry instead of a sliver.
             let bounds = match (
                 window.window_width,
@@ -2826,8 +2826,8 @@ fn read_sqlite_data(
                 quake_mode: window.quake_mode,
                 bounds,
                 universal_search_width: window.universal_search_width,
-                warp_ai_width: window.warp_ai_width,
-                warp_drive_index_width: window.warp_drive_index_width,
+                cute_ai_width: window.cute_ai_width,
+                cute_drive_index_width: window.cute_drive_index_width,
                 left_panel_open: window_left_panel_open,
                 vertical_tabs_panel_open: window.vertical_tabs_panel_open.unwrap_or(false),
                 fullscreen_state: fullscreen_state_val,

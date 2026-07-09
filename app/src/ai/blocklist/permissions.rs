@@ -202,7 +202,7 @@ impl BlocklistAIPermissions {
             cli_agent_model: profile_data.cli_agent_model.clone(),
             computer_use_model: profile_data.computer_use_model.clone(),
             context_window_limit: profile_data.context_window_limit,
-            autosync_plans_to_warp_drive: profile_data.autosync_plans_to_warp_drive,
+            autosync_plans_to_cute_drive: profile_data.autosync_plans_to_cute_drive,
             web_search_enabled: profile_data.web_search_enabled,
         }
     }
@@ -672,7 +672,7 @@ impl BlocklistAIPermissions {
         self.can_read_files(Some(conversation_id), paths, terminal_view_id, ctx)
     }
 
-    /// Returns whether or not Warp can auto-read the given files (e.g. for codebase indexing).
+    /// Returns whether or not Cute can auto-read the given files (e.g. for codebase indexing).
     pub fn can_read_files(
         &self,
         conversation_id: Option<&AIConversationId>,
