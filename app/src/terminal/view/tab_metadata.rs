@@ -5,6 +5,20 @@ use crate::context_chips::{git_line_changes_from_chips, ContextChipKind};
 use crate::terminal::TerminalView;
 
 impl TerminalView {
+    pub fn preferred_tab_title(&self, ctx: &AppContext) -> String {
+        if let Some(wd) = self.display_working_directory(ctx).filter(|wd| !wd.trim().is_empty()) {
+            if let Some(name) = std::path::Path::new(&wd)
+                .file_name()
+                .and_then(|name| name.to_str())
+                .filter(|name| !name.trim().is_empty())
+            {
+                return name.to_string();
+            }
+            return wd;
+        }
+        self.terminal_title_from_shell()
+    }
+
     fn prompt_chip_value(&self, chip_kind: &ContextChipKind, ctx: &AppContext) -> Option<String> {
         self.current_prompt
             .as_ref(ctx)
@@ -27,10 +41,24 @@ impl TerminalView {
     pub fn terminal_title_from_shell(&self) -> String {
         let model = self.model.lock();
         let fallback_title = model.shell_launch_state().display_name().to_owned();
-        model
+        let shell_title = model
             .terminal_title()
             .filter(|title| !title.trim().is_empty())
-            .unwrap_or(fallback_title)
+            .unwrap_or(fallback_title);
+        // 当 shell 未上报动态标题时，优先用当前工作目录名做页签标题，
+        // 避免回退到“zsh/bash”等通用 shell 名称导致所有页签同名。
+        if let Some(pwd) = self.pwd().filter(|pwd| !pwd.trim().is_empty()) {
+            let dir_name = std::path::Path::new(&pwd)
+                .file_name()
+                .and_then(|name| name.to_str())
+                .map(str::to_owned)
+                .filter(|name| !name.trim().is_empty())
+                .unwrap_or(pwd);
+            if shell_title == "zsh" || shell_title == "bash" || shell_title == "fish" {
+                return dir_name;
+            }
+        }
+        shell_title
     }
 
     #[cfg_attr(not(feature = "local_fs"), allow(clippy::unnecessary_lazy_evaluations))]

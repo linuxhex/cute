@@ -67,8 +67,8 @@ use crate::ai_assistant::AskAIType;
 #[cfg(feature = "local_fs")]
 use crate::app_state::CodePaneSnapShot;
 use crate::app_state::{
-    self, AIFactPaneSnapshot, BranchSnapshot, EnvVarCollectionPaneSnapshot, LeafContents,
-    LeafSnapshot, NotebookPaneSnapshot, PaneNodeSnapshot, PaneUuid, SettingsPaneSnapshot,
+    self, AIFactPaneSnapshot, BranchSnapshot, EnvVarCollectionPaneSnapshot, FilePaneSnapshot,
+    LeafContents, LeafSnapshot, NotebookPaneSnapshot, PaneNodeSnapshot, PaneUuid, SettingsPaneSnapshot,
     TerminalPaneSnapshot, WorkflowPaneSnapshot,
 };
 use crate::appearance::Appearance;
@@ -77,7 +77,7 @@ use crate::auth::auth_view_modal::AuthViewVariant;
 use crate::auth::AuthStateProvider;
 use crate::banner::{Banner, BannerEvent, BannerState, BannerTextContent, DismissalType};
 use crate::channel::{Channel, ChannelState};
-use crate::cloud_object::Space;
+use crate::cloud_stub_types::Space;
 use crate::code::active_file::ActiveFileModel;
 use crate::code::buffer_location::LocalOrRemotePath;
 #[cfg(feature = "local_fs")]
@@ -85,12 +85,12 @@ use crate::code::editor_management::CodeSource;
 use crate::code::view::{CodeView, CodeViewAction};
 use crate::code_review::comments::{AttachedReviewComment, PendingImportedReviewComment};
 use crate::code_review::diff_state::DiffMode;
-use crate::drive::items::WarpDriveItemId;
-use crate::drive::{CloudObjectTypeAndId, OpenWarpDriveObjectArgs};
+use crate::cloud_stub_types::items::WarpDriveItemId;
+use crate::cloud_stub_types::{CloudObjectTypeAndId, OpenWarpDriveObjectArgs};
 use crate::env_vars::EnvVarCollectionType;
 use crate::features::FeatureFlag;
 use crate::launch_configs::launch_config::{self, PaneMode, PaneTemplateType};
-use crate::notebooks::file::FileNotebookView;
+use crate::cloud_stub_types::FileNotebookView;
 use crate::palette::PaletteMode;
 use crate::pane_group::focus_state::PaneGroupFocusEvent;
 use crate::pane_group::pane::get_started_pane::GetStartedPane;
@@ -112,7 +112,7 @@ use crate::server::server_api::{ServerApi, ServerApiProvider};
 use crate::server::telemetry::{
     AnonymousUserSignupEntrypoint, PaletteSource,
 };
-use crate::drive::sharing::dialog::SharingDialogSource;
+use crate::cloud_stub_types::sharing::dialog::SharingDialogSource;
 use crate::session_management::SessionNavigationData;
 use crate::settings::{AISettings, DefaultSessionMode, PaneSettings};
 use crate::settings_view::mcp_servers_page::MCPServersSettingsPage;
@@ -143,10 +143,7 @@ use crate::terminal::{
     MockTerminalManager, ShareBlockModal, ShareBlockModalEvent, ShellLaunchData, ShellLaunchState,
     TerminalManager, TerminalModel, TerminalView,
 };
-use crate::terminal::shared_session::{
-    IsSharedSessionCreator, RoleChangeCloseSource, RoleChangeModal, RoleChangeModalEvent,
-    SharedSessionActionSource, ShareSessionModal, ShareSessionModalEvent,
-};
+use crate::terminal::shared_session::IsSharedSessionCreator;
 use crate::undo_close::{UndoCloseStack, UndoCloseStackEvent};
 #[cfg(target_family = "wasm")]
 use crate::uri::browser_url_handler::update_browser_url;
@@ -925,17 +922,7 @@ pub struct PaneGroup {
     dragged_border: Option<DraggedBorder>,
     user_default_shell_changed_banner: ViewHandle<Banner<PaneGroupAction>>,
 
-    /// If there is an open share session modal, the pane ID of its terminal. Only terminal panes
-    /// use the share session modal. `None` if no share session modal is open.
-    terminal_with_open_share_session_modal: Option<TerminalPaneId>,
-    share_session_modal: ViewHandle<ShareSessionModal>,
-
-    /// If there is a shared session role change modal open, this is the `TerminalPaneId` of the relevant session. Modal is opened whenever a shared session participant attempts to change a
-    /// role. For a viewer when they request a role. For a sharer when they receive a role request,
-    /// or when they attempt to grant a role.
-    terminal_with_shared_session_role_change_modal_open: Option<TerminalPaneId>,
-    /// Parent modal that holds views to role request/response and role grant modals.
-    shared_session_role_change_modal: ViewHandle<RoleChangeModal>,
+    
     /// Model that tracks the currently active file.
     active_file_model: ModelHandle<ActiveFileModel>,
     /// If there is an open summarization cancel dialog, the terminal pane ID where summarization is active.
@@ -1788,15 +1775,33 @@ impl PaneGroup {
                     NotebookPaneSnapshot::CloudNotebook {
                         notebook_id,
                         settings,
-                    } => Box::new(NotebookPane::restore(notebook_id, &settings, ctx)?),
+                    } => Box::new(NotebookPane::restore(notebook_id, settings, ctx)?),
                     NotebookPaneSnapshot::LocalFileNotebook { path } => Box::new(FilePane::new(
-                        path.map(LocalOrRemotePath::Local),
+                        Some(LocalOrRemotePath::Local(path)),
                         None,
                         #[cfg(feature = "local_fs")]
                         None,
                         ctx,
                     )),
                 };
+
+                let pane_id = pane.as_pane().id();
+                pane_contents.insert(pane_id, pane);
+                let focus = InitialFocus {
+                    focused_pane: leaf.is_focused.then_some(pane_id),
+                    active_session: None,
+                };
+
+                Ok((PaneData::new(pane_id), focus))
+            }
+            LeafContents::File(file_snapshot) => {
+                let pane = Box::new(FilePane::new(
+                    file_snapshot.path.map(LocalOrRemotePath::Local),
+                    None,
+                    #[cfg(feature = "local_fs")]
+                    None,
+                    ctx,
+                ));
 
                 let pane_id = pane.as_pane().id();
                 pane_contents.insert(pane_id, pane);
@@ -2589,383 +2594,7 @@ impl PaneGroup {
         most_recent_state
     }
 
-    fn open_share_session_modal(
-        &mut self,
-        terminal_pane_id: TerminalPaneId,
-        _open_source: SharedSessionActionSource,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        let Some(_terminal_view) = self.terminal_view_from_pane_id(terminal_pane_id, ctx) else {
-            log::warn!("Tried to open share session modal for non-existent terminal pane");
-            return;
-        };
-
-        if AuthStateProvider::as_ref(ctx)
-            .get()
-            .is_anonymous_or_logged_out()
-        {
-            AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
-                auth_manager.attempt_login_gated_feature(
-                    WorkspaceAction::OpenShareSessionModal(0),
-                    AuthViewVariant::ShareRequirementCloseable,
-                    ctx,
-                )
-            });
-            return;
-        }
-
-        self.share_session_modal.update(ctx, |modal, ctx| {
-            modal.open(ctx);
-        });
-        self.terminal_with_open_share_session_modal = Some(terminal_pane_id);
-        ctx.focus(&self.share_session_modal);
-        ctx.notify();
-    }
-
-    fn open_share_session_denied_modal(
-        &mut self,
-        terminal_pane_id: TerminalPaneId,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        self.share_session_modal.update(ctx, |modal, ctx| {
-            modal.open(ctx);
-        });
-        self.terminal_with_open_share_session_modal = Some(terminal_pane_id);
-        ctx.focus(&self.share_session_modal);
-        ctx.notify();
-    }
-
-    /// Closes the share session modal if it is open. Does nothing otherwise. Does not change
-    /// which element is focused.
-    fn close_share_session_modal(&mut self, ctx: &mut ViewContext<Self>) {
-        let Some(terminal_pane_id) = self.terminal_with_open_share_session_modal.take() else {
-            return;
-        };
-
-        if let Some(terminal_view) = self.terminal_view_from_pane_id(terminal_pane_id, ctx) {
-            terminal_view.update(ctx, |view, ctx| {
-                view.set_show_pane_accent_border(false, ctx)
-            });
-        }
-        ctx.notify();
-    }
-
-    fn handle_share_session_modal_event(
-        &mut self,
-        event: &ShareSessionModalEvent,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        match event {
-            ShareSessionModalEvent::Close => {
-                let Some(terminal_pane_id) = self.terminal_with_open_share_session_modal.take()
-                else {
-                    return;
-                };
-
-                if let Some(pane) = self.focused_pane_content(ctx) {
-                    pane.focus(ctx);
-                }
-
-                if let Some(terminal_view) = self.terminal_view_from_pane_id(terminal_pane_id, ctx)
-                {
-                    terminal_view.update(ctx, |view, ctx| {
-                        view.set_show_pane_accent_border(false, ctx)
-                    });
-                }
-                ctx.notify();
-            }
-            ShareSessionModalEvent::StartSharing {
-                scrollback_type,
-                source,
-            } => {
-                let Some(terminal_pane_id) = self.terminal_with_open_share_session_modal.take()
-                else {
-                    return;
-                };
-                ctx.notify();
-
-                let Some(terminal_view) = self.terminal_view_from_pane_id(terminal_pane_id, ctx)
-                else {
-                    return;
-                };
-
-                terminal_view.update(ctx, |view, ctx| {
-                    view.attempt_to_share_session(
-                        *scrollback_type,
-                        None,
-                        source.clone(),
-                        false,
-                        ctx,
-                    );
-                });
-            }
-            // Simplified: local version has no upgrade
-            ShareSessionModalEvent::Upgrade => {
-                self.terminal_with_open_share_session_modal = None;
-                if let Some(pane) = self.focused_pane_content(ctx) {
-                    pane.focus(ctx);
-                }
-                ctx.notify();
-            }
-        }
-    }
-
-    fn open_shared_session_viewer_request_modal(
-        &mut self,
-        terminal_pane_id: TerminalPaneId,
-        role: Role,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        let Some(terminal_view) = self.terminal_view_from_pane_id(terminal_pane_id, ctx) else {
-            log::warn!("Tried to open role request modal for non-existent terminal pane");
-            return;
-        };
-
-        let Some(presence_manager) =
-            terminal_view.read(ctx, |view, _| view.shared_session_presence_manager())
-        else {
-            log::warn!("Tried to open role request modal for non-existent presence manager");
-            return;
-        };
-
-        let Some(sharer) = presence_manager.as_ref(ctx).get_sharer() else {
-            log::warn!("Tried to open role request modal with non-existent sharer");
-            return;
-        };
-
-        let _display_name = sharer.info.display_name.clone();
-        self.shared_session_role_change_modal
-            .update(ctx, |modal, ctx| {
-                modal.open_for_viewer_request(role, ctx);
-            });
-
-        self.terminal_with_shared_session_role_change_modal_open = Some(terminal_pane_id);
-        ctx.focus(&self.shared_session_role_change_modal);
-        ctx.notify();
-    }
-
-    /// If modal is already open, we update it with the new role request
-    fn open_shared_session_sharer_response_modal(
-        &mut self,
-        terminal_pane_id: TerminalPaneId,
-        viewer_id: ParticipantId,
-        role_request_id: RoleRequestId,
-        role: Role,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        let Some(terminal_view) = self.terminal_view_from_pane_id(terminal_pane_id, ctx) else {
-            log::warn!("Tried to open role request modal for non-existent terminal pane");
-            return;
-        };
-
-        let Some(presence_manager) =
-            terminal_view.read(ctx, |view, _| view.shared_session_presence_manager())
-        else {
-            log::warn!("Tried to open role request modal for non-existent presence manager");
-            return;
-        };
-
-        let Some(participant) = presence_manager.as_ref(ctx).get_participant(&viewer_id) else {
-            log::warn!("Tried to open role request modal with non-existent participant");
-            return;
-        };
-
-        let _firebase_uid = participant.info.firebase_uid.clone();
-        self.shared_session_role_change_modal
-            .update(ctx, |modal, ctx| {
-                modal.open_for_sharer_response(
-                    viewer_id,
-                    role_request_id,
-                    role,
-                    ctx,
-                );
-            });
-
-        self.terminal_with_shared_session_role_change_modal_open = Some(terminal_pane_id);
-        ctx.focus(&self.shared_session_role_change_modal);
-        ctx.notify();
-    }
-
-    fn open_shared_session_sharer_grant_modal(
-        &mut self,
-        terminal_pane_id: TerminalPaneId,
-        participant_id: ParticipantId,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        self.shared_session_role_change_modal
-            .update(ctx, |modal, ctx| {
-                modal.open_for_sharer_grant(participant_id, ctx);
-            });
-        self.terminal_with_shared_session_role_change_modal_open = Some(terminal_pane_id);
-        ctx.focus(&self.shared_session_role_change_modal);
-        ctx.notify();
-    }
-
-    /// Closes the parent shared session role change modal if it is open. Does nothing otherwise.
-    fn close_shared_session_role_change_modal(
-        &mut self,
-        source: RoleChangeCloseSource,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        let Some(terminal_pane_id) = self
-            .terminal_with_shared_session_role_change_modal_open
-            .take()
-        else {
-            return;
-        };
-
-        let should_close_modal = self
-            .shared_session_role_change_modal
-            .update(ctx, |modal, ctx| {
-                match source {
-                    RoleChangeCloseSource::ViewerRequest => modal.close_for_viewer_request(ctx),
-                    RoleChangeCloseSource::SharerResponse => modal.close_for_sharer_response(ctx),
-                    RoleChangeCloseSource::SharerGrant => modal.close_for_sharer_grant(ctx),
-                }
-
-                true
-            });
-
-        if should_close_modal {
-            if let Some(terminal_view) = self.terminal_view_from_pane_id(terminal_pane_id, ctx) {
-                terminal_view.update(ctx, |view, ctx| {
-                    view.set_show_pane_accent_border(false, ctx)
-                });
-            }
-            if let Some(pane) = self.focused_pane_content(ctx) {
-                pane.focus(ctx);
-            }
-        }
-        ctx.notify();
-    }
-
-    fn remove_shared_session_role_request(
-        &mut self,
-        _role_request_id: RoleRequestId,
-        _ctx: &mut ViewContext<Self>,
-    ) {
-        // Method simplified - RoleChangeModal no longer tracks role requests
-    }
-
-    fn set_shared_session_role_change_modal_request_id(
-        &mut self,
-        _role_request_id: RoleRequestId,
-        _ctx: &mut ViewContext<Self>,
-    ) {
-        // Method simplified - RoleChangeModal no longer tracks role request IDs
-    }
-
-    fn handle_shared_session_role_change_modal_event(
-        &mut self,
-        event: &RoleChangeModalEvent,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        match event {
-            RoleChangeModalEvent::CancelRequest {
-                role_request_id,
-            } => {
-                let Some(terminal_pane_id) = self.terminal_with_shared_session_role_change_modal_open
-                else {
-                    return;
-                };
-                self.close_shared_session_role_change_modal(
-                    RoleChangeCloseSource::ViewerRequest,
-                    ctx,
-                );
-                if let Some(terminal_view) = self.terminal_view_from_pane_id(terminal_pane_id, ctx)
-                {
-                    terminal_view.update(ctx, |view, ctx| {
-                        view.cancel_shared_session_role_request(role_request_id.clone(), ctx)
-                    });
-                }
-                ctx.notify();
-            }
-            RoleChangeModalEvent::ApproveRequest {
-                participant_id,
-                role_request_id,
-                role,
-            } => {
-                let Some(terminal_pane_id) = self.terminal_with_shared_session_role_change_modal_open
-                else {
-                    return;
-                };
-                let response = RoleRequestResponse::Approved { new_role: *role };
-
-                if let Some(terminal_view) = self.terminal_view_from_pane_id(terminal_pane_id, ctx)
-                {
-                    terminal_view.update(ctx, |view, ctx| {
-                        view.respond_to_shared_session_role_request(
-                            participant_id.clone(),
-                            role_request_id.clone(),
-                            response,
-                            ctx,
-                        );
-                    });
-                }
-                ctx.notify();
-            }
-            RoleChangeModalEvent::DenyRequest {
-                participant_id,
-                role_request_id,
-            } => {
-                let Some(terminal_pane_id) = self.terminal_with_shared_session_role_change_modal_open
-                else {
-                    return;
-                };
-                let response = RoleRequestResponse::Rejected {
-                    reason: RoleRequestRejectedReason::RejectedBySharer,
-                };
-                if let Some(terminal_view) = self.terminal_view_from_pane_id(terminal_pane_id, ctx)
-                {
-                    terminal_view.update(ctx, |view, ctx| {
-                        view.respond_to_shared_session_role_request(
-                            participant_id.clone(),
-                            role_request_id.clone(),
-                            response,
-                            ctx,
-                        );
-                    });
-                }
-                ctx.notify();
-            }
-            RoleChangeModalEvent::Close { source } => {
-                self.close_shared_session_role_change_modal(*source, ctx)
-            }
-            RoleChangeModalEvent::CancelGrant => {
-                self.close_shared_session_role_change_modal(
-                    RoleChangeCloseSource::SharerGrant,
-                    ctx,
-                );
-            }
-            RoleChangeModalEvent::GrantRole {
-                participant_id,
-                role: _,
-            } => {
-                let Some(terminal_pane_id) = self.terminal_with_shared_session_role_change_modal_open
-                else {
-                    log::error!("Tried to grant role for non existent terminal pane");
-                    return;
-                };
-
-                let Some(terminal_view) = self.terminal_view_from_pane_id(terminal_pane_id, ctx)
-                else {
-                    log::error!("Tried to grant role for non existent terminal pane");
-                    return;
-                };
-
-                // Method simplified - no longer tracks role requests
-                terminal_view.update(ctx, |view, ctx| {
-                    view.update_role(participant_id.clone(), Role::Executor, ctx);
-                });
-
-                self.close_shared_session_role_change_modal(
-                    RoleChangeCloseSource::SharerGrant,
-                    ctx,
-                );
-                ctx.notify();
-            }
-        }
-    }
+    
 
     fn new_internal(
         tips_completed: ModelHandle<TipsCompleted>,
@@ -3064,16 +2693,6 @@ impl PaneGroup {
             },
         );
 
-        let share_session_modal = ctx.add_view(ShareSessionModal::new);
-        ctx.subscribe_to_view(&share_session_modal, |me, _, event, ctx| {
-            me.handle_share_session_modal_event(event, ctx);
-        });
-
-        let shared_session_role_change_modal = ctx.add_view(RoleChangeModal::new);
-        ctx.subscribe_to_view(&shared_session_role_change_modal, |me, _, event, ctx| {
-            me.handle_shared_session_role_change_modal_event(event, ctx);
-        });
-
         ctx.subscribe_to_model(&UndoCloseStack::handle(ctx), |me, _, event, ctx| {
             let UndoCloseStackEvent::DiscardPane(pane_id) = event;
             me.discard_pane(*pane_id, ctx);
@@ -3111,10 +2730,6 @@ impl PaneGroup {
             share_block_modal: share_modal,
             dragged_border: None,
             user_default_shell_changed_banner,
-            terminal_with_open_share_session_modal: None,
-            share_session_modal,
-            terminal_with_shared_session_role_change_modal_open: None,
-            shared_session_role_change_modal,
             active_file_model,
             terminal_with_open_summarization_dialog: None,
             pane_with_open_environment_setup_mode_selector: None,
@@ -4329,12 +3944,7 @@ impl PaneGroup {
             });
         }
 
-        // Insert the conversation ended tombstone (includes Open in Warp button on WASM).
-        if terminal_manager.is_some() {
-            terminal_view.update(ctx, |view, ctx| {
-                view.insert_conversation_ended_tombstone_with_resolved_cta(ctx);
-            });
-        }
+        
 
         ctx.notify();
     }
@@ -4553,7 +4163,7 @@ impl PaneGroup {
             }
 
             let creator = inherit_share_for_local_child(Some(&host_source), child_task_id);
-            let IsSharedSessionCreator::Yes { source } = creator else {
+            let IsSharedSessionCreator::Yes { source: _ } = creator else {
                 continue;
             };
 
@@ -4563,16 +4173,6 @@ impl PaneGroup {
                 .entry(host_pane_id)
                 .or_default()
                 .insert(child_pane_id);
-
-            child_terminal_view.update(ctx, |view, ctx| {
-                view.attempt_to_share_session(
-                    crate::terminal::shared_session::SharedSessionScrollbackType::All,
-                    None,
-                    source,
-                    /* bypass_conversation_guard = */ false,
-                    ctx,
-                );
-            });
         }
     }
 
@@ -4603,9 +4203,6 @@ impl PaneGroup {
             if !is_sharing {
                 continue;
             }
-            terminal_view.update(ctx, |view, ctx| {
-                view.stop_sharing_session(SharedSessionActionSource::NonUser, ctx);
-            });
         }
     }
 
@@ -4731,7 +4328,7 @@ impl PaneGroup {
         &self,
         pane_index: usize,
         ctx: &AppContext,
-    ) -> Option<ViewHandle<crate::notebooks::notebook::NotebookView>> {
+    ) -> Option<ViewHandle<crate::cloud_stub_types::NotebookView>> {
         self.content_by_pane_index(pane_index)
             .and_then(|pane| pane.as_any().downcast_ref::<NotebookPane>())
             .map(|pane| pane.notebook_view(ctx))
@@ -5749,6 +5346,14 @@ impl PaneGroup {
 
     /// The current pane group title, based on the focused pane.
     pub(crate) fn title(&self, ctx: &AppContext) -> String {
+        if let Some(terminal_view) = self
+            .active_session_view(ctx)
+            .or_else(|| self.focused_session_view(ctx))
+        {
+            // 终端页签标题始终按 TerminalView 的实时规则生成，
+            // 避免被静态 pane_config.title（如 zsh）卡住。
+            return terminal_view.as_ref(ctx).preferred_tab_title(ctx);
+        }
         self.focused_pane_content(ctx)
             .map(|pane| pane.pane_configuration().as_ref(ctx).title().to_owned())
             .unwrap_or_default()
@@ -5757,7 +5362,10 @@ impl PaneGroup {
     /// The resolved display title for this pane group —
     /// custom title if set, otherwise the focused pane's title.
     pub fn display_title(&self, ctx: &AppContext) -> String {
-        self.custom_title(ctx).unwrap_or_else(|| self.title(ctx))
+        match self.custom_title(ctx) {
+            Some(title) if !matches!(title.trim(), "zsh" | "bash" | "fish" | "sh") => title,
+            _ => self.title(ctx),
+        }
     }
 
     /// The tab-level custom title, if one has been set via the rename-tab flow.
@@ -6054,13 +5662,6 @@ impl PaneGroup {
                     model.set_conversation_id(conversation_id);
                 });
             }
-            let status = if view.owned_ambient_agent_task_id(ctx).is_some() {
-                crate::terminal::shared_session::SharedSessionStatus::NotShared
-            } else {
-                crate::terminal::shared_session::SharedSessionStatus::FinishedViewer
-            };
-            view.model.lock().set_shared_session_status(status);
-            view.insert_conversation_ended_tombstone_with_resolved_cta(ctx);
         });
 
         ActiveAgentViewsModel::handle(ctx).update(ctx, |active_views, ctx| {
@@ -6617,7 +6218,6 @@ impl PaneGroup {
                 let terminal_manager: ModelHandle<Box<dyn TerminalManager>> = crate::terminal::local_tty::TerminalManager::create_model(
                     startup_directory,
                     env_vars,
-                    is_shared_session,
                     resources,
                     restored_blocks,
                     conversation_restoration,
@@ -6723,10 +6323,6 @@ impl PaneGroup {
         });
 
         let terminal_view = terminal_manager.as_ref(ctx).view();
-        // Insert the conversation ended tombstone (includes Open in Warp button on WASM)
-        terminal_view.update(ctx, |view, ctx| {
-            view.insert_conversation_ended_tombstone_with_resolved_cta(ctx);
-        });
 
         BlocklistAIHistoryModel::handle(ctx).update(ctx, |history_model, _ctx| {
             history_model.mark_terminal_view_as_conversation_transcript_viewer(terminal_view.id());
@@ -8166,14 +7762,8 @@ impl PaneGroup {
         self.shared_session_view_ids(ctx).len()
     }
 
-    pub fn shared_session_view_ids(&self, ctx: &AppContext) -> Vec<EntityId> {
-        self.panes_of::<TerminalPane>()
-            .filter_map(|p| {
-                let terminal_view = p.terminal_view(ctx);
-                let is_shared = terminal_view.as_ref(ctx).is_sharing_session();
-                is_shared.then(|| terminal_view.id())
-            })
-            .collect()
+    pub fn shared_session_view_ids(&self, _ctx: &AppContext) -> Vec<EntityId> {
+        Vec::new()
     }
 
     /// Filters out any hidden panes that aren't yet deleted (due to undo functionality).
@@ -8261,7 +7851,7 @@ impl PaneGroup {
             .into_iter()
             .map(move |file_view| {
                 let id = file_view.id();
-                let path = file_view.as_ref(ctx).path().cloned();
+                let path = file_view.as_ref(ctx).path();
                 (id, path)
             })
     }
@@ -8431,8 +8021,6 @@ impl PaneGroup {
             ctx,
         );
 
-        self.close_share_session_modal(ctx);
-        self.close_shared_session_role_change_modal(RoleChangeCloseSource::ViewerRequest, ctx);
         self.terminal_with_open_share_block_modal = None;
         ctx.notify();
     }
@@ -8582,15 +8170,6 @@ impl View for PaneGroup {
         if self.terminal_with_open_share_block_modal.is_some() {
             stack
                 .add_child(Clipped::new(ChildView::new(&self.share_block_modal).finish()).finish());
-        } else if FeatureFlag::CreatingSharedSessions.is_enabled()
-            && self.terminal_with_open_share_session_modal.is_some()
-        {
-            stack.add_child(ChildView::new(&self.share_session_modal).finish());
-        } else if self
-            .terminal_with_shared_session_role_change_modal_open
-            .is_some()
-        {
-            stack.add_child(ChildView::new(&self.shared_session_role_change_modal).finish());
         }
 
         // Render the summarization cancel dialog at tab level when open.
