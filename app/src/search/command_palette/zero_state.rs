@@ -11,7 +11,7 @@ use cuteui::{
 };
 
 use crate::appearance::Appearance;
-use crate::drive::settings::WarpDriveSettings;
+use crate::cloud_stub_types::settings::WarpDriveSettings;
 use crate::search::command_palette::FilterChipRenderer;
 use crate::search::QueryFilter;
 use crate::settings::AISettings;

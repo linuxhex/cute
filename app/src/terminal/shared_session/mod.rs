@@ -8,31 +8,7 @@ use cuteui::{id, AppContext};
 use super::model::terminal_model::BlockIndex;
 use super::TerminalModel;
 
-pub mod history_model;
-pub mod manager;
-pub mod participant_avatar_view;
-pub mod presence_manager;
-pub mod render_util;
-pub mod role_change_modal;
-pub mod remote_update_guard;
-pub mod session_permissions_manager;
 pub mod settings;
-pub mod share_session_modal;
-
-// Re-export for convenience
-pub use history_model::SharedSessionHistoryModel;
-pub use manager::{Manager, ManagerEvent};
-pub use participant_avatar_view::{ParticipantAvatarView, ParticipantAvatarEvent};
-pub use presence_manager::{PresenceManager, PresenceManagerEvent};
-pub use role_change_modal::{RoleChangeModal, RoleChangeModalEvent, RoleChangeCloseSource, RoleChangeOpenSource};
-pub use remote_update_guard::RemoteUpdateGuard;
-pub use session_permissions_manager::{SessionPermissionsManager, SessionPermissionsManagerEvent};
-pub use share_session_modal::{ShareSessionModal, ShareSessionModalEvent};
-
-#[cfg(test)]
-pub use tests::MAX_BYTES_SHAREABLE;
-
-const SELECTION_THROTTLE_PERIOD: Duration = Duration::from_millis(20);
 
 #[derive(Debug, Clone, Default)]
 pub enum IsSharedSessionCreator {
@@ -161,11 +137,6 @@ pub fn max_session_size(_ctx: &AppContext) -> Byte {
     Byte::from_u64_with_unit(100, byte_unit::Unit::MB).unwrap()
 }
 
-#[cfg(test)]
-pub fn max_session_size(_ctx: &AppContext) -> Byte {
-    Byte::from_u64(MAX_BYTES_SHAREABLE as u64)
-}
-
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub enum SharedSessionActionSource {
     BlocklistContextMenu {
@@ -224,7 +195,3 @@ impl Default for SharedSessionSource {
 
 // Re-export SessionSourceType from session_sharing_protocol
 pub use session_sharing_protocol::sharer::SessionSourceType;
-
-#[cfg(test)]
-#[path = "mod_tests.rs"]
-mod tests;

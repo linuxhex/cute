@@ -11,7 +11,7 @@ use crate::ai::agent_sdk::setup_observability::SetupClientEventReporter;
 #[cfg(not(target_family = "wasm"))]
 use crate::ai::cloud_environments::CloudAmbientAgentEnvironment;
 #[cfg(not(target_family = "wasm"))]
-use crate::cloud_object::CloudObjectLookup as _;
+use crate::cloud_stub_types::CloudObjectLookup as _;
 #[cfg(feature = "local_tty")]
 use crate::pane_group::TerminalViewResources;
 #[cfg(feature = "local_tty")]
@@ -85,7 +85,6 @@ fn create_docker_sandbox_view(
             let terminal_manager = crate::terminal::local_tty::TerminalManager::create_model(
                 None,
                 std::collections::HashMap::new(),
-                crate::terminal::shared_session::IsSharedSessionCreator::No,
                 resources,
                 None, /* restored_blocks */
                 None, /* conversation_restoration */

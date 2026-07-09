@@ -42,12 +42,14 @@ mod codex;
 pub(crate) mod codex_transcript;
 mod gemini;
 mod json_utils;
+mod opencode;
 mod telemetry;
 pub(crate) use claude_code::ClaudeHarness;
 use claude_transcript::ClaudeResumeInfo;
 use codex::CodexHarness;
 use codex_transcript::CodexResumeInfo;
 use gemini::GeminiHarness;
+use opencode::OpenCodeHarness;
 pub(crate) use telemetry::ThirdPartyHarnessTelemetryEvent;
 
 /// Harness-agnostic payload describing how to resume an existing conversation.
@@ -244,7 +246,7 @@ pub(crate) fn harness_kind(harness: Harness) -> Result<HarnessKind, AgentDriverE
         Harness::Oz => Ok(HarnessKind::Oz),
         Harness::Claude => Ok(HarnessKind::ThirdParty(Box::new(ClaudeHarness))),
         Harness::Codex => Ok(HarnessKind::ThirdParty(Box::new(CodexHarness))),
-        Harness::OpenCode => Ok(HarnessKind::Unsupported(Harness::OpenCode)),
+        Harness::OpenCode => Ok(HarnessKind::ThirdParty(Box::new(OpenCodeHarness))),
         Harness::Gemini => Ok(HarnessKind::ThirdParty(Box::new(GeminiHarness))),
         Harness::Unknown => Err(AgentDriverError::InvalidRuntimeState),
     }

@@ -1,7 +1,7 @@
-use crate::cloud_object::{Owner, Space};
+use crate::cloud_stub_types::{Owner, Space};
 
 mod embedded_fuzzy_match;
-mod notebooks;
+pub mod notebooks;
 pub mod searcher;
 pub mod view;
 mod workflows;

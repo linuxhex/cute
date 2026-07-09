@@ -16,7 +16,7 @@ use super::workspace::{
 };
 use crate::ai::llms::LLMModelHost;
 use crate::auth::{AuthStateProvider, UserUid};
-use crate::cloud_object::{CloudObjectEventEntrypoint, ObjectType, Owner, Space};
+use crate::cloud_stub_types::{CloudObjectEventEntrypoint, ObjectType, Owner, Space};
 use crate::report_error;
 use crate::server::ids::ServerId;
 use crate::server::server_api::team::TeamClient;
@@ -226,6 +226,7 @@ impl UserWorkspaces {
             }
             ObjectType::Folder => false,
             ObjectType::GenericStringObject(_) => false,
+            ObjectType::EnvVarCollection => false,
         }
     }
 
@@ -1250,9 +1251,7 @@ impl UserWorkspaces {
 
         // If we have experiment state to unconditionally enable / disable the feature,
         // then we defer to that.
-        // Simplified: local version always enables session sharing
-        let is_session_sharing_enabled_via_tier_policy = true;
-        FeatureFlag::CreatingSharedSessions.set_enabled(is_session_sharing_enabled_via_tier_policy);
+        // Simplified: local version has session sharing disabled (feature removed)
     }
 }
 

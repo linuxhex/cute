@@ -9,13 +9,13 @@ use strum_macros::EnumIter;
 use cute_core::ui::appearance::Appearance;
 use cute_core::ui::Icon;
 
-use crate::cloud_object::{
+use crate::cloud_stub_types::{
     CloudObjectUuid, GenericStringObjectFormat, GenericStringObjectUniqueKey, JsonObjectType,
     Revision, StringModel,
 };
-use crate::drive::items::mcp_server::WarpDriveMCPServer;
-use crate::drive::items::WarpDriveItem;
-use crate::drive::CloudObjectTypeAndId;
+use crate::cloud_stub_types::items::mcp_server::WarpDriveMCPServer;
+use crate::cloud_stub_types::CuteDriveItem;
+use crate::cloud_stub_types::CloudObjectTypeAndId;
 #[cfg(not(target_family = "wasm"))]
 use crate::persistence::model::MCPEnvironmentVariables;
 #[cfg(not(target_family = "wasm"))]
@@ -50,13 +50,13 @@ cfg_if::cfg_if! {
 pub mod gallery;
 pub use gallery::MCPGalleryManager;
 pub mod templatable;
-// Use all MCP-related types from crate::cloud_object::models::mcp (local definitions with Serialize/Deserialize)
+// Use all MCP-related types from crate::cloud_stub_types::models::mcp (local definitions with Serialize/Deserialize)
 #[cfg(not(target_family = "wasm"))]
-pub use crate::cloud_object::models::mcp::{
+pub use crate::cloud_stub_types::models::mcp::{
     CLIServer, JSONMCPServer, JSONTransportType, MCPServer, ServerSentEvents, StaticEnvVar,
     StaticHeader, TransportType,
 };
-pub use crate::cloud_object::models::mcp::CloudMCPServer;
+pub use crate::cloud_stub_types::models::mcp::CloudMCPServer;
 // Import MCPServerState from cute_server_client (it's used by other parts of the codebase)
 pub use cute_server_client::cloud_object::models::MCPServerState;
 pub use templatable::{JsonTemplate, TemplatableMCPServer, TemplateVariable};
@@ -127,7 +127,7 @@ impl StringModel for MCPServer {
         id: SyncId,
         _appearance: &Appearance,
         mcp_server: &CloudMCPServer,
-    ) -> Option<Box<dyn WarpDriveItem>> {
+    ) -> Option<Box<dyn CuteDriveItem>> {
         Some(Box::new(WarpDriveMCPServer::new(
             CloudObjectTypeAndId::from_generic_string_object(
                 GenericStringObjectFormat::Json(JsonObjectType::MCPServer),

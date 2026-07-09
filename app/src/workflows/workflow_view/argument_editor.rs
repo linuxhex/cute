@@ -1,4 +1,5 @@
 use std::cmp::Ordering;
+use std::sync::Arc;
 
 use itertools::Itertools;
 use pathfinder_color::ColorU;
@@ -20,10 +21,10 @@ use super::{
     HORIZONTAL_TEXT_INPUT_PADDING, SECTION_SPACING, VERTICAL_TEXT_INPUT_PADDING,
     WORKFLOW_PARAMETER_HIGHLIGHT_COLOR,
 };
-use crate::drive::workflows::workflow_arg_selector::{
+use crate::cloud_stub_types::workflows::workflow_arg_selector::{
     WorkflowArgSelector, WorkflowArgSelectorStyles,
 };
-use crate::drive::workflows::workflow_arg_type_helpers::{self, ArgumentTypeEditor};
+use crate::cloud_stub_types::workflows::workflow_arg_type_helpers::{self, ArgumentTypeEditor};
 use crate::editor::{
     EditOrigin, EditorView, Event as EditorEvent, InteractionState,
     PlainTextEditorViewAction as EditorAction,
@@ -175,12 +176,12 @@ impl WorkflowView {
                                         },
                                         height: Some(ARGUMENT_INPUT_HEIGHT),
                                         width: None,
-                                        dropdown_background: |appearance| {
+                                        dropdown_background: Arc::new(|appearance: &Appearance| {
                                             appearance.theme().surface_2().into_solid()
-                                        },
-                                        border_color: |appearance| {
+                                        }),
+                                        border_color: Arc::new(|appearance: &Appearance| {
                                             appearance.theme().foreground().with_opacity(20).into_solid()
-                                        },
+                                        }),
                                         border_radius: BUTTON_BORDER_RADIUS,
                                     },
                                     &self.all_workflow_enums,
@@ -282,7 +283,7 @@ impl WorkflowView {
         self.arguments_rows.iter().any(|row| {
             let selector_is_dirty = {
                 let editor = row.arg_type_editor.as_ref(app);
-                let editor_is_dirty = editor.is_dirty(app);
+                let editor_is_dirty = editor.is_dirty();
                 let enum_is_dirty = editor
                     .get_selected_enum()
                     .and_then(|id| self.all_workflow_enums.get(&id))

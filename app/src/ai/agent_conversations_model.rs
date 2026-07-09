@@ -44,7 +44,7 @@ use crate::ai::conversation_navigation::ConversationNavigationData;
 use crate::auth::auth_manager::{AuthManager, AuthManagerEvent};
 use crate::auth::AuthStateProvider;
 use session_sharing_protocol::common::SessionId;
-use crate::cloud_object::CloudObjectLookup as _;
+use crate::cloud_stub_types::CloudObjectLookup as _;
 use crate::network::{NetworkStatus, NetworkStatusEvent, NetworkStatusKind};
 
 use crate::server::cloud_objects::{UpdateManager, UpdateManagerEvent};

@@ -54,14 +54,14 @@ use crate::ai::facts::AIFactView;
 #[cfg(feature = "local_fs")]
 use crate::code::buffer_location::LocalOrRemotePath;
 use crate::code::view::CodeView;
-use crate::drive::sharing::ShareableObject;
+use crate::cloud_stub_types::sharing::ShareableObject;
 use crate::env_vars::view::env_var_collection::EnvVarCollectionView;
 use crate::menu::MenuItem;
-use crate::notebooks::file::FileNotebookView;
-use crate::notebooks::notebook::NotebookView;
+use crate::cloud_stub_types::FileNotebookView;
+use crate::cloud_stub_types::NotebookView;
 use crate::pane_group::focus_state::PaneFocusHandle;
 use crate::pane_group::pane::get_started_view::GetStartedView;
-use crate::drive::sharing::dialog::SharingDialogSource;
+use crate::cloud_stub_types::sharing::dialog::SharingDialogSource;
 use crate::settings::PaneSettings;
 use crate::settings_view::environments_page::EnvironmentsPageView;
 use crate::settings_view::SettingsView;

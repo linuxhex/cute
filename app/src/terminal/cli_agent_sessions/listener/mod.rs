@@ -49,6 +49,7 @@ pub fn is_agent_supported(agent: &CLIAgent) -> bool {
             | CLIAgent::Auggie
             | CLIAgent::Pi
             | CLIAgent::Qoder
+            | CLIAgent::Trae
     )
 }
 

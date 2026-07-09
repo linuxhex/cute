@@ -48,8 +48,8 @@ use crate::ai::harness_availability::HarnessAvailabilityModel;
 use crate::ai::harness_display;
 use crate::appearance::Appearance;
 use crate::auth::UserUid;
-use crate::cloud_object::CloudObjectLookup as _;
-use crate::notebooks::NotebookId;
+use crate::cloud_stub_types::CloudObjectLookup as _;
+use crate::cloud_stub_types::NotebookId;
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::server_api::ai::AmbientAgentTask;
 #[cfg(not(target_family = "wasm"))]

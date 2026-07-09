@@ -9,7 +9,7 @@ use cuteui::fonts::{Properties, Weight};
 use cuteui::{AppContext, Element, SingletonEntity};
 
 use crate::appearance::Appearance;
-use crate::cloud_object::{GenericStringObjectFormat, JsonObjectType, ObjectType};
+use crate::cloud_stub_types::{GenericStringObjectFormat, JsonObjectType, ObjectType};
 use crate::search::ai_context_menu::mixer::AIContextMenuSearchableAction;
 use crate::search::ai_context_menu::{safe_truncate, styles};
 use crate::search::item::SearchItem;

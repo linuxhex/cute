@@ -20,8 +20,8 @@ use cuteui::{AppContext, EntityId, SingletonEntity as _, TypedActionView, ViewHa
 use self::docker::open_docker_container;
 use crate::ai::active_agent_views_model::{ActiveAgentViewsModel, ConversationOrTaskId};
 use crate::ai::agent::api::ServerConversationToken;
-use crate::cloud_object::ObjectType;
-use crate::drive::{OpenWarpDriveObjectArgs, OpenWarpDriveObjectSettings};
+use crate::cloud_stub_types::ObjectType;
+use crate::cloud_stub_types::{OpenWarpDriveObjectArgs, OpenWarpDriveObjectSettings};
 use crate::features::FeatureFlag;
 use crate::launch_configs::launch_config::LaunchConfig;
 use crate::linear::{LinearAction, LinearIssueWork};
@@ -38,10 +38,9 @@ use crate::util::openable_file_type::{
     is_file_openable_in_warp, is_markdown_file, is_runnable_shell_script, starts_with_shebang,
 };
 use crate::view_components::DismissibleToast;
-use crate::workspace::auto_handoff::trigger_auto_handoff_to_cloud;
 use crate::workspace::util::PaneViewLocator;
 use crate::workspace::{
-    active_terminal_in_window, AutoCloudHandoffTrigger, ToastStack, Workspace, WorkspaceAction,
+    active_terminal_in_window, ToastStack, Workspace, WorkspaceAction,
     WorkspaceRegistry,
 };
 use crate::{quake_mode_window_id, quake_mode_window_is_open, safe_info, ChannelState, OpenPath};
@@ -235,6 +234,8 @@ impl UriHost {
                         object_type,
                         server_id,
                         settings: OpenWarpDriveObjectSettings {
+                            open_mode: Default::default(),
+                            focus_pane: false,
                             focused_folder_id,
                             invitee_email,
                         },
@@ -744,19 +745,6 @@ fn parse_open_file_editor_url(url: &Url) -> Result<(PathBuf, Option<LineAndColum
     ))
 }
 
-fn parse_auto_handoff_trigger(url: &Url) -> AutoCloudHandoffTrigger {
-    match url
-        .query_pairs()
-        .find(|(k, _)| k == "trigger")
-        .map(|(_, v)| v)
-    {
-        Some(trigger) if matches!(trigger.as_ref(), "sleep" | "macos_sleep" | "macos-sleep") => {
-            AutoCloudHandoffTrigger::MacOsSleep
-        }
-        Some(_) | None => AutoCloudHandoffTrigger::Uri,
-    }
-}
-
 #[derive(Debug)]
 enum Action {
     NewTab,
@@ -773,9 +761,6 @@ enum Action {
         repos: Vec<String>,
     },
     FocusCloudMode,
-    AutoHandoffToCloud {
-        trigger: AutoCloudHandoffTrigger,
-    },
 }
 
 impl Action {
@@ -800,9 +785,6 @@ impl Action {
                 Ok(Self::CreateEnvironment { repos })
             }
             "/focus_cloud_mode" => Ok(Self::FocusCloudMode),
-            "/auto_handoff_to_cloud" | "/auto-handoff-to-cloud" => Ok(Self::AutoHandoffToCloud {
-                trigger: parse_auto_handoff_trigger(url),
-            }),
             _ => Err(anyhow!(
                 "Received \"action\" intent with unexpected action: {}",
                 url.path()
@@ -986,11 +968,6 @@ impl Action {
                     ctx,
                 );
             }
-            Action::AutoHandoffToCloud { trigger } => {
-                if !cfg!(feature = "skip_login") {
-                    trigger_auto_handoff_to_cloud(*trigger, ctx);
-                }
-            }
         }
     }
 
@@ -1005,8 +982,7 @@ impl Action {
             | Self::OpenRepo
             | Self::NewCloudAgentConversation
             | Self::NewAgentConversation
-            | Self::FocusCloudMode
-            | Self::AutoHandoffToCloud { .. } => W::default(),
+            | Self::FocusCloudMode => W::default(),
             Self::NewTab => W::ShowPrimaryWindow(WindowActivationFallbackBehavior::Notify {
                 title: "New tab created".to_owned(),
                 description: "Go to Warp to see your new tab.".to_owned(),

@@ -21,12 +21,12 @@ use cuteui::{
 
 use super::{is_edit_allowed, is_syncing, style, AIFact, CloudAIFact, CloudAIFactModel};
 use crate::ai::facts::AIMemory;
-use crate::cloud_object::model::generic_string_model::GenericStringObjectId;
-use crate::cloud_object::model::persistence::{CloudModel, CloudModelEvent};
-use crate::cloud_object::{
+use crate::cloud_stub_types::model::generic_string_model::GenericStringObjectId;
+use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
+use crate::cloud_stub_types::{
     CloudObject, GenericStringObjectFormat, JsonObjectType, Owner, Revision,
 };
-use crate::drive::CloudObjectTypeAndId;
+use crate::cloud_stub_types::CloudObjectTypeAndId;
 use crate::editor::{
     EditorView, Event as EditorEvent, PropagateAndNoOpNavigationKeys, SingleLineEditorOptions,
     TextOptions,
@@ -446,7 +446,7 @@ impl RuleView {
         update_manager.update(ctx, |update_manager, ctx| {
             update_manager.delete_object_by_user(
                 CloudObjectTypeAndId::GenericStringObject {
-                    object_type: format!("{:?}", GenericStringObjectFormat::Json(JsonObjectType::AIFact)),
+                    object_type: GenericStringObjectFormat::Json(JsonObjectType::AIFact),
                     id,
                 },
                 ctx,
@@ -684,7 +684,7 @@ impl RuleView {
 
         Some(
             Hoverable::new(ai_row.mouse_states.sync_status_hover.clone(), |state| {
-                let mut container = Container::new(icon)
+                let mut container = Container::new(Box::new(icon))
                     .with_border(Border::all(1.))
                     .with_uniform_padding(4.);
                 if state.is_hovered() {

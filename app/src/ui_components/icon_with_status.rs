@@ -328,9 +328,10 @@ pub(crate) fn render_icon_with_status_with_animation(
     }
 }
 
-/// Qoder / Trae 等 SVG 自带品牌色，不走单色 tint 与圆底。
+/// Claude / Qoder / Trae 等 SVG 自带品牌色，不走单色 tint 与圆底。
 fn render_full_color_cli_agent_icon(agent: CLIAgent, total_size: f32) -> Box<dyn Element> {
     let path = match agent {
+        CLIAgent::Claude => "bundled/svg/claude.svg",
         CLIAgent::Qoder => "bundled/svg/qoder.svg",
         CLIAgent::Trae => "bundled/svg/trae.svg",
         _ => unreachable!("uses_full_color_icon"),

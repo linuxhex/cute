@@ -9,8 +9,8 @@ use cuteui::{
     ViewHandle,
 };
 
-use crate::cloud_object::model::persistence::CloudModel;
-use crate::drive::workflows::enum_creation_dialog::WorkflowEnumData;
+use crate::cloud_stub_types::model::persistence::CloudModel;
+use crate::cloud_stub_types::workflows::enum_creation_dialog::WorkflowEnumData;
 use crate::editor::{
     EditOrigin, EditorView, Event as EditorEvent, PropagateAndNoOpNavigationKeys,
     SingleLineEditorOptions, TextOptions,
@@ -122,7 +122,7 @@ impl AliasArgumentSelector {
                 // Otherwise, pull it from the cloud model.
                 let enum_variants = enum_data
                     .get(enum_id)
-                    .and_then(|workflow_enum| workflow_enum.new_data.clone())
+                    .and_then(|workflow_enum| workflow_enum.new_data.clone().map(|ed| crate::cloud_stub_types::models::workflow_enum::EnumVariants::Static(ed.values)))
                     .or_else(|| {
                         cloud_model.get_workflow_enum(enum_id).map(|workflow_enum| {
                             workflow_enum.model().string_model.variants.clone()

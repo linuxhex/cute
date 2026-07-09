@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use cuteui::{Entity, SingletonEntity};
 
 use crate::auth::UserUid;
-pub use crate::cloud_object::models::UserProfileWithUID;
+pub use crate::cloud_stub_types::models::UserProfileWithUID;
 
 pub enum UserProfilesEvent {}
 

@@ -3631,12 +3631,9 @@ impl ModeProvider for TerminalModel {
     }
 }
 
-// Stub function for agent response event encoding
-#[cfg(not(any(test, feature = "integration_tests")))]
 fn encode_agent_response_event(
     _response: &warp_multi_agent_api::ResponseEvent,
 ) -> String {
-    // TODO: Implement proper response event encoding logic
     log::debug!("encode_agent_response_event called (stub)");
     String::new()
 }

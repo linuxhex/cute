@@ -25,14 +25,14 @@ use crate::ai::blocklist::{BlocklistAIHistoryEvent, BlocklistAIHistoryModel};
 use crate::ai::execution_profiles::profiles::AIExecutionProfilesModel;
 use crate::appearance::Appearance;
 use crate::auth::auth_state::AuthStateProvider;
-use crate::cloud_object::{CloudObject, CloudObjectEventEntrypoint, Owner, Revision};
-use crate::cloud_object::model::persistence::CloudModel;
-use crate::cloud_object::models::notebook::CloudNotebookModel;
+use crate::cloud_stub_types::{CloudObject, CloudObjectEventEntrypoint, Owner, Revision};
+use crate::cloud_stub_types::model::persistence::CloudModel;
+use crate::cloud_stub_types::models::notebook::CloudNotebookModel;
 use crate::global_resource_handles::GlobalResourceHandlesProvider;
-use crate::notebooks::editor::model::{FileLinkResolutionContext, NotebooksEditorModel, RichTextEditorModelEvent};
-use crate::notebooks::file::MarkdownDisplayMode;
-use crate::notebooks::editor::rich_text_styles;
-use crate::notebooks::NotebookId;
+use crate::cloud_stub_types::{FileLinkResolutionContext, NotebooksEditorModel, RichTextEditorModelEvent};
+use crate::cloud_stub_types::MarkdownDisplayMode;
+use crate::cloud_stub_types::rich_text_styles;
+use crate::cloud_stub_types::NotebookId;
 use crate::persistence::ModelEvent;
 use crate::server::cloud_objects::update_manager::{
     ObjectOperation, OperationSuccessType, UpdateManager, UpdateManagerEvent,
@@ -827,7 +827,7 @@ impl AIDocumentModel {
 
             let mut model = NotebooksEditorModel::new_unbound(styles, ctx);
             model.set_default_mermaid_display_mode(MarkdownDisplayMode::Rendered, ctx);
-            model.set_file_link_resolution_context(file_link_resolution_context);
+            model.set_file_link_resolution_context(file_link_resolution_context, ctx);
 
             let content = content.into();
             if !content.is_empty() {

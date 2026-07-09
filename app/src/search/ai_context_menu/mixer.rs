@@ -1,4 +1,4 @@
-use crate::cloud_object::ObjectType;
+use crate::cloud_stub_types::ObjectType;
 use crate::code_review::diff_state::DiffMode;
 use crate::search::mixer::SearchMixer;
 

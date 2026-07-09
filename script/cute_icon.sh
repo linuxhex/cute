@@ -55,7 +55,7 @@ apply_cute_app_icon() {
     "${REPO_ROOT}/script/compile_icon" "$CUTE_ICON_CHANNEL" "$app_bundle_path"
 }
 
-# Linux / Windows 打包使用的 PNG/ICO 目录（带 macOS 风格白边）。
+# Linux / Windows 打包使用的 PNG/ICO 目录（单层白边版本）。
 cute_icon_asset_dir_for_channel() {
     local channel="${1:-$CUTE_ICON_CHANNEL}"
     local variant_dir="${REPO_ROOT}/app/channels/${channel}/icon/${CUTE_ICON_VARIANT}"

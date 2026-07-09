@@ -52,13 +52,13 @@ use crate::terminal::model::session::SessionId;
 use crate::workflows::CloudWorkflow;
 use crate::workspaces::user_profiles::UserProfileWithUID;
 use crate::workspaces::workspace::{Workspace as WorkspaceMetadata, WorkspaceUid};
-use crate::cloud_object::model::generic_string_model::CloudStringObject;
-use crate::cloud_object::model::actions::ObjectAction;
-use crate::cloud_object::{HashedSqliteId, RevisionAndLastEditor, ServerCreationInfo};
+use crate::cloud_stub_types::model::generic_string_model::CloudStringObject;
+use crate::cloud_stub_types::model::actions::ObjectAction;
+use crate::cloud_stub_types::{HashedSqliteId, RevisionAndLastEditor, ServerCreationInfo};
 use crate::persistence::model::ObjectMetadata;
 use crate::server::ids::ClientId;
-use crate::cloud_object::models::CloudNotebook;
-use crate::drive::folders::CloudFolder;
+use crate::cloud_stub_types::models::CloudNotebook;
+use crate::cloud_stub_types::folders::CloudFolder;
 use crate::ai::document::ai_document_model::AIDocumentId;
 
 pub enum PersistenceScope {
@@ -198,7 +198,7 @@ pub struct PersistedData {
     pub ignored_suggestions: Vec<(String, SuggestionType)>,
     pub mcp_server_installations: HashMap<Uuid, TemplatableMCPServerInstallation>,
     pub mcp_servers_to_restore: Vec<Uuid>,
-    pub cloud_objects: Vec<Box<dyn crate::cloud_object::CloudObject>>,
+    pub cloud_objects: Vec<Box<dyn crate::cloud_stub_types::CloudObject>>,
     pub time_of_next_force_object_refresh: Option<DateTime<Utc>>,
     pub object_actions: Vec<ObjectAction>,
 }

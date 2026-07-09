@@ -1,8 +1,8 @@
 use cuteui::async_assert;
 use cuteui::integration::AssertionCallback;
 
-use crate::cloud_object::model::persistence::CloudModel;
-use crate::cloud_object::{CloudModelType, GenericCloudObject, Revision};
+use crate::cloud_stub_types::model::persistence::CloudModel;
+use crate::cloud_stub_types::{CloudModelType, GenericCloudObject, Revision};
 use crate::server::ids::{HashableId, ServerId, SyncId, ToServerId};
 
 /// Asserts metadata exists for the object with the given key and that the revision in that

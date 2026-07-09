@@ -23,8 +23,8 @@ use crate::ai::agent::AIAgentExchangeId;
 use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::ai::document::ai_document_model::{AIDocumentId, AIDocumentVersion};
 use crate::auth::auth_manager::LoginGatedFeature;
-use crate::drive::items::WarpDriveItemId;
-use crate::drive::CloudObjectTypeAndId;
+use crate::cloud_stub_types::items::WarpDriveItemId;
+use crate::cloud_stub_types::CloudObjectTypeAndId;
 use crate::palette::PaletteMode;
 use crate::pane_group::{PaneGroup, PaneId};
 use crate::prompt::editor_modal::OpenSource as PromptEditorOpenSource;
@@ -33,7 +33,6 @@ use crate::server::ids::SyncId;
 use crate::server::telemetry::{
     AddTabWithShellSource, AgentModeEntrypoint, PaletteSource,
 };
-use crate::drive::sharing::dialog::SharingDialogSource;
 use crate::settings_view::{SettingsAction as SettingsTabAction, SettingsSection};
 use crate::tab::{NewSessionMenuItem, SelectedTabColor};
 use crate::tab_configs::TabConfig;
@@ -114,12 +113,6 @@ impl VerticalTabsPaneContextMenuTarget {
             Self::ClickedPane(locator) | Self::ActivePane(locator) => locator,
         }
     }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum AutoCloudHandoffTrigger {
-    MacOsSleep,
-    Uri,
 }
 
 #[derive(Debug, Clone)]
@@ -380,11 +373,6 @@ pub enum WorkspaceAction {
     FocusRightPanel,
     /// An action to view a newly created/edited workflow in WD from the toast
     ViewObjectInWarpDrive(WarpDriveItemId),
-    /// Open the object's sharing settings in WD.
-    OpenObjectSharingSettings {
-        object_id: CloudObjectTypeAndId,
-        source: SharingDialogSource,
-    },
     UndoTrash(CloudObjectTypeAndId),
     /// Open a local path in the file explorer.
     OpenInExplorer {
@@ -532,13 +520,6 @@ pub enum WorkspaceAction {
         launch: Option<()>,
         environment_id: Option<crate::server::ids::SyncId>,
         entry_point: crate::ai::ambient_agent_types::telemetry::HandoffEntryPoint,
-    },
-    /// Automatically hand off the active running local agent conversation in the
-    /// given terminal view to Cloud Mode.
-    AutoHandoffActiveAgentToCloud {
-        terminal_view_id: EntityId,
-        conversation_id: AIConversationId,
-        trigger: AutoCloudHandoffTrigger,
     },
     /// Show the environment creation modal during `&` handoff compose when no
     /// environments exist.
@@ -951,7 +932,6 @@ impl WorkspaceAction {
             | UndoTrash(_)
             | OpenFilePath { .. }
             | ViewObjectInWarpDrive(_)
-            | OpenObjectSharingSettings { .. }
             | TerminateApp
             | SignInAnonymousWebUser
             | TabHoverWidthStart { .. }
@@ -994,7 +974,6 @@ impl WorkspaceAction {
             | OpenSettingsFile
             | FixSettingsWithOz { .. }
             | OpenLocalToCloudHandoffPane { .. }
-            | AutoHandoffActiveAgentToCloud { .. }
             | ShowHandoffEnvironmentCreationModal
             | ShowCloudModeV2EnvironmentCreationModal
             | OpenCreateAuthSecretModal { .. }

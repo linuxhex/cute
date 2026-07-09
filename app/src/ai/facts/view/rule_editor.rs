@@ -15,9 +15,9 @@ use cuteui::{
 
 use super::{is_delete_allowed, style, AIFact, CloudAIFact, CloudAIFactModel};
 use crate::ai::facts::AIMemory;
-use crate::cloud_object::model::generic_string_model::GenericStringObjectId;
-use crate::cloud_object::model::persistence::CloudModel;
-use crate::cloud_object::{CloudObject, Revision};
+use crate::cloud_stub_types::model::generic_string_model::GenericStringObjectId;
+use crate::cloud_stub_types::model::persistence::CloudModel;
+use crate::cloud_stub_types::{CloudObject, Revision};
 use crate::editor::{
     EditorOptions, EditorView, EnterAction, EnterSettings, Event as EditorEvent,
     PropagateAndNoOpNavigationKeys, SingleLineEditorOptions, TextOptions,

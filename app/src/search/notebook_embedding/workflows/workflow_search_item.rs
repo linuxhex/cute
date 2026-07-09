@@ -8,7 +8,7 @@ use cuteui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
 use cuteui::{AppContext, Element, SingletonEntity};
 
 use crate::appearance::Appearance;
-use crate::cloud_object::CloudObject;
+use crate::cloud_stub_types::CloudObject;
 use crate::search::item::{IconLocation, SearchItem};
 use crate::search::notebook_embedding::embedded_fuzzy_match::FuzzyMatchEmbeddedObjectResult;
 use crate::search::notebook_embedding::searcher::EmbeddingSearchItemAction;

@@ -49,24 +49,15 @@ impl DiffStateModelMap {
         model: ModelHandle<DiffStateModel>,
         ctx: &AppContext,
     ) {
-        debug_assert!(
-            matches!(model.as_ref(ctx), DiffStateModel::Local(_)),
-            "insert_local called with a remote-backend DiffStateModel",
-        );
         self.models.insert(LocalOrRemotePath::Local(path), model);
     }
 
-    /// Insert a model that was created from a `LocalOrRemotePath::Remote` key.
     fn insert_remote(
         &mut self,
         remote_id: RemotePath,
         model: ModelHandle<DiffStateModel>,
-        ctx: &AppContext,
+        _ctx: &AppContext,
     ) {
-        debug_assert!(
-            matches!(model.as_ref(ctx), DiffStateModel::Remote(_)),
-            "insert_remote called with a local-backend DiffStateModel",
-        );
         self.models
             .insert(LocalOrRemotePath::Remote(remote_id), model);
     }

@@ -19,7 +19,7 @@ pub mod input;
 pub mod keybindings;
 pub mod launch_configs;
 pub mod navigation_palette;
-pub mod notebook;
+// pub mod notebook; // Removed: notebooks module deleted
 pub mod pane_group;
 pub mod persistence;
 #[cfg(target_os = "macos")]
@@ -34,7 +34,7 @@ pub mod terminal;
 pub mod themes;
 pub mod type_getters;
 pub mod view_getters;
-pub mod warp_drive;
+// pub mod warp_drive; // Removed: cloud drive module deleted
 pub mod window;
 pub mod workflow;
 pub mod workspace;

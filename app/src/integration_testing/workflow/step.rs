@@ -3,11 +3,12 @@ use cuteui::windowing::WindowManager;
 use cuteui::{async_assert, SingletonEntity, WindowId};
 
 use super::open_workflow_count;
-use crate::cloud_object::model::persistence::CloudModel;
-use crate::cloud_object::{CloudObjectEventEntrypoint, Space};
-use crate::drive::OpenWarpDriveObjectSettings;
+use crate::cloud_stub_types::model::persistence::CloudModel;
+use crate::cloud_stub_types::{CloudObjectEventEntrypoint, Space};
+use crate::cloud_stub_types::OpenWarpDriveObjectSettings;
 use crate::integration_testing::view_getters::workspace_view;
 
+use crate::server::cloud_objects::UpdateManager;
 use crate::server::ids::{ClientId, SyncId};
 use crate::workflows::manager::WorkflowOpenSource;
 use crate::workflows::workflow::Workflow;

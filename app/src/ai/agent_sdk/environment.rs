@@ -17,8 +17,8 @@ use cute_graphql::queries::user_repo_auth_status::UserRepoAuthStatusEnum;
 use cuteui::r#async::FutureExt;
 use cuteui::{AppContext, ModelContext, SingletonEntity};
 
-use crate::cloud_object::CloudObjectLookup as _;
-use crate::cloud_object::CloudObject as _;
+use crate::cloud_stub_types::CloudObjectLookup as _;
+use crate::cloud_stub_types::CloudObject as _;
 
 use crate::ai::agent_sdk::driver::WARP_DRIVE_SYNC_TIMEOUT;
 use crate::ai::agent_sdk::oauth_flow::poll_oauth_until_terminal;

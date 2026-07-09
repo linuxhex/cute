@@ -35,7 +35,7 @@ use crate::ai::blocklist::{
     BlocklistAIHistoryModel, InputTypeAutoDetectionSource, QueuedQuery, QueuedQueryModel,
     QueuedQueryOrigin, SlashCommandRequest,
 };
-use crate::cloud_object::model::persistence::CloudModel;
+use crate::cloud_stub_types::model::persistence::CloudModel;
 use crate::code_review::telemetry_event::CodeReviewPaneEntrypoint;
 use crate::search::slash_command_menu::static_commands::commands::{self, COMMAND_REGISTRY};
 use crate::search::slash_command_menu::static_commands::Availability;
@@ -848,23 +848,7 @@ impl Input {
             usage if command.name == commands::USAGE.name => {
                 // No-op: billing and usage pane removed
             }
-            remote_control if command.name == commands::REMOTE_CONTROL.name => {
-                if !FeatureFlag::CreatingSharedSessions.is_enabled()
-                    || !FeatureFlag::HOARemoteControl.is_enabled()
-                {
-                    return false;
-                }
-                if self
-                    .model
-                    .lock()
-                    .shared_session_status()
-                    .is_sharer_or_viewer()
-                {
-                    show_error_toast("Session is already being shared".to_owned(), ctx);
-                    return true;
-                }
-                ctx.emit(Event::StartRemoteControl);
-            }
+
             cost if command.name == commands::COST.name => {
                 let history = BlocklistAIHistoryModel::handle(ctx);
                 let conversation = history

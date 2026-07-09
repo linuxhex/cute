@@ -11,7 +11,7 @@ use cute_cli::GlobalOptions;
 use cute_graphql::queries::get_scheduled_agent_history::ScheduledAgentHistory;
 use cuteui::platform::TerminationMode;
 use cuteui::{AppContext, SingletonEntity};
-use crate::cloud_object::{CloudObject, CloudObjectLookup};
+use crate::cloud_stub_types::{CloudObject, CloudObjectLookup};
 
 use super::common::{EnvironmentChoice, ResolveConfigurationError};
 use super::output::{self, TableFormat};

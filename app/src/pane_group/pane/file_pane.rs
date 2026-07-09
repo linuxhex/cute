@@ -3,16 +3,15 @@ use std::sync::Arc;
 use cute_util::local_or_remote_path::LocalOrRemotePath;
 use cuteui::{AppContext, ModelHandle, View, ViewContext, ViewHandle};
 
-use super::notebook_pane::subscribe_to_link_model;
 use super::view::PaneView;
 use super::{
     DetachType, PaneConfiguration, PaneContent, PaneGroup, PaneId, ShareableLink,
     ShareableLinkError,
 };
-use crate::app_state::{LeafContents, NotebookPaneSnapshot};
+use crate::app_state::{FilePaneSnapshot, LeafContents};
 #[cfg(feature = "local_fs")]
 use crate::code::editor_management::CodeSource;
-use crate::notebooks::file::{FileNotebookEvent, FileNotebookView};
+use crate::cloud_stub_types::{FileNotebookEvent, FileNotebookView};
 use crate::terminal::model::session::Session;
 use crate::workflows::WorkflowSelectionSource;
 
@@ -49,7 +48,7 @@ impl FilePane {
         let view = ctx.add_typed_action_view(move |ctx| {
             let mut view = FileNotebookView::new(ctx);
             #[cfg(feature = "local_fs")]
-            view.set_code_source(code_source);
+            view.set_code_source(code_source, ctx);
 
             if let Some(path) = path {
                 view.open(path, target_session, ctx);
@@ -87,7 +86,7 @@ impl PaneContent for FilePane {
                 FileNotebookEvent::RunWorkflow { workflow, source } => {
                     ctx.emit(crate::pane_group::Event::RunWorkflow {
                         workflow: workflow.clone(),
-                        workflow_source: *source,
+                        workflow_source: source.clone(),
                         workflow_selection_source: WorkflowSelectionSource::Notebook,
                         argument_override: None,
                     });
@@ -113,9 +112,11 @@ impl PaneContent for FilePane {
                 FileNotebookEvent::Pane(pane_event) => {
                     pane_group.handle_pane_event(pane_id, pane_event, ctx)
                 }
+                FileNotebookEvent::FileLinked(_) | FileNotebookEvent::FileUnlinked(_) => {
+                    // No action needed for file link events
+                }
             },
         );
-        subscribe_to_link_model(pane_id, &file_view.as_ref(ctx).links(), ctx);
 
         ctx.subscribe_to_view(&self.view, move |group, _, event, ctx| {
             group.handle_pane_view_event(pane_id, event, ctx);
@@ -131,7 +132,8 @@ impl PaneContent for FilePane {
         // Always unsubscribe from views and models
         let file_view = self.file_view(ctx);
         ctx.unsubscribe_to_view(&file_view);
-        ctx.unsubscribe_to_model(&file_view.as_ref(ctx).links());
+        // Note: links() returns &NotebookLinks, not &ModelHandle<NotebookLinks>
+        // We skip unsubscribing since the stub links model doesn't need it
         ctx.unsubscribe_to_view(&self.view);
     }
 
@@ -139,7 +141,7 @@ impl PaneContent for FilePane {
         // Only persist local file paths in session snapshots; remote files
         // are not restorable across sessions.
         let path = self.file_view(app).as_ref(app).local_path();
-        LeafContents::Notebook(NotebookPaneSnapshot::LocalFileNotebook { path })
+        LeafContents::File(FilePaneSnapshot { path })
     }
 
     fn has_application_focus(&self, ctx: &mut ViewContext<PaneGroup>) -> bool {

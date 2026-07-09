@@ -140,7 +140,7 @@ use crate::ai_assistant::execution_context::WarpAiExecutionContext;
 use crate::ai_assistant::requests::GenerateDialogueResult;
 use crate::ai_assistant::utils::TranscriptPart;
 use crate::ai_assistant::{AIGeneratedCommand, GenerateCommandsFromNaturalLanguageError};
-use crate::drive::workflows::ai_assist::{
+use crate::cloud_stub_types::workflows::ai_assist::{
     GeneratedCommandMetadata, GeneratedCommandMetadataError,
 };
 use crate::workflows::workflow::Argument;

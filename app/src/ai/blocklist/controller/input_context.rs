@@ -17,9 +17,9 @@ use crate::ai::blocklist::{BlocklistAIContextModel, SessionContext};
 use crate::ai::document::ai_document_model::{AIDocumentId, AIDocumentModel};
 use crate::ai::facts::CloudAIFactModel;
 use crate::ai::skills::list_skills_if_changed;
-use crate::cloud_object::model::generic_string_model::{CloudStringObject, GenericStringObjectId};
-use crate::cloud_object::model::persistence::CloudModel;
-use crate::cloud_object::{
+use crate::cloud_stub_types::model::generic_string_model::{CloudStringObject, GenericStringObjectId};
+use crate::cloud_stub_types::model::persistence::CloudModel;
+use crate::cloud_stub_types::{
     GenericCloudObject, GenericStringObjectFormat, JsonObjectType, ObjectType,
 };
 #[cfg(not(target_family = "wasm"))]

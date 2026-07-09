@@ -15,9 +15,10 @@ use super::{
 use crate::ai::llms::{LLMId, LLMPreferences};
 use crate::ai::mcp::templatable_manager::TemplatableMCPServerManagerEvent;
 use crate::ai::mcp::TemplatableMCPServerManager;
-use crate::cloud_object::model::generic_string_model::GenericStringObjectId;
-use crate::cloud_object::model::persistence::{CloudModelEvent, UpdateSource};
-use crate::drive::CloudObjectTypeAndId;
+use crate::cloud_stub_types::model::generic_string_model::GenericStringObjectId;
+use crate::cloud_stub_types::model::persistence::{CloudModelEvent, UpdateSource};
+use crate::cloud_stub_types::CloudObjectTypeAndId;
+use cute_server_client::cloud_object::{GenericStringObjectFormat, JsonObjectType};
 use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::ids::{ClientId, SyncId};
 use crate::settings::AgentModeCommandExecutionPredicate;
@@ -1143,7 +1144,7 @@ impl AIExecutionProfilesModel {
                         object_type,
                         id,
                     },
-            } if object_type == "Json(AIExecutionProfile)" => {
+            } if *object_type == GenericStringObjectFormat::Json(JsonObjectType::AIExecutionProfile) => {
                 self.handle_ai_execution_profile_created(*id, ctx);
             }
             CloudModelEvent::ObjectDeleted {
@@ -1153,7 +1154,7 @@ impl AIExecutionProfilesModel {
                         id,
                     },
                 folder_id: _,
-            } if object_type == "Json(AIExecutionProfile)" => {
+            } if *object_type == GenericStringObjectFormat::Json(JsonObjectType::AIExecutionProfile) => {
                 self.handle_ai_execution_profile_deleted(*id, ctx);
             }
             CloudModelEvent::ObjectDeleted {
@@ -1163,7 +1164,7 @@ impl AIExecutionProfilesModel {
                         id: _,
                     },
                 folder_id: _,
-            } if object_type == "Json(MCPServer)" => {
+            } if *object_type == GenericStringObjectFormat::Json(JsonObjectType::MCPServer) => {
                 // Legacy MCP servers are converted to templatable on startup;
                 // no action needed when a legacy cloud object is deleted.
             }
@@ -1174,7 +1175,7 @@ impl AIExecutionProfilesModel {
                         id,
                     },
                 source,
-            } if object_type == "Json(AIExecutionProfile)" => {
+            } if *object_type == GenericStringObjectFormat::Json(JsonObjectType::AIExecutionProfile) => {
                 self.handle_ai_execution_profile_updated(*id, source.clone(), ctx);
             }
             CloudModelEvent::InitialLoadCompleted => {

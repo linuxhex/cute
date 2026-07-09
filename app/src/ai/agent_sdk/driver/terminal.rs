@@ -191,23 +191,14 @@ impl TerminalDriver {
         let sharing_expected =
             should_share && !cute_core::channel::ChannelState::server_root_url().contains("ngrok");
         let (mut session_share_tx, session_share_rx) = if sharing_expected {
-            if !FeatureFlag::CreatingSharedSessions.is_enabled() {
-                // Session sharing was requested but the feature is not enabled for this
-                // user/team (typically an enterprise/admin setting). Fail immediately
-                // with a clear error rather than waiting for a timeout.
-                log::warn!(
-                    "Session sharing requested but the CreatingSharedSessions feature flag \
-                     is not enabled. This is likely due to a team administrator disabling \
-                     session sharing."
-                );
-                let (tx, rx) = oneshot::channel();
-                let _ = tx.send(Err(ShareSessionError::Disabled));
-                (None, Some(rx))
-            } else {
-                log::info!("Waiting for requested session sharing to start");
-                let (tx, rx) = oneshot::channel();
-                (Some(tx), Some(rx))
-            }
+            // Session sharing feature has been removed. Fail immediately.
+            log::warn!(
+                "Session sharing requested but the CreatingSharedSessions feature flag \
+                 is not enabled. Session sharing has been removed."
+            );
+            let (tx, rx) = oneshot::channel();
+            let _ = tx.send(Err(ShareSessionError::Disabled));
+            (None, Some(rx))
         } else {
             (None, None)
         };
@@ -290,48 +281,13 @@ impl TerminalDriver {
         }
 
         let share_requests = std::mem::take(&mut self.pending_share_requests);
-        self.terminal_view.update(ctx, |terminal_view, ctx| {
-            let mut viewer_emails = Vec::new();
-            let mut editor_emails = Vec::new();
-
-            for request in share_requests {
-                let role = match request.access_level {
-                    ShareAccessLevel::View => Role::Reader,
-                    ShareAccessLevel::Edit => Role::Executor,
-                };
-
-                match request.subject {
-                    ShareSubject::Team => {
-                        if let Some(team_uid) = UserWorkspaces::as_ref(ctx).current_team_uid() {
-                            terminal_view.update_session_team_permissions(
-                                Some(role),
-                                team_uid.to_string(),
-                                ctx,
-                            );
-                        }
-                    }
-                    ShareSubject::Public => {
-                        // Apply an anyone-with-link ACL at the requested role.
-                        // This uses the same path as the share modal's
-                        // "anyone with link" toggle. The workspace-level
-                        // anyone-with-link setting on the server still gates
-                        // whether the ACL write succeeds.
-                        terminal_view.update_session_link_permissions(Some(role), ctx);
-                    }
-                    ShareSubject::User { email } => match request.access_level {
-                        ShareAccessLevel::View => viewer_emails.push(email),
-                        ShareAccessLevel::Edit => editor_emails.push(email),
-                    },
-                }
-            }
-
-            if !viewer_emails.is_empty() {
-                terminal_view.add_guests(viewer_emails, Role::Reader, ctx);
-            }
-            if !editor_emails.is_empty() {
-                terminal_view.add_guests(editor_emails, Role::Executor, ctx);
-            }
-        });
+        for request in share_requests {
+            let role = match request.access_level {
+                ShareAccessLevel::View => Role::Reader,
+                ShareAccessLevel::Edit => Role::Executor,
+            };
+            let _ = role;
+        }
     }
 
     /// Submit `text` to the active CLI agent on the terminal PTY using the
@@ -649,29 +605,6 @@ impl TerminalDriver {
             }
             crate::terminal::view::Event::SlowBootstrap => {
                 ctx.emit(TerminalDriverEvent::SlowBootstrap);
-            }
-            crate::terminal::view::Event::EstablishedSharedSession { session_id } => {
-                self.shared_session_id = Some(session_id.clone());
-                if let Some(tx) = session_share_tx.take() {
-                    let _ = tx.send(Ok(()));
-                }
-
-                // Apply any pending share requests now that the session is established.
-                self.apply_share_requests(ctx);
-
-                ctx.emit(TerminalDriverEvent::EstablishedSharedSession {
-                    session_id: session_id.clone(),
-                    join_url: String::new(),
-                });
-            }
-            crate::terminal::view::Event::FailedToShareSession { reason, cause } => {
-                if let Some(tx) = session_share_tx.take() {
-                    let error = match cause {
-                        Some(cause) => ShareSessionError::Internal(cause.clone()),
-                        None => ShareSessionError::Failed(reason.clone()),
-                    };
-                    let _ = tx.send(Err(error));
-                }
             }
             crate::terminal::view::Event::ExecuteCommand(event) => {
                 if let Some((_expected_command, sender)) = self

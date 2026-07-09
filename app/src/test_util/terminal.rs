@@ -36,7 +36,7 @@ use crate::ai::AIRequestUsageModel;
 use crate::auth::auth_manager::AuthManager;
 use crate::auth::AuthStateProvider;
 use crate::changelog_model::ChangelogModel;
-use crate::cloud_object::model::persistence::CloudModel;
+use crate::cloud_stub_types::model::persistence::CloudModel;
 use crate::code_review::git_status_update::GitStatusUpdateModel;
 use crate::context_chips::prompt::Prompt;
 use crate::cute_managed_paths_watcher::CuteManagedPathsWatcher;
@@ -117,7 +117,6 @@ pub fn initialize_app_for_terminal_view(app: &mut App) {
     app.add_singleton_model(HarnessAvailabilityModel::new);
     app.add_singleton_model(|ctx| AITipModel::new_for_agent_tips(ctx));
     app.add_singleton_model(ConnectedSelfHostedWorkersModel::new);
-    app.add_singleton_model(SessionPermissionsManager::new);
     app.add_singleton_model(DirectoryWatcher::new);
     app.add_singleton_model(|_| DetectedRepositories::default());
     #[cfg(feature = "local_fs")]

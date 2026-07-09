@@ -19,11 +19,11 @@ use cuteui::{
 use super::command_dialog::EnvVarCommandDialog;
 use super::menus::Menus;
 use crate::ai::blocklist::block::secret_redaction::find_secrets_in_text_with_levels;
-use crate::cloud_object::breadcrumbs::ContainingObject;
-use crate::cloud_object::model::persistence::{CloudModel, CloudModelEvent};
-use crate::cloud_object::{CloudObjectEventEntrypoint, Owner};
-use crate::drive::items::WarpDriveItemId;
-use crate::drive::sharing::{ContentEditability, ShareableObject};
+use crate::cloud_stub_types::breadcrumbs::ContainingObject;
+use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
+use crate::cloud_stub_types::{CloudObjectEventEntrypoint, Owner};
+use crate::cloud_stub_types::items::WarpDriveItemId;
+use crate::cloud_stub_types::sharing::{ContentEditability, ShareableObject};
 use crate::editor::EditorView;
 use crate::env_vars::active_env_var_collection_data::{
     ActiveEnvVarCollection, ActiveEnvVarCollectionData, ActiveEnvVarCollectionDataEvent,
@@ -678,7 +678,7 @@ impl EnvVarCollectionView {
         if let Some(server_id) = env_var_collection.id.into_server() {
             self.pane_configuration.update(ctx, |pane_config, ctx| {
                 pane_config
-                    .set_shareable_object(Some(ShareableObject::WarpDriveObject(server_id)), ctx);
+                    .set_shareable_object(Some(ShareableObject::WarpDriveObject(CloudObjectTypeAndId::GenericStringObject { object_type: crate::cloud_stub_types::models::env_var_collection::ENV_VAR_COLLECTION_FORMAT, id: crate::server::ids::SyncId::ServerId(server_id) })), ctx);
             });
         }
 
@@ -977,7 +977,7 @@ impl EnvVarCollectionView {
                 self.update_breadcrumbs(ctx);
                 self.pane_configuration.update(ctx, |pane_config, ctx| {
                     pane_config.set_shareable_object(
-                        Some(ShareableObject::WarpDriveObject(*server_id)),
+                        Some(ShareableObject::WarpDriveObject(CloudObjectTypeAndId::GenericStringObject { object_type: crate::cloud_stub_types::models::env_var_collection::ENV_VAR_COLLECTION_FORMAT, id: crate::server::ids::SyncId::ServerId(*server_id) })),
                         ctx,
                     );
                 });
@@ -1101,8 +1101,8 @@ impl EnvVarCollectionView {
         (*id).as_generic_string_object_id().filter(|id| {
             self.active_env_var_collection_data
                 .as_ref(ctx)
-                .is_active_env_var_collection(**id)
-        }).copied()
+                .is_active_env_var_collection(id.clone())
+        })
     }
 
     fn set_pane_title(&self, title: &str, ctx: &mut ViewContext<Self>) {

@@ -12,7 +12,7 @@ use crate::ai::artifacts::Artifact;
 use crate::ai::blocklist::BlocklistAIHistoryModel;
 use crate::ai::document::ai_document_model::{AIDocumentModel, AIDocumentVersion};
 use crate::ai::execution_profiles::profiles::AIExecutionProfilesModel;
-use crate::notebooks::editor::model::FileLinkResolutionContext;
+use crate::cloud_stub_types::FileLinkResolutionContext;
 use crate::terminal::model::session::active_session::ActiveSession;
 
 pub struct CreateDocumentsExecutor {
@@ -85,7 +85,8 @@ impl CreateDocumentsExecutor {
                     let shell_launch_data = session.shell_launch_data(ctx);
                     let file_link_resolution_context =
                         working_directory.map(|working_directory| FileLinkResolutionContext {
-                            working_directory,
+                            workspace_root: None,
+                            working_directory: Some(working_directory),
                             shell_launch_data,
                         });
                     model.update(ctx, |model, model_ctx| {

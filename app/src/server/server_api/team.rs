@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use mockall::{automock, predicate::*};
 
 use super::ServerApi;
-use crate::cloud_object::CloudObjectEventEntrypoint;
+use crate::cloud_stub_types::CloudObjectEventEntrypoint;
 use crate::server::ids::ServerId;
 use crate::workspaces::user_workspaces::{CreateTeamResponse, WorkspacesMetadataWithPricing};
 

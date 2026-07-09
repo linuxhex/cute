@@ -55,8 +55,8 @@ pub struct CloudFolder;
 #[derive(Debug, Clone)]
 pub struct CloudObjectLocation;
 
-#[derive(Debug, Clone)]
-pub struct CloudObjectTypeAndId;
+// Re-export CloudObjectTypeAndId from drive module instead of defining a stub
+pub use crate::drive::CloudObjectTypeAndId;
 
 #[derive(Debug, Clone)]
 pub struct CloudObjectMetadata;

@@ -1625,7 +1625,7 @@ fn render_dismissable_container(
                 ui_builder
                     .close_button(16., dismiss_mouse_state.clone())
                     .with_style(UiComponentStyles {
-                        font_color: Some(blended_colors::text_main(theme, theme.surface_1())),
+                        font_color: Some(blended_colors::text_main(theme, theme.background())),
                         background: Some(internal_colors::accent_bg(theme).into()),
                         border_radius: Some(CornerRadius::with_all(Radius::Percentage(50.))),
                         border_width: Some(1.),

@@ -240,11 +240,11 @@ impl SearchItem for WorkflowSearchItem {
         let accepted = match &self.identity {
             WorkflowIdentity::Cloud { id, .. } => AcceptedWorkflow::Cloud {
                 id: *id,
-                source: self.source,
+                source: self.source.clone(),
             },
             WorkflowIdentity::Local(workflow_type) => AcceptedWorkflow::Local {
                 workflow: workflow_type.clone(),
-                source: self.source,
+                source: self.source.clone(),
             },
         };
         CommandSearchItemAction::AcceptWorkflow(accepted)

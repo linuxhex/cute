@@ -2037,21 +2037,8 @@ impl AgentInputFooter {
                 has_conversation.then(|| ChildView::new(&self.context_window_button).finish())
             }
             AgentToolbarItemKind::ShareSession => {
-                if is_conversation_transcript_context {
-                    return None;
-                }
-                let enabled = FeatureFlag::CreatingSharedSessions.is_enabled()
-                    && FeatureFlag::HOARemoteControl.is_enabled()
-                    && ContextFlag::CreateSharedSession.is_enabled();
-                if !enabled {
-                    return None;
-                }
-                let button = if shared_status.is_sharer() {
-                    &self.stop_remote_control_button
-                } else {
-                    &self.start_remote_control_button
-                };
-                Some(ChildView::new(button).finish())
+                // Session sharing feature removed
+                None
             }
             AgentToolbarItemKind::FastForwardToggle => FeatureFlag::FastForwardAutoexecuteButton
                 .is_enabled()

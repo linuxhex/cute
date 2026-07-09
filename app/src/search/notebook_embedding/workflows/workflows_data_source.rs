@@ -1,6 +1,6 @@
 use cuteui::AppContext;
 
-use crate::cloud_object::Space;
+use crate::cloud_stub_types::Space;
 use crate::search::data_source::{Query, QueryResult};
 use crate::search::mixer::{DataSourceRunErrorWrapper, SyncDataSource};
 use crate::search::notebook_embedding::searcher::EmbeddingSearchItemAction;

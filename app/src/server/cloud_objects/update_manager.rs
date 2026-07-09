@@ -16,11 +16,11 @@ use crate::ai::execution_profiles::AIExecutionProfile;
 use crate::ai::facts::AIFact;
 use crate::ai::mcp::gallery::GalleryMCPServer;
 use crate::ai::mcp::templatable::TemplatableMCPServer;
-use crate::cloud_object::{CloudObjectEventEntrypoint, Owner};
-use crate::cloud_object::models::notebook::CloudNotebookModel;
-use crate::cloud_object::models::env_vars::{CloudEnvVarCollectionModel, EnvVarCollection};
+use crate::cloud_stub_types::{CloudObjectEventEntrypoint, Owner};
+use crate::cloud_stub_types::models::notebook::CloudNotebookModel;
+use crate::cloud_stub_types::models::env_vars::{CloudEnvVarCollectionModel, EnvVarCollection};
 use cute_server_client::cloud_object::Revision;
-use crate::drive::CloudObjectTypeAndId;
+use crate::cloud_stub_types::CloudObjectTypeAndId;
 use crate::server::ids::{ClientId, ServerId, SyncId};
 
 /// Options for fetching a single object
@@ -145,7 +145,7 @@ impl UpdateManager {
         &mut self,
         _cloud_object_type_and_id: CloudObjectTypeAndId,
         _destination_folder_id: Option<ServerId>,
-        _space: crate::cloud_object::Space,
+        _space: crate::cloud_stub_types::Space,
         _ctx: &mut ModelContext<Self>,
     ) {
         // Stub implementation - no-op for local version
@@ -419,5 +419,22 @@ impl UpdateManager {
         _ctx: &mut ModelContext<Self>,
     ) {
         // Stub implementation - no-op for local version
+    }
+
+    pub fn create_workflow(
+        &mut self,
+        _workflow: crate::workflows::workflow::Workflow,
+        _owner: Owner,
+        _parent_folder_id: Option<SyncId>,
+        _client_id: ClientId,
+        _entrypoint: CloudObjectEventEntrypoint,
+        _bool_param: bool,
+        _ctx: &mut ModelContext<Self>,
+    ) {
+        // Stub implementation - no-op for local version
+    }
+
+    pub fn spawned_futures(&self) -> Vec<usize> {
+        vec![]
     }
 }

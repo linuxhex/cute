@@ -13,7 +13,7 @@ use cuteui::{AppContext, SingletonEntity};
 
 use super::workflow::{Argument, ArgumentType, Workflow};
 use super::workflow_enum::{EnumVariants, WorkflowEnum};
-use crate::cloud_object::model::persistence::CloudModel;
+use crate::cloud_stub_types::model::persistence::CloudModel;
 use crate::server::ids::{ClientId, SyncId};
 
 /// Separate structure for exporting arguments. This new structure holds explicit enum information,

@@ -39,8 +39,8 @@ use crate::ai::mcp::{
     TemplatableMCPServerInstallation,
 };
 use crate::appearance::Appearance;
-use crate::cloud_object::model::persistence::{CloudModel, CloudModelEvent};
-use crate::drive::CloudObjectTypeAndId;
+use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
+use crate::cloud_stub_types::CloudObjectTypeAndId;
 use crate::editor::{
     EditorView, PropagateAndNoOpNavigationKeys, SingleLineEditorOptions, TextOptions,
 };
@@ -266,7 +266,7 @@ impl MCPServersListPageView {
             | CloudModelEvent::ObjectDeleted {
                 type_and_id: CloudObjectTypeAndId::GenericStringObject { object_type, .. },
                 folder_id: _,
-            } if object_type.contains("MCPServer") => {
+            } if matches!(object_type, cute_server_client::cloud_object::GenericStringObjectFormat::Json(cute_server_client::cloud_object::JsonObjectType::MCPServer)) => {
                 me.refresh_server_cards(ctx);
             }
             _ => {}

@@ -21,7 +21,7 @@ use crate::ai::blocklist::agent_view::orchestration_pill_bar_model::Orchestratio
 use crate::ai::blocklist::BlocklistAIHistoryModel;
 use crate::ai::execution_profiles::profiles::AIExecutionProfilesModel;
 use crate::env_vars::manager::EnvVarCollectionManager;
-use crate::notebooks::manager::NotebookManager;
+use crate::cloud_stub_types::NotebookManager;
 use crate::session_management::{RunningSessionSummary, SessionNavigationData};
 use crate::settings::{
     PrivacySettings, CRASH_REPORTING_ENABLED_DEFAULTS_KEY,
@@ -34,7 +34,21 @@ use cute_core::user_preferences::GetUserPreferences as _;
 use settings::Setting;
 use settings::ToggleableSetting;
 
-pub fn init(_app: &mut AppContext) {
+pub fn init(app: &mut AppContext) {
+    // Cute: In skip_login mode, emit SkippedLogin AND AuthComplete so all
+    // subscribers initialize correctly. Some subscribers (root_view onboarding)
+    // listen for SkippedLogin; others (LLMPreferences, HarnessAvailabilityModel,
+    // TeamUpdateManager) listen for AuthComplete to trigger model refreshes.
+    // Without AuthComplete, AI/agent features including CLI agent integration
+    // never load available models or harness secrets.
+    #[cfg(feature = "skip_login")]
+    {
+        AuthManager::handle(app).update(app, |_auth_manager, ctx| {
+            ctx.emit(auth_manager::AuthManagerEvent::SkippedLogin);
+            ctx.emit(auth_manager::AuthManagerEvent::AuthComplete);
+        });
+    }
+    let _ = app; // suppress unused warning when skip_login is not enabled
 }
 
 pub fn maybe_log_out(app: &mut AppContext) {
@@ -42,8 +56,6 @@ pub fn maybe_log_out(app: &mut AppContext) {
     let num_long_running_commands = RunningSessionSummary::new(&sessions)
         .long_running_cmds
         .len();
-    let num_shared_sessions = crate::session_management::num_shared_sessions(app);
-
     let code_editors = crate::code::editor_management::CodeEditorStatus::all_editors(app).collect_vec();
     let code_editor_summary = crate::code::editor_management::CodeEditorSummary::new(&code_editors);
     let num_unsaved_files = code_editor_summary.unsaved_changes.len();
@@ -53,7 +65,6 @@ pub fn maybe_log_out(app: &mut AppContext) {
         .value();
     if show_warning_before_log_out
         && (num_long_running_commands > 0
-            || num_shared_sessions > 0
             || num_unsaved_files > 0)
     {
         let mut button_data = vec![cuteui::modals::ModalButton::for_app("Yes, log out", |ctx| {
@@ -97,15 +108,6 @@ pub fn maybe_log_out(app: &mut AppContext) {
                     }
                 }
             }))
-        }
-
-        if num_shared_sessions > 0 {
-            let plural = if num_shared_sessions > 1 {
-                "sessions"
-            } else {
-                "session"
-            };
-            info_text_vec.push(format!("You have {num_shared_sessions} shared {plural}."));
         }
 
         if num_unsaved_files > 0 {
@@ -177,14 +179,9 @@ pub fn log_out(app: &mut AppContext) {
         manager.stop_polling_for_workspace_metadata_updates();
     });
     remove_cloud_persisted_settings(app);
-    NotebookManager::handle(app).update(app, |manager, _| manager.reset());
+    NotebookManager::handle(app).update(app, |manager, app| manager.reset(app));
     EnvVarCollectionManager::handle(app).update(app, |manager, _| manager.reset());
     WorkflowManager::handle(app).update(app, |manager, _| manager.reset());
-
-    crate::session_management::SharedSessionManager::handle(app).update(app, |manager, ctx| {
-        manager.stop_all_shared_sessions(ctx);
-        manager.clear_joined();
-    });
 
     let window_ids = app.window_ids().collect_vec();
     for window_id in window_ids {

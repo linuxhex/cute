@@ -6,7 +6,7 @@ use cuteui::elements::{ChildView, Element, Empty, ParentElement, Wrap};
 use cuteui::{AppContext, Entity, TypedActionView, View, ViewContext, ViewHandle};
 
 use super::{file_button_label, Artifact};
-use crate::notebooks::NotebookId;
+use crate::cloud_stub_types::NotebookId;
 use crate::terminal::input::MenuPositioning;
 use crate::view_components::action_button::{
     ActionButton, ActionButtonTheme, ButtonSize, SecondaryTheme, TooltipAlignment,

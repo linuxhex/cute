@@ -15,7 +15,7 @@ use cuteui::{Element, ViewContext};
 use super::env_var_collection::{
     EnvVarCollectionAction, EnvVarCollectionView, VariableRowIndex, CORE_MAX_WIDTH, ROW_SPACING,
 };
-use crate::drive::sharing::ContentEditability;
+use crate::cloud_stub_types::sharing::ContentEditability;
 use crate::env_vars::active_env_var_collection_data::SavingStatus;
 use crate::env_vars::EnvVarValue;
 use crate::external_secrets::{ExternalSecretManager, SecretManager};

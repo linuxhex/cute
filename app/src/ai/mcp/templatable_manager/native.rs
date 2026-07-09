@@ -42,12 +42,12 @@ use crate::ai::mcp::{
     TemplatableMCPServer, TemplatableMCPServerInstallation, TransportType,
 };
 use crate::auth::AuthStateProvider;
-use crate::cloud_object::model::persistence::{CloudModel, CloudModelEvent};
-use crate::cloud_object::{
+use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
+use crate::cloud_stub_types::{
     CloudObject, CloudObjectLocation, CloudObjectLookup as _, CloudObjectMetadataExt,
     CloudObjectUuidLookup as _, GenericStringObjectFormat, JsonObjectType, Space,
 };
-use crate::drive::CloudObjectTypeAndId;
+use crate::cloud_stub_types::CloudObjectTypeAndId;
 use crate::persistence::{
     database_file_path_for_scope, establish_ro_connection, ModelEvent, PersistenceScope,
 };
@@ -64,7 +64,7 @@ use crate::GlobalResourceHandlesProvider;
 fn is_templatable_mcp_server_type(type_and_id: &CloudObjectTypeAndId) -> bool {
     match type_and_id {
         CloudObjectTypeAndId::GenericStringObject { object_type, .. } => {
-            object_type == "Json(TemplatableMCPServer)"
+            matches!(object_type, GenericStringObjectFormat::Json(JsonObjectType::TemplatableMCPServer))
         }
         _ => false,
     }
@@ -409,8 +409,8 @@ impl TemplatableMCPServerManager {
         let owner = UserWorkspaces::as_ref(ctx).space_to_owner(space, ctx);
         if let Some(owner) = owner {
             let owner_str = match owner {
-                crate::cloud_object::Owner::User { user_uid } => user_uid.to_string(),
-                crate::cloud_object::Owner::Team { team_uid } => team_uid.to_string(),
+                crate::cloud_stub_types::Owner::User { user_uid } => user_uid.to_string(),
+                crate::cloud_stub_types::Owner::Team { team_uid } => team_uid.to_string(),
             };
             let update_manager = UpdateManager::handle(ctx);
             update_manager.update(ctx, |update_manager, ctx| {

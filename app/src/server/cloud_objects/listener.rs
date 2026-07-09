@@ -22,4 +22,8 @@ impl Listener {
     pub fn mock(_ctx: &mut ModelContext<Self>) -> Self {
         Self
     }
+
+    pub fn has_current_subscription_abort_handle(&self) -> bool {
+        false
+    }
 }

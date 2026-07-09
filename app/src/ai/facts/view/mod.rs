@@ -13,10 +13,10 @@ use cuteui::{
 };
 
 use super::{AIFact, CloudAIFact, CloudAIFactModel};
-use crate::cloud_object::{
+use crate::cloud_stub_types::{
     CloudObject, CloudObjectSyncStatus, GenericStringObjectFormat, JsonObjectType,
 };
-use crate::drive::CloudObjectTypeAndId;
+use crate::cloud_stub_types::CloudObjectTypeAndId;
 use crate::network::NetworkStatus;
 use crate::pane_group::focus_state::PaneFocusHandle;
 use crate::pane_group::pane::view;

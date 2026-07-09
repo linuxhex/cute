@@ -28,7 +28,7 @@ mod crash_reporting;
 mod debug_dump;
 mod default_terminal;
 mod download_method;
-mod drive;
+mod cloud_stub_types;
 #[cfg(windows)]
 mod dynamic_libraries;
 mod env_vars;
@@ -45,7 +45,6 @@ mod login_item;
 mod menu;
 mod modal;
 mod network;
-mod notebooks;
 mod notification;
 mod palette;
 mod persistence;
@@ -230,9 +229,9 @@ use crate::ai::AIRequestUsageModel;
 use crate::antivirus::AntivirusInfo;
 use crate::app_state::AppState;
 use crate::changelog_model::ChangelogModel;
-use crate::cloud_object::model::actions::{ObjectAction, ObjectActions};
-use crate::cloud_object::model::persistence::CloudModel;
-use crate::cloud_object::model::view::CloudViewModel;
+use crate::cloud_stub_types::model::actions::{ObjectAction, ObjectActions};
+use crate::cloud_stub_types::model::persistence::CloudModel;
+use crate::cloud_stub_types::model::view::CloudViewModel;
 use crate::code::global_buffer_model::GlobalBufferModel;
 #[cfg(feature = "local_fs")]
 use crate::code::language_server_shutdown_manager::LanguageServerShutdownManager;
@@ -240,12 +239,18 @@ use crate::context_chips::prompt::Prompt;
 use crate::default_terminal::DefaultTerminal;
 use crate::env_vars::manager::EnvVarCollectionManager;
 pub use crate::global_resource_handles::{GlobalResourceHandles, GlobalResourceHandlesProvider};
-pub use crate::drive::CloudObjectTypeAndId;
+pub use crate::cloud_stub_types::CloudObjectTypeAndId;
+pub use crate::cloud_stub_types::CuteDriveItem;
+pub use crate::cloud_stub_types::CuteDriveItemId;
+pub use crate::cloud_stub_types::models::CloudFolder;
+pub use crate::cloud_stub_types::models::CloudFolderModel;
+pub use crate::cloud_stub_types::ContentEditability;
+pub use crate::cloud_stub_types::DriveIndexVariant;
 use crate::gpu_state::GPUState;
 use crate::network::NetworkStatus;
-use crate::notebooks::editor::keys::NotebookKeybindings;
-use crate::notebooks::manager::NotebookManager;
-use crate::notebooks::CloudNotebook;
+use crate::cloud_stub_types::keys::NotebookKeybindings;
+use crate::cloud_stub_types::NotebookManager;
+use crate::cloud_stub_types::CloudNotebook;
 use crate::notification::NotificationContext;
 use crate::palette::PaletteMode;
 use crate::server::telemetry::PaletteSource;
@@ -1348,9 +1353,6 @@ pub(crate) fn initialize_app(
         ctx.add_singleton_model(|_| GitStatusUpdateModel::new());
     }
 
-    ctx.add_singleton_model(|_| crate::terminal::shared_session::SessionPermissionsManager::new());
-    ctx.add_singleton_model(|_| crate::terminal::shared_session::manager::Manager::new());
-
     ctx.add_singleton_model(|ctx| {
         ProjectManagementModel::new(persisted_projects, persistence_writer.sender(), ctx)
     });
@@ -1382,8 +1384,11 @@ pub(crate) fn initialize_app(
     themes::theme_creator_modal::init(ctx);
     themes::theme_deletion_modal::init(ctx);
     root_view::init(ctx);
-    // Cute OMJF-11111: 本地模式不注册登录/注册 UI
-    // auth::init(ctx);
+    // Cute OMJF-11111: Re-enable auth::init for skip_login event emission.
+    // The original comment said "本地模式不注册登录/注册 UI", but auth::init
+    // now only emits SkippedLogin in skip_login mode, which is required for
+    // proper initialization of AI/agent features (LLMPreferences, TeamUpdateManager, etc.).
+    auth::init(ctx);
     crate::view_components::find::init(ctx);
     prompt::editor_modal::init(ctx);
     ai::blocklist::agent_view::editor::init(ctx);
@@ -1610,7 +1615,7 @@ pub(crate) fn initialize_app(
     // ByoLlmAuthBannerSessionState tracks dismissal of the BYO LLM auth banner (e.g., AWS Bedrock login).
     ctx.add_singleton_model(ByoLlmAuthBannerSessionState::new);
 
-    ctx.add_singleton_model(|ctx| NotebookManager::new(notebooks, ctx));
+    ctx.add_singleton_model(|ctx| NotebookManager::new(ctx));
     ctx.add_singleton_model(|_| CodeManager::default());
     ctx.add_singleton_model(|_| OpenedFilesModel::new());
     ctx.add_singleton_model(NotebookKeybindings::new);

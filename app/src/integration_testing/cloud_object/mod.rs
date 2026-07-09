@@ -9,8 +9,9 @@ use futures::FutureExt;
 use itertools::Itertools;
 use cuteui::{App, SingletonEntity};
 
-use crate::cloud_object::model::persistence::CloudModel;
-use crate::cloud_object::Space;
+use crate::cloud_stub_types::model::persistence::CloudModel;
+use crate::server::cloud_objects::UpdateManager;
+use crate::cloud_stub_types::Space;
 
 
 /// Clears the cloud model of all non-welcome objects in the user's personal space.

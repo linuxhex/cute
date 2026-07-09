@@ -1,1 +1,1 @@
-pub use crate::cloud_object::models::{Argument, ArgumentType, Workflow};
+pub use crate::cloud_stub_types::models::{Argument, ArgumentType, Workflow};

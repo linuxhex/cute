@@ -10,7 +10,7 @@ pub mod external_secrets;
 pub mod files;
 mod filter_chip_renderer;
 pub mod notebook_embedding;
-pub mod notebooks;
+// pub mod notebooks; // Removed: drive module deleted
 mod palette_styles;
 mod search_bar;
 pub mod search_results_menu;

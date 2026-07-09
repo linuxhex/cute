@@ -7,8 +7,8 @@ use cuteui::text_layout::ClipConfig;
 use cuteui::{AppContext, Element, Entity, SingletonEntity};
 
 use crate::appearance::Appearance;
-use crate::cloud_object::model::persistence::CloudModel;
-use crate::cloud_object::CloudObject;
+use crate::cloud_stub_types::model::persistence::CloudModel;
+use crate::cloud_stub_types::CloudObject;
 use crate::search::data_source::{Query, QueryResult};
 use crate::search::mixer::DataSourceRunErrorWrapper;
 use crate::search::result_renderer::ItemHighlightState;

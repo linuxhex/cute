@@ -38,25 +38,25 @@ use crate::ai::AIRequestUsageModel;
 use crate::appearance::Appearance;
 use crate::auth::auth_state::AuthState;
 use crate::auth::{AuthStateProvider, UserUid};
-use crate::cloud_object::breadcrumbs::ContainingObject;
-use crate::cloud_object::model::persistence::{CloudModel, CloudModelEvent};
-use crate::cloud_object::model::view::CloudViewModel;
-use crate::cloud_object::{CloudObject, Owner, Revision, Space};
-use crate::drive::cloud_object_styling::cute_drive_icon_color;
-use crate::drive::drive_helpers::has_feature_gated_anonymous_user_reached_workflow_limit;
-use crate::drive::items::WarpDriveItemId;
-use crate::drive::sharing::{ContentEditability, ShareableObject};
+use crate::cloud_stub_types::breadcrumbs::ContainingObject;
+use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
+use crate::cloud_stub_types::model::view::CloudViewModel;
+use crate::cloud_stub_types::{CloudObject, Owner, Revision, Space};
+use crate::cloud_stub_types::cloud_object_styling::cute_drive_icon_color;
+use crate::cloud_stub_types::drive_helpers::has_feature_gated_anonymous_user_reached_workflow_limit;
+use crate::cloud_stub_types::items::WarpDriveItemId;
+use crate::cloud_stub_types::sharing::{ContentEditability, ShareableObject};
 use cute_server_client::drive::sharing::SharingAccessLevel;
-use crate::drive::workflows::ai_assist::GeneratedCommandMetadataError;
-use crate::drive::workflows::arguments::ArgumentsState;
-use crate::drive::workflows::enum_creation_dialog::{
+use crate::cloud_stub_types::workflows::ai_assist::GeneratedCommandMetadataError;
+use crate::cloud_stub_types::workflows::arguments::ArgumentsState;
+use crate::cloud_stub_types::workflows::enum_creation_dialog::{
     EnumCreationDialog, EnumCreationDialogEvent, WorkflowEnumData,
 };
-use crate::drive::workflows::workflow_arg_selector::{
+use crate::cloud_stub_types::workflows::workflow_arg_selector::{
     WorkflowArgSelector, WorkflowArgSelectorEvent,
 };
-use crate::drive::workflows::workflow_arg_type_helpers::{self, ArgumentEditorRowIndex};
-use crate::drive::{CloudObjectTypeAndId, DriveObjectType, OpenWarpDriveObjectSettings};
+use crate::cloud_stub_types::workflows::workflow_arg_type_helpers::{self, ArgumentEditorRowIndex};
+use crate::cloud_stub_types::{CloudObjectTypeAndId, DriveObjectType, OpenWarpDriveObjectSettings};
 use crate::editor::{
     EditorOptions, EditorView, EnterAction, EnterSettings, Event as EditorEvent, InteractionState,
     PlainTextEditorViewAction as EditorAction, PropagateAndNoOpNavigationKeys,
@@ -72,7 +72,7 @@ use crate::server::ids::{ClientId, ServerId, SyncId};
 use crate::server::server_api::ai::AIClient;
 use crate::server::server_api::ServerApiProvider;
 use crate::server::telemetry::CloudObjectTelemetryMetadata;
-use crate::drive::sharing::dialog::SharingDialogSource;
+use crate::cloud_stub_types::sharing::dialog::SharingDialogSource;
 use crate::settings::app_installation_detection::{
     UserAppInstallDetectionSettings, UserAppInstallStatus,
 };
@@ -625,7 +625,7 @@ impl WorkflowView {
                 pane_config.set_title(workflow_name, ctx);
                 if let Some(server_id) = workflow.id.into_server() {
                     pane_config.set_shareable_object(
-                        Some(ShareableObject::WarpDriveObject(server_id)),
+                        Some(ShareableObject::WarpDriveObject(CloudObjectTypeAndId::Workflow(crate::server::ids::SyncId::ServerId(server_id)))),
                         ctx,
                     );
                 }
@@ -950,7 +950,7 @@ impl WorkflowView {
             }
             EnumCreationDialogEvent::EditEnum(enum_data, did_visibility_change) => {
                 workflow_arg_type_helpers::edit_enum(
-                    enum_data.clone(),
+                    &enum_data,
                     *did_visibility_change,
                     &mut self.all_workflow_enums,
                     &self.arguments_rows,
@@ -978,7 +978,7 @@ impl WorkflowView {
 
                 // Initialize the creation dialog for new enum
                 self.enum_creation_dialog.update(ctx, |dialog, ctx| {
-                    dialog.initialize(ctx);
+                    dialog.initialize(true, None, ctx);
                 });
 
                 self.show_enum_creation_dialog(ctx);
@@ -1111,7 +1111,7 @@ impl WorkflowView {
             .iter()
             .enumerate()
             .filter_map(|(index, argument)| {
-                self.arguments_rows.get(index).map(|argument_row| {
+                self.arguments_rows.get(index).and_then(|argument_row| {
                     let description_editor = argument_row.description_editor.as_ref(ctx);
 
                     let description = match description_editor.is_empty(ctx) {
@@ -1120,7 +1120,7 @@ impl WorkflowView {
                     };
 
                     let type_selector = argument_row.arg_type_editor.as_ref(ctx);
-                    let text_editor = type_selector.text_editor.as_ref();
+                    let text_editor = type_selector.text_editor();
 
                     workflow_arg_type_helpers::extract_typed_argument_from_selector(
                         argument,
@@ -1538,7 +1538,8 @@ impl WorkflowView {
                 {
                     return true;
                 }
-                if let Some(text_editor) = arg.arg_type_editor.as_ref(app).text_editor.as_ref() {
+                if let Some(text_editor) = arg.arg_type_editor.as_ref(app).text_editor() {
+                    let text_editor: &cuteui::ViewHandle<crate::editor::EditorView> = text_editor;
                     if !find_secrets_in_text(&text_editor.as_ref(app).buffer_text(app))
                         .is_empty()
                     {

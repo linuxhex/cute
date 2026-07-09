@@ -12,8 +12,8 @@ use cuteui::ui_components::components::UiComponent;
 use cuteui::{AppContext, Element, ViewContext, ViewHandle};
 
 use super::{Event, OpenOverlay, PaneHeader, PaneHeaderAction};
-use crate::drive::sharing::dialog::{SharingDialog, SharingDialogEvent, SharingDialogSource};
-use crate::drive::sharing::{ContentEditability, ShareableObject};
+use crate::cloud_stub_types::sharing::dialog::{SharingDialog, SharingDialogEvent, SharingDialogSource};
+use crate::cloud_stub_types::sharing::{ContentEditability, ShareableObject};
 use crate::pane_group::BackingView;
 use crate::ui_components::buttons::{icon_button, icon_button_with_color};
 use crate::ui_components::icons::Icon;
@@ -100,7 +100,7 @@ impl<P: BackingView> PaneHeader<P> {
         if !self
             .sharing_dialog()
             .as_ref(ctx)
-            .editability(ctx)
+            .editability()
             .can_edit()
         {
             self.sharing_dialog()
@@ -167,6 +167,7 @@ impl<P: BackingView> PaneHeader<P> {
             SharingDialogEvent::Close => {
                 self.close_overlay(ctx);
             }
+            SharingDialogEvent::UpdateAccessLevel(_) | SharingDialogEvent::Share => {}
         }
     }
 
@@ -187,8 +188,8 @@ impl<P: BackingView> PaneHeader<P> {
         let is_unsharable_conversation = self
             .sharing_dialog()
             .as_ref(app)
-            .is_unsharable_conversation(app);
-        let editability = self.sharing_dialog().as_ref(app).editability(app);
+            .is_unsharable_conversation();
+        let editability = self.sharing_dialog().as_ref(app).editability();
 
         let (primary_button_icon, primary_button_active, primary_tooltip_text) =
             if is_unsharable_conversation {

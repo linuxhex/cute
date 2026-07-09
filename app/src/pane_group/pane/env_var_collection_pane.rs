@@ -7,7 +7,7 @@ use super::{
     ShareableLinkError,
 };
 use crate::app_state::{EnvVarCollectionPaneSnapshot, LeafContents};
-use crate::drive::items::WarpDriveItemId;
+use crate::cloud_stub_types::items::WarpDriveItemId;
 use crate::env_vars::manager::{EnvVarCollectionManager, EnvVarCollectionSource};
 use crate::env_vars::view::env_var_collection::{EnvVarCollectionEvent, EnvVarCollectionView};
 use crate::env_vars::EnvVarCollectionType;

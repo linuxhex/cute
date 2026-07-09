@@ -17,11 +17,11 @@ use cuteui::{
 };
 
 use crate::ai::agent::SuggestedRule;
-use crate::cloud_object::model::generic_string_model::GenericStringObjectId;
-use crate::cloud_object::model::persistence::{CloudModel, CloudModelEvent};
-use crate::cloud_object::models::ai_fact::{AIFact, AIMemory, CloudAIFactModel};
-use crate::cloud_object::Owner;
-use crate::drive::CloudObjectTypeAndId;
+use crate::cloud_stub_types::model::generic_string_model::GenericStringObjectId;
+use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
+use crate::cloud_stub_types::models::ai_fact::{AIFact, AIMemory, CloudAIFactModel};
+use crate::cloud_stub_types::Owner;
+use crate::cloud_stub_types::CloudObjectTypeAndId;
 use crate::editor::{
     EditorOptions, EditorView, EnterAction, EnterSettings, Event as EditorEvent, InteractionState,
     PropagateAndNoOpNavigationKeys, SingleLineEditorOptions, TextOptions,

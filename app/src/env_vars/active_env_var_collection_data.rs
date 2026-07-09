@@ -1,11 +1,11 @@
 use cuteui::{Entity, ModelContext, SingletonEntity};
 
 use super::CloudEnvVarCollectionModel;
-use crate::cloud_object::breadcrumbs::ContainingObject;
-use crate::cloud_object::model::persistence::CloudModelEvent;
-use crate::cloud_object::model::view::CloudViewModel;
-use crate::cloud_object::{CloudObject, Owner, Revision, Space};
-use crate::drive::sharing::{ContentEditability, SharingAccessLevel};
+use crate::cloud_stub_types::breadcrumbs::ContainingObject;
+use crate::cloud_stub_types::model::persistence::CloudModelEvent;
+use crate::cloud_stub_types::model::view::CloudViewModel;
+use crate::cloud_stub_types::{CloudObject, Owner, Revision, Space};
+use crate::cloud_stub_types::sharing::{ContentEditability, SharingAccessLevel};
 use crate::env_vars::CloudEnvVarCollection;
 use crate::server::cloud_objects::update_manager::{
     ObjectOperation, OperationSuccessType, UpdateManagerEvent,
@@ -62,7 +62,7 @@ impl ActiveEnvVarCollectionData {
     fn handle_cloud_model_event(&mut self, event: &CloudModelEvent, ctx: &mut ModelContext<Self>) {
         if let CloudModelEvent::ObjectMoved { type_and_id, .. } = event {
             if let Some(env_var_collection_id) = type_and_id.as_generic_string_object_id() {
-                if self.is_active_env_var_collection(*env_var_collection_id) {
+                if self.is_active_env_var_collection(env_var_collection_id.clone()) {
                     ctx.emit(ActiveEnvVarCollectionDataEvent::BreadcrumbsChanged)
                 }
             }

@@ -23,7 +23,7 @@ use super::{
 };
 use crate::appearance::Appearance;
 use crate::auth::AuthStateProvider;
-use crate::drive::settings::WarpDriveSettings;
+use crate::cloud_stub_types::settings::WarpDriveSettings;
 
 #[derive(Debug, Clone)]
 pub enum WarpDriveSettingsPageAction {

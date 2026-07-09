@@ -6,7 +6,7 @@ use cuteui::{AppContext, SingletonEntity as _};
 
 use crate::ai::execution_profiles::profiles::AIExecutionProfilesModel;
 use crate::ai::execution_profiles::{ActionPermission, WriteToPtyPermission};
-use crate::drive::settings::WarpDriveSettings;
+use crate::cloud_stub_types::settings::WarpDriveSettings;
 use crate::report_if_error;
 use crate::settings::ai::DefaultSessionMode;
 use crate::settings::{AISettings, CodeSettings};

@@ -7,8 +7,8 @@ use std::sync::Arc;
 use chrono::{DateTime, Utc};
 use cuteui::AppContext;
 
-use crate::cloud_object::ObjectType;
-use crate::drive::CloudObjectTypeAndId;
+use crate::cloud_stub_types::ObjectType;
+use crate::cloud_stub_types::CloudObjectTypeAndId;
 use crate::server::ids::{ClientId, ServerId, SyncId};
 use crate::workflows::workflow::Workflow;
 
@@ -50,47 +50,47 @@ impl From<String> for SerializedModel {
 pub enum QueueItem {
     CreateWorkflow {
         object_type: ObjectType,
-        owner: crate::cloud_object::Owner,
+        owner: crate::cloud_stub_types::Owner,
         model: Arc<Workflow>,
         initial_folder_id: Option<SyncId>,
-        entrypoint: crate::cloud_object::CloudObjectEventEntrypoint,
+        entrypoint: crate::cloud_stub_types::CloudObjectEventEntrypoint,
         id: ClientId,
         initiated_by: InitiatedBy,
     },
     UpdateWorkflow {
         model: Arc<Workflow>,
         id: SyncId,
-        revision: Option<crate::cloud_object::Revision>,
+        revision: Option<crate::cloud_stub_types::Revision>,
     },
     UpdateWorkflowEnum {
         model: Arc<crate::workflows::workflow_enum::WorkflowEnum>,
         id: SyncId,
-        revision: Option<crate::cloud_object::Revision>,
+        revision: Option<crate::cloud_stub_types::Revision>,
     },
     CreateObject {
         object_type: ObjectType,
-        owner: crate::cloud_object::Owner,
+        owner: crate::cloud_stub_types::Owner,
         id: ClientId,
         title: Option<String>,
         serialized_model: Option<String>,
         initial_folder_id: Option<SyncId>,
-        entrypoint: crate::cloud_object::CloudObjectEventEntrypoint,
+        entrypoint: crate::cloud_stub_types::CloudObjectEventEntrypoint,
         initiated_by: InitiatedBy,
     },
     RecordObjectAction {
         id_and_type: CloudObjectTypeAndId,
-        action_type: crate::cloud_object::model::actions::ObjectActionType,
+        action_type: crate::cloud_stub_types::model::actions::ObjectActionType,
         data: Option<String>,
         action_timestamp: DateTime<Utc>,
     },
 }
 
 impl QueueItem {
-    pub fn from_cached_objects(_objects: impl Iterator<Item = Box<dyn crate::cloud_object::CloudObject>>) -> Vec<Self> {
+    pub fn from_cached_objects(_objects: impl Iterator<Item = Box<dyn crate::cloud_stub_types::CloudObject>>) -> Vec<Self> {
         Vec::new()
     }
 
-    pub fn from_unsynced_actions(_actions: impl Iterator<Item = (CloudObjectTypeAndId, crate::cloud_object::model::actions::ObjectAction)>) -> Vec<Self> {
+    pub fn from_unsynced_actions(_actions: impl Iterator<Item = (CloudObjectTypeAndId, crate::cloud_stub_types::model::actions::ObjectAction)>) -> Vec<Self> {
         Vec::new()
     }
 }
@@ -117,15 +117,15 @@ pub enum CreationFailureReason {
 #[derive(Debug)]
 pub enum SyncQueueEvent {
     ObjectCreationSuccessful {
-        server_creation_info: crate::cloud_object::ServerCreationInfo,
+        server_creation_info: crate::cloud_stub_types::ServerCreationInfo,
         client_id: ClientId,
-        revision_and_editor: crate::cloud_object::RevisionAndLastEditor,
+        revision_and_editor: crate::cloud_stub_types::RevisionAndLastEditor,
         metadata_ts: cute_graphql::scalars::time::ServerTimestamp,
         initiated_by: InitiatedBy,
     },
     ObjectUpdateSuccessful {
         server_id: ServerId,
-        revision_and_editor: crate::cloud_object::RevisionAndLastEditor,
+        revision_and_editor: crate::cloud_stub_types::RevisionAndLastEditor,
     },
     ObjectCreationFailure {
         reason: CreationFailureReason,
@@ -135,7 +135,7 @@ pub enum SyncQueueEvent {
     },
     ObjectUpdateRejected {
         id: String,
-        object: Arc<crate::cloud_object::ServerCloudObject>,
+        object: Arc<crate::cloud_stub_types::ServerCloudObject>,
     },
     ObjectUpdateFeatureNotAvailable {
         id: String,
@@ -147,7 +147,7 @@ pub enum SyncQueueEvent {
     ReportObjectActionSucceeded {
         uid: String,
         action_timestamp: DateTime<Utc>,
-        action_history: crate::cloud_object::model::actions::ObjectActionHistory,
+        action_history: crate::cloud_stub_types::model::actions::ObjectActionHistory,
     },
 }
 

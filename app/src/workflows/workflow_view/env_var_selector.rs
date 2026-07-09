@@ -5,9 +5,9 @@ use cuteui::{
     ViewHandle,
 };
 
-use crate::cloud_object::model::persistence::{CloudModel, CloudModelEvent};
-use crate::cloud_object::CloudObject as _;
-use crate::drive::CloudObjectTypeAndId;
+use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
+use crate::cloud_stub_types::CloudObject as _;
+use crate::cloud_stub_types::CloudObjectTypeAndId;
 use crate::server::ids::SyncId;
 use crate::view_components::{DropdownItem, FilterableDropdown, FilterableDropdownOrientation};
 
@@ -109,7 +109,7 @@ impl EnvVarSelector {
                     CloudObjectTypeAndId::GenericStringObject {
                         object_type,
                         ..
-                    } if object_type.contains("EnvVarCollection")
+                    } if matches!(object_type, cute_server_client::cloud_object::GenericStringObjectFormat::Json(cute_server_client::cloud_object::JsonObjectType::EnvVarCollection))
                 ) || matches!(type_and_id, CloudObjectTypeAndId::EnvVarCollection(_))
                 {
                     self.refresh_dropdown_items(ctx);

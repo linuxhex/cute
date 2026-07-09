@@ -27,7 +27,7 @@ pub fn initialize_settings_for_tests_with_mode(
     use cute_core::semantic_selection::SemanticSelection;
 
     use crate::ai::cloud_agent_settings::CloudAgentSettings;
-    use crate::drive::settings::WarpDriveSettings;
+    use crate::cloud_stub_types::settings::WarpDriveSettings;
     use crate::search::command_search::settings::CommandSearchSettings;
     use crate::settings::app_icon::AppIconSettings;
     use crate::settings::manager::SettingsManager;

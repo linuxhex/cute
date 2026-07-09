@@ -68,7 +68,7 @@ use crate::auth::auth_manager::PersistedCurrentUserInformation;
 use crate::auth::auth_state::AuthStateProvider;
 use crate::auth::UserUid;
 use crate::code::editor_management::CodeSource;
-use crate::drive::OpenWarpDriveObjectSettings;
+use crate::cloud_stub_types::OpenCuteDriveObjectSettings;
 use crate::persistence::agent::read_agent_conversations;
 use crate::persistence::block_list::{get_all_restored_blocks, read_ai_queries};
 use crate::persistence::model::{
@@ -76,7 +76,7 @@ use crate::persistence::model::{
     ProjectRules, UserProfile, CODE_REVIEW_PANE_KIND, GET_STARTED_PANE_KIND,
 };
 use crate::server::ids::{ClientId, HashableId, ServerId, SyncId, ToServerId};
-use crate::notebooks::NotebookId;
+use crate::cloud_stub_types::NotebookId;
 use crate::workflows::WorkflowId;
 use crate::settings_view::SettingsSection;
 use crate::suggestions::ignored_suggestions_model::SuggestionType;
@@ -90,16 +90,16 @@ use crate::workspaces::{MembershipRole, Team as TeamMetadata, TeamMember};
 use crate::{report_error, report_if_error, safe_info};
 
 // Cloud object imports
-use crate::cloud_object::{
+use crate::cloud_stub_types::{
     CloudObject, CloudObjectMetadata, CloudObjectPermissions, CloudObjectStatuses,
     CloudObjectSyncStatus, GENERIC_STRING_OBJECT_PREFIX,
     NumInFlightRequests, ObjectIdType, ObjectType, Owner, Revision, RevisionAndLastEditor,
     ServerCreationInfo,
 };
-use crate::cloud_object::model::actions::{ObjectAction, ObjectActionSubtype, object_action_from_persisted};
-use crate::cloud_object::model::generic_string_model::{CloudStringObject, GenericStringObjectId};
-use crate::cloud_object::models::{CloudNotebook, CloudWorkflow};
-use crate::drive::folders::{CloudFolder, FolderId};
+use crate::cloud_stub_types::model::actions::{ObjectAction, ObjectActionSubtype, object_action_from_persisted};
+use crate::cloud_stub_types::model::generic_string_model::{CloudStringObject, GenericStringObjectId};
+use crate::cloud_stub_types::models::{CloudNotebook, CloudWorkflow};
+use crate::cloud_stub_types::folders::{CloudFolder, FolderId};
 
 diesel::define_sql_function! {
     fn json_extract(target: diesel::sql_types::Text, path: diesel::sql_types::Text) -> diesel::sql_types::Text;
@@ -1072,6 +1072,7 @@ fn save_pane_state(
     let kind = match &snapshot.contents {
         LeafContents::Terminal(_) => TERMINAL_PANE_KIND,
         LeafContents::Notebook(_) => NOTEBOOK_PANE_KIND,
+        LeafContents::File(_) => NOTEBOOK_PANE_KIND,
         LeafContents::EnvVarCollection(_) => ENV_VAR_COLLECTION_PANE_KIND,
         LeafContents::Code(_) => CODE_PANE_KIND,
         LeafContents::Workflow(_) => WORKFLOW_PANE_KIND,
@@ -1159,13 +1160,25 @@ fn save_pane_state(
                     None,
                 ),
                 NotebookPaneSnapshot::LocalFileNotebook { path } => {
-                    (None, path.clone().map(encode_path))
+                    (None, Some(encode_path(path.clone())))
                 }
             };
 
             let notebook = model::NewNotebookPane {
                 id,
                 notebook_id,
+                local_path,
+            };
+
+            diesel::insert_into(schema::notebook_panes::dsl::notebook_panes)
+                .values(notebook)
+                .execute(conn)?;
+        }
+        LeafContents::File(file_snapshot) => {
+            let local_path = file_snapshot.path.as_ref().map(|p| encode_path(p.clone()));
+            let notebook = model::NewNotebookPane {
+                id,
+                notebook_id: None,
                 local_path,
             };
 
@@ -2332,7 +2345,7 @@ fn upsert_folders(
             let folder_clone = cloud_folder.clone();
             let folder_name = cloud_folder.model().name.clone();
             let folder_is_open = cloud_folder.model().is_open;
-            let folder_is_warp_pack = cloud_folder.model().is_warp_pack;
+            let folder_is_cute_pack = cloud_folder.model().is_cute_pack;
             upsert_cloud_object(
                 conn,
                 ObjectType::Folder,
@@ -2343,7 +2356,7 @@ fn upsert_folders(
                     let new_folder = NewFolder {
                         name: folder_name,
                         is_open: folder_is_open,
-                        is_warp_pack: folder_is_warp_pack,
+                        is_warp_pack: folder_is_cute_pack,
                     };
                     diesel::insert_into(schema::folders::dsl::folders)
                         .values(new_folder)
@@ -2359,7 +2372,7 @@ fn upsert_folders(
                         .set((
                             name.eq(folder_clone.model().name.clone()),
                             is_open.eq(folder_clone.model().is_open),
-                            is_warp_pack.eq(folder_clone.model().is_warp_pack),
+                            is_warp_pack.eq(folder_clone.model().is_cute_pack),
                         ))
                         .execute(conn)?;
                     Ok(())
@@ -2467,10 +2480,10 @@ fn read_node(conn: &mut SqliteConnection, node: model::PaneNode) -> Result<PaneN
                     // both are null, it's more likely that the pane was a new, empty cloud
                     // notebook than an unreadable local file.
                     LeafContents::Notebook(match local_path {
-                        Some(path) => NotebookPaneSnapshot::LocalFileNotebook { path: Some(path) },
+                        Some(path) => NotebookPaneSnapshot::LocalFileNotebook { path },
                         None => NotebookPaneSnapshot::CloudNotebook {
                             notebook_id,
-                            settings: OpenWarpDriveObjectSettings::default(),
+                            settings: Some(OpenCuteDriveObjectSettings::default()),
                         },
                     })
                 }
@@ -2488,7 +2501,7 @@ fn read_node(conn: &mut SqliteConnection, node: model::PaneNode) -> Result<PaneN
 
                     LeafContents::Workflow(WorkflowPaneSnapshot::CloudWorkflow {
                         workflow_id,
-                        settings: OpenWarpDriveObjectSettings::default(),
+                        settings: OpenCuteDriveObjectSettings::default(),
                     })
                 }
                 CODE_PANE_KIND => {
@@ -3396,12 +3409,12 @@ fn delete_objects(
 
             let sync_id = match object_id_type {
                 ObjectIdType::Notebook => {
-                    crate::cloud_object::models::notebook::NotebookId::from_hash(&hashed_id)
+                    crate::cloud_stub_types::models::notebook::NotebookId::from_hash(&hashed_id)
                         .map(|id| id.into())
                         .or_else(|| ClientId::from_hash(&hashed_id).map(SyncId::ClientId))
                 }
                 ObjectIdType::Workflow => {
-                    crate::cloud_object::models::workflow::WorkflowId::from_hash(&hashed_id)
+                    crate::cloud_stub_types::models::workflow::WorkflowId::from_hash(&hashed_id)
                         .map(|id| id.into())
                         .or_else(|| ClientId::from_hash(&hashed_id).map(SyncId::ClientId))
                 }

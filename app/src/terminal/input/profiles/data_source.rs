@@ -3,7 +3,7 @@ use ordered_float::OrderedFloat;
 use cuteui::{AppContext, Entity, EntityId, SingletonEntity};
 
 use crate::ai::execution_profiles::profiles::{AIExecutionProfilesModel, ClientProfileId};
-use crate::cloud_object::model::generic_string_model::StringModel;
+use crate::cloud_stub_types::model::generic_string_model::StringModel;
 use crate::search::data_source::{Query, QueryResult};
 use crate::search::mixer::DataSourceRunErrorWrapper;
 use crate::search::SyncDataSource;

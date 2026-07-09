@@ -1,12 +1,11 @@
 use std::collections::HashSet;
 
 use chrono::NaiveDateTime;
-use cuteui::{AppContext, Entity, EntityId, SingletonEntity, WindowId};
+use cuteui::{AppContext, Entity, EntityId, WindowId};
 
 use crate::context_chips::prompt_snapshot::PromptSnapshot;
-use crate::pane_group::{PaneGroup, PaneId};
+use crate::pane_group::PaneId;
 use crate::terminal::model::blockgrid::BlockGrid;
-use crate::terminal::shared_session::SharedSessionStatus;
 use crate::workspace::{PaneViewLocator, Workspace};
 
 /// Contains session metadata, including a prompt and running command (if there is one).
@@ -24,10 +23,6 @@ pub struct SessionNavigationData {
     window_id: WindowId,
     /// The timestamp of the last interaction.
     last_focus_ts: Option<NaiveDateTime>,
-    /// Whether or not the session is in a read-only state.
-    is_read_only: bool,
-    /// The sharing status of the session.
-    shared_session_status: SharedSessionStatus,
 }
 
 impl SessionNavigationData {
@@ -97,9 +92,7 @@ impl SessionNavigationData {
         command_context: CommandContext,
         pane_view_locator: PaneViewLocator,
         last_focus_ts: Option<NaiveDateTime>,
-        is_read_only: bool,
         window_id: WindowId,
-        shared_session_status: SharedSessionStatus,
     ) -> Self {
         SessionNavigationData {
             prompt,
@@ -107,9 +100,7 @@ impl SessionNavigationData {
             command_context,
             pane_view_locator,
             last_focus_ts,
-            is_read_only,
             window_id,
-            shared_session_status,
         }
     }
 
@@ -137,14 +128,6 @@ impl SessionNavigationData {
         self.last_focus_ts
     }
 
-    pub fn is_read_only(&self) -> bool {
-        self.is_read_only
-    }
-
-    pub fn shared_session_status(&self) -> SharedSessionStatus {
-        self.shared_session_status.clone()
-    }
-
     /// Fetches all sessions currently open in the app.
     pub fn all_sessions(app: &AppContext) -> impl Iterator<Item = SessionNavigationData> + '_ {
         app.window_ids()
@@ -160,7 +143,6 @@ impl SessionNavigationData {
 }
 
 pub struct RunningSessionSummary<'a> {
-    /// Does not include long running blocks for viewer of a shared session.
     pub long_running_cmds: Vec<&'a SessionNavigationData>,
 }
 
@@ -172,8 +154,7 @@ impl<'a> RunningSessionSummary<'a> {
                 matches!(
                     session.command_context(),
                     CommandContext::RunningCommand { .. } | CommandContext::RunningAIBlock { .. }
-                ) && !session.shared_session_status().is_viewer()
-                    && !session.is_read_only()
+                )
             })
             .collect();
         Self { long_running_cmds }
@@ -215,22 +196,6 @@ impl Entity for SessionSource {
     type Event = ();
 }
 
-pub fn num_shared_sessions(ctx: &AppContext) -> usize {
-    let mut num_shared_sessions = 0;
-    let window_ids: Vec<WindowId> = ctx.window_ids().collect();
-    for window_id in window_ids {
-        let Some(pane_group_views) = ctx.views_of_type::<PaneGroup>(window_id) else {
-            continue;
-        };
-        for pane_group_view in pane_group_views {
-            pane_group_view.read(ctx, |pane_group, ctx| {
-                num_shared_sessions += pane_group.number_of_shared_sessions(ctx);
-            })
-        }
-    }
-    num_shared_sessions
-}
-
 /// Metadata for a single tab, used by the Ctrl+Tab MRU switcher.
 #[derive(Clone)]
 pub struct TabNavigationData {
@@ -241,28 +206,3 @@ pub struct TabNavigationData {
     /// 1-based left-to-right tab index for display disambiguation.
     pub tab_index: usize,
 }
-
-/// Manager for all shared sessions in the application.
-#[derive(Debug, Clone, Default)]
-pub struct SharedSessionManager {
-    sessions: Vec<()>,
-}
-
-impl SharedSessionManager {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    pub fn stop_all_shared_sessions(&mut self, _ctx: &mut cuteui::ModelContext<Self>) {
-        self.sessions.clear();
-    }
-
-    pub fn clear_joined(&mut self) {
-    }
-}
-
-impl Entity for SharedSessionManager {
-    type Event = ();
-}
-
-impl SingletonEntity for SharedSessionManager {}

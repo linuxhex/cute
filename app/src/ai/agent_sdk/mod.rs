@@ -8,7 +8,7 @@ use std::pin::Pin;
 use std::sync::Arc;
 
 use ai::api_keys::{ApiKeyManager, AwsCredentialsRefreshStrategy};
-use crate::cloud_object::{CloudModel, CloudObjectLookup};
+use crate::cloud_stub_types::{CloudModel, CloudObjectLookup};
 use anyhow::Context;
 pub(crate) use driver::harness::{task_env_vars, validate_cli_installed, ClaudeHarness};
 pub use driver::AgentDriver;
@@ -136,10 +136,8 @@ fn dispatch_command(
     match command {
         CliCommand::Agent(agent_cmd) => run_agent(ctx, global_options, agent_cmd),
         CliCommand::Environment(environment_cmd) => {
-            if !FeatureFlag::CloudEnvironments.is_enabled() {
-                return Err(anyhow::anyhow!("invalid value 'environment'"));
-            }
-            environment::run(ctx, global_options, environment_cmd)
+            // Cloud environments feature removed
+            return Err(anyhow::anyhow!("invalid value 'environment'"));
         }
         CliCommand::MCP(mcp_cmd) => mcp::run(ctx, global_options, mcp_cmd),
         CliCommand::Run(task_cmd) => run_task(ctx, global_options, task_cmd),
@@ -244,7 +242,8 @@ fn run_agent(
 ) -> anyhow::Result<()> {
     match command {
         AgentCommand::Run(args) => {
-            if args.environment.is_some() && !FeatureFlag::CloudEnvironments.is_enabled() {
+            if args.environment.is_some() {
+                // Cloud environments feature removed
                 return Err(anyhow::anyhow!("unexpected argument '--environment' found"));
             }
             if args.conversation.is_some() && !false {
@@ -289,9 +288,8 @@ fn run_agent(
             Ok(())
         }
         AgentCommand::RunCloud(args) => {
-            if args.environment.environment.is_some()
-                && !FeatureFlag::CloudEnvironments.is_enabled()
-            {
+            if args.environment.environment.is_some() {
+                // Cloud environments feature removed
                 return Err(anyhow::anyhow!("unexpected argument '--environment' found"));
             }
             if args.conversation.is_some() && !false {

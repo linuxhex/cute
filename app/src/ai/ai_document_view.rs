@@ -29,15 +29,15 @@ use crate::ai::document::ai_document_model::{
 };
 use crate::ai::document::orchestration_config_block::OrchestrationConfigBlockView;
 use crate::appearance::Appearance;
-use crate::drive::items::WarpDriveItemId;
-use crate::drive::sharing::ShareableObject;
-use crate::drive::CloudObjectTypeAndId;
+use crate::cloud_stub_types::items::WarpDriveItemId;
+use crate::cloud_stub_types::sharing::ShareableObject;
+use crate::cloud_stub_types::CloudObjectTypeAndId;
 use crate::editor::InteractionState;
 use crate::menu::{Menu, MenuItem, MenuItemFields};
-use crate::notebooks::editor::model::NotebooksEditorModel;
-use crate::notebooks::editor::rich_text_styles;
-use crate::notebooks::editor::view::{EditorViewEvent, RichTextEditorConfig, RichTextEditorView};
-use crate::notebooks::link::{NotebookLinks, SessionSource};
+use crate::cloud_stub_types::NotebooksEditorModel;
+use crate::cloud_stub_types::rich_text_styles;
+use crate::cloud_stub_types::{EditorViewEvent, RichTextEditorConfig, RichTextEditorView};
+use crate::cloud_stub_types::{NotebookLinks, SessionSource};
 use crate::pane_group::focus_state::PaneFocusHandle;
 use crate::pane_group::pane::view;
 use crate::pane_group::pane::view::header::components::{
@@ -85,7 +85,7 @@ use cute_util::path::LineAndColumnArg;
 use crate::code::editor_management::CodeSource;
 // Import keybinding constants from code view to ensure consistency
 use crate::code::view::{SAVE_FILE_BINDING_DESCRIPTION, SAVE_FILE_BINDING_NAME};
-use crate::notebooks::file::MarkdownDisplayMode;
+use crate::cloud_stub_types::MarkdownDisplayMode;
 #[cfg(feature = "local_fs")]
 use crate::util::file::external_editor::settings::EditorLayout;
 #[cfg(feature = "local_fs")]
@@ -492,13 +492,11 @@ impl AIDocumentView {
         let selected_text = self
             .editor
             .as_ref(ctx)
-            .model()
-            .as_ref(ctx)
             .selected_text(ctx);
-        if selected_text.is_empty() {
-            return None;
+        match &selected_text {
+            Some(text) if !text.is_empty() => selected_text,
+            _ => None,
         }
-        Some(selected_text)
     }
 
     pub fn set_original_terminal_view(&mut self, terminal_view: Option<ViewHandle<TerminalView>>) {
@@ -599,7 +597,7 @@ impl AIDocumentView {
             .and_then(|sync_id| sync_id.into_server());
 
         self.pane_configuration.update(ctx, |pc, ctx| {
-            pc.set_shareable_object(server_id.map(ShareableObject::WarpDriveObject), ctx);
+            pc.set_shareable_object(server_id.map(|id| ShareableObject::WarpDriveObject(CloudObjectTypeAndId::Notebook(crate::server::ids::SyncId::ServerId(id)))), ctx);
             pc.refresh_pane_header_overflow_menu_items(ctx);
         });
         ctx.notify();
@@ -1009,7 +1007,7 @@ impl AIDocumentView {
     fn export(&self, ctx: &mut ViewContext<Self>) {
         use cuteui::platform::SaveFilePickerConfiguration;
 
-        use crate::drive::export::safe_filename;
+        use crate::cloud_stub_types::export::safe_filename;
         let markdown = self.editor.as_ref(ctx).markdown_unescaped(ctx);
 
         // Get the document title from the model

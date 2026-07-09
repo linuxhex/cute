@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-pub use crate::cloud_object::models::{CloudWorkflow, CloudWorkflowModel, WorkflowId};
+pub use crate::cloud_stub_types::models::{CloudWorkflow, CloudWorkflowModel, WorkflowId};
 pub use manager::WorkflowOpenSource;
 use serde::{Deserialize, Serialize};
 use cute_core::context_flag::ContextFlag;
@@ -24,15 +24,15 @@ use async_trait::async_trait;
 pub use categories::{CategoriesView, CategoriesViewEvent, WorkflowsViewAction};
 
 use crate::appearance::Appearance;
-use crate::cloud_object::model::view::CloudViewModel;
-use crate::cloud_object::{
+use crate::cloud_stub_types::model::view::CloudViewModel;
+use crate::cloud_stub_types::{
     CloudModelType, CloudObjectUpsertParams, CreateCloudObjectResult,
     CreateObjectRequest, GenericServerObject, ObjectType, Revision, UpdateCloudObjectResult,
 };
-use crate::drive::items::workflow::WarpDriveWorkflow;
-use crate::drive::items::WarpDriveItem;
-use crate::drive::CloudObjectTypeAndId;
-use crate::notebooks::{NotebookId, NotebookLocation};
+use crate::cloud_stub_types::items::workflow::WarpDriveWorkflow;
+use crate::cloud_stub_types::CuteDriveItem;
+use crate::cloud_stub_types::CloudObjectTypeAndId;
+use crate::cloud_stub_types::{NotebookId, NotebookLocation};
 use crate::persistence::ModelEvent;
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::server_api::object::ObjectClient;
@@ -42,7 +42,7 @@ pub fn init(app: &mut AppContext) {
     self::workflow_view::init(app);
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, Serialize, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq, Hash)]
 pub enum WorkflowSource {
     Global,
     Local,
@@ -280,7 +280,7 @@ impl CloudModelType for CloudWorkflowModel {
         id: SyncId,
         _appearance: &Appearance,
         workflow: &CloudWorkflow,
-    ) -> Option<Box<dyn WarpDriveItem>> {
+    ) -> Option<Box<dyn CuteDriveItem>> {
         Some(Box::new(WarpDriveWorkflow::new(
             self.cloud_object_type_and_id(id),
             workflow.clone(),

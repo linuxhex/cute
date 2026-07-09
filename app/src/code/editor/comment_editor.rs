@@ -21,10 +21,10 @@ use crate::code::editor::comments::{EditorCommentsModel, PendingCommentEvent};
 use crate::code::editor::line::EditorLineLocation;
 use crate::code_review::comments::{CommentId, CommentOrigin};
 use crate::editor::InteractionState;
-use crate::notebooks::editor::model::NotebooksEditorModel;
-use crate::notebooks::editor::rich_text_styles;
-use crate::notebooks::editor::view::{EditorViewEvent, RichTextEditorConfig, RichTextEditorView};
-use crate::notebooks::link::{NotebookLinks, SessionSource};
+use crate::cloud_stub_types::NotebooksEditorModel;
+use crate::cloud_stub_types::rich_text_styles;
+use crate::cloud_stub_types::{EditorViewEvent, RichTextEditorConfig, RichTextEditorView};
+use crate::cloud_stub_types::{NotebookLinks, SessionSource};
 use crate::settings::FontSettings;
 use crate::ui_components::blended_colors;
 use crate::ui_components::icons::Icon;
@@ -537,11 +537,13 @@ where
             model.clone(),
             links,
             RichTextEditorConfig {
+                enable_auto_save: false,
+                enable_spell_check: false,
                 gutter_width: Some(0.0),
-                embedded_objects_enabled: Some(false),
+                embedded_objects_enabled: false,
                 vertical_expansion_behavior: Some(VerticalExpansionBehavior::GrowToMaxHeight),
-                max_width,
-                can_execute_shell_commands: Some(false),
+                max_width: max_width.map(|p| p.as_f32()),
+                can_execute_shell_commands: false,
                 disable_block_insertion_menu: true,
                 disable_scrolling,
             },

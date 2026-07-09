@@ -3,8 +3,8 @@ use cuteui::{async_assert, async_assert_eq, AppContext, SingletonEntity};
 
 use crate::ai::facts::view::AIFactPage;
 use crate::ai::facts::CloudAIFactModel;
-use crate::cloud_object::model::generic_string_model::GenericStringObjectId;
-use crate::cloud_object::model::persistence::CloudModel;
+use crate::cloud_stub_types::model::generic_string_model::GenericStringObjectId;
+use crate::cloud_stub_types::model::persistence::CloudModel;
 use crate::integration_testing::view_getters::workspace_view;
 use crate::server::ids::SyncId;
 

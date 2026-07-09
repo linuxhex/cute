@@ -18,8 +18,8 @@ use cuteui::{
     ViewHandle,
 };
 
-use crate::cloud_object::model::persistence::CloudModel;
-use crate::cloud_object::CloudObject;
+use crate::cloud_stub_types::model::persistence::CloudModel;
+use crate::cloud_stub_types::CloudObject;
 use crate::editor::{
     EditOrigin, EditorView, Event as EditorEvent, PropagateAndNoOpNavigationKeys,
     SingleLineEditorOptions, TextOptions, ValidInputType,

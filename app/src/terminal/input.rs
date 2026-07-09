@@ -120,7 +120,7 @@ use super::safe_mode_settings::{
 };
 use super::session_settings::{SessionSettings, SessionSettingsChangedEvent};
 use super::settings::{SpacingMode, TerminalSettings, TerminalSettingsChangedEvent};
-use super::shared_session::{PresenceManager, SharedSessionHistoryModel, SharedSessionStatus};
+
 use super::shell::ShellType;
 use super::universal_developer_input::{
     UniversalDeveloperInputButtonBar, UniversalDeveloperInputButtonBarEvent,
@@ -189,11 +189,11 @@ use crate::ai::AIRequestUsageModel;
 use crate::ai_assistant::execution_context::WarpAiExecutionContext;
 use crate::appearance::{Appearance, AppearanceEvent};
 use crate::channel::ChannelState;
-use crate::cloud_object::model::actions::ObjectActionType;
-use crate::cloud_object::model::generic_string_model::StringModel;
-use crate::cloud_object::model::persistence::CloudModel;
-use crate::cloud_object::model::view::CloudViewModel;
-use crate::cloud_object::{CloudObject, CloudObjectLookup as _};
+use crate::cloud_stub_types::model::actions::ObjectActionType;
+use crate::cloud_stub_types::model::generic_string_model::StringModel;
+use crate::cloud_stub_types::model::persistence::CloudModel;
+use crate::cloud_stub_types::model::view::CloudViewModel;
+use crate::cloud_stub_types::{CloudObject, CloudObjectLookup as _};
 #[cfg(feature = "local_fs")]
 use crate::code::editor_management::CodeSource;
 use crate::code_review::diff_state::DiffMode;
@@ -813,22 +813,6 @@ impl InputSuggestionsMode {
     }
 }
 
-struct SharedSessionInputState {
-    /// History model for viewers in a shared session.
-    // TODO: With this current approach, the shared session history crosses
-    // subshell boundaries, we'll need to make it work with our current history model
-    // to ensure we show the right shell history.
-    history_model: ModelHandle<SharedSessionHistoryModel>,
-
-    // Is [`Some`] iff a command execution was requested by a shared session executor.
-    pending_command_execution_request: Option<ViewerCommandExecutionRequest>,
-}
-
-struct ViewerCommandExecutionRequest {
-    /// Text in buffer when command execution was requested.
-    original_buffer: String,
-}
-
 /// Where a command execution request originates from.
 #[derive(Clone)]
 pub enum CommandExecutionSource {
@@ -965,10 +949,6 @@ pub enum Event {
     SubmitCloudFollowup {
         prompt: String,
     },
-    /// A viewer in a shared session is requesting to cancel the active agent conversation.
-    CancelSharedSessionConversation {
-        server_conversation_token: ServerConversationToken,
-    },
     InputFocusedFromMiddleClick,
     EditorFocused,
     UnhandledCmdEnter,
@@ -1040,8 +1020,6 @@ pub enum Event {
     RegisterPluginListener(CLIAgent),
     #[cfg(not(target_family = "wasm"))]
     OpenPluginInstructionsPane(CLIAgent, PluginModalKind),
-    OpenShareSessionModal,
-    StartRemoteControl,
     OpenHandoffEnvironmentCreationModal,
     OpenCloudModeV2EnvironmentCreationModal,
 }
@@ -1505,15 +1483,6 @@ pub struct Input {
     // a settings read on every typed character).
     enable_autosuggestions_setting: bool,
 
-    /// Manages the input state for a shared session.
-    /// Is [`Some`] iff this is a viewer in a shared session.
-    shared_session_input_state: Option<SharedSessionInputState>,
-
-    /// Manages presence state for shared session.
-    ///
-    /// Only [`Some`] if this is a shared session.
-    shared_session_presence_manager: Option<ModelHandle<PresenceManager>>,
-
     /// A cache of the local buffer operations for the latest instance
     /// of the input buffer. Specifically, these only include operations
     /// resulting from local changes to the buffer (not remote changes / operations).
@@ -1782,7 +1751,6 @@ pub fn init(app: &mut AppContext) {
     .with_group(bindings::BindingGroup::Settings.as_str())
     .with_context_predicate(
         id!("Input")
-            & id!(SharedSessionStatus::ActiveSharer.as_keymap_context())
             & !id!("LongRunningCommand")
             & !id!(flags::ACTIVE_AGENT_VIEW)
             & !id!(flags::ACTIVE_INLINE_AGENT_VIEW),
@@ -1843,7 +1811,6 @@ pub fn init(app: &mut AppContext) {
         )
         .with_context_predicate(
             id!("Input")
-                & !id!(SharedSessionStatus::reader().as_keymap_context())
                 & id!(flags::IS_ANY_AI_ENABLED)
                 & !id!("AIInput"),
         )
@@ -3247,8 +3214,6 @@ impl Input {
                 .enable_autosuggestions,
             latest_buffer_operations: Vec::new(),
             deferred_remote_operations,
-            shared_session_input_state: None,
-            shared_session_presence_manager: None,
             prompt_suggestions_banner_state: None,
             has_prompt_suggestion_banner,
             was_intelligent_autosuggestion_accepted: false,
@@ -3539,7 +3504,7 @@ impl Input {
                     .flatten()
             },
             move |_input, touched_repo, ctx| {
-                use crate::cloud_object::CloudObjectLookup as _;
+                use crate::cloud_stub_types::CloudObjectLookup as _;
 
                 let Some(touched_repo) = touched_repo else {
                     return;
@@ -3686,7 +3651,7 @@ impl Input {
 
     #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
     fn maybe_launch_cloud_handoff_request(&mut self, ctx: &mut ViewContext<Self>) -> bool {
-        use crate::cloud_object::CloudObjectLookup as _;
+        use crate::cloud_stub_types::CloudObjectLookup as _;
 
         if !FeatureFlag::OzHandoff.is_enabled()
             || !FeatureFlag::HandoffLocalCloud.is_enabled()
@@ -5091,13 +5056,6 @@ impl Input {
         });
     }
 
-    pub fn set_shared_session_presence_manager(
-        &mut self,
-        presence_manager: ModelHandle<PresenceManager>,
-    ) {
-        self.shared_session_presence_manager = Some(presence_manager);
-    }
-
     pub fn set_prompt_suggestions_banner_state(
         &mut self,
         banner_state: Option<PromptSuggestionBannerState>,
@@ -6202,25 +6160,6 @@ impl Input {
         participant_id: ParticipantId,
         ctx: &mut ViewContext<Self>,
     ) -> bool {
-        // Cancel any active agent conversation when the sharer executes a command on behalf of the viewer
-        // (this is handled automatically when the sharer executes a command that they requested).
-        // This will also notify viewers to cancel their representation of the conversation.
-        let is_participant_viewer = self
-            .shared_session_presence_manager
-            .as_ref()
-            .and_then(|pm| pm.as_ref(ctx).get_participant(&participant_id))
-            .and_then(|participant| participant.role)
-            .is_some();
-        if FeatureFlag::AgentMode.is_enabled()
-            && self.model.lock().shared_session_status().is_sharer()
-            && is_participant_viewer
-        {
-            self.cancel_active_agent_conversation_for_shared_session(
-                CancellationReason::UserCommandExecuted,
-                ctx,
-            );
-        }
-
         let block_id = self.model.lock().block_list().active_block_id().clone();
         self.try_execute_command_from_source(
             command,
@@ -6255,41 +6194,7 @@ impl Input {
     }
 
     pub fn try_execute_command(&mut self, command: &str, ctx: &mut ViewContext<Self>) -> bool {
-        let shared_session_status = self.model.lock().shared_session_status().clone();
-        if shared_session_status.is_sharer_or_viewer() {
-            // If this is a viewer who isn't also an executor, they should not
-            // be allowed to execute commands.
-            if shared_session_status.is_reader() {
-                // TODO: consider showing a toast in this scenario. It should be unlikely
-                // that a viewer can get here without being an executor because the main
-                // caller of this API is the `enter` handler.
-                log::warn!("Viewer tried to execute a command as a reader");
-                return false;
-            } else if shared_session_status.is_executor() {
-                let original_buffer = self.freeze_input_in_loading_state(ctx);
-
-                if let Some(shared_session_input_state) = self.shared_session_input_state.as_mut() {
-                    shared_session_input_state.pending_command_execution_request =
-                        Some(ViewerCommandExecutionRequest { original_buffer });
-                }
-            }
-
-            // Get our own shared session participant ID.
-            let Some(participant_id) = self
-                .shared_session_presence_manager
-                .as_ref()
-                .map(|m| m.as_ref(ctx).id())
-            else {
-                return false;
-            };
-            self.try_execute_command_on_behalf_of_shared_session_participant(
-                command,
-                participant_id,
-                ctx,
-            )
-        } else {
-            self.try_execute_command_from_source(command, CommandExecutionSource::User, ctx)
-        }
+        self.try_execute_command_from_source(command, CommandExecutionSource::User, ctx)
     }
 
     /// Executes the given command if the terminal session is in a valid state to accept and
@@ -6459,63 +6364,14 @@ impl Input {
         did_execute
     }
 
-    /// We locked the viewer's input when they attempted to execute a command.
-    /// On failure, we must restore the editor to its original state before the attempt.
-    pub fn on_execute_command_for_shared_session_participant_failure(
-        &mut self,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        let Some(shared_session_input_state) = self.shared_session_input_state.as_mut() else {
-            return;
-        };
-        let Some(ViewerCommandExecutionRequest { original_buffer }) = shared_session_input_state
-            .pending_command_execution_request
-            .as_ref()
-        else {
-            return;
-        };
-
-        // Unfreeze the editor
-        if let SharedSessionStatus::ActiveViewer { role } =
-            self.model.lock().shared_session_status()
-        {
-            self.editor.update(ctx, |editor, ctx| {
-                // Restore the original buffer and interaction state based on the viewer's role.
-                editor.set_buffer_text(original_buffer, ctx);
-                editor.set_interaction_state(role.into(), ctx);
-
-                // Shared-session pending-command and cloud-followup flows can swap the editor into
-                // a frozen/pending color treatment, so restore the normal palette alongside the
-                // buffer + interaction state reset.
-                let appearance: &Appearance = Appearance::as_ref(ctx);
-                editor.set_text_colors(TextColors::from_appearance(appearance), ctx);
-            });
-        }
-        shared_session_input_state.pending_command_execution_request = None;
-    }
-
     /// This clears the loading state and input buffer for both the sharer and viewer
     /// once an agent request is in flight or cancelled.
     pub fn unfreeze_and_clear_agent_input(&mut self, ctx: &mut ViewContext<Self>) {
-        if matches!(
-            self.model.lock().shared_session_status(),
-            SharedSessionStatus::ActiveViewer { .. } | SharedSessionStatus::ActiveSharer
-        ) {
-            self.editor.update(ctx, |editor, ctx| {
-                // Reinitialize the buffer to properly clear it
-                editor.reinitialize_buffer(None, ctx);
-
-                if let SharedSessionStatus::ActiveViewer { role } =
-                    self.model.lock().shared_session_status()
-                {
-                    // reinstate role for viewers
-                    editor.set_interaction_state(role.into(), ctx);
-                }
-
-                let appearance: &Appearance = Appearance::as_ref(ctx);
-                editor.set_text_colors(TextColors::from_appearance(appearance), ctx);
-            });
-        }
+        self.editor.update(ctx, |editor, ctx| {
+            editor.reinitialize_buffer(None, ctx);
+            let appearance: &Appearance = Appearance::as_ref(ctx);
+            editor.set_text_colors(TextColors::from_appearance(appearance), ctx);
+        });
     }
 
     pub fn reset_after_cloud_followup_submission(&mut self, ctx: &mut ViewContext<Self>) {
@@ -6526,50 +6382,6 @@ impl Input {
             let appearance: &Appearance = Appearance::as_ref(ctx);
             editor.set_text_colors(TextColors::from_appearance(appearance), ctx);
         });
-    }
-
-    /// Cancel any active agent conversation in a shared session
-    /// and fan out a cancellation control action.
-    pub(crate) fn cancel_active_agent_conversation_for_shared_session(
-        &mut self,
-        cancellation_reason: CancellationReason,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        let active_conversation =
-            BlocklistAIHistoryModel::as_ref(ctx).active_conversation(self.terminal_view_id);
-
-        if self.model.lock().shared_session_status().is_viewer() {
-            let server_conversation_token = active_conversation
-                .and_then(|conversation| conversation.server_conversation_token().cloned())
-                .and_then(|server_token| {
-                    server_token
-                        .as_str()
-                        .parse()
-                        .ok()
-                        .map(ServerConversationToken::from_uuid)
-                });
-
-            if let Some(server_conversation_token) = server_conversation_token {
-                ctx.emit(Event::CancelSharedSessionConversation {
-                    server_conversation_token,
-                });
-            }
-        } else if self.model.lock().shared_session_status().is_sharer() {
-            let active_conversation_id = active_conversation
-                .filter(|conversation| conversation.status().is_in_progress())
-                .map(|conversation| conversation.id());
-
-            if let Some(active_conversation_id) = active_conversation_id {
-                // First, cancel locally via the existing pipeline.
-                self.ai_controller.update(ctx, |controller, ctx| {
-                    controller.cancel_conversation_progress(
-                        active_conversation_id,
-                        cancellation_reason,
-                        ctx,
-                    );
-                });
-            }
-        }
     }
 
     fn clear_selected_env_var_collection(&mut self) {
@@ -6693,7 +6505,7 @@ impl Input {
                 workflow_source,
             } => {
                 let workflow_id = workflow.server_id();
-                let workflow_source = *workflow_source;
+                let workflow_source = workflow_source.clone();
                 let _space: Option<crate::workflows::WorkflowSource> = workflow_id.and_then(|id| {
                     CloudViewModel::as_ref(ctx)
                         .object_space(&id.to_string(), ctx)
@@ -10538,51 +10350,11 @@ impl Input {
         ctx.notify();
     }
 
-    pub fn on_session_share_joined(
-        &mut self,
-        replica_id: ReplicaId,
-        presence_manager: ModelHandle<PresenceManager>,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        // Shared session history model should only be set if we are a viewer
-        debug_assert!(self.model.lock().shared_session_status().is_viewer());
-        self.set_shared_session_presence_manager(presence_manager);
-
-        // Set the history model which is only available for a shared session viewer.
-        let history_model = ctx.add_model(|_| SharedSessionHistoryModel::new());
-        self.shared_session_input_state = Some(SharedSessionInputState {
-            history_model,
-            pending_command_execution_request: None,
-        });
-
-        // Set the server-assigned replica ID on the input buffer.
-        self.editor().update(ctx, |editor, ctx| {
-            editor.reinitialize_buffer(Some(replica_id), ctx);
-        });
-    }
-
-    /// Returns a collection of history entries that are shell commands from
-    /// the shared session (run on the sharer's machine).
     fn shared_session_history<'b>(
         &'b self,
-        ctx: &'b ViewContext<Self>,
+        _ctx: &'b ViewContext<Self>,
     ) -> Vec<HistoryInputSuggestion<'b>> {
-        let Some(history_model) = self
-            .shared_session_input_state
-            .as_ref()
-            .map(|state| state.history_model.clone())
-        else {
-            return Vec::new();
-        };
-
-        let commands = history_model
-            .as_ref(ctx)
-            .entries()
-            .iter()
-            .map(|entry| HistoryInputSuggestion::Command { entry })
-            .collect();
-        // TODO: append viewer's local shell history
-        commands
+        Vec::new()
     }
 
     /// Returns a collection of history entries that are user AI queries or shell commands in order
@@ -13436,24 +13208,6 @@ impl Input {
                 }
             }
 
-            // Make sure the viewer's interaction state is correct based on their role.
-            // We may have locked up their input if they tried to execute a command.
-            if let SharedSessionStatus::ActiveViewer { role } =
-                self.model.lock().shared_session_status()
-            {
-                self.editor.update(ctx, |editor, ctx| {
-                    editor.set_interaction_state(role.into(), ctx);
-
-                    // Also need to set the text colors back to normal.
-                    let appearance: &Appearance = Appearance::as_ref(ctx);
-                    editor.set_text_colors(TextColors::from_appearance(appearance), ctx);
-                });
-
-                if let Some(shared_session_input_state) = self.shared_session_input_state.as_mut() {
-                    shared_session_input_state.pending_command_execution_request = None;
-                };
-            }
-
             // Update the segmented control disabled state based on the new state.
             self.universal_developer_input_button_bar
                 .update(ctx, |button_bar, ctx| {
@@ -13503,21 +13257,6 @@ impl Input {
                 // Today, we only expect this to be the case with session-sharing viewers.
                 self.flush_deferred_remote_operations(ctx);
 
-                // Update shared session history model
-                if let Some(shared_session_history_model) = self
-                    .shared_session_input_state
-                    .as_ref()
-                    .map(|state| state.history_model.clone())
-                {
-                    shared_session_history_model.update(ctx, |history_model, _ctx| {
-                        history_model.push(HistoryEntry::for_completed_block(
-                            block_completed.command,
-                            &block_completed.serialized_block,
-                        ))
-                    })
-                } else {
-                    log::warn!("Tried to access non-existent shared session history model")
-                }
             } else if is_next_command_enabled(ctx) {
                 self.maybe_predict_next_action_ai(block_completed, ctx);
             }

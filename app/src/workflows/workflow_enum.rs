@@ -1,10 +1,10 @@
-pub use crate::cloud_object::models::{
+pub use crate::cloud_stub_types::models::{
     CloudWorkflowEnum, CloudWorkflowEnumModel, EnumVariants, WorkflowEnum,
 };
 
-use crate::cloud_object::model::generic_string_model::StringModel;
-use crate::cloud_object::model::json_model::JsonModel;
-use crate::cloud_object::{
+use crate::cloud_stub_types::model::generic_string_model::StringModel;
+use crate::cloud_stub_types::model::json_model::JsonModel;
+use crate::cloud_stub_types::{
     GenericStringObjectFormat, GenericStringObjectUniqueKey, JsonObjectType, Revision,
 };
 // sync_queue removed for local version

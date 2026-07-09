@@ -13,6 +13,15 @@ pub use view::*;
 pub use cuteui::text::point::Point;
 use cuteui::AppContext;
 
+/// Target for opening a file in the editor.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum OpenFileTarget {
+    /// Open in the current pane.
+    CurrentPane,
+    /// Open in a new pane.
+    NewPane,
+}
+
 pub fn init(app: &mut AppContext) {
     view::init(app);
 }

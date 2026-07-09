@@ -1,10 +1,11 @@
 use cuteui::integration::TestStep;
 use cuteui::{async_assert, async_assert_eq, SingletonEntity};
 
-use crate::cloud_object::model::persistence::CloudModel;
-use crate::cloud_object::{CloudObjectEventEntrypoint, CloudObjectLocation, Space};
+use crate::cloud_stub_types::model::persistence::CloudModel;
+use crate::cloud_stub_types::{CloudObjectEventEntrypoint, CloudObjectLocation, Space};
 use crate::network::{NetworkStatus, NetworkStatusKind};
 
+use crate::server::cloud_objects::{Listener, UpdateManager};
 use crate::server::ids::ClientId;
 use crate::util::bindings::keybinding_name_to_display_string;
 use crate::workflows::workflow::Workflow;

@@ -145,8 +145,8 @@ use crate::ai::get_relevant_files::controller::{
 use crate::ai::skills::SkillOpenOrigin;
 use crate::ai::{AIRequestUsageModel, AIRequestUsageModelEvent};
 use crate::auth::AuthStateProvider;
-use crate::cloud_object::model::generic_string_model::GenericStringObjectId;
-use crate::cloud_object::model::persistence::CloudModel;
+use crate::cloud_stub_types::model::generic_string_model::GenericStringObjectId;
+use crate::cloud_stub_types::model::persistence::CloudModel;
 use crate::code::editor::comment_editor::create_readonly_comment_markdown_editor;
 use crate::code::editor::view::{CodeEditorEvent, CodeEditorRenderOptions, CodeEditorView};
 use crate::code::editor_management::CodeSource;
@@ -157,8 +157,8 @@ use crate::code_review::comments::{
 };
 use crate::code_review::telemetry_event::CodeReviewPaneEntrypoint;
 use crate::editor::InteractionState;
-use crate::notebooks::editor::model::FileLinkResolutionContext;
-use crate::notebooks::editor::view::{EditorViewEvent, RichTextEditorView};
+use crate::cloud_stub_types::FileLinkResolutionContext;
+use crate::cloud_stub_types::{EditorViewEvent, RichTextEditorView};
 use crate::server::ids::SyncId;
 use crate::server::telemetry::AgentModeRewindEntrypoint;
 use crate::settings::{
@@ -3418,7 +3418,8 @@ impl AIBlock {
             active_session_ref
                 .current_working_directory()
                 .map(|working_directory| FileLinkResolutionContext {
-                    working_directory: working_directory.clone(),
+                    workspace_root: None,
+                    working_directory: Some(working_directory.clone()),
                     shell_launch_data: active_session_ref.shell_launch_data(ctx),
                 });
 

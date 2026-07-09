@@ -4,7 +4,7 @@ use futures_lite::future::yield_now;
 use cuteui::{AppContext, SingletonEntity};
 
 use super::WorkflowSearchItem;
-use crate::cloud_object::model::persistence::CloudModel;
+use crate::cloud_stub_types::model::persistence::CloudModel;
 use crate::search::async_snapshot_data_source::AsyncSnapshotDataSource;
 use crate::search::command_search::searcher::CommandSearchItemAction;
 use crate::search::data_source::{Query, QueryResult};
@@ -52,7 +52,7 @@ pub fn cloud_workflows_data_source(
                         .map(move |cloud_workflow| WorkflowMatchCandidate {
                             id: cloud_workflow.id,
                             model: cloud_workflow.shared_model(),
-                            source,
+                            source: source.clone(),
                         })
                 })
                 .collect();
@@ -98,7 +98,7 @@ pub(crate) fn fuzzy_match_cloud_workflows(
                                 id: candidate.id,
                                 model: candidate.model.clone(),
                             },
-                            source: candidate.source,
+                            source: candidate.source.clone(),
                             fuzzy_matched_workflow: match_result,
                         }
                         .into(),

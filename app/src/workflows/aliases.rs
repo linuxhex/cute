@@ -7,9 +7,9 @@ use cute_core::define_settings_group;
 use cute_core::settings::{RespectUserSyncSetting, Setting, SupportedPlatforms, SyncToCloud};
 use cuteui::{AppContext, ModelContext, SingletonEntity};
 
-use crate::cloud_object::model::persistence::{CloudModel, CloudModelEvent};
-use crate::cloud_object::CloudObject as _;
-use crate::drive::CloudObjectTypeAndId;
+use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
+use crate::cloud_stub_types::CloudObject as _;
+use crate::cloud_stub_types::CloudObjectTypeAndId;
 use crate::server::ids::SyncId;
 
 define_settings_group!(WorkflowAliases, settings: [

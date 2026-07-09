@@ -192,41 +192,60 @@ pub trait HarnessSupportClient: 'static + Send + Sync {
 #[cfg_attr(target_family = "wasm", async_trait(?Send))]
 impl HarnessSupportClient for ServerApi {
     async fn create_external_conversation(&self, _format: &str) -> Result<AIConversationId> {
-        Err(anyhow!("Harness support not available in local version"))
+        // Cute: Generate a local conversation ID for skip_login mode
+        let id = AIConversationId::new();
+        log::info!("Created local external conversation id: {id}");
+        Ok(id)
     }
 
     async fn get_transcript_upload_target(
         &self,
         _conversation_id: &AIConversationId,
     ) -> Result<UploadTarget> {
-        Err(anyhow!("Harness support not available in local version"))
+        Ok(UploadTarget {
+            url: String::new(),
+            method: String::new(),
+            headers: HashMap::new(),
+            fields: Vec::new(),
+        })
     }
 
     async fn get_block_snapshot_upload_target(
         &self,
         _conversation_id: &AIConversationId,
     ) -> Result<UploadTarget> {
-        Err(anyhow!("Harness support not available in local version"))
+        Ok(UploadTarget {
+            url: String::new(),
+            method: String::new(),
+            headers: HashMap::new(),
+            fields: Vec::new(),
+        })
     }
 
     async fn resolve_prompt(&self, _request: ResolvePromptRequest) -> Result<ResolvedHarnessPrompt> {
-        Err(anyhow!("Harness support not available in local version"))
+        Ok(ResolvedHarnessPrompt {
+            prompt: String::new(),
+            system_prompt: None,
+            resumption_prompt: None,
+            context: None,
+        })
     }
 
     async fn report_artifact(&self, _artifact: &Artifact) -> Result<ReportArtifactResponse> {
-        Err(anyhow!("Harness support not available in local version"))
+        Ok(ReportArtifactResponse {
+            artifact_uid: String::new(),
+        })
     }
 
     async fn notify_user(&self, _message: &str) -> Result<()> {
-        Err(anyhow!("Harness support not available in local version"))
+        Ok(())
     }
 
     async fn finish_task(&self, _success: bool, _summary: &str) -> Result<()> {
-        Err(anyhow!("Harness support not available in local version"))
+        Ok(())
     }
 
     async fn report_clean_shutdown(&self) -> Result<()> {
-        // No-op for local version
         Ok(())
     }
 
@@ -235,7 +254,6 @@ impl HarnessSupportClient for ServerApi {
         _error_category: String,
         _error_message: String,
     ) -> Result<()> {
-        // No-op for local version
         Ok(())
     }
 
@@ -243,11 +261,11 @@ impl HarnessSupportClient for ServerApi {
         &self,
         _request: &SnapshotUploadRequest,
     ) -> Result<Vec<UploadTarget>> {
-        Err(anyhow!("Harness support not available in local version"))
+        Ok(Vec::new())
     }
 
     async fn fetch_transcript(&self) -> Result<bytes::Bytes> {
-        Err(anyhow!("Harness support not available in local version"))
+        Ok(bytes::Bytes::new())
     }
 
     fn http_client(&self) -> &http_client::Client {

@@ -9,7 +9,7 @@ use cuteui::{
 };
 
 use crate::appearance::Appearance;
-use crate::notebooks::file::MarkdownDisplayMode;
+use crate::cloud_stub_types::MarkdownDisplayMode;
 
 #[derive(Debug, Clone)]
 pub enum MarkdownToggleEvent {
@@ -36,6 +36,7 @@ impl MarkdownToggleView {
                             label: match mode {
                                 MarkdownDisplayMode::Rendered => "Rendered".into(),
                                 MarkdownDisplayMode::Raw => "Raw".into(),
+                                MarkdownDisplayMode::Source => "Source".into(),
                             },
                             width_override: Some(55.0),
                             color: if is_selected {

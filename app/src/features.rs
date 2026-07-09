@@ -49,8 +49,7 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::SelectablePrompt,
         #[cfg(feature = "viewing_shared_sessions")]
         FeatureFlag::ViewingSharedSessions,
-        #[cfg(feature = "creating_shared_sessions")]
-        FeatureFlag::CreatingSharedSessions,
+
         #[cfg(feature = "agent_mode")]
         FeatureFlag::AgentMode,
         #[cfg(feature = "shared_session_long_running_commands")]
@@ -82,8 +81,7 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::IntegrationCommand,
         #[cfg(feature = "artifact_command")]
         FeatureFlag::ArtifactCommand,
-        #[cfg(feature = "cloud_environments")]
-        FeatureFlag::CloudEnvironments,
+
         #[cfg(all(feature = "simulate_github_unauthed", debug_assertions))]
         FeatureFlag::SimulateGithubUnauthed,
         #[cfg(feature = "session_sharing_acls")]

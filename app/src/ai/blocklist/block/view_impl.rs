@@ -68,7 +68,7 @@ use crate::ai::blocklist::history_model::BlocklistAIHistoryModel;
 use crate::ai::blocklist::inline_action::inline_action_icons::icon_size;
 use crate::ai::blocklist::model::AIBlockModelHelper;
 use crate::appearance::Appearance;
-use crate::cloud_object::model::persistence::CloudModel;
+use crate::cloud_stub_types::model::persistence::CloudModel;
 use crate::settings::{AISettings, InputModeSettings, InputSettings};
 use crate::settings_view::SettingsSection;
 use crate::terminal::block_list_element::BlockListMenuSource;
@@ -659,9 +659,9 @@ pub fn render_citation(
             let item = CloudModel::as_ref(app)
                 .get_by_uid(uid)?
                 .to_warp_drive_item(appearance)?;
-            let icon = item.icon().to_cuteui_icon(item.icon_color(appearance)).finish();
+            let icon = item.icon().and_then(|i| item.icon_color(appearance).map(|c| i.to_cuteui_icon(c.into())));
             let name = item.display_name().unwrap_or(String::from("Untitled"));
-            (Some(icon), name)
+            (icon.map(|i| i.finish()), name)
         }
         AIAgentCitation::WarpDocumentation { .. } => {
             let icon = Icon::Warp.to_cuteui_icon(theme.foreground()).finish();
@@ -947,39 +947,11 @@ impl View for AIBlock {
                 contents.add_child(header.with_content_item_spacing().finish());
                 did_render_header = true;
             }
-            // Derive the display info for the participant who initiated this exchange.
-            // For non-shared sessions, this is just the current user.
-            // For shared sessions, this is the user who initiated the request.
-            let (avatar_display_name, profile_image_path, avatar_color) = self
-                .model
-                .response_initiator(app)
-                .and_then(|participant_id| {
-                    app.view_with_id::<TerminalView>(self.window_id, self.terminal_view_id)
-                        .and_then(|terminal_view| {
-                            terminal_view.read(app, |view, app| {
-                                view.shared_session_presence_manager().and_then(move |pm| {
-                                    pm.as_ref(app).get_participant(&participant_id).map(
-                                        |participant| {
-                                            // Get the display info from the participant
-                                            // who sent this query.
-                                            (
-                                                participant.profile_data.display_name.clone(),
-                                                participant.profile_data.photo_url.clone(),
-                                                Some(participant.color),
-                                            )
-                                        },
-                                    )
-                                })
-                            })
-                        })
-                })
-                // Fallback to the current user's info if this is not a shared session
-                // or the participant is not found.
-                .unwrap_or((
-                    self.user_display_name.clone(),
-                    self.profile_image_path.clone(),
-                    None,
-                ));
+            let (avatar_display_name, profile_image_path, avatar_color) = (
+                self.user_display_name.clone(),
+                self.profile_image_path.clone(),
+                None,
+            );
             if let Some(rendered_query) = query::maybe_render(
                 query::Props {
                     user_display_name: &avatar_display_name,
@@ -1136,8 +1108,7 @@ impl View for AIBlock {
         {
             theme.restored_ai_blocks_overlay()
         } else if should_use_transparent_overlay {
-            // Use a fully transparent background for universal developer input
-            Fill::Solid(ColorU::transparent_black())
+            theme.surface_overlay_1()
         } else {
             theme.ai_blocks_overlay()
         };

@@ -10,8 +10,8 @@ use super::{
     ShareableLinkError,
 };
 use crate::app_state::{LeafContents, WorkflowPaneSnapshot};
-use crate::drive::items::WarpDriveItemId;
-use crate::drive::OpenWarpDriveObjectSettings;
+use crate::cloud_stub_types::items::WarpDriveItemId;
+use crate::cloud_stub_types::OpenWarpDriveObjectSettings;
 use crate::server::ids::SyncId;
 use crate::workflows::manager::{WorkflowManager, WorkflowOpenSource};
 use crate::workflows::workflow_view::{WorkflowView, WorkflowViewEvent};
@@ -189,7 +189,7 @@ fn handle_workflow_event(
             workflow,
             source,
             argument_override,
-        } => run_workflow(workflow.clone(), *source, argument_override.clone(), ctx),
+        } => run_workflow(workflow.clone(), source.clone(), argument_override.clone(), ctx),
         WorkflowViewEvent::UpdatedWorkflow(_id) => {
             log::warn!("Updates not yet handled in pane")
         }
@@ -201,7 +201,7 @@ fn handle_workflow_event(
             ctx.emit(crate::pane_group::Event::OpenDriveObjectShareDialog {
                 cloud_object_type_and_id: cloud_object_type_and_id.clone(),
                 invitee_email: invitee_email.clone(),
-                source: *source,
+                source: source.clone(),
             });
         }
         WorkflowViewEvent::CreatedWorkflow(_) => {

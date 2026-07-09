@@ -39,14 +39,14 @@ use crate::ai::agent_management::AgentNotificationsModel;
 use crate::ai::cloud_environments::CloudAmbientAgentEnvironment;
 use crate::ai::conversation_status_ui::render_status_element;
 use crate::appearance::Appearance;
-use crate::cloud_object::model::generic_string_model::StringModel;
-use crate::cloud_object::CloudObjectLookup as _;
+use crate::cloud_stub_types::model::generic_string_model::StringModel;
+use crate::cloud_stub_types::CloudObjectLookup as _;
 use crate::code::editor::{add_color, remove_color};
 use crate::code::icon_from_file_path;
 use crate::context_chips::display_chip::GitLineChanges;
 use crate::context_chips::github_pr_display_text_from_url;
-use crate::drive::cloud_object_styling::warp_drive_icon_color;
-use crate::drive::DriveObjectType;
+use crate::cloud_stub_types::cloud_object_styling::warp_drive_icon_color;
+use crate::cloud_stub_types::DriveObjectType;
 use crate::editor::EditorView;
 use crate::pane_group::pane::IPaneType;
 use crate::pane_group::{
@@ -4430,7 +4430,12 @@ fn summary_pane_kind_icon(
         SummaryPaneKind::OzAgent { .. } => (WarpIcon::Oz, main_text),
         SummaryPaneKind::CLIAgent { agent, .. } => (
             agent.icon().unwrap_or(WarpIcon::Terminal),
-            WarpThemeFill::Solid(agent.brand_icon_color()),
+            // 侧边栏 summary 图标本身不带品牌圆底，这里使用品牌主色，避免 Claude 等显示成纯白图标。
+            WarpThemeFill::Solid(
+                agent
+                    .brand_color()
+                    .unwrap_or_else(|| agent.brand_icon_color()),
+            ),
         ),
         SummaryPaneKind::Code { .. } => (WarpIcon::Code2, sub_text),
         SummaryPaneKind::CodeDiff => (WarpIcon::Diff, sub_text),

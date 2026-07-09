@@ -43,7 +43,7 @@ use crate::ai::local_harness_setup::{
     local_harness_setup_state, LocalHarnessSetupState,
 };
 use crate::appearance::Appearance;
-use crate::cloud_object::CloudObjectLookup as _;
+use crate::cloud_stub_types::CloudObjectLookup as _;
 use crate::menu::{MenuItem, MenuItemFields};
 use crate::ui_components::blended_colors;
 use crate::ui_components::icons::Icon;

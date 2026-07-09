@@ -245,7 +245,7 @@ pub fn should_show_open_in_warp_link(path: &Path, app: &AppContext) -> bool {
     use cuteui::SingletonEntity;
 
     use crate::code::view::is_binary_file;
-    use crate::notebooks::file::is_markdown_file;
+    use crate::cloud_stub_types::is_markdown_file;
     use crate::util::file::external_editor::settings::EditorChoice;
     use crate::util::file::external_editor::EditorSettings;
 

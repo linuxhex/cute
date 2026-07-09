@@ -10,6 +10,7 @@ pub enum CloudObjectTypeAndId {
     Notebook(SyncId),
     Workflow(SyncId),
     Folder(SyncId),
+    EnvVarCollection(SyncId),
     GenericStringObject {
         object_type: GenericStringObjectFormat,
         id: SyncId,
@@ -22,6 +23,7 @@ impl CloudObjectTypeAndId {
             ObjectType::Notebook => Self::Notebook(id),
             ObjectType::Workflow => Self::Workflow(id),
             ObjectType::Folder => Self::Folder(id),
+            ObjectType::EnvVarCollection => Self::EnvVarCollection(id),
             ObjectType::GenericStringObject(format) => Self::GenericStringObject {
                 object_type: format,
                 id,
@@ -34,6 +36,7 @@ impl CloudObjectTypeAndId {
             Self::Notebook(id) => id.uid(),
             Self::Workflow(id) => id.uid(),
             Self::Folder(id) => id.uid(),
+            Self::EnvVarCollection(id) => id.uid(),
             Self::GenericStringObject { id, .. } => id.uid(),
         }
     }
@@ -43,6 +46,7 @@ impl CloudObjectTypeAndId {
             Self::Notebook(id)
             | Self::Workflow(id)
             | Self::Folder(id)
+            | Self::EnvVarCollection(id)
             | Self::GenericStringObject { id, .. } => id,
         }
     }
@@ -52,6 +56,7 @@ impl CloudObjectTypeAndId {
             CloudObjectTypeAndId::Notebook(id) => id.sqlite_uid_hash(ObjectIdType::Notebook),
             CloudObjectTypeAndId::Workflow(id) => id.sqlite_uid_hash(ObjectIdType::Workflow),
             CloudObjectTypeAndId::Folder(id) => id.sqlite_uid_hash(ObjectIdType::Folder),
+            CloudObjectTypeAndId::EnvVarCollection(id) => id.sqlite_uid_hash(ObjectIdType::GenericStringObject),
             CloudObjectTypeAndId::GenericStringObject { object_type: _, id } => {
                 id.sqlite_uid_hash(ObjectIdType::GenericStringObject)
             }
@@ -64,6 +69,7 @@ impl CloudObjectTypeAndId {
             CloudObjectTypeAndId::Workflow(_) => ObjectIdType::Workflow,
             CloudObjectTypeAndId::GenericStringObject { .. } => ObjectIdType::GenericStringObject,
             CloudObjectTypeAndId::Folder(_) => ObjectIdType::Folder,
+            CloudObjectTypeAndId::EnvVarCollection(_) => ObjectIdType::GenericStringObject,
         }
     }
 
@@ -75,6 +81,7 @@ impl CloudObjectTypeAndId {
             CloudObjectTypeAndId::GenericStringObject { object_type, .. } => {
                 ObjectType::GenericStringObject(*object_type)
             }
+            CloudObjectTypeAndId::EnvVarCollection(_) => ObjectType::EnvVarCollection,
         }
     }
 
@@ -84,6 +91,7 @@ impl CloudObjectTypeAndId {
             CloudObjectTypeAndId::Workflow(_) => None,
             CloudObjectTypeAndId::GenericStringObject { .. } => None,
             CloudObjectTypeAndId::Folder(f) => Some(f),
+            CloudObjectTypeAndId::EnvVarCollection(_) => None,
         }
     }
 

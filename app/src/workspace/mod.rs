@@ -1,6 +1,5 @@
 mod action;
 mod active_session;
-pub(crate) mod auto_handoff;
 pub mod branch_selector;
 #[cfg(target_os = "macos")]
 mod cli_install;
@@ -25,7 +24,7 @@ pub mod util;
 pub mod view;
 
 pub use action::{
-    AutoCloudHandoffTrigger, CommandSearchOptions, InitContent, RestoreConversationLayout,
+    CommandSearchOptions, InitContent, RestoreConversationLayout,
     TabContextMenuAnchor, VerticalTabsPaneContextMenuTarget, WorkspaceAction,
 };
 pub use active_session::ActiveSession;
@@ -56,7 +55,7 @@ use crate::server::telemetry::{AgentModeEntrypoint, PaletteSource};
 use crate::settings_view::{self, flags, SettingsSection};
 use crate::tab::uses_vertical_tabs;
 use crate::util::bindings::{self, cmd_or_ctrl_shift, is_binding_pty_compliant, CustomAction};
-use crate::{code, modal, notebooks, tab_configs};
+use crate::{code, modal, tab_configs};
 
 // Helper function to access panel header corner radius from other modules
 pub fn panel_header_corner_radius() -> cuteui::elements::CornerRadius {

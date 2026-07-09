@@ -31,14 +31,14 @@ use crate::ai::agent_conversations_model::{
 };
 use crate::ai::blocklist::history_model::BlocklistAIHistoryModel;
 use crate::appearance::Appearance;
-use crate::drive::sharing::dialog::SharingDialog;
-use crate::drive::sharing::ShareableObject;
+use crate::cloud_stub_types::sharing::dialog::SharingDialog;
+use crate::cloud_stub_types::sharing::ShareableObject;
 use crate::editor::{
     EditorView, Event as EditorEvent, PropagateAndNoOpNavigationKeys,
     PropagateHorizontalNavigationKeys, SingleLineEditorOptions, TextOptions,
 };
 use crate::menu::{Event as MenuEvent, Menu, MenuItem, MenuItemFields};
-use crate::drive::sharing::dialog::SharingDialogSource;
+use crate::cloud_stub_types::sharing::dialog::SharingDialogSource;
 use crate::view_components::action_button::{ActionButton, ButtonSize, SecondaryTheme};
 use crate::view_components::DismissibleToast;
 use crate::workspace::global_actions::ForkedConversationDestination;
@@ -993,7 +993,7 @@ impl TypedActionView for ConversationListView {
                 self.share_dialog_open_for = Some(*conversation_id);
                 self.sharing_dialog.update(ctx, |dialog, ctx| {
                     dialog.set_target(
-                        Some(ShareableObject::AIConversation(ai_conversation_id)),
+                        Some(ShareableObject::AIConversation(ai_conversation_id.to_string())),
                         ctx,
                     );
                     dialog.report_open(SharingDialogSource::ConversationList, ctx);

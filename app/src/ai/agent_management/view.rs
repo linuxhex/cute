@@ -67,7 +67,7 @@ use crate::editor::{
     PropagateHorizontalNavigationKeys, SingleLineEditorOptions, TextOptions,
 };
 use crate::menu::{MenuItem, MenuItemFields};
-use crate::notebooks::NotebookId;
+use crate::cloud_stub_types::NotebookId;
 use crate::settings::ai::AISettings;
 use crate::ui_components::agent_icon::agent_conversation_entry_icon_variant;
 use crate::ui_components::avatar::{Avatar, AvatarContent};

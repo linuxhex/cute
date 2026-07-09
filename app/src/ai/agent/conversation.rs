@@ -58,7 +58,7 @@ use crate::ai::blocklist::{
 };
 use crate::ai::llms::LLMPreferences;
 use crate::ai::skills::SkillDescriptor;
-use crate::notebooks::NotebookId;
+use crate::cloud_stub_types::NotebookId;
 use crate::persistence::model::{
     AgentConversationData, ConversationUsageMetadata, ModelTokenUsage, PersistedAutoexecuteMode,
     ToolUsageMetadata,
@@ -4013,10 +4013,10 @@ pub struct ServerAIConversationMetadata {
     pub usage: ConversationUsageMetadata,
 
     /// Server metadata (revision, timestamps, creator info, etc.).
-    pub metadata: crate::cloud_object::ServerMetadata,
+    pub metadata: crate::cloud_stub_types::ServerMetadata,
 
     /// Permissions for this conversation (space, guests, link sharing).
-    pub permissions: crate::cloud_object::ServerPermissions,
+    pub permissions: crate::cloud_stub_types::ServerPermissions,
 
     /// The ID of the associated ambient agent task, if any.
     pub ambient_agent_task_id: Option<crate::ai::ambient_agent_types::AmbientAgentTaskId>,

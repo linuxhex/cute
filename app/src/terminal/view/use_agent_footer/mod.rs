@@ -22,6 +22,7 @@ mod cuteify_footer;
 use std::path::Path;
 use std::sync::{Arc, LazyLock};
 use std::time::Duration;
+use std::io::Cursor;
 
 use anyhow::anyhow;
 use parking_lot::FairMutex;
@@ -98,6 +99,28 @@ fn cli_agent_paste_keystroke_bytes() -> Vec<u8> {
         vec![0x1b, b'v']
     } else {
         vec![0x16]
+    }
+}
+
+/// 将待写入剪贴板的图片统一归一化为 PNG，避免某些 CLI agent（尤其 Claude）
+/// 对原始编码/透明通道处理差异导致“粘贴后整图发白”。
+fn normalize_clipboard_image(bytes: Vec<u8>, mime_type: String) -> (Vec<u8>, String) {
+    if mime_type == "image/png" {
+        return (bytes, mime_type);
+    }
+
+    let Ok(image) = image::load_from_memory(&bytes) else {
+        return (bytes, mime_type);
+    };
+
+    let mut png_bytes = Vec::new();
+    if image
+        .write_to(&mut Cursor::new(&mut png_bytes), image::ImageFormat::Png)
+        .is_ok()
+    {
+        (png_bytes, "image/png".to_string())
+    } else {
+        (bytes, mime_type)
     }
 }
 
@@ -241,23 +264,9 @@ impl TerminalView {
             UseAgentToolbarEvent::ToggleFileExplorer(cli_agent) => {
                 self.toggle_file_tree(Some((*cli_agent).into()), ctx);
             }
-            UseAgentToolbarEvent::StartRemoteControl { scrollback_type } => {
-                self.auto_stop_sharing_on_cli_end =
-                    *scrollback_type == SharedSessionScrollbackType::None;
-                let source = SharedSessionSource::user(
-                    self.active_conversation_task_id(ctx).map(|t| t.to_string()),
-                );
-                self.attempt_to_share_session(
-                    *scrollback_type,
-                    Some(SharedSessionActionSource::FooterChip),
-                    source,
-                    true,
-                    ctx,
-                );
-            }
+            UseAgentToolbarEvent::StartRemoteControl { .. } => {}
             UseAgentToolbarEvent::StopRemoteControl => {
                 self.auto_stop_sharing_on_cli_end = false;
-                self.stop_sharing_session(SharedSessionActionSource::FooterChip, ctx);
             }
             UseAgentToolbarEvent::OpenRichInput => {
                 if self.has_active_cli_agent_input_session(ctx) {
@@ -754,6 +763,9 @@ impl TerminalView {
                             }
                         };
 
+                    let (normalized_bytes, normalized_mime_type) =
+                        normalize_clipboard_image(raw_bytes, image.mime_type.clone());
+
                     // Hop back to the view to write the clipboard + Ctrl+V.
                     // Returns false if the input session has closed, in which
                     // case we stop pasting and skip the final text submit.
@@ -764,8 +776,8 @@ impl TerminalView {
                             }
                             ctx.clipboard().write(ClipboardContent {
                                 images: Some(vec![ImageData {
-                                    data: raw_bytes,
-                                    mime_type: image.mime_type,
+                                    data: normalized_bytes,
+                                    mime_type: normalized_mime_type,
                                     filename: Some(image.file_name),
                                 }]),
                                 ..Default::default()
@@ -850,6 +862,8 @@ impl TerminalView {
                     let filename = path.file_name().map(|n| n.to_string_lossy().into_owned());
                     let sniff_len = bytes.len().min(MIME_SNIFF_BYTES);
                     let mime_type = infer_mime_type(path, &bytes[..sniff_len]);
+                    let (normalized_bytes, normalized_mime_type) =
+                        normalize_clipboard_image(bytes, mime_type);
 
                     // Hop back to the view to write the clipboard + paste
                     // keystroke. Bail if the CLI agent session disappeared,
@@ -874,8 +888,8 @@ impl TerminalView {
                             }
                             ctx.clipboard().write(ClipboardContent {
                                 images: Some(vec![ImageData {
-                                    data: bytes,
-                                    mime_type,
+                                    data: normalized_bytes,
+                                    mime_type: normalized_mime_type,
                                     filename,
                                 }]),
                                 ..Default::default()

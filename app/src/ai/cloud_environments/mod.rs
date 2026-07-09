@@ -4,10 +4,10 @@ use cuteui::{AppContext, SingletonEntity as _};
 
 use crate::auth::AuthStateProvider;
 use crate::workspaces::user_workspaces::UserWorkspaces;
-use crate::cloud_object::Owner;
+use crate::cloud_stub_types::Owner;
 
 // Re-export types from cloud_object::models::cloud_environment
-pub use crate::cloud_object::models::cloud_environment::{
+pub use crate::cloud_stub_types::models::cloud_environment::{
     AmbientAgentEnvironment, AwsProviderConfig, BaseImage, CloudAmbientAgentEnvironment,
     CloudAmbientAgentEnvironmentModel, GcpProviderConfig, GithubRepo, ProvidersConfig,
 };

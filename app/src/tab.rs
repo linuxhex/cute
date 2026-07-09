@@ -34,7 +34,7 @@ use crate::launch_configs::launch_config::LaunchConfig;
 use crate::menu::{MenuAction, MenuItem, MenuItemFields};
 use crate::pane_group::{PaneGroup, PaneId};
 use crate::shell_indicator::ShellIndicatorType;
-use crate::terminal::shared_session::render_util::shared_session_indicator_color;
+
 use crate::terminal::view::TerminalViewState;
 use crate::themes::theme::{AnsiColorIdentifier, Fill as ThemeFill, VerticalGradient};
 use crate::ui_components::agent_icon::terminal_view_agent_icon_variant;
@@ -738,6 +738,7 @@ pub struct TabComponent<'a> {
 struct TabStyles {
     background: Option<ThemeFill>,
     error_color: ColorU,
+    #[allow(dead_code)]
     sharing_color: ColorU,
     synced_input_indicator_color: ColorU,
 
@@ -763,7 +764,7 @@ impl TabStyles {
         let active_tab_bar_color: Option<ThemeFill> =
             tab_color.map(|color| color.to_ansi_color(&theme.terminal_colors().normal).into());
         let error_color = theme.ui_error_color();
-        let sharing_color = shared_session_indicator_color(appearance);
+        let sharing_color = ColorU::default();
         let background = active_tab_bar_color.map(|color| {
             ThemeFill::VerticalGradient(VerticalGradient::new(
                 theme.background().into(),

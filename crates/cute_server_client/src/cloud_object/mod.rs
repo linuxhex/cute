@@ -67,6 +67,7 @@ pub enum ObjectType {
     Notebook,
     Workflow,
     Folder,
+    EnvVarCollection,
     GenericStringObject(GenericStringObjectFormat),
 }
 
@@ -77,6 +78,7 @@ impl ObjectType {
             ObjectType::Notebook => "NOTEBOOK".into(),
             ObjectType::Workflow => "WORKFLOW".into(),
             ObjectType::Folder => "FOLDER".into(),
+            ObjectType::EnvVarCollection => "ENV_VAR_COLLECTION".into(),
             ObjectType::GenericStringObject(format) => format.to_string().into(),
         }
     }
@@ -97,9 +99,7 @@ impl FromStr for ObjectType {
             WORKFLOW_OBJECT_STRING => Ok(Self::Workflow),
             PROMPT_OBJECT_STRING => Ok(Self::Workflow),
             FOLDER_OBJECT_STRING => Ok(Self::Folder),
-            ENV_VAR_COLLECTION_STRING => Ok(Self::GenericStringObject(
-                GenericStringObjectFormat::Json(JsonObjectType::EnvVarCollection),
-            )),
+            ENV_VAR_COLLECTION_STRING => Ok(Self::EnvVarCollection),
             _ => Err(anyhow!("Unexpected object type")),
         }
     }
@@ -118,6 +118,7 @@ impl fmt::Display for ObjectType {
                 JsonObjectType::AIFact,
             )) => write!(f, "rule"),
             ObjectType::GenericStringObject(_) => write!(f, "string_object_placeholder"), // placeholder value
+            ObjectType::EnvVarCollection => write!(f, "{ENV_VAR_COLLECTION_STRING}"),
         }
     }
 }
@@ -129,6 +130,7 @@ impl From<ObjectType> for ObjectIdType {
             ObjectType::Workflow => ObjectIdType::Workflow,
             ObjectType::Folder => ObjectIdType::Folder,
             ObjectType::GenericStringObject(_) => ObjectIdType::GenericStringObject,
+            ObjectType::EnvVarCollection => ObjectIdType::GenericStringObject,
         }
     }
 }
@@ -263,6 +265,7 @@ impl From<ObjectType> for cute_graphql::object::ObjectType {
             ObjectType::GenericStringObject(gso) => {
                 todo!("Moving is not implemented for {:?}", gso);
             }
+            ObjectType::EnvVarCollection => cute_graphql::object::ObjectType::GenericStringObject,
         }
     }
 }

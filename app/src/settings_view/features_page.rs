@@ -2295,15 +2295,6 @@ impl FeaturesPageView {
             session_widgets.push(Box::new(UndoCloseWidget::default()));
         }
 
-        if FeatureFlag::CreatingSharedSessions.is_enabled()
-            && ContextFlag::CreateSharedSession.is_enabled()
-            && session_settings
-                .should_confirm_close_session
-                .is_supported_on_current_platform()
-        {
-            session_widgets.push(Box::new(ConfirmCloseSharedSessionWidget::default()));
-        }
-
         let mut keys_widgets: Vec<Box<dyn SettingsWidget<View = Self>>> = vec![];
         let keys_settings = KeysSettings::as_ref(ctx);
         if keys_settings

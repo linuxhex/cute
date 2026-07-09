@@ -25,7 +25,7 @@ use crate::appearance::Appearance;
 use crate::pane_group::focus_state::{PaneFocusHandle, PaneGroupFocusEvent};
 use crate::pane_group::pane::ActionOrigin;
 use crate::pane_group::{Direction, SplitPaneState, TabBarHoverIndex};
-use crate::drive::sharing::dialog::SharingDialogSource;
+use crate::cloud_stub_types::sharing::dialog::SharingDialogSource;
 use crate::settings::{PaneSettings, PaneSettingsChangedEvent};
 use crate::util::bindings::CustomAction;
 
@@ -244,12 +244,12 @@ impl<P: BackingView> PaneView<P> {
             }
             PaneConfigurationEvent::ToggleSharingDialog(source) => {
                 self.header.update(ctx, |header, ctx| {
-                    header.share_pane_contents(*source, ctx);
+                    header.share_pane_contents(source.clone(), ctx);
                 });
             }
             PaneConfigurationEvent::OpenSharingQrCode(source) => {
                 self.header.update(ctx, |header, ctx| {
-                    header.open_shared_session_qr_code(*source, ctx);
+                    header.open_shared_session_qr_code(source.clone(), ctx);
                 });
             }
             _ => {}

@@ -10,8 +10,7 @@ use std::collections::HashMap;
 mod noop_command_executor;
 #[cfg(feature = "local_tty")]
 mod remote_command_executor;
-#[cfg(feature = "local_tty")]
-pub(crate) mod remote_server_executor;
+
 mod shared;
 
 use std::any::Any;

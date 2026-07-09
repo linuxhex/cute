@@ -21,7 +21,7 @@ use super::{
 };
 use crate::ai::cloud_agent_settings::CloudAgentSettings;
 use crate::banner::BannerState;
-use crate::drive::settings::WarpDriveSettings;
+use crate::cloud_stub_types::settings::WarpDriveSettings;
 use crate::resource_center::TipsCompleted;
 use crate::search::command_search::settings::CommandSearchSettings;
 use crate::terminal::alt_screen_reporting::AltScreenReporting;

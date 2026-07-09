@@ -10,7 +10,7 @@ use cuteui::{async_assert, App, Entity, View, ViewHandle, WindowId};
 
 use crate::ai_assistant::panel::AIAssistantPanelView;
 use crate::input_suggestions::InputSuggestions;
-use crate::notebooks::notebook::NotebookView;
+use crate::cloud_stub_types::NotebookView;
 use crate::pane_group::{PaneGroup, PaneView};
 use crate::root_view::RootView;
 use crate::search::command_palette::{self};

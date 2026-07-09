@@ -72,13 +72,18 @@ Once filed, a Warp maintainer reviews the issue and may apply a readiness label:
 
 ### Building the Repo Locally
 
-To build and run Warp from source:
+To build and run Cute from source:
 
 ```bash
-./script/bootstrap   # platform-specific setup
-./script/run         # build and run Warp
+./script/bootstrap   # platform-specific setup (run once)
+./script/run         # build and run Cute (recommended)
 ./script/presubmit   # fmt, clippy, and tests
 ```
+
+**Important:**
+- `./script/run` is the **recommended way** to run the app - it builds a proper `.app` bundle and opens it
+- Running `cargo run --bin cute` directly may not work correctly due to missing bundle resources
+- For more details on scripts, see [SCRIPTS.md](SCRIPTS.md)
 
 See [WARP.md](WARP.md) for the full engineering guide, including coding style, testing, and platform-specific notes.
 

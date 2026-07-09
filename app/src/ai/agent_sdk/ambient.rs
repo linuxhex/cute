@@ -27,7 +27,7 @@ use crate::ai::ambient_agent_types::{
 };
 use crate::ai::ambient_agent_types::task::TaskAttachment;
 use crate::auth::AuthStateProvider;
-use crate::cloud_object::model::persistence::CloudModel;
+use crate::cloud_stub_types::model::persistence::CloudModel;
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::server_api::ai::{
     AgentSource, ArtifactType, ExecutionLocation,

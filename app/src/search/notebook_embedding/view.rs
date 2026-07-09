@@ -17,8 +17,8 @@ use cuteui::{
 
 use super::searcher::{EmbeddingSearchItemAction, EmbeddingSearchMixer};
 use crate::appearance::Appearance;
-use crate::cloud_object::Space;
-use crate::search::notebook_embedding::notebooks::CloudNotebooksDataSource;
+use crate::cloud_stub_types::Space;
+use crate::cloud_stub_types::CloudNotebooksDataSource;
 use crate::search::notebook_embedding::workflows::CloudWorkflowsDataSource;
 use crate::search::result_renderer::{QueryResultRenderer, QueryResultRendererStyles};
 use crate::search::search_bar::{SearchBar, SearchBarEvent, SearchBarState, SearchResultOrdering};

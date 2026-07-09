@@ -46,7 +46,6 @@ pub use request_usage_model::*;
 use cuteui::AppContext;
 #[cfg(not(target_family = "wasm"))]
 pub mod agent_sdk;
-pub mod cloud_agent_config;
 pub mod cloud_agent_settings;
 pub mod connected_self_hosted_workers;
 pub(crate) mod generate_block_title;

@@ -210,6 +210,7 @@ impl CLIAgent {
             Harness::Oz => None,
             Harness::Claude => Some(CLIAgent::Claude),
             Harness::Gemini => Some(CLIAgent::Gemini),
+            // OpenCode 会话需要保持原始 agent 身份，避免输入/图标策略误路由到 Qoder。
             Harness::OpenCode => Some(CLIAgent::OpenCode),
             Harness::Codex => Some(CLIAgent::Codex),
             Harness::Unknown => Some(CLIAgent::Unknown),
@@ -340,7 +341,7 @@ impl CLIAgent {
 
     /// SVG 自带品牌色/渐变背景（如 Qoder、Trae），渲染时不应再套单色 tint 或额外圆底。
     pub fn uses_full_color_icon(&self) -> bool {
-        matches!(self, CLIAgent::Qoder | CLIAgent::Trae)
+        matches!(self, CLIAgent::Claude | CLIAgent::Qoder | CLIAgent::Trae)
     }
 
     /// Returns the icon color to use when rendered on the brand-colored circle background.

@@ -3,8 +3,8 @@ use std::collections::HashMap;
 
 use cuteui::{Entity, EntityId, ModelContext, SingletonEntity, WeakViewHandle};
 
-use crate::cloud_object::model::persistence::CloudModel;
-use crate::cloud_object::Owner;
+use crate::cloud_stub_types::model::persistence::CloudModel;
+use crate::cloud_stub_types::Owner;
 use crate::env_vars::view::env_var_collection::EnvVarCollectionView;
 use crate::pane_group::{EnvVarCollectionPane, PaneContent};
 use crate::server::cloud_objects::update_manager::{

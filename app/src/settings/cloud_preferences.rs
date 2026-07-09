@@ -2,15 +2,9 @@
 //!
 //! Note: Cloud-specific logic has been removed. Simplified stub.
 
-pub use crate::cloud_object::models::{CloudPreference, CloudPreferenceModel, Platform, Preference};
+pub use crate::cloud_stub_types::models::{CloudPreference, CloudPreferenceModel, Platform, Preference};
 use settings::macros::define_settings_group;
 use settings::{RespectUserSyncSetting, SupportedPlatforms, SyncToCloud};
-
-use crate::cloud_object::model::generic_string_model::StringModel;
-use crate::cloud_object::model::json_model::JsonModel;
-use crate::cloud_object::{
-    GenericStringObjectFormat, GenericStringObjectUniqueKey, JsonObjectType, UniquePer,
-};
 
 define_settings_group!(CloudPreferencesSettings, settings: [
    settings_sync_enabled: IsSettingsSyncEnabled {
@@ -24,48 +18,4 @@ define_settings_group!(CloudPreferencesSettings, settings: [
    },
 ]);
 
-/// Defines a based model for syncing cloud preferences (simplified stub).
-impl StringModel for Preference {
-    type CloudObjectType = CloudPreference;
-
-    fn model_type_name(&self) -> &'static str {
-        "Preference"
-    }
-
-    fn should_enforce_revisions() -> bool {
-        false
-    }
-
-    fn should_show_activity_toasts() -> bool {
-        false
-    }
-
-    fn warn_if_unsaved_at_quit() -> bool {
-        false
-    }
-
-    fn model_format() -> GenericStringObjectFormat {
-        GenericStringObjectFormat::Json(Self::json_object_type())
-    }
-
-    fn display_name(&self) -> String {
-        self.model_type_name().to_owned()
-    }
-
-    fn should_clear_on_unique_key_conflict(&self) -> bool {
-        true
-    }
-
-    fn uniqueness_key(&self) -> Option<GenericStringObjectUniqueKey> {
-        Some(GenericStringObjectUniqueKey {
-            key: format!("{}_{}", self.platform, self.storage_key),
-            unique_per: UniquePer::User,
-        })
-    }
-}
-
-impl JsonModel for Preference {
-    fn json_object_type() -> JsonObjectType {
-        JsonObjectType::Preference
-    }
-}
+// Note: StringModel and JsonModel impls for Preference are in cloud_stub_types/models/preference.rs

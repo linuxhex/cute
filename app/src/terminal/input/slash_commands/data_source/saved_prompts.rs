@@ -7,8 +7,8 @@ use cuteui::fonts::FamilyId;
 use cuteui::{AppContext, SingletonEntity};
 
 use super::{AcceptSlashCommandOrSavedPrompt, InlineItem};
-use crate::cloud_object::model::persistence::CloudModel;
-use crate::cloud_object::CloudObject;
+use crate::cloud_stub_types::model::persistence::CloudModel;
+use crate::cloud_stub_types::CloudObject;
 use crate::search::async_snapshot_data_source::AsyncSnapshotDataSource;
 use crate::search::data_source::{Query, QueryResult};
 use crate::search::mixer::{BoxFuture, DataSourceRunErrorWrapper};

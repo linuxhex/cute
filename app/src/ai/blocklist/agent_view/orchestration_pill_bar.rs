@@ -14,6 +14,7 @@ use cute_core::channel::ChannelState;
 use cute_core::ui::appearance::Appearance;
 use cute_core::ui::color::blend::Blend;
 use cute_core::ui::color::coloru_with_opacity;
+use cute_core::ui::color::contrast::relative_luminance;
 use cute_core::ui::theme::color::internal_colors;
 use cute_core::ui::theme::{Fill, WarpTheme};
 use cuteui::elements::new_scrollable::{NewScrollable, ScrollableAppearance, SingleAxisConfig};
@@ -2160,8 +2161,13 @@ fn render_avatar_disc(
 
     let glyph_element: Box<dyn Element> = match glyph {
         AvatarGlyph::Letter(letter) => {
+            let glyph_color = if relative_luminance(avatar_color) > 0.5 {
+                ColorU::black()
+            } else {
+                ColorU::white()
+            };
             Text::new(letter.to_string(), appearance.ui_font_family(), glyph_size)
-                .with_color(theme.background().into_solid())
+                .with_color(glyph_color)
                 .with_style(Properties {
                     weight: Weight::Bold,
                     ..Default::default()
@@ -2169,7 +2175,12 @@ fn render_avatar_disc(
                 .finish()
         }
         AvatarGlyph::Icon(icon) => {
-            ConstrainedBox::new(icon.to_cuteui_icon(theme.background()).finish())
+            let glyph_color = if relative_luminance(avatar_color) > 0.5 {
+                Fill::Solid(ColorU::black())
+            } else {
+                Fill::Solid(ColorU::white())
+            };
+            ConstrainedBox::new(icon.to_cuteui_icon(glyph_color).finish())
                 .with_width(glyph_size)
                 .with_height(glyph_size)
                 .finish()

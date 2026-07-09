@@ -4,10 +4,10 @@ use cuteui::keymap::Trigger;
 use cuteui::{SingletonEntity, ViewContext, ViewHandle};
 
 use super::env_var_collection::{EnvVarCollectionAction, EnvVarCollectionView, VariableRowIndex};
-use crate::cloud_object::{CloudObject, GenericStringObjectFormat, Space};
-use crate::drive::drive_helpers::has_feature_gated_anonymous_user_reached_env_var_limit;
-use crate::drive::export::ExportManager;
-use crate::drive::CloudObjectTypeAndId;
+use crate::cloud_stub_types::{CloudObject, GenericStringObjectFormat, Space};
+use crate::cloud_stub_types::drive_helpers::has_feature_gated_anonymous_user_reached_env_var_limit;
+use crate::cloud_stub_types::export::ExportManager;
+use crate::cloud_stub_types::CloudObjectTypeAndId;
 use crate::env_vars::active_env_var_collection_data::TrashStatus;
 use crate::external_secrets::SecretManager;
 use crate::menu::{Event as MenuEvent, Menu, MenuItem, MenuItemFields};
@@ -428,7 +428,7 @@ impl EnvVarCollectionView {
                 update_manager.untrash_object(
                     CloudObjectTypeAndId::from_generic_string_object(
                         GenericStringObjectFormat::Json(
-                            crate::cloud_object::JsonObjectType::EnvVarCollection,
+                            crate::cloud_stub_types::JsonObjectType::EnvVarCollection,
                         ),
                         env_var_collection_id,
                     ),
@@ -447,7 +447,7 @@ impl EnvVarCollectionView {
                 update_manager.trash_object(
                     CloudObjectTypeAndId::from_generic_string_object(
                         GenericStringObjectFormat::Json(
-                            crate::cloud_object::JsonObjectType::EnvVarCollection,
+                            crate::cloud_stub_types::JsonObjectType::EnvVarCollection,
                         ),
                         env_var_collection_id,
                     ),
@@ -464,7 +464,7 @@ impl EnvVarCollectionView {
                 update_manager.duplicate_object(
                     &CloudObjectTypeAndId::from_generic_string_object(
                         GenericStringObjectFormat::Json(
-                            crate::cloud_object::JsonObjectType::EnvVarCollection,
+                            crate::cloud_stub_types::JsonObjectType::EnvVarCollection,
                         ),
                         env_var_collection_id,
                     ),
@@ -483,7 +483,7 @@ impl EnvVarCollectionView {
                     window_id,
                     &vec![CloudObjectTypeAndId::from_generic_string_object(
                         GenericStringObjectFormat::Json(
-                            crate::cloud_object::JsonObjectType::EnvVarCollection,
+                            crate::cloud_stub_types::JsonObjectType::EnvVarCollection,
                         ),
                         env_var_collection_id,
                     )],

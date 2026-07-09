@@ -12,7 +12,7 @@ use crate::ai::agent_conversations_model::AgentManagementFilters;
 use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::ai::blocklist::{InputConfig, SerializedBlockListItem};
 use crate::code::editor_management::CodeSource;
-use crate::drive::OpenWarpDriveObjectSettings;
+use crate::cloud_stub_types::OpenWarpDriveObjectSettings;
 use crate::root_view::quake_mode_window_id;
 use crate::server::ids::SyncId;
 use crate::settings_view::environments_page::EnvironmentsPage;
@@ -117,7 +117,7 @@ pub struct LeafSnapshot {
 #[derive(Clone, Debug, PartialEq)]
 pub enum LeafContents {
     Terminal(TerminalPaneSnapshot),
-    Notebook(NotebookPaneSnapshot),
+    File(FilePaneSnapshot),
     AIDocument(AIDocumentPaneSnapshot),
     Code(CodePaneSnapShot),
     EnvVarCollection(EnvVarCollectionPaneSnapshot),
@@ -131,6 +131,7 @@ pub enum LeafContents {
     /// The in-app network log pane. Not persisted across restarts because the
     /// backing log is an in-memory ring buffer that starts empty on launch.
     NetworkLog,
+    Notebook(NotebookPaneSnapshot),
     /// An entrypoint pane type to launch other pane types from a search palette. The default view
     /// when creating a tab.
     Welcome {
@@ -161,7 +162,7 @@ impl LeafContents {
             // actions and have no persistable state.
             | LeafContents::EnvironmentManagement(_) => false,
             LeafContents::Terminal(_)
-            | LeafContents::Notebook(_)
+            | LeafContents::File(_)
             | LeafContents::AIDocument(_)
             | LeafContents::Code(_)
             | LeafContents::EnvVarCollection(_)
@@ -172,7 +173,8 @@ impl LeafContents {
             | LeafContents::CodeReview(_)
             | LeafContents::AmbientAgent(_)
             | LeafContents::Welcome { .. }
-            | LeafContents::GetStarted => true,
+            | LeafContents::GetStarted
+            | LeafContents::Notebook(_) => true,
         }
     }
 }
@@ -204,23 +206,19 @@ pub struct TerminalPaneSnapshot {
 }
 
 #[derive(Clone, Debug, PartialEq)]
+pub struct FilePaneSnapshot {
+    pub path: Option<PathBuf>,
+}
+
+/// Snapshot of the contents of a notebook pane.
+#[derive(Clone, Debug, PartialEq)]
 pub enum NotebookPaneSnapshot {
     CloudNotebook {
-        /// The ID of the notebook that was open in this pane. There are 3 possibilities:
-        /// 1. The pane contains a newly-created notebook that has not been edited yet. It might not
-        ///    have an ID yet (client or server), so this will be `None`.
-        /// 2. The pane contains a notebook that hasn't been synced to the server yet, so this will
-        ///    contain a client ID that should exist in SQLite.
-        /// 3. The pane contains a notebook that's known to the server, so this will contain the
-        ///    server ID.
         notebook_id: Option<SyncId>,
-        // Settings for the notebook pane when it's opened (such as a folder to focus upon opening)
-        settings: OpenWarpDriveObjectSettings,
+        settings: Option<crate::cloud_stub_types::OpenCuteDriveObjectSettings>,
     },
     LocalFileNotebook {
-        /// The path to the local file that was open in this pane. This may be `None` if
-        /// the pane contained an unreadable file.
-        path: Option<PathBuf>,
+        path: PathBuf,
     },
 }
 
@@ -306,7 +304,6 @@ impl From<ToolPanelView> for LeftPanelDisplayedTab {
         match view {
             ToolPanelView::ProjectExplorer => LeftPanelDisplayedTab::FileTree,
             ToolPanelView::GlobalSearch { .. } => LeftPanelDisplayedTab::GlobalSearch,
-            _ => LeftPanelDisplayedTab::FileTree,
         }
     }
 }
