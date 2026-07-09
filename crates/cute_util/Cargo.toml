@@ -36,6 +36,3 @@ windows.workspace = true
 [target.'cfg(target_family = "wasm")'.dependencies]
 gloo.workspace = true
 
-[dev-dependencies]
-futures-lite.workspace = true
-cuteui.workspace = true

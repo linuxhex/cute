@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use warp_multi_agent_api as api;
+use cute_multi_agent_api as api;
 use cuteui::{Entity, ModelContext, SingletonEntity};
 use cuteui_extras::secure_storage::{self, AppContextExt};
 

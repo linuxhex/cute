@@ -9,7 +9,7 @@ use async_trait::async_trait;
 use futures::channel::mpsc;
 use uuid::Uuid;
 use cute_cli::agent::Harness;
-use warp_multi_agent_api as api;
+use cute_multi_agent_api as api;
 use cuteui::r#async::{SpawnedFutureHandle, Timer};
 use cuteui::{
     Entity, EntityId, GetSingletonModelHandle, ModelContext, SingletonEntity, UpdateModel,

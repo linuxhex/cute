@@ -15,8 +15,6 @@ enable-metal-frame-capture = []
 # Enables the font-kit rasterizer on Windows.
 fontkit-rasterizer = []
 traces = ["cuteui_core/traces"]
-# Feature enabled only when app is compiled for integration tests.
-integration_tests = ["cuteui_core/integration_tests"]
 # If enabled, writes named telemetry events to the info log.  Should never be
 # enabled in release builds without a PII audit of telemetry data.
 log_named_telemetry_events = ["cuteui_core/log_named_telemetry_events"]
@@ -53,14 +51,6 @@ version-compare = { workspace = true, optional = true }
 cuteui_core.workspace = true
 wgpu = { workspace = true, optional = true }
 
-[dev-dependencies]
-asset_cache.workspace = true
-env_logger.workspace = true
-futures-timer = "3.0.2"
-image = { workspace = true, default-features = false, features = ["png"] }
-rust-embed.workspace = true
-cuteui = { workspace = true, features = ["test-util"] }
-cuteui_core = { workspace = true, features = ["test-util"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 block.workspace = true
@@ -95,8 +85,6 @@ objc2-foundation = { workspace = true, features = [
     "objc2-core-foundation",
 ] }
 
-[target.'cfg(target_os = "macos")'.dev-dependencies]
-rand.workspace = true
 
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
 async-io.workspace = true
@@ -158,8 +146,6 @@ x11rb.workspace = true
 x11-dl = "2.21.0"
 zbus.workspace = true
 
-[target.'cfg(any(target_os = "linux", target_os = "freebsd"))'.dev-dependencies]
-virtual-fs.workspace = true
 
 [target.'cfg(target_os = "windows")'.dependencies]
 dwrote = { git = "https://github.com/warpdotdev/dwrote-rs", rev = "a71ce6c0136f7d0954a9a8b181b5b2d8ace5eb9c", default-features = false }

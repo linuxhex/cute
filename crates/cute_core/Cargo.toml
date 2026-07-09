@@ -7,7 +7,6 @@ license.workspace = true
 
 [features]
 crash_reporting = ["dep:sentry", "dep:sentry-log"]
-integration_tests = []
 local_fs = []
 release_bundle = []
 test-util = ["dep:mockito", "cute_features/test-util"]
@@ -72,9 +71,6 @@ objc2-foundation = { workspace = true, features = [
 ] }
 tempfile.workspace = true
 
-[dev-dependencies]
-rand.workspace = true
-serde_yaml.workspace = true
 
 [build-dependencies]
 anyhow.workspace = true

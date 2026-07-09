@@ -10,10 +10,6 @@ license.workspace = true
 arrayvec.workspace = true
 log.workspace = true
 
-[dev-dependencies]
-rand.workspace = true
-# Enable the `test-util` feature for our own package when running tests.
-sum_tree = { path = ".", features = ["test-util"] }
 
 [features]
 # Enables utilities for testing.

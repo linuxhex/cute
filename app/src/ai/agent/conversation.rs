@@ -16,9 +16,9 @@ use cute_core::features::FeatureFlag;
 use cute_core::ui::appearance::Appearance;
 use cute_core::ui::theme::color::internal_colors;
 use cute_core::ui::theme::WarpTheme;
-use warp_multi_agent_api::response_event::stream_finished;
-use warp_multi_agent_api::response_event::stream_finished::TokenUsage;
-use warp_multi_agent_api::{self as api};
+use cute_multi_agent_api::response_event::stream_finished;
+use cute_multi_agent_api::response_event::stream_finished::TokenUsage;
+use cute_multi_agent_api::{self as api};
 use cuteui::color::ColorU;
 use cuteui::{AppContext, EntityId, ModelContext, SingletonEntity};
 
@@ -1140,11 +1140,11 @@ impl AIConversation {
     ///
     /// This filters the full task list using DFS linearization to determine
     /// which tasks have open subagent tool calls without corresponding results.
-    pub fn compute_active_tasks(&self) -> Vec<warp_multi_agent_api::Task> {
+    pub fn compute_active_tasks(&self) -> Vec<cute_multi_agent_api::Task> {
         use std::collections::HashMap;
 
         let root_task_id = self.get_root_task_id().to_string();
-        let all_tasks: HashMap<&str, &warp_multi_agent_api::Task> = self
+        let all_tasks: HashMap<&str, &cute_multi_agent_api::Task> = self
             .all_tasks()
             .filter_map(|task| {
                 let source = task.source()?;
@@ -1797,7 +1797,7 @@ impl AIConversation {
     pub fn initialize_output_for_response_stream(
         &mut self,
         stream_id: &ResponseStreamId,
-        init_event: warp_multi_agent_api::response_event::StreamInit,
+        init_event: cute_multi_agent_api::response_event::StreamInit,
         terminal_view_id: EntityId,
         ctx: &mut ModelContext<BlocklistAIHistoryModel>,
     ) -> Result<(), UpdateConversationError> {
@@ -2271,11 +2271,11 @@ impl AIConversation {
         &mut self,
         response_stream_id: &ResponseStreamId,
         terminal_view_id: EntityId,
-        action: warp_multi_agent_api::client_action::Action,
+        action: cute_multi_agent_api::client_action::Action,
         skill_path_origin: &SkillPathOrigin,
         ctx: &mut ModelContext<BlocklistAIHistoryModel>,
     ) -> Result<(), UpdateConversationError> {
-        use warp_multi_agent_api::client_action::*;
+        use cute_multi_agent_api::client_action::*;
         match action {
             Action::BeginTransaction(_) => {
                 self.begin_transaction();

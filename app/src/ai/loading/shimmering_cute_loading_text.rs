@@ -1,16 +1,17 @@
-//! Shimmering Warp loading text - renders Warp logo with shimmering text for loading states.
+//! Shimmering Cute loading text - renders Cute logo with shimmering text for loading states.
 
 use cute_core::ui::appearance::Appearance;
 use cuteui::elements::shimmering_text::{
     ShimmerConfig, ShimmeringTextElement, ShimmeringTextStateHandle,
+};
 use cuteui::elements::Element;
 use cuteui::{AppContext, SingletonEntity};
 
-/// Warp icon glyph character
-const WARP_GLYPH: &str = "\u{E500}";
+/// Cute icon glyph character
+const CUTE_GLYPH: &str = "\u{E500}";
 
-/// Creates a shimmering text element with the Warp glyph.
-pub fn shimmering_warp_loading_text(
+/// Creates a shimmering text element with the Cute glyph.
+pub fn shimmering_cute_loading_text(
     text: impl Into<String>,
     font_size: f32,
     shimmer_handle: ShimmeringTextStateHandle,
@@ -28,7 +29,7 @@ pub fn shimmering_warp_loading_text(
 
     // Create a single shimmering element with glyph and text
     ShimmeringTextElement::new(
-        format!("{} {}", WARP_GLYPH, text.into()),
+        format!("{} {}", CUTE_GLYPH, text.into()),
         appearance.ui_font_family(),
         font_size,
         base_color,

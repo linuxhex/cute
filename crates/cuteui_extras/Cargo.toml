@@ -25,10 +25,6 @@ toml_edit = { workspace = true, optional = true }
 thiserror.workspace = true
 cuteui.workspace = true
 
-[dev-dependencies]
-# Enable the `test-util` feature for our own package when running tests.
-cuteui_extras = { path = ".", features = ["test-util"] }
-tempfile.workspace = true
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2 = { workspace = true, optional = true }

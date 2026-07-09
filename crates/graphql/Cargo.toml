@@ -32,8 +32,6 @@ graphql-ws-client = {workspace = true, features = ["client-cynic", "tungstenite"
 graphql-ws-client = {workspace = true, features = ["client-cynic", "ws_stream_wasm"]}
 ws_stream_wasm = "0.7"
 
-[dev-dependencies]
-http_client = { workspace = true, features = ["test-util"] }
 
 [build-dependencies]
 anyhow.workspace = true

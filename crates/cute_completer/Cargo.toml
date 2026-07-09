@@ -46,13 +46,7 @@ command = { path = "../command" }
 rquickjs = { workspace = true, optional = true }
 warp-command-signatures = {workspace = true, features = ["embed-signatures"]}
 
-[target.'cfg(not(target_family = "wasm"))'.dev-dependencies]
-command = { path = "../command", features = ["test-util"] }
 
-[dev-dependencies]
-anyhow.workspace = true
-# Enable the `test-util` feature for our own package when running tests.
-cute_completer = { path = ".", features = ["test-util"] }
 
 [features]
 # Enables the completions-on-js implementation of the completion engine.

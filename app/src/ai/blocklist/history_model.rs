@@ -12,8 +12,8 @@ use itertools::Itertools as _;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use cute_cli::agent::Harness;
-use warp_multi_agent_api::client_action::{Action, StartNewConversation};
-use warp_multi_agent_api::response_event::stream_finished::{
+use cute_multi_agent_api::client_action::{Action, StartNewConversation};
+use cute_multi_agent_api::response_event::stream_finished::{
     ConversationUsageMetadata, TokenUsage,
 };
 use cuteui::{AppContext, Entity, EntityId, ModelContext, SingletonEntity};
@@ -1074,7 +1074,7 @@ impl BlocklistAIHistoryModel {
         stream_id: &ResponseStreamId,
         conversation_id: AIConversationId,
         terminal_view_id: EntityId,
-        init_event: warp_multi_agent_api::response_event::StreamInit,
+        init_event: cute_multi_agent_api::response_event::StreamInit,
         ctx: &mut ModelContext<Self>,
     ) {
         let mut should_emit_server_token_assigned = false;
@@ -1275,7 +1275,7 @@ impl BlocklistAIHistoryModel {
         title_override: Option<&str>,
         app: &AppContext,
     ) -> Result<AIConversation, anyhow::Error> {
-        let tasks: Vec<warp_multi_agent_api::Task> = source_conversation
+        let tasks: Vec<cute_multi_agent_api::Task> = source_conversation
             .all_tasks()
             .filter_map(|t| t.source().cloned())
             .collect();
@@ -1414,7 +1414,7 @@ impl BlocklistAIHistoryModel {
         // Build truncated tasks by retaining only messages whose IDs are in
         // `allowed_message_ids`. Tasks whose message list becomes empty and
         // which are non-root tasks are dropped.
-        let truncated_tasks: Vec<warp_multi_agent_api::Task> = conversation
+        let truncated_tasks: Vec<cute_multi_agent_api::Task> = conversation
             .all_tasks()
             .filter_map(|t| {
                 if let Some(message_ids_to_retain) = message_ids_to_retain_by_task.get(t.id()) {
@@ -1521,7 +1521,7 @@ impl BlocklistAIHistoryModel {
     pub fn apply_client_actions(
         &mut self,
         response_stream_id: &ResponseStreamId,
-        client_actions: Vec<warp_multi_agent_api::ClientAction>,
+        client_actions: Vec<cute_multi_agent_api::ClientAction>,
         conversation_id: AIConversationId,
         terminal_view_id: EntityId,
         skill_path_origin: &SkillPathOrigin,
@@ -2330,7 +2330,7 @@ impl BlocklistAIHistoryModel {
     pub fn insert_forked_conversation_from_tasks(
         &mut self,
         conversation_id: AIConversationId,
-        tasks: Vec<warp_multi_agent_api::Task>,
+        tasks: Vec<cute_multi_agent_api::Task>,
         conversation_data: AgentConversationData,
     ) -> anyhow::Result<AIConversation> {
         let mut conversation =
@@ -2826,11 +2826,11 @@ impl From<&AIAgentOutputStatus> for AIQueryHistoryOutputStatus {
 ///
 /// Always prepends the given prefix to the root task's description.
 fn update_forked_task_properties(
-    tasks: Vec<warp_multi_agent_api::Task>,
+    tasks: Vec<cute_multi_agent_api::Task>,
     prefix: &str,
     preserve_task_ids: bool,
     title_override: Option<&str>,
-) -> Vec<warp_multi_agent_api::Task> {
+) -> Vec<cute_multi_agent_api::Task> {
     let root_description = |current: &str| match title_override {
         Some(title) => title.to_owned(),
         None => format!("{prefix}{current}"),

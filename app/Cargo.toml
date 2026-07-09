@@ -28,11 +28,6 @@ path = "src/bin/local.rs"
 test = false
 
 [[bin]]
-name = "integration"
-path = "src/bin/integration.rs"
-test = false
-
-[[bin]]
 name = "stable"
 path = "src/bin/stable.rs"
 test = false
@@ -250,7 +245,7 @@ counter = "0.6.0"
 typed-path.workspace = true
 urlencoding = "2.1.3"
 mime_guess = "2.0"
-warp_multi_agent_api.workspace = true
+cute_multi_agent_api.workspace = true
 repo_metadata.workspace = true
 vim.workspace = true
 rmcp = { workspace = true, features = ["client"] }
@@ -402,31 +397,7 @@ windows-registry = { workspace = true }
 windows-result = { workspace = true }
 winreg.workspace = true
 
-[dev-dependencies]
-ai = { workspace = true, features = ["test-util"] }
-async-process.workspace = true
-jsonschema = { workspace = true, default-features = false }
-async-executor = "1.5.1"
-command = { workspace = true, features = ["test-util"] }
-ctor = "0.1.18"
-http_client = { workspace = true, features = ["test-util"] }
-mockall.workspace = true
-mockito.workspace = true
-serial_test = "0.8.0"
-sum_tree = { workspace = true, features = ["test-util"] }
-virtual-fs.workspace = true
-cute_completer = { workspace = true, features = ["test-util"] }
-cute_core = { workspace = true, features = ["test-util"] }
-cute_editor = { workspace = true, features = ["test-util"] }
-cute_server_client = { workspace = true, features = ["test-util"] }
-cute_terminal = { workspace = true, features = ["test-util"] }
-cuteui = { workspace = true, features = ["test-util"] }
-cuteui_extras = { workspace = true, features = ["test-util"] }
-cute_files = { workspace = true, features = ["test-util"] }
-repo_metadata = { workspace = true, features = ["test-util"] }
 
-[target.'cfg(not(target_family = "wasm"))'.dev-dependencies]
-tokio = { workspace = true, features = ["rt-multi-thread", "macros", "process", "time"] }
 
 [build-dependencies]
 anyhow = "1.0"
@@ -656,7 +627,6 @@ code_mode_chip = []
 github_pr_prompt_chip = []
 create_project_flow = []
 agent_mode_evals = [
-    "integration_tests",
     "full_source_code_embedding",
     "cross_repo_context",
     "rust-embed/debug-embed",
@@ -758,13 +728,6 @@ team_features_override = []
 test-util = []
 team_workflows = ["team_features_override"]
 toggle_bootstrap_block = []
-# Feature enabled only when app is compiled for integration tests.
-integration_tests = [
-    "cute_cli/integration_tests",
-    "cuteui/integration_tests",
-    "cuteui/test-util",
-    "cute_core/integration_tests",
-]
 traces = []
 viewing_shared_sessions = []
 workflow_aliases = []

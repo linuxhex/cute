@@ -8,7 +8,7 @@ use base64::Engine as _;
 use url::Url;
 use cute_cli::agent::Harness;
 use cute_core::execution_mode::AppExecutionMode;
-use warp_multi_agent_api as multi_agent_api;
+use cute_multi_agent_api as multi_agent_api;
 use cuteui::{
     AppContext, EntityId, ModelHandle, SingletonEntity, ViewContext, ViewHandle, WindowId,
 };

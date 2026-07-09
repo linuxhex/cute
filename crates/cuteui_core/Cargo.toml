@@ -8,8 +8,6 @@ license = "MIT"
 
 [features]
 traces = []
-# Feature enabled only when app is compiled for integration tests.
-integration_tests = ["dep:minimp4", "dep:openh264"]
 # If enabled, writes named telemetry events to the info log.  Should never be
 # enabled in release builds without a PII audit of telemetry data.
 log_named_telemetry_events = []
@@ -78,15 +76,6 @@ trait-set = "0.3.0"
 vec1.workspace = true
 cute_util.workspace = true
 
-[dev-dependencies]
-command = { workspace = true, features = ["test-util"] }
-concat-idents.workspace = true
-tempfile = "3.2.0"
-ctor = "0.1.19"
-rust-embed.workspace = true
-simplelog.workspace = true
-# Enable the `test-util` feature for our own package when running tests.
-cuteui_core = { path = ".", features = ["test-util"] }
 
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
 async-io.workspace = true

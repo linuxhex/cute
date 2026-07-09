@@ -43,8 +43,3 @@ watcher.workspace = true
 [build-dependencies]
 anyhow.workspace = true
 
-[dev-dependencies]
-env_logger.workspace = true
-futures = "0.3"
-virtual-fs.workspace = true
-cuteui = { workspace = true, features = ["test-util"] }

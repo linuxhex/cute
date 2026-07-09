@@ -105,7 +105,7 @@ use cute_graphql::queries::task_git_credentials::{
     TaskGitCredentials, TaskGitCredentialsInput, TaskGitCredentialsResult,
     TaskGitCredentialsVariables,
 };
-use warp_multi_agent_api::ConversationData;
+use cute_multi_agent_api::ConversationData;
 
 use super::auth::AuthClient;
 use super::harness_support::{ResolvePromptRequest, ResolvedHarnessPrompt, UploadField, UploadFieldValue, UploadTarget};

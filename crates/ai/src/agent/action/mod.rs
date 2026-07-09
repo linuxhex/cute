@@ -9,7 +9,7 @@ use itertools::Itertools as _;
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumDiscriminants;
 use uuid::Uuid;
-pub use warp_multi_agent_api::LifecycleEventType;
+pub use cute_multi_agent_api::LifecycleEventType;
 use cute_terminal::model::BlockId;
 
 use crate::agent::action_result::{

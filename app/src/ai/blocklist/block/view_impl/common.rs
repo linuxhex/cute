@@ -78,7 +78,7 @@ use crate::ai::blocklist::model::{AIBlockModel, AIBlockModelHelper};
 use crate::ai::blocklist::secret_redaction::{redact_secrets_in_element, SecretRedactionState};
 use crate::ai::blocklist::view_util::error_color;
 use crate::ai::blocklist::{BlocklistAIActionModel, ShellCommandExecutor, TextLocation};
-use crate::ai::loading::shimmering_warp_loading_text;
+use crate::ai::loading::shimmering_cute_loading_text;
 use crate::ai::AIRequestUsageModel;
 use crate::code::editor::view::CodeEditorView;
 use crate::code::editor_management::CodeSource;
@@ -694,7 +694,7 @@ pub fn render_output_status_text(
         MaybeShimmeringText::Shimmering {
             text,
             shimmering_text_handle,
-        } => shimmering_warp_loading_text(
+        } => shimmering_cute_loading_text(
             text.to_string(),
             appearance.monospace_font_size() - 2.,
             shimmering_text_handle,

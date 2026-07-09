@@ -12,7 +12,7 @@ use ai::skills::{
 };
 use api::ask_user_question::question::QuestionType;
 use cute_core::channel::ChannelState;
-use warp_multi_agent_api as api;
+use cute_multi_agent_api as api;
 
 use crate::ai::agent::api::convert_conversation::{
     convert_input_context, convert_tool_call_result_to_input,

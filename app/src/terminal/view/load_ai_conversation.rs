@@ -9,7 +9,7 @@ use prost::Message;
 use vec1::Vec1;
 use cute_core::channel::ChannelState;
 use cute_core::features::FeatureFlag;
-use warp_multi_agent_api as api;
+use cute_multi_agent_api as api;
 use cuteui::units::IntoPixels;
 use cuteui::{EntityId, ModelHandle, SingletonEntity, ViewContext};
 

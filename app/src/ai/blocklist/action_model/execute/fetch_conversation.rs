@@ -76,7 +76,7 @@ fn materialize_conversation(
         ));
     };
 
-    let tasks: Vec<warp_multi_agent_api::Task> = conversation
+    let tasks: Vec<cute_multi_agent_api::Task> = conversation
         .all_tasks()
         .filter_map(|task| task.source().cloned())
         .collect();

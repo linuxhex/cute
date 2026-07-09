@@ -23,6 +23,3 @@ log.workspace = true
 [features]
 test-util = []
 
-[dev-dependencies]
-async-channel.workspace = true
-tempfile.workspace = true

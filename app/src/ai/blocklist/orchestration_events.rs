@@ -3,7 +3,7 @@
 use std::collections::{HashMap, HashSet};
 
 use uuid::Uuid;
-use warp_multi_agent_api as api;
+use cute_multi_agent_api as api;
 use cuteui::{Entity, ModelContext, SingletonEntity};
 
 use super::history_model::{

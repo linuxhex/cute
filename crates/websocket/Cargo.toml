@@ -21,9 +21,6 @@ thiserror.workspace = true
 pin-project.workspace = true
 url.workspace = true
 
-[dev-dependencies]
-futures-test-sink = "0.1.1"
-tokio = { workspace = true, features = ["macros", "rt", "time"] }
 
 [target.'cfg(target_family = "wasm")'.dependencies]
 ws_stream_wasm = "0.7"

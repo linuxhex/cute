@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use anyhow::anyhow;
 use ui_components::lightbox::{LightboxImage, LightboxImageSource};
 use cute_core::report_error;
-use warp_multi_agent_api as api;
+use cute_multi_agent_api as api;
 #[cfg(feature = "local_fs")]
 use cuteui::platform::SaveFilePickerConfiguration;
 use cuteui::SingletonEntity;

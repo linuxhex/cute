@@ -477,12 +477,12 @@ impl BlocklistAIHistoryModel {
                 for task in &agent_conversation.tasks {
                     for message in &task.messages {
                         match &message.message {
-                            Some(warp_multi_agent_api::message::Message::UserQuery(_)) => {
+                            Some(cute_multi_agent_api::message::Message::UserQuery(_)) => {
                                 has_user_query = true;
                             }
-                            Some(warp_multi_agent_api::message::Message::SystemQuery(sys)) => {
+                            Some(cute_multi_agent_api::message::Message::SystemQuery(sys)) => {
                                 if let Some(
-                                    warp_multi_agent_api::message::system_query::Type::AutoCodeDiff(_),
+                                    cute_multi_agent_api::message::system_query::Type::AutoCodeDiff(_),
                                 ) = &sys.r#type
                                 {
                                     has_autocodediff = true;
@@ -508,17 +508,17 @@ impl BlocklistAIHistoryModel {
                         task.messages
                             .iter()
                             .find_map(|msg| match &msg.message {
-                                Some(warp_multi_agent_api::message::Message::UserQuery(
+                                Some(cute_multi_agent_api::message::Message::UserQuery(
                                     user_query,
                                 )) => Some(user_query.query.clone()),
-                                Some(warp_multi_agent_api::message::Message::ToolCall(
+                                Some(cute_multi_agent_api::message::Message::ToolCall(
                                     tool_call,
                                 )) => {
                                     let Some(tool) = &tool_call.tool else {
                                         return None;
                                     };
 
-                                    if let warp_multi_agent_api::message::tool_call::Tool::ApplyFileDiffs(diff_suggestion) = tool
+                                    if let cute_multi_agent_api::message::tool_call::Tool::ApplyFileDiffs(diff_suggestion) = tool
                                     {
                                         Some(diff_suggestion.summary.clone())
                                     } else {

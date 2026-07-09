@@ -21,14 +21,14 @@ impl fmt::Display for SkillReference {
     }
 }
 
-impl From<SkillReference> for warp_multi_agent_api::skill_descriptor::SkillReference {
+impl From<SkillReference> for cute_multi_agent_api::skill_descriptor::SkillReference {
     fn from(reference: SkillReference) -> Self {
         match reference {
             SkillReference::Path(path) => {
-                warp_multi_agent_api::skill_descriptor::SkillReference::Path(path.display_path())
+                cute_multi_agent_api::skill_descriptor::SkillReference::Path(path.display_path())
             }
             SkillReference::BundledSkillId(id) => {
-                warp_multi_agent_api::skill_descriptor::SkillReference::BundledSkillId(id)
+                cute_multi_agent_api::skill_descriptor::SkillReference::BundledSkillId(id)
             }
         }
     }

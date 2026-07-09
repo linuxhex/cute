@@ -10,7 +10,7 @@ use cute_cli::environment::{EnvironmentCommand, ImageCommand};
 use cute_cli::scope::ObjectScope;
 use cute_cli::GlobalOptions;
 use cute_graphql::queries::get_oauth_connect_tx_status::OauthConnectTxStatus;
-use cute_graphql::queries::list_warp_dev_images::{
+use cute_graphql::queries::list_cute_dev_images::{
     ListWarpDevImages, ListWarpDevImagesResult, ListWarpDevImagesVariables,
 };
 use cute_graphql::queries::user_repo_auth_status::UserRepoAuthStatusEnum;

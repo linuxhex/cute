@@ -16,7 +16,7 @@ use cute_editor::model::RichTextEditorModel;
 use cute_editor::render::model::RichTextStyles;
 use cuteui::color::ColorU;
 use cuteui::{AppContext, Entity, EntityId, ModelContext, ModelHandle, SingletonEntity, WindowId};
-use {anyhow, warp_multi_agent_api as maa_api};
+use {anyhow, cute_multi_agent_api as maa_api};
 
 use crate::ai::agent::conversation::AIConversationId;
 use crate::ai::agent::AIAgentActionId;

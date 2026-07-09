@@ -17,11 +17,3 @@ settings_value = { workspace = true, features = ["derive"] }
 cute_features.workspace = true
 cuteui = { workspace = true, features = ["settings_value"] }
 cuteui_extras = { workspace = true, features = ["default"] }
-
-[dev-dependencies]
-tempfile.workspace = true
-cute_features = { workspace = true, features = ["test-util"] }
-cuteui_extras = { workspace = true, features = ["user_preferences-toml"] }
-
-[features]
-integration_tests = []

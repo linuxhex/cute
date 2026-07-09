@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use futures_util::StreamExt;
 use cute_core::features::FeatureFlag;
-use warp_multi_agent_api as api;
+use cute_multi_agent_api as api;
 
 use super::convert_to::convert_input;
 use super::{ConvertToAPITypeError, RequestParams, ResponseStream};

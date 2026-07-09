@@ -3,7 +3,7 @@
 // `assert!` causes the app to crash before debug info can be exported. Use `integration_assert!` instead.
 #![deny(clippy::assertions_on_constants)]
 
-use warp_multi_agent_api as api;
+use cute_multi_agent_api as api;
 use cuteui::integration::{AssertionCallback, AssertionOutcome};
 use cuteui::{integration_assert, EntityId, SingletonEntity};
 

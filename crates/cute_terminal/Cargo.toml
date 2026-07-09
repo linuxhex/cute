@@ -35,8 +35,6 @@ cute_core.workspace = true
 cute_util.workspace = true
 cuteui.workspace = true
 
-[dev-dependencies]
-unicode-segmentation = "1.11.0"
 
 [features]
 test-util = []

@@ -41,7 +41,7 @@ strum_macros.workspace = true
 cuteui.workspace = true
 cuteui_extras = { workspace = true, features = ["default"] }
 cute_graphql.workspace = true
-warp_multi_agent_api.workspace = true
+cute_multi_agent_api.workspace = true
 dirs.workspace = true
 lazy_static.workspace = true
 regex.workspace = true
@@ -75,11 +75,6 @@ tokio = { workspace = true, features = ["rt-multi-thread"] }
 watcher.workspace = true
 notify-debouncer-full.workspace = true
 
-[dev-dependencies]
-filetime = "0.2.25"
-tempfile.workspace = true
-virtual-fs.workspace = true
-cute_core = { workspace = true, features = ["test-util"] }
 
 [build-dependencies]
 anyhow.workspace = true

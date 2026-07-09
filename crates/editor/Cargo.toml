@@ -53,16 +53,3 @@ rayon.workspace = true
 line-ending.workspace = true
 vim.workspace = true
 imara-diff = "0.2"
-
-[dev-dependencies]
-rust-embed.workspace = true
-enclose = "1.1.8"
-env_logger.workspace = true
-sum_tree = { workspace = true, features = ["test-util"] }
-cute_core = { workspace = true, features = ["test-util"] }
-cuteui = { workspace = true, features = ["test-util"] }
-criterion = { version = "0.5.1", features = ["html_reports"] }
-
-[[bench]]
-name = "buffer_bench"
-harness = false

@@ -56,8 +56,6 @@ windows = { workspace = true, features = [
     "Win32_UI_WindowsAndMessaging",
 ] }
 
-[dev-dependencies]
-computer_use = { path = ".", features = ["test-util"] }
 
 [build-dependencies]
 cfg_aliases = "0.2.1"

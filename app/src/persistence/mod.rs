@@ -35,7 +35,7 @@ pub use sqlite::establish_ro_connection;
 use uuid::Uuid;
 use cute_core::command::ExitCode;
 use cute_graphql::scalars::time::ServerTimestamp;
-use warp_multi_agent_api as api;
+use cute_multi_agent_api as api;
 use cuteui::{AppContext, Entity, SingletonEntity};
 
 use self::model::{AgentConversation, AgentConversationData, Project};

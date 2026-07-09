@@ -8,7 +8,7 @@ use pathfinder_color::ColorU;
 use cute_core::features::FeatureFlag;
 use cute_core::ui::appearance::Appearance;
 use cute_core::ui::theme::Fill;
-use warp_multi_agent_api as api;
+use cute_multi_agent_api as api;
 use cuteui::elements::shimmering_text::ShimmeringTextStateHandle;
 use cuteui::elements::{Border, Container, Empty, Flex, MouseStateHandle, ParentElement, Text};
 use cuteui::keymap::Keystroke;

@@ -7,7 +7,6 @@ publish.workspace = true
 license.workspace = true
 
 [features]
-integration_tests = []
 test-util = []
 
 [dependencies]
