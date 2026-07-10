@@ -12,8 +12,8 @@ OUTPUT_DIR = "app/channels/cute/icon/with-white-border"
 
 SIZES = [16, 32, 48, 64, 128, 256, 512, 1024]
 
-WHITE_BORDER_RATIO = 0.24
-CORNER_RADIUS_RATIO = 0.22
+WHITE_BORDER_RATIO = 0.32  # 白边比例：从 0.24 增加到 0.32，使白边更宽
+CORNER_RADIUS_RATIO = 0.20  # 圆角比例：稍微减小以配合更宽的白边
 
 
 def create_rounded_rectangle(draw, bbox, radius, fill):
