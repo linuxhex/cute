@@ -16075,26 +16075,27 @@ impl Workspace {
                 );
             }
             pane_group::Event::OpenAddPromptPane { initial_content } => {
-                if UserWorkspaces::as_ref(ctx).personal_drive(ctx).is_some() {
-                    self.update_warp_drive_view(ctx, |drive_view, ctx| {
-                        if let Some(initial_content) = initial_content {
-                            drive_view.create_workflow_with_content(
-                                Space::Personal,
-                                None,
-                                initial_content.clone(),
-                                true, // is_for_agent_mode
-                                ctx,
-                            );
-                        } else {
-                            drive_view.open_cloud_object_dialog(
-                                DriveObjectType::AgentModeWorkflow,
-                                Space::Personal,
-                                None,
-                                ctx,
-                            );
-                        }
-                    });
-                }
+                // 注释掉云端个人存储功能 - 本地版本不支持
+                // if UserWorkspaces::as_ref(ctx).personal_drive(ctx).is_some() {
+                //     self.update_warp_drive_view(ctx, |drive_view, ctx| {
+                //         if let Some(initial_content) = initial_content {
+                //             drive_view.create_workflow_with_content(
+                //                 Space::Personal,
+                //                 None,
+                //                 initial_content.clone(),
+                //                 true, // is_for_agent_mode
+                //                 ctx,
+                //             );
+                //         } else {
+                //             drive_view.open_cloud_object_dialog(
+                //                 DriveObjectType::AgentModeWorkflow,
+                //                 Space::Personal,
+                //                 None,
+                //                 ctx,
+                //             );
+                //         }
+                //     });
+                // }
             }
             pane_group::Event::OpenFilesPalette { source } => {
                 self.open_palette_action(PaletteMode::Files, *source, None, ctx);
@@ -18452,13 +18453,18 @@ impl Workspace {
                 // the folder.
                 return;
             }
-            Space::Personal => match UserWorkspaces::as_ref(ctx).personal_drive(ctx) {
-                Some(drive) => drive,
-                None => {
-                    log::warn!("Unable to open workflow modal due to unset personal drive");
-                    return;
-                }
-            },
+            // 注释掉云端个人存储功能 - 本地版本不支持
+            // Space::Personal => match UserWorkspaces::as_ref(ctx).personal_drive(ctx) {
+            //     Some(drive) => drive,
+            //     None => {
+            //         log::warn!("Unable to open workflow modal due to unset personal drive");
+            //         return;
+            //     }
+            // },
+            Space::Personal => {
+                log::warn!("Personal space not supported in local version");
+                return;
+            }
         };
         self.current_workspace_state.is_workflow_modal_open = true;
         self.workflow_modal.update(ctx, |workflow_modal, ctx| {
@@ -18481,44 +18487,48 @@ impl Workspace {
 
     /// Opens the workflow using a mocked [`Workflow`] object as the base
     fn open_workflow_with_temporary(&mut self, workflow: Workflow, ctx: &mut ViewContext<Self>) {
-        let Some(owner) = UserWorkspaces::as_ref(ctx).personal_drive(ctx) else {
-            log::warn!("Unable to open temporary workflow - unset personal drive");
-            return;
-        };
-        let source = WorkflowOpenSource::NewFromWorkflow {
-            workflow: workflow.into(),
-            owner,
-            initial_folder_id: None,
-        };
-        self.open_workflow_in_pane(
-            &source,
-            &OpenWarpDriveObjectSettings::default(),
-            WorkflowViewMode::Create,
-            ctx,
-        );
+        // 注释掉云端个人存储功能 - 本地版本不支持
+        // let Some(owner) = UserWorkspaces::as_ref(ctx).personal_drive(ctx) else {
+        //     log::warn!("Unable to open temporary workflow - unset personal drive");
+        //     return;
+        // };
+        // let source = WorkflowOpenSource::NewFromWorkflow {
+        //     workflow: workflow.into(),
+        //     owner,
+        //     initial_folder_id: None,
+        // };
+        // self.open_workflow_in_pane(
+        //     &source,
+        //     &OpenWarpDriveObjectSettings::default(),
+        //     WorkflowViewMode::Create,
+        //     ctx,
+        // );
+        log::warn!("Temporary workflows not supported in local version");
     }
 
     /// Opens the workflow for create with a prepopulated command specified
     fn open_workflow_with_command(&mut self, command: String, ctx: &mut ViewContext<Self>) {
-        let Some(owner) = UserWorkspaces::as_ref(ctx).personal_drive(ctx) else {
-            log::warn!("Unable to open workflow with command - unset personal drive");
-            return;
-        };
-        let source = WorkflowOpenSource::New {
-            title: None,
-            content: Some(command),
-            owner,
-            initial_folder_id: None,
-            is_for_agent_mode: false,
-        };
-        self.open_workflow_in_pane(
-            &source,
-            &OpenWarpDriveObjectSettings::default(),
-            WorkflowViewMode::Create,
-            ctx,
-        );
-
-        ctx.notify();
+        // 注释掉云端个人存储功能 - 本地版本不支持
+        // let Some(owner) = UserWorkspaces::as_ref(ctx).personal_drive(ctx) else {
+        //     log::warn!("Unable to open workflow with command - unset personal drive");
+        //     return;
+        // };
+        // let source = WorkflowOpenSource::New {
+        //     title: None,
+        //     content: Some(command),
+        //     owner,
+        //     initial_folder_id: None,
+        //     is_for_agent_mode: false,
+        // };
+        // self.open_workflow_in_pane(
+        //     &source,
+        //     &OpenWarpDriveObjectSettings::default(),
+        //     WorkflowViewMode::Create,
+        //     ctx,
+        // );
+        //
+        // ctx.notify();
+        log::warn!("Workflow with command not supported in local version");
     }
 
     fn render_ai_assistant_warm_welcome(&self, appearance: &Appearance) -> Box<dyn Element> {
@@ -21449,7 +21459,9 @@ impl Workspace {
     fn team_uid(&self, app: &AppContext) -> Option<ServerId> {
         // TODO this is a stop gap for now - ideally a specific team uid should
         // be passed into each event
-        UserWorkspaces::as_ref(app).current_team_uid()
+        // 注释掉云端团队功能 - 本地版本不支持
+        // UserWorkspaces::as_ref(app).current_team_uid()
+        None
     }
 
     fn initiate_user_signup(
@@ -22087,55 +22099,56 @@ impl TypedActionView for Workspace {
                 filter,
                 init_content,
             }) => self.show_command_search(*filter, init_content, ctx),
-            ImportToPersonalDrive => {
-                if let Some(personal_drive) = UserWorkspaces::as_ref(ctx).personal_drive(ctx) {
-                    self.open_import_modal(personal_drive, &None, ctx);
-                }
-            }
-            CreatePersonalNotebook => {
-                if let Some(personal_drive) = UserWorkspaces::as_ref(ctx).personal_drive(ctx) {
-                    self.open_notebook(
-                        &NotebookSource::New {
-                            title: None,
-                            owner: personal_drive,
-                            initial_folder_id: None,
-                        },
-                        &OpenWarpDriveObjectSettings::default(),
-                        ctx,
-                        true,
-                    );
-                }
-            }
-            CreatePersonalEnvVarCollection => {
-                if let Some(personal_drive) = UserWorkspaces::as_ref(ctx).personal_drive(ctx) {
-                    self.open_env_var_collection(
-                        &EnvVarCollectionSource::New {
-                            title: None,
-                            owner: personal_drive,
-                            initial_folder_id: None,
-                        },
-                        false,
-                        ctx,
-                    );
-                }
-            }
-            CreatePersonalWorkflow => {
-                if let Some(personal_drive) = UserWorkspaces::as_ref(ctx).personal_drive(ctx) {
-                    let source = WorkflowOpenSource::New {
-                        title: None,
-                        content: None,
-                        owner: personal_drive,
-                        initial_folder_id: None,
-                        is_for_agent_mode: false,
-                    };
-                    self.open_workflow_in_pane(
-                        &source,
-                        &OpenWarpDriveObjectSettings::default(),
-                        WorkflowViewMode::Create,
-                        ctx,
-                    );
-                }
-            }
+            // 注释掉云端个人存储功能 - 本地版本不支持
+            // ImportToPersonalDrive => {
+            //     if let Some(personal_drive) = UserWorkspaces::as_ref(ctx).personal_drive(ctx) {
+            //         self.open_import_modal(personal_drive, &None, ctx);
+            //     }
+            // }
+            // CreatePersonalNotebook => {
+            //     if let Some(personal_drive) = UserWorkspaces::as_ref(ctx).personal_drive(ctx) {
+            //         self.open_notebook(
+            //             &NotebookSource::New {
+            //                 title: None,
+            //                 owner: personal_drive,
+            //                 initial_folder_id: None,
+            //             },
+            //             &OpenWarpDriveObjectSettings::default(),
+            //             ctx,
+            //             true,
+            //         );
+            //     }
+            // }
+            // CreatePersonalEnvVarCollection => {
+            //     if let Some(personal_drive) = UserWorkspaces::as_ref(ctx).personal_drive(ctx) {
+            //         self.open_env_var_collection(
+            //             &EnvVarCollectionSource::New {
+            //                 title: None,
+            //                 owner: personal_drive,
+            //                 initial_folder_id: None,
+            //             },
+            //             false,
+            //             ctx,
+            //         );
+            //     }
+            // }
+            // CreatePersonalWorkflow => {
+            //     if let Some(personal_drive) = UserWorkspaces::as_ref(ctx).personal_drive(ctx) {
+            //         let source = WorkflowOpenSource::New {
+            //             title: None,
+            //             content: None,
+            //             owner: personal_drive,
+            //             initial_folder_id: None,
+            //             is_for_agent_mode: false,
+            //         };
+            //         self.open_workflow_in_pane(
+            //             &source,
+            //             &OpenWarpDriveObjectSettings::default(),
+            //             WorkflowViewMode::Create,
+            //             ctx,
+            //         );
+            //     }
+            // }
             CreatePersonalFolder => {
                 self.update_warp_drive_view(ctx, |drive_panel, ctx| {
                     drive_panel.open_cloud_object_dialog(
@@ -23007,23 +23020,24 @@ impl TypedActionView for Workspace {
                     }
                 });
             }
-            CreatePersonalAIPrompt => {
-                if let Some(personal_drive) = UserWorkspaces::as_ref(ctx).personal_drive(ctx) {
-                    let source = WorkflowOpenSource::New {
-                        title: None,
-                        content: None,
-                        owner: personal_drive,
-                        initial_folder_id: None,
-                        is_for_agent_mode: true,
-                    };
-                    self.open_workflow_in_pane(
-                        &source,
-                        &OpenWarpDriveObjectSettings::default(),
-                        WorkflowViewMode::Create,
-                        ctx,
-                    );
-                }
-            }
+            // 注释掉云端个人存储功能 - 本地版本不支持
+            // CreatePersonalAIPrompt => {
+            //     if let Some(personal_drive) = UserWorkspaces::as_ref(ctx).personal_drive(ctx) {
+            //         let source = WorkflowOpenSource::New {
+            //             title: None,
+            //             content: None,
+            //             owner: personal_drive,
+            //             initial_folder_id: None,
+            //             is_for_agent_mode: true,
+            //         };
+            //         self.open_workflow_in_pane(
+            //             &source,
+            //             &OpenWarpDriveObjectSettings::default(),
+            //             WorkflowViewMode::Create,
+            //             ctx,
+            //         );
+            //     }
+            // }
             #[cfg(feature = "local_fs")]
             FileRenamed { old_path, new_path } => {
                 self.rename_tabs_with_file_path(old_path, new_path, ctx);
@@ -23551,11 +23565,12 @@ impl View for Workspace {
         if AISettings::as_ref(app).is_active_ai_enabled(app) {
             context.set.insert(flags::IS_ACTIVE_AI_ENABLED);
         }
-        if AISettings::as_ref(app).is_voice_input_enabled(app)
-            && UserWorkspaces::as_ref(app).is_voice_enabled()
-        {
-            context.set.insert(flags::IS_VOICE_INPUT_ENABLED);
-        }
+        // 注释掉云端语音功能检查 - 本地版本不支持
+        // if AISettings::as_ref(app).is_voice_input_enabled(app)
+        //     && UserWorkspaces::as_ref(app).is_voice_enabled()
+        // {
+        //     context.set.insert(flags::IS_VOICE_INPUT_ENABLED);
+        // }
 
         if self
             .active_tab_pane_group()

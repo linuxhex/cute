@@ -1534,7 +1534,8 @@ pub(crate) fn initialize_app(
         )
     });
 
-    ctx.add_singleton_model(|_| UserProfiles::new(restored_user_profiles));
+    // COMMENTED: UserProfiles disabled in local version
+    // ctx.add_singleton_model(|_| UserProfiles::new(restored_user_profiles));
 
     ctx.add_singleton_model(|_| ObjectActions::new(object_actions));
 

@@ -408,16 +408,21 @@ impl WorkflowView {
         });
 
         let content_editor_highlight_model =
-            ctx.add_model(|ctx| SyntaxHighlightable::new(content_editor.clone(), ctx));
+            // COMMENTED: SyntaxHighlightable module removed
+            // ctx.add_model(|ctx| SyntaxHighlightable::new(content_editor.clone(), ctx));
+            ctx.add_model(|_| Default::default());
 
         let view_only_content_editor_highlight_model =
-            ctx.add_model(|ctx| SyntaxHighlightable::new(view_only_content_editor.clone(), ctx));
+            // COMMENTED: SyntaxHighlightable module removed
+            // ctx.add_model(|ctx| SyntaxHighlightable::new(view_only_content_editor.clone(), ctx));
+            ctx.add_model(|_| Default::default());
 
         let workflow_id = SyncId::ClientId(ClientId::default());
-        let alias_bar = ctx.add_typed_action_view(|ctx| AliasBar::new(workflow_id, ctx));
-        ctx.subscribe_to_view(&alias_bar, |me, _, event, ctx| {
-            me.handle_alias_bar_event(event, ctx);
-        });
+        // COMMENTED: alias_bar module removed
+        // let alias_bar = ctx.add_typed_action_view(|ctx| AliasBar::new(workflow_id, ctx));
+        // ctx.subscribe_to_view(&alias_bar, |me, _, event, ctx| {
+        //     me.handle_alias_bar_event(event, ctx);
+        // });
 
         let env_vars_selector = ctx.add_typed_action_view(EnvVarSelector::new);
         ctx.subscribe_to_view(&env_vars_selector, |me, _, event, ctx| {
@@ -438,7 +443,8 @@ impl WorkflowView {
             view_only_content_editor_highlight_model,
             arguments_state: Default::default(),
             arguments_rows: Vec::new(),
-            alias_bar,
+            // COMMENTED: alias_bar module removed
+            // alias_bar,
             env_vars_selector,
             env_vars_state: Default::default(),
             breadcrumbs: Vec::new(),
@@ -1040,47 +1046,48 @@ impl WorkflowView {
         }
     }
 
-    fn handle_alias_bar_event(&mut self, event: &AliasBarEvent, ctx: &mut ViewContext<Self>) {
-        if !FeatureFlag::WorkflowAliases.is_enabled() {
-            return;
-        }
-
-        match event {
-            AliasBarEvent::SelectedAliasChanged => {
-                // Clone the arguments so that we can update the argument editors.
-                let argument_values = self
-                    .alias_bar
-                    .as_ref(ctx)
-                    .current_argument_values()
-                    .cloned();
-                let arguments = self.arguments_with_metadata(ctx);
-
-                for (row, arg) in self.arguments_rows.iter_mut().zip(arguments.iter()) {
-                    row.alias_argument_selector.update(ctx, |selector, ctx| {
-                        let value = argument_values
-                            .as_ref()
-                            .and_then(|args| args.get(&row.name));
-                        selector.set_argument(&arg.arg_type, value, &self.all_workflow_enums, ctx);
-                    });
-                }
-
-                self.env_vars_selector.update(ctx, |selector, ctx| {
-                    let selected_env_vars = if self.alias_bar.as_ref(ctx).has_selected_alias() {
-                        self.alias_bar.as_ref(ctx).current_env_vars()
-                    } else {
-                        self.env_vars_state.default_env_vars
-                    };
-                    selector.set_selected_env_vars(selected_env_vars, ctx);
-                });
-
-                ctx.notify();
-            }
-            AliasBarEvent::AliasesUpdated => {
-                // Recompute dirty state.
-                ctx.notify();
-            }
-        }
-    }
+    // COMMENTED: alias_bar module removed
+    // fn handle_alias_bar_event(&mut self, event: &AliasBarEvent, ctx: &mut ViewContext<Self>) {
+    //     if !FeatureFlag::WorkflowAliases.is_enabled() {
+    //         return;
+    //     }
+    //
+    //     match event {
+    //         AliasBarEvent::SelectedAliasChanged => {
+    //             // Clone the arguments so that we can update the argument editors.
+    //             let argument_values = self
+    //                 .alias_bar
+    //                 .as_ref(ctx)
+    //                 .current_argument_values()
+    //                 .cloned();
+    //             let arguments = self.arguments_with_metadata(ctx);
+    //
+    //             for (row, arg) in self.arguments_rows.iter_mut().zip(arguments.iter()) {
+    //                 row.alias_argument_selector.update(ctx, |selector, ctx| {
+    //                     let value = argument_values
+    //                         .as_ref()
+    //                         .and_then(|args| args.get(&row.name));
+    //                     selector.set_argument(&arg.arg_type, value, &self.all_workflow_enums, ctx);
+    //                 });
+    //             }
+    //
+    //             self.env_vars_selector.update(ctx, |selector, ctx| {
+    //                 let selected_env_vars = if self.alias_bar.as_ref(ctx).has_selected_alias() {
+    //                     self.alias_bar.as_ref(ctx).current_env_vars()
+    //                 } else {
+    //                     self.env_vars_state.default_env_vars
+    //                 };
+    //                 selector.set_selected_env_vars(selected_env_vars, ctx);
+    //             });
+    //
+    //             ctx.notify();
+    //         }
+    //         AliasBarEvent::AliasesUpdated => {
+    //             // Recompute dirty state.
+    //             ctx.notify();
+    //         }
+    //     }
+    // }
 
     fn handle_env_vars_selector_event(
         &mut self,

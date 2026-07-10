@@ -153,15 +153,19 @@ impl Slide for OzLaunchSlide {
     }
 
     fn should_show_checkbox(&self, app: &AppContext) -> bool {
-        let cloud_storage_setting =
-            UserWorkspaces::as_ref(app).get_cloud_conversation_storage_enablement_setting();
-        let ugc_setting = UserWorkspaces::as_ref(app).get_ugc_collection_enablement_setting();
+        // COMMENTED: UserWorkspaces disabled in local version
+        // let cloud_storage_setting =
+        //     UserWorkspaces::as_ref(app).get_cloud_conversation_storage_enablement_setting();
+        // let ugc_setting = UserWorkspaces::as_ref(app).get_ugc_collection_enablement_setting();
+        //
+        // // Show checkbox only when user has control over cloud storage AND UGC is not force-enabled.
+        // matches!(
+        //     cloud_storage_setting,
+        //     AdminEnablementSetting::RespectUserSetting
+        // ) && !matches!(ugc_setting, UgcCollectionEnablementSetting::Enable)
 
-        // Show checkbox only when user has control over cloud storage AND UGC is not force-enabled.
-        matches!(
-            cloud_storage_setting,
-            AdminEnablementSetting::RespectUserSetting
-        ) && !matches!(ugc_setting, UgcCollectionEnablementSetting::Enable)
+        // Simplified: local version has no cloud storage checkbox
+        false
     }
 
     fn on_close(&self, ctx: &mut cuteui::ViewContext<super::LaunchModal<Self>>) {

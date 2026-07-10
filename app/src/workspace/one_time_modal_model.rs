@@ -427,19 +427,11 @@ impl OneTimeModalModel {
         return false;
 
         // Check if current workspace has sunsetted_to_build_ts set
-        let user_workspaces = UserWorkspaces::as_ref(ctx);
-        let Some(current_team) = user_workspaces.current_team() else {
-            return false;
-        };
-
-        // Check if user is admin of the team
-        let Some(user_email) = auth_state.user_email() else {
-            return false;
-        };
-
-        if !current_team.has_admin_permissions(&user_email) {
-            return false;
-        }
+        // COMMENTED: UserWorkspaces disabled in local version
+        // let user_workspaces = UserWorkspaces::as_ref(ctx);
+        // let Some(current_team) = user_workspaces.current_team() else {
+        //     return false;
+        // };
 
         // Simplified: local version has no build plan migration modal
         let _ = ctx;
