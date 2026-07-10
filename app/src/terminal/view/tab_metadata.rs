@@ -6,6 +6,15 @@ use crate::terminal::TerminalView;
 
 impl TerminalView {
     pub fn preferred_tab_title(&self, ctx: &AppContext) -> String {
+        // 优先使用用户设置的自定义标题
+        let model = self.model.lock();
+        if let Some(custom_title) = model.custom_title() {
+            if !custom_title.trim().is_empty() {
+                return custom_title;
+            }
+        }
+
+        // 如果没有自定义标题，使用原有的逻辑（工作目录名或 shell 标题）
         if let Some(wd) = self.display_working_directory(ctx).filter(|wd| !wd.trim().is_empty()) {
             if let Some(name) = std::path::Path::new(&wd)
                 .file_name()

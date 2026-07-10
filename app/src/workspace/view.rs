@@ -5194,9 +5194,17 @@ impl Workspace {
         ctx.notify();
     }
 
-    /// Cute: Tab renaming is disabled - tab names always show the working directory path
-    pub fn rename_tab(&mut self, _index: usize, _ctx: &mut ViewContext<Self>) {
-        // No-op: tab renaming is disabled in Cute
+    /// Cute: Tab renaming is enabled - users can customize tab names
+    pub fn rename_tab(&mut self, index: usize, ctx: &mut ViewContext<Self>) {
+        // 获取当前页签的标题作为编辑的初始文本
+        let title = if let Some(pane_group) = self.tabs.get(index).map(|tab| tab.pane_group.clone()) {
+            pane_group.as_ref(ctx).display_title(ctx)
+        } else {
+            String::new()
+        };
+
+        // 调用内部的重命名方法
+        self.rename_tab_internal(index, &title, ctx);
     }
 
     fn set_active_tab_name(&mut self, title: &str, ctx: &mut ViewContext<Self>) {
@@ -5223,8 +5231,18 @@ impl Workspace {
             ctx.notify();
             return;
         }
+
+        // Cute: 设置页签的自定义标题到 focused terminal session
         pane_group.update(ctx, |pane_group, ctx| {
-            if pane_group.display_title(ctx) != title {
+            // 如果是终端 pane，设置 terminal 的 custom_title
+            if let Some(terminal_view) = pane_group.focused_session_view(ctx) {
+                terminal_view.update(ctx, |view, ctx| {
+                    view.model.lock().set_custom_title(Some(title.to_string()));
+                    // 更新 pane configuration 的标题，触发 UI 刷新
+                    view.update_pane_configuration(ctx);
+                });
+            } else {
+                // 如果不是终端 pane（如代码编辑器），设置 pane_group 的 custom_title
                 pane_group.set_title(title, ctx);
             }
         });
@@ -5320,8 +5338,18 @@ impl Workspace {
 
     pub fn clear_tab_name(&mut self, index: usize, ctx: &mut ViewContext<Self>) {
         let tab = &self.tabs[index];
-        tab.pane_group.update(ctx, |view, ctx| {
-            view.clear_title(ctx);
+        tab.pane_group.update(ctx, |pane_group, ctx| {
+            // Cute: 清除 terminal 的 custom_title
+            if let Some(terminal_view) = pane_group.focused_session_view(ctx) {
+                terminal_view.update(ctx, |view, ctx| {
+                    view.model.lock().set_custom_title(None);
+                    // 更新 pane configuration 的标题，触发 UI 刷新
+                    view.update_pane_configuration(ctx);
+                });
+            } else {
+                // 如果不是终端 pane，清除 pane_group 的 custom_title
+                pane_group.clear_title(ctx);
+            }
         });
         self.update_window_title(ctx);
         ctx.notify();
