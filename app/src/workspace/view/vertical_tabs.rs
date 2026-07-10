@@ -45,7 +45,9 @@ use crate::code::editor::{add_color, remove_color};
 use crate::code::icon_from_file_path;
 use crate::context_chips::display_chip::GitLineChanges;
 use crate::context_chips::github_pr_display_text_from_url;
-use crate::cloud_stub_types::cloud_object_styling::warp_drive_icon_color;
+// COMMENTED: cute_drive_icon_color deprecated, renamed to cute_drive_icon_color
+// use crate::cloud_stub_types::cloud_object_styling::cute_drive_icon_color;
+use crate::cloud_stub_types::cloud_object_styling::cute_drive_icon_color;
 use crate::cloud_stub_types::DriveObjectType;
 use crate::editor::EditorView;
 use crate::pane_group::pane::IPaneType;
@@ -1340,7 +1342,7 @@ fn render_detail_kind_badge_icon(
             let fill = typed
                 .warp_drive_object_type()
                 .map(|object_type| {
-                    WarpThemeFill::Solid(warp_drive_icon_color(appearance, object_type).into())
+                    WarpThemeFill::Solid(cute_drive_icon_color(appearance, object_type).into())
                 })
                 .unwrap_or(sub_text);
             typed.icon().to_cuteui_icon(fill).finish()
@@ -2763,7 +2765,7 @@ fn resolve_icon_with_status_variant(
     let sub_text = theme.sub_text_color(theme.background());
 
     let drive_color = |object_type: DriveObjectType| -> WarpThemeFill {
-        WarpThemeFill::Solid(warp_drive_icon_color(appearance, object_type).into())
+        WarpThemeFill::Solid(cute_drive_icon_color(appearance, object_type).into())
     };
 
     match typed {
@@ -4422,7 +4424,7 @@ fn summary_pane_kind_icon(
     let main_text = theme.main_text_color(theme.background());
     let sub_text = theme.sub_text_color(theme.background());
     let drive_color = |object_type: DriveObjectType| -> WarpThemeFill {
-        WarpThemeFill::Solid(warp_drive_icon_color(appearance, object_type).into())
+        WarpThemeFill::Solid(cute_drive_icon_color(appearance, object_type).into())
     };
 
     match kind {

@@ -502,13 +502,14 @@ impl PrivacySettings {
                     .set_value(new_value, ctx);
             });
 
-            if self.auth_state.is_logged_in() {
-                let auth_client = self.auth_client.clone();
-                let _ = ctx.spawn(
-                    async move { auth_client.set_is_crash_reporting_enabled(new_value).await },
-                    |_, _, _| (),
-                );
-            }
+            // COMMENTED: Auth check disabled for local version
+            // if self.auth_state.is_logged_in() {
+            //     let auth_client = self.auth_client.clone();
+            //     let _ = ctx.spawn(
+            //         async move { auth_client.set_is_crash_reporting_enabled(new_value).await },
+            //         |_, _, _| (),
+            //     );
+            // }
             ctx.emit(PrivacySettingsChangedEvent::UpdateIsCrashReportingEnabled {
                 old_value,
                 new_value,
@@ -536,13 +537,14 @@ impl PrivacySettings {
                 let _ = settings.is_telemetry_enabled.set_value(new_value, ctx);
             });
 
-            if self.auth_state.is_logged_in() {
-                let auth_client = self.auth_client.clone();
-                let _ = ctx.spawn(
-                    async move { auth_client.set_is_telemetry_enabled(new_value).await },
-                    |_, _, _| (),
-                );
-            }
+            // COMMENTED: Auth check disabled for local version
+            // if self.auth_state.is_logged_in() {
+            //     let auth_client = self.auth_client.clone();
+            //     let _ = ctx.spawn(
+            //         async move { auth_client.set_is_telemetry_enabled(new_value).await },
+            //         |_, _, _| (),
+            //     );
+            // }
             ctx.emit(PrivacySettingsChangedEvent::UpdateIsTelemetryEnabled {
                 old_value,
                 new_value,
@@ -570,17 +572,18 @@ impl PrivacySettings {
                 .set_value(new_value, ctx);
         });
 
-        if self.auth_state.is_logged_in() {
-            let auth_client = self.auth_client.clone();
-            let _ = ctx.spawn(
-                async move {
-                    auth_client
-                        .set_is_cloud_conversation_storage_enabled(new_value)
-                        .await
-                },
-                |_, _, _| (),
-            );
-        }
+        // COMMENTED: Auth check disabled for local version
+        // if self.auth_state.is_logged_in() {
+        //     let auth_client = self.auth_client.clone();
+        //     let _ = ctx.spawn(
+        //         async move {
+        //             auth_client
+        //                 .set_is_cloud_conversation_storage_enabled(new_value)
+        //                 .await
+        //         },
+        //         |_, _, _| (),
+        //     );
+        // }
 
         ctx.emit(
             PrivacySettingsChangedEvent::UpdateIsCloudConversationStorageEnabled {
@@ -671,21 +674,23 @@ impl PrivacySettings {
 
     /// Sends request(s) to update server-side user settings with current local values.
     fn update_server_with_local_settings(&self, ctx: &mut ModelContext<Self>) {
-        if self.auth_state.is_logged_in() {
-            let auth_client = self.auth_client.clone();
-            let snapshot = self.get_snapshot(ctx);
-            let _ = ctx.spawn(
-                async move {
-                    let result = auth_client.update_user_settings(snapshot).await;
-                    if let Err(err) = result {
-                        report_error!(
-                            err.context("Failed to update server with local privacy settings.")
-                        )
-                    }
-                },
-                |_, _, _| (),
-            );
-        }
+        // COMMENTED: Auth check disabled for local version - no server sync
+        // if self.auth_state.is_logged_in() {
+        //     let auth_client = self.auth_client.clone();
+        //     let snapshot = self.get_snapshot(ctx);
+        //     let _ = ctx.spawn(
+        //         async move {
+        //             let result = auth_client.update_user_settings(snapshot).await;
+        //             if let Err(err) = result {
+        //                 report_error!(
+        //                     err.context("Failed to update server with local privacy settings.")
+        //                 )
+        //             }
+        //         },
+        //         |_, _, _| (),
+        //     );
+        // }
+        // Simplified: Local-only mode - no server sync
     }
 
     /// Simplified: local version does not sync with warp drive prefs.

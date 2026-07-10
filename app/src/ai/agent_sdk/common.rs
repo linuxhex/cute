@@ -88,11 +88,14 @@ pub fn resolve_owner(team_flag: bool, user_flag: bool, ctx: &AppContext) -> anyh
     }
 
     if user_flag {
-        let user_id = AuthStateProvider::as_ref(ctx)
-            .get()
-            .user_id()
-            .ok_or_else(|| anyhow::anyhow!("User should be logged in"))?;
-        return Ok(Owner::User { user_uid: user_id });
+        // COMMENTED: Auth check disabled for local version
+        // let user_id = AuthStateProvider::as_ref(ctx)
+        //     .get()
+        //     .user_id()
+        //     .ok_or_else(|| anyhow::anyhow!("User should be logged in"))?;
+        // return Ok(Owner::User { user_uid: user_id });
+        // Simplified: return default user owner for local mode
+        return Ok(Owner::User { user_uid: uuid::Uuid::new_v4() });
     }
 
     // Default: try team first, fall back to user

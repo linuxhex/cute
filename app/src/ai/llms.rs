@@ -1115,11 +1115,14 @@ impl LLMPreferences {
     }
 
     pub fn refresh_available_models(&self, ctx: &mut ModelContext<Self>) {
-        if AuthStateProvider::as_ref(ctx).get().is_logged_in() {
-            self.refresh_authed_models(ctx);
-        } else {
-            self.refresh_public_models(ctx);
-        }
+        // COMMENTED: Auth check disabled for local version - always use authed models
+        // if AuthStateProvider::as_ref(ctx).get().is_logged_in() {
+        //     self.refresh_authed_models(ctx);
+        // } else {
+        //     self.refresh_public_models(ctx);
+        // }
+        // Simplified: Always refresh authed models for local mode
+        self.refresh_authed_models(ctx);
     }
 
     pub fn update_feature_model_choices(

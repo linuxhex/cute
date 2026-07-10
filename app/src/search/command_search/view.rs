@@ -35,7 +35,8 @@ use crate::ai_assistant::execution_context::WarpAiExecutionContext;
 use crate::ai_assistant::GenerateCommandsFromNaturalLanguageError;
 use crate::appearance::Appearance;
 use crate::completer::SessionContext;
-use crate::cloud_stub_types::settings::WarpDriveSettings;
+// COMMENTED: Warp Drive settings import disabled for local version
+// use crate::cloud_stub_types::settings::WarpDriveSettings;
 use crate::search::command_search::searcher::{CommandSearchItemAction, CommandSearchMixer};
 use crate::search::mixer::AddAsyncSourceOptions;
 use crate::search::result_renderer::{QueryResultRenderer, QueryResultRendererStyles};

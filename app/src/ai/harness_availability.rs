@@ -13,8 +13,9 @@ use cute_managed_secrets::{ManagedSecretManager, ManagedSecretValue};
 use cuteui::{Entity, ModelContext, RequestState, SingletonEntity};
 
 use crate::ai::harness_display;
-use crate::auth::auth_manager::{AuthManager, AuthManagerEvent};
-use crate::auth::AuthStateProvider;
+// COMMENTED: Auth imports disabled for local version
+// use crate::auth::auth_manager::{AuthManager, AuthManagerEvent};
+// use crate::auth::AuthStateProvider;
 use crate::network::{NetworkStatus, NetworkStatusEvent, NetworkStatusKind};
 use crate::report_error;
 use crate::server::retry_strategies::{

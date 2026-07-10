@@ -45,8 +45,11 @@ impl OneTimeModalModel {
                 return;
             };
 
-            let auth_state = crate::auth::AuthStateProvider::as_ref(ctx).get().clone();
-            let is_existing_user = auth_state.is_onboarded().unwrap_or_default();
+            // COMMENTED: Auth check disabled for local version
+            // let auth_state = crate::auth::AuthStateProvider::as_ref(ctx).get().clone();
+            // let is_existing_user = auth_state.is_onboarded().unwrap_or_default();
+            // Simplified: Assume existing user for local mode
+            let is_existing_user = true;
             if is_existing_user {
                 if cfg!(feature = "skip_login") {
                     me.check_and_trigger_all_modals(ctx);
@@ -414,12 +417,14 @@ impl OneTimeModalModel {
             return false;
         }
 
-        // Check if user is authenticated
-        let auth_state = crate::auth::AuthStateProvider::as_ref(ctx).get();
-
-        if auth_state.is_anonymous_or_logged_out() {
-            return false;
-        }
+        // COMMENTED: Auth check disabled for local version - no build plan migration
+        // // Check if user is authenticated
+        // let auth_state = crate::auth::AuthStateProvider::as_ref(ctx).get();
+        // if auth_state.is_anonymous_or_logged_out() {
+        //     return false;
+        // }
+        // Simplified: Local version has no build plan migration
+        return false;
 
         // Check if current workspace has sunsetted_to_build_ts set
         let user_workspaces = UserWorkspaces::as_ref(ctx);

@@ -12,7 +12,7 @@ use cuteui::ui_components::components::UiComponent;
 use cuteui::{AppContext, Element, SingletonEntity};
 
 use crate::appearance::Appearance;
-use crate::cloud_stub_types::cloud_object_styling::warp_drive_icon_color;
+use crate::cloud_stub_types::cloud_object_styling::cute_drive_icon_color;
 use crate::cloud_stub_types::DriveObjectType;
 use crate::features::FeatureFlag;
 use crate::search::command_palette::mixer::CommandPaletteItemAction;
@@ -216,8 +216,8 @@ impl SearchItemIcon for BindingGroup {
                 ColorU::from_u32(colors::WARP_AI)
             }
             Self::WarpAi => appearance.theme().foreground().into_solid(),
-            Self::Workflow => warp_drive_icon_color(appearance, DriveObjectType::Workflow).into(),
-            Self::Notebooks => warp_drive_icon_color(
+            Self::Workflow => cute_drive_icon_color(appearance, DriveObjectType::Workflow).into(),
+            Self::Notebooks => cute_drive_icon_color(
                 appearance,
                 DriveObjectType::Notebook {
                     is_ai_document: false,
@@ -225,7 +225,7 @@ impl SearchItemIcon for BindingGroup {
             )
             .into(),
             Self::EnvVarCollection => {
-                warp_drive_icon_color(appearance, DriveObjectType::EnvVarCollection).into()
+                cute_drive_icon_color(appearance, DriveObjectType::EnvVarCollection).into()
             }
         }
     }

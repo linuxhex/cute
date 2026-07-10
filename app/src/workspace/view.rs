@@ -4387,11 +4387,12 @@ impl Workspace {
             }
         }
 
-        // Check if focused pane is a Warp Drive object
-        let focused_pane_id = pane_group.focused_pane_id(ctx);
-        if focused_pane_id.is_warp_drive_object_pane() {
-            return Some(SimplifiedWasmTabBarContent::WarpDriveObject);
-        }
+        // COMMENTED: Warp Drive object pane check disabled for local version
+        // // Check if focused pane is a Warp Drive object
+        // let focused_pane_id = pane_group.focused_pane_id(ctx);
+        // if focused_pane_id.is_warp_drive_object_pane() {
+        //     return Some(SimplifiedWasmTabBarContent::WarpDriveObject);
+        // }
 
         None
     }
@@ -4526,16 +4527,17 @@ impl Workspace {
     }
 
     /// Sets focused to the index of either the selected object or the first item in WD
+    /// COMMENTED: Warp Drive disabled for local version
     fn reset_focused_index_in_warp_drive(
         &mut self,
-        should_scroll: bool,
-        ctx: &mut ViewContext<Self>,
+        _should_scroll: bool,
+        _ctx: &mut ViewContext<Self>,
     ) {
-        ctx.focus(&self.left_panel_view);
-
-        self.update_warp_drive_view(ctx, |drive_panel, ctx| {
-            drive_panel.reset_focused_index_in_warp_drive(should_scroll, ctx);
-        });
+        // COMMENTED: Warp Drive functionality disabled for local version
+        // ctx.focus(&self.left_panel_view);
+        // self.update_warp_drive_view(ctx, |drive_panel, ctx| {
+        //     drive_panel.reset_focused_index_in_warp_drive(should_scroll, ctx);
+        // });
     }
 
     pub fn has_warp_drive_initialized_sections(
@@ -4762,7 +4764,8 @@ impl Workspace {
         // Starts from terminal
         if self.active_tab_pane_group().is_self_or_child_focused(ctx) {
             if self.current_workspace_state.is_warp_drive_open {
-                self.reset_focused_index_in_warp_drive(true, ctx);
+                // COMMENTED: Warp Drive disabled for local version
+                // self.reset_focused_index_in_warp_drive(true, ctx);
             } else if self.is_theme_chooser_open() {
                 ctx.focus(&self.theme_chooser_view);
             } else if self.current_workspace_state.is_ai_assistant_panel_open {
@@ -4826,9 +4829,11 @@ impl Workspace {
             // else if self.current_workspace_state.is_resource_center_open {
             //     ctx.focus(&self.resource_center_view);
             // }
-            else if self.current_workspace_state.is_warp_drive_open {
-                self.reset_focused_index_in_warp_drive(true, ctx);
-            } else if self.is_theme_chooser_open() {
+            // COMMENTED: Warp Drive disabled for local version
+            // else if self.current_workspace_state.is_warp_drive_open {
+            //     self.reset_focused_index_in_warp_drive(true, ctx);
+            // }
+            else if self.is_theme_chooser_open() {
                 ctx.focus(&self.theme_chooser_view);
             }
         }
@@ -4844,9 +4849,11 @@ impl Workspace {
             // || self.resource_center_view.is_self_or_child_focused(ctx)
         {
             if self.current_workspace_state.is_left_panel_open() {
-                if self.current_workspace_state.is_warp_drive_open {
-                    self.reset_focused_index_in_warp_drive(true, ctx);
-                } else if self.is_theme_chooser_open() {
+                // COMMENTED: Warp Drive disabled for local version
+                // if self.current_workspace_state.is_warp_drive_open {
+                //     self.reset_focused_index_in_warp_drive(true, ctx);
+                // }
+                if self.is_theme_chooser_open() {
                     ctx.focus(&self.theme_chooser_view);
                 }
             } else {
@@ -6661,13 +6668,15 @@ impl Workspace {
             return false;
         }
 
-        if self.auth_state.is_onboarded().unwrap_or_default() {
-            return false;
-        }
-
-        if self.auth_state.is_anonymous_or_logged_out() {
-            return false;
-        }
+        // COMMENTED: Auth checks disabled for local version
+        // if self.auth_state.is_onboarded().unwrap_or_default() {
+        //     return false;
+        // }
+        // if self.auth_state.is_anonymous_or_logged_out() {
+        //     return false;
+        // }
+        // Simplified: Always show Get Started for local mode
+        return false; // Disabled for local version
 
         // If AgentOnboarding is enabled and the user is NOT in the control group for the
         // AgentOnboarding experiment, don't show Get Started onboarding.
@@ -6695,17 +6704,21 @@ impl Workspace {
             return false;
         }
 
-        if !self.auth_state.is_onboarded().unwrap_or_default() {
-            if self.should_show_agent_onboarding(ctx) {
-                // If the user is anonymous, we shouldn't trigger agent onboarding.
-                // It will not display anyway, and we don't want to mark the user as onboarded.
-                if self.auth_state.is_anonymous_or_logged_out() {
-                    return false;
-                }
-                self.trigger_agent_onboarding(ctx);
-            } else {
-                self.trigger_legacy_onboarding(ctx);
-            }
+        // COMMENTED: Auth checks disabled for local version
+        // if !self.auth_state.is_onboarded().unwrap_or_default() {
+        //     if self.should_show_agent_onboarding(ctx) {
+        //         // If the user is anonymous, we shouldn't trigger agent onboarding.
+        //         // It will not display anyway, and we don't want to mark the user as onboarded.
+        //         if self.auth_state.is_anonymous_or_logged_out() {
+        //             return false;
+        //         }
+        //         self.trigger_agent_onboarding(ctx);
+        //     } else {
+        //         self.trigger_legacy_onboarding(ctx);
+        //     }
+        // }
+        // Simplified: No onboarding trigger for local mode
+        return false;
 
             // Add telemetry banner for new users BEFORE the agentic onboarding blocks.
             if let Some(terminal_view_handle) = self.active_session_view(ctx) {
@@ -16957,27 +16970,28 @@ impl Workspace {
         if self.is_readonly_shared_session_active(ctx) {
             return;
         }
-        if self.auth_state.is_anonymous_or_logged_out()
-            && workflow.as_workflow().is_agent_mode_workflow()
-        {
-            AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
-                auth_manager.attempt_login_gated_feature(
-                    crate::workspace::WorkspaceAction::RunWorkflow {
-                        workflow: std::sync::Arc::new(workflow.clone()),
-                        workflow_source: WorkflowSource::Notebook {
-                            notebook_id: None,
-                            team_uid: None,
-                            location: crate::cloud_stub_types::NotebookLocation::PersonalCloud,
-                        },
-                        workflow_selection_source: WorkflowSelectionSource::WarpDrive,
-                        argument_override: None,
-                    },
-                    AuthViewVariant::RequireLoginCloseable,
-                    ctx,
-                )
-            });
-            return;
-        }
+        // COMMENTED: Auth check disabled for local version
+        // if self.auth_state.is_anonymous_or_logged_out()
+        //     && workflow.as_workflow().is_agent_mode_workflow()
+        // {
+        //     AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
+        //         auth_manager.attempt_login_gated_feature(
+        //             crate::workspace::WorkspaceAction::RunWorkflow {
+        //                 workflow: std::sync::Arc::new(workflow.clone()),
+        //                 workflow_source: WorkflowSource::Notebook {
+        //                     notebook_id: None,
+        //                     team_uid: None,
+        //                     location: crate::cloud_stub_types::NotebookLocation::PersonalCloud,
+        //                 },
+        //                 workflow_selection_source: WorkflowSelectionSource::WarpDrive,
+        //                 argument_override: None,
+        //             },
+        //             AuthViewVariant::RequireLoginCloseable,
+        //             ctx,
+        //         )
+        //     });
+        //     return;
+        // }
         if let Some(terminal_view_handle) =
             self.focus_terminal_input(workflow.object_id(), fallback_behavior, ctx)
         {
@@ -19575,23 +19589,24 @@ impl Workspace {
 
         // Cute: Removed avatar/settings button from tab bar
 
-        if self.auth_state.is_anonymous_or_logged_out()
-            && !FeatureFlag::OpenWarpNewSettingsModes.is_enabled()
-        {
-            if is_web_anonymous_user {
-                target.add_child(
-                    Container::new(self.render_web_anonymous_user_sign_in_button(appearance))
-                        .with_margin_left(8.)
-                        .finish(),
-                );
-            } else {
-                target.add_child(
-                    Container::new(self.render_anonymous_sign_up_user_button(appearance))
-                        .with_margin_left(8.)
-                        .finish(),
-                );
-            }
-        }
+        // COMMENTED: Auth check disabled for local version - no anonymous user button
+        // if self.auth_state.is_anonymous_or_logged_out()
+        //     && !FeatureFlag::OpenWarpNewSettingsModes.is_enabled()
+        // {
+        //     if is_web_anonymous_user {
+        //         target.add_child(
+        //             Container::new(self.render_web_anonymous_user_sign_in_button(appearance))
+        //                 .with_margin_left(8.)
+        //                 .finish(),
+        //         );
+        //     } else {
+        //         target.add_child(
+        //             Container::new(self.render_anonymous_sign_up_user_button(appearance))
+        //                 .with_margin_left(8.)
+        //                 .finish(),
+        //         );
+        //     }
+        // }
 
         let zoom_factor = WindowSettings::as_ref(ctx).zoom_level.as_zoom_factor();
         let traffic_light_data = traffic_light_data(ctx, self.window_id);
@@ -21668,16 +21683,17 @@ impl TypedActionView for Workspace {
         use WorkspaceAction::*;
         let window_id = ctx.window_id();
 
-        if self.auth_state.is_anonymous_or_logged_out() && action.blocked_for_anonymous_user() {
-            AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
-                auth_manager.attempt_login_gated_feature(
-                    action.clone(),
-                    AuthViewVariant::RequireLoginCloseable,
-                    ctx,
-                )
-            });
-            return;
-        }
+        // COMMENTED: Auth check disabled for local version - no login gating
+        // if self.auth_state.is_anonymous_or_logged_out() && action.blocked_for_anonymous_user() {
+        //     AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
+        //         auth_manager.attempt_login_gated_feature(
+        //             action.clone(),
+        //             AuthViewVariant::RequireLoginCloseable,
+        //             ctx,
+        //         )
+        //     });
+        //     return;
+        // }
 
         match action {
             ActivateTab(index) => self.activate_tab(*index, ctx),
@@ -23626,9 +23642,10 @@ impl View for Workspace {
             context.set.insert("WarpDrive_BelongsToTeam");
         }
 
-        if self.auth_state.is_anonymous_or_logged_out() {
-            context.set.insert("IsAnonymousUser");
-        }
+        // COMMENTED: Auth check disabled for local version
+        // if self.auth_state.is_anonymous_or_logged_out() {
+        //     context.set.insert("IsAnonymousUser");
+        // }
 
         self.add_toggle_setting_context_flags(app, &mut context);
 

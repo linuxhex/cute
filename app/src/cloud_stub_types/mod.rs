@@ -134,7 +134,9 @@ pub mod workflows {
 
 /// Re-export cloud_object_styling module
 pub mod cloud_object_styling {
-    pub use crate::cloud_stub_types::{warp_drive_icon_color, cute_drive_icon_color, DriveObjectType};
+    // COMMENTED: warp_drive_icon_color deprecated, use cute_drive_icon_color instead
+    // pub use crate::cloud_stub_types::{warp_drive_icon_color, cute_drive_icon_color, DriveObjectType};
+    pub use crate::cloud_stub_types::{cute_drive_icon_color, DriveObjectType};
 }
 
 /// Re-export drive_helpers module

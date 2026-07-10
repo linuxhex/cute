@@ -85,8 +85,9 @@ use crate::code::editor_management::CodeSource;
 use crate::code::view::{CodeView, CodeViewAction};
 use crate::code_review::comments::{AttachedReviewComment, PendingImportedReviewComment};
 use crate::code_review::diff_state::DiffMode;
-use crate::cloud_stub_types::items::WarpDriveItemId;
-use crate::cloud_stub_types::{CloudObjectTypeAndId, OpenWarpDriveObjectArgs};
+// COMMENTED: Warp Drive imports disabled for local version
+// use crate::cloud_stub_types::items::WarpDriveItemId;
+// use crate::cloud_stub_types::{CloudObjectTypeAndId, OpenWarpDriveObjectArgs};
 use crate::env_vars::EnvVarCollectionType;
 use crate::features::FeatureFlag;
 use crate::launch_configs::launch_config::{self, PaneMode, PaneTemplateType};

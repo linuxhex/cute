@@ -11,7 +11,8 @@ use cuteui::{AppContext, Entity, ModelContext, SingletonEntity};
 
 use crate::ai::agent::conversation::AIConversationId;
 use crate::ai::agent::AIAgentExchangeId;
-use crate::auth::AuthStateProvider;
+// COMMENTED: Auth import disabled for local version
+// use crate::auth::AuthStateProvider;
 use crate::server::server_api::ai::AIClient;
 use crate::settings::AISettings;
 use crate::BlocklistAIHistoryModel;
