@@ -502,12 +502,11 @@ impl TypedActionView for PrivacyPageView {
 
                 let privacy_settings_handle = PrivacySettings::handle(ctx);
                 ctx.update_model(&privacy_settings_handle, |privacy_settings, ctx| {
-                    let workspaces = UserWorkspaces::as_ref(ctx);
-                    let enterprise_regex_list =
-                        workspaces.get_enterprise_secret_redaction_regex_list();
+                    // Simplified: local version has no enterprise secret redaction
+                    let enterprise_regex_list: Vec<crate::settings::CustomSecretRegex> = Vec::new();
                     let current_patterns: Vec<&str> = enterprise_regex_list
                         .iter()
-                        .map(|s| s.pattern.as_str())
+                        .map(|s| s.pattern().as_str())
                         .chain(
                             privacy_settings
                                 .user_secret_regex_list
@@ -724,6 +723,12 @@ impl SecretRedactionWidget {
         view: &PrivacyPageView,
         app: &AppContext,
     ) -> Box<dyn Element> {
+        // Simplified: local version has no enterprise secret redaction
+        // Do not show the tab bar since there's no enterprise tab
+        return Empty::new().finish();
+
+        // Original code below (commented out for reference)
+        /*
         if !privacy_settings.is_enterprise_secret_redaction_enabled() {
             return Empty::new().finish();
         }
@@ -776,6 +781,7 @@ impl SecretRedactionWidget {
         Container::new(row.finish())
             .with_margin_bottom(16.)
             .finish()
+        */
     }
 
     /// Renders a section title with consistent styling
@@ -875,11 +881,21 @@ impl SecretRedactionWidget {
     }
 
     /// Renders the enterprise tab content (regexes with title support)
+    /// Simplified: local version has no enterprise secret redaction
     fn render_enterprise_content(
         &self,
         appearance: &Appearance,
         app: &AppContext,
     ) -> Box<dyn Element> {
+        // Local version has no enterprise content
+        appearance
+            .ui_builder()
+            .paragraph("Enterprise secret redaction is not available in local version.")
+            .build()
+            .finish()
+
+        // Original code below (commented out for reference)
+        /*
         let workspaces = UserWorkspaces::as_ref(app);
         let enterprise_regex_list = workspaces.get_enterprise_secret_redaction_regex_list();
         let ui_builder = appearance.ui_builder();
@@ -911,6 +927,7 @@ impl SecretRedactionWidget {
         }
 
         column.finish()
+        */
     }
 
     /// Renders the personal tab content (user regexes + recommended regexes)
@@ -957,11 +974,11 @@ impl SecretRedactionWidget {
         }
 
         // Get a list of regexes that are recommended but not currently in use
-        let enterprise_regex_list_with_titles =
-            workspaces.get_enterprise_secret_redaction_regex_list();
+        // Simplified: local version has no enterprise regexes
+        let enterprise_regex_list_with_titles: Vec<crate::settings::CustomSecretRegex> = Vec::new();
         let current_patterns: Vec<&str> = enterprise_regex_list_with_titles
             .iter()
-            .map(|r| r.pattern.as_str())
+            .map(|r| r.pattern().as_str())
             .chain(
                 privacy_settings
                     .user_secret_regex_list
@@ -1141,7 +1158,8 @@ impl SettingsWidget for SecretRedactionWidget {
         let privacy_settings = PrivacySettings::as_ref(app);
         let description_text_color = description_text_color(appearance.theme()).into_solid();
         let ui_builder = appearance.ui_builder();
-        let is_enterprise_enabled = privacy_settings.is_enterprise_secret_redaction_enabled();
+        // Simplified: local version has no enterprise secret redaction
+        let is_enterprise_enabled = false;
 
         let local_only_icon_state = LocalOnlyIconState::for_setting(
             SafeModeEnabled::storage_key(),
@@ -1312,8 +1330,8 @@ impl SettingsWidget for SecretRedactionWidget {
                     .finish(),
             );
 
-            let workspaces = UserWorkspaces::as_ref(app);
-            let enterprise_regex_list = workspaces.get_enterprise_secret_redaction_regex_list();
+            // Simplified: local version has no enterprise regexes
+            let enterprise_regex_list: Vec<crate::settings::CustomSecretRegex> = Vec::new();
 
             if is_enterprise_enabled && !enterprise_regex_list.is_empty() {
                 column.add_child(self.render_tab_bar(

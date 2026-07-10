@@ -60,15 +60,16 @@ impl RegexDisplayInfo for CustomSecretRegex {
     }
 }
 
-impl RegexDisplayInfo for EnterpriseSecretRegex {
-    fn pattern(&self) -> &str {
-        &self.pattern
-    }
-
-    fn name(&self) -> Option<&str> {
-        self.name.as_deref()
-    }
-}
+// Simplified: local version has no enterprise secret regexes
+// impl RegexDisplayInfo for EnterpriseSecretRegex {
+//     fn pattern(&self) -> &str {
+//         &self.pattern
+//     }
+//
+//     fn name(&self) -> Option<&str> {
+//         self.name.as_deref()
+//     }
+// }
 
 impl Display for CustomSecretRegex {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -148,20 +149,16 @@ pub struct PrivacySettings {
     pub is_cloud_conversation_storage_enabled: bool,
     pub has_initialized_default_secret_regexes: HasInitializedDefaultSecretRegexes,
     /// List of user defined secret regexes.
-    /// Enterprise-level secret regexes will always take precedence over user-level secrets,
-    /// but they both used to support additive behavior.
     /// It's a [Vec<CustomSecretRegex>], but also a user setting.
     pub user_secret_regex_list: CustomSecretRegexList,
-    /// List of enterprise-level secret regexes provided by the organization.
-    /// These are kept separate from user-level secrets to support additive behavior.
-    pub enterprise_secret_regex_list: Vec<CustomSecretRegex>,
+    /// Simplified: local version has no enterprise secret regexes
+    // pub enterprise_secret_regex_list: Vec<CustomSecretRegex>,
     /// Whether or not the user's organization has forced telemetry on, in which case we ignore any
     /// user local/cloud settings. If false, we fall back to the user's settings.
     /// This is populated by the server when teams data is fetched.
     pub is_telemetry_force_enabled: bool,
-    /// Whether or not the user's organization has enabled enterprise secret redaction.
-    /// This is populated by the server when teams data is fetched.
-    pub is_enterprise_secret_redaction_enabled: bool,
+    /// Simplified: local version has no enterprise secret redaction
+    // pub is_enterprise_secret_redaction_enabled: bool,
 }
 
 /// A snapshot of a user's [`PrivacySettings`] settings at some point in time.
@@ -294,8 +291,9 @@ impl PrivacySettings {
             user_secret_regex_list,
             has_initialized_default_secret_regexes,
             is_telemetry_force_enabled: false,
-            is_enterprise_secret_redaction_enabled: false,
-            enterprise_secret_regex_list: Vec::new(),
+            // Simplified: local version has no enterprise secret redaction
+            // is_enterprise_secret_redaction_enabled: false,
+            // enterprise_secret_regex_list: Vec::new(),
         }
     }
 
@@ -307,54 +305,55 @@ impl PrivacySettings {
         self.is_telemetry_force_enabled = is_telemetry_force_enabled;
     }
 
-    pub fn is_enterprise_secret_redaction_enabled(&self) -> bool {
-        self.is_enterprise_secret_redaction_enabled
-    }
-
-    pub fn set_enterprise_secret_redaction_settings(
-        &mut self,
-        enabled: bool,
-        enterprise_regexes: Vec<EnterpriseSecretRegex>,
-        change_event_reason: ChangeEventReason,
-        ctx: &mut ModelContext<Self>,
-    ) {
-        if enabled {
-            // First time: Force enable secret redaction setting (safe mode).
-            if !self.is_enterprise_secret_redaction_enabled {
-                let safe_mode_settings = SafeModeSettings::handle(ctx);
-                ctx.update_model(&safe_mode_settings, |safe_mode_settings, ctx| {
-                    let _ = safe_mode_settings.safe_mode_enabled.set_value(true, ctx);
-                });
-            }
-
-            // Convert EnterpriseSecretRegex to CustomSecretRegex for internal use
-            let mut enterprise_secrets = Vec::new();
-            for enterprise_regex in enterprise_regexes {
-                if let Ok(regex) = Regex::new(&enterprise_regex.pattern) {
-                    enterprise_secrets.push(CustomSecretRegex {
-                        pattern: regex,
-                        name: enterprise_regex.name,
-                    });
-                } else {
-                    log::error!(
-                        "Invalid enterprise secret regex pattern: {}",
-                        enterprise_regex.pattern
-                    );
-                }
-            }
-            self.enterprise_secret_regex_list = enterprise_secrets;
-        } else {
-            // Clear enterprise secrets when disabled
-            self.enterprise_secret_regex_list.clear();
-        }
-
-        self.is_enterprise_secret_redaction_enabled = enabled;
-
-        ctx.emit(PrivacySettingsChangedEvent::CustomSecretRegexList {
-            change_event_reason,
-        });
-        ctx.notify();
-    }
+    // Simplified: local version has no enterprise secret redaction
+    // pub fn is_enterprise_secret_redaction_enabled(&self) -> bool {
+    //     self.is_enterprise_secret_redaction_enabled
+    // }
+    //
+    // pub fn set_enterprise_secret_redaction_settings(
+    //     &mut self,
+    //     enabled: bool,
+    //     enterprise_regexes: Vec<EnterpriseSecretRegex>,
+    //     change_event_reason: ChangeEventReason,
+    //     ctx: &mut ModelContext<Self>,
+    // ) {
+    //     if enabled {
+    //         // First time: Force enable secret redaction setting (safe mode).
+    //         if !self.is_enterprise_secret_redaction_enabled {
+    //             let safe_mode_settings = SafeModeSettings::handle(ctx);
+    //             ctx.update_model(&safe_mode_settings, |safe_mode_settings, ctx| {
+    //                 let _ = safe_mode_settings.safe_mode_enabled.set_value(true, ctx);
+    //             });
+    //         }
+    //
+    //         // Convert EnterpriseSecretRegex to CustomSecretRegex for internal use
+    //         let mut enterprise_secrets = Vec::new();
+    //         for enterprise_regex in enterprise_regexes {
+    //             if let Ok(regex) = Regex::new(&enterprise_regex.pattern) {
+    //                 enterprise_secrets.push(CustomSecretRegex {
+    //                     pattern: regex,
+    //                     name: enterprise_regex.name,
+    //                 });
+    //             } else {
+    //                 log::error!(
+    //                     "Invalid enterprise secret regex pattern: {}",
+    //                     enterprise_regex.pattern
+    //                 );
+    //             }
+    //         }
+    //         self.enterprise_secret_regex_list = enterprise_secrets;
+    //     } else {
+    //         // Clear enterprise secrets when disabled
+    //         self.enterprise_secret_regex_list.clear();
+    //     }
+    //
+    //     self.is_enterprise_secret_redaction_enabled = enabled;
+    //
+    //     ctx.emit(PrivacySettingsChangedEvent::CustomSecretRegexList {
+    //         change_event_reason,
+    //     });
+    //     ctx.notify();
+    // }
 
     pub fn refresh_to_default(&mut self) {
         // TODO(zach): this seems incorrect - should we also update the values on disk?
@@ -362,7 +361,8 @@ impl PrivacySettings {
         self.is_crash_reporting_enabled = true;
         self.is_cloud_conversation_storage_enabled = true;
         self.is_telemetry_force_enabled = false;
-        self.is_enterprise_secret_redaction_enabled = false;
+        // Simplified: local version has no enterprise secret redaction
+        // self.is_enterprise_secret_redaction_enabled = false;
     }
 
     /// Fetch the user's privacy settings from the server if any or update the server settings.
@@ -456,8 +456,9 @@ impl PrivacySettings {
             user_secret_regex_list: CustomSecretRegexList::new(None),
             has_initialized_default_secret_regexes: HasInitializedDefaultSecretRegexes::new(None),
             is_telemetry_force_enabled: false,
-            is_enterprise_secret_redaction_enabled: false,
-            enterprise_secret_regex_list: Vec::new(),
+            // Simplified: local version has no enterprise secret redaction
+            // is_enterprise_secret_redaction_enabled: false,
+            // enterprise_secret_regex_list: Vec::new(),
         }
     }
 

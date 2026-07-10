@@ -1195,43 +1195,17 @@ impl BlockListElement {
             )
             .with_uniform_padding(4.);
 
-            let element = if PrivacySettings::as_ref(app).is_enterprise_secret_redaction_enabled()
-                && model
-                    .block_list()
-                    .block_at(block_index)
-                    .is_some_and(|block| block.num_secrets_obfuscated() > 0)
-            {
-                // If enterprise secret redaction is enabled and the block contains secrets,
-                // disable save as workflow button + show different tooltip messaging.
-                render_hoverable_block_button(
-                    icon,
-                    Some(ToolbeltButtonTooltip {
-                        label: SAVE_AS_WORKFLOW_SECRETS_TEXT.to_owned(),
-                        tool_tip_below_button: should_render_tooltip_below_button,
-                    }),
-                    false,
-                    false,
-                    self.mouse_states
-                        .save_as_workflow_button_mouse_state
-                        .clone(),
-                    &self.warp_theme,
-                    &self.ui_builder,
-                    move |ctx: &mut EventContext, _, _| {
-                        ctx.dispatch_typed_action(TerminalAction::OpenWorkflowModalForBlock(
-                            block_index,
-                        ));
-                    },
-                )
-            } else {
-                render_hoverable_block_button(
-                    icon,
-                    Some(ToolbeltButtonTooltip {
-                        label: SAVE_AS_WORKFLOW_TEXT.to_owned(),
-                        tool_tip_below_button: should_render_tooltip_below_button,
-                    }),
-                    false,
-                    true,
-                    self.mouse_states
+            // Simplified: local version has no enterprise secret redaction
+            // Always show normal save as workflow button
+            let element = render_hoverable_block_button(
+                icon,
+                Some(ToolbeltButtonTooltip {
+                    label: SAVE_AS_WORKFLOW_TEXT.to_owned(),
+                    tool_tip_below_button: should_render_tooltip_below_button,
+                }),
+                false,
+                true,
+                self.mouse_states
                         .save_as_workflow_button_mouse_state
                         .clone(),
                     &self.warp_theme,

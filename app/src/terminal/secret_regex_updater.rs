@@ -27,11 +27,8 @@ impl CustomSecretRegexUpdater {
     fn update_custom_secret_regex_list(&self, ctx: &mut ModelContext<Self>) {
         let privacy_settings = PrivacySettings::as_ref(ctx);
 
-        // Get enterprise and user secrets separately
-        let enterprise_secrets = privacy_settings
-            .enterprise_secret_regex_list
-            .iter()
-            .map(CustomSecretRegex::pattern);
+        // Simplified: local version has no enterprise secrets
+        let enterprise_secrets = std::iter::empty();
 
         let user_secrets = privacy_settings
             .user_secret_regex_list
@@ -42,10 +39,8 @@ impl CustomSecretRegexUpdater {
 
         // Also update the telemetry-side secret regex, which is independent of
         // the user's safe-mode setting and always includes the default patterns.
-        let _enterprise_secrets = privacy_settings
-            .enterprise_secret_regex_list
-            .iter()
-            .map(CustomSecretRegex::pattern);
+        // Simplified: local version has no enterprise secrets
+        let _enterprise_secrets = std::iter::empty();
 
         let _user_secrets = privacy_settings
             .user_secret_regex_list

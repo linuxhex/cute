@@ -1006,33 +1006,20 @@ impl ShareBlockModal {
         column.add_child(Shrinkable::new(1., single_block).finish());
 
         if !link_generated {
-            let redact_secrets_checkbox =
-                if PrivacySettings::as_ref(app).is_enterprise_secret_redaction_enabled() {
-                    // Force check the checkbox if enterprise secret redaction is enabled.
-                    appearance
-                        .ui_builder()
-                        .checkbox(
-                            self.mouse_state_handles.redact_secrets_mouse_state.clone(),
-                            Some(CHECKBOX_SIZE),
-                        )
-                        .check(true)
-                        .build()
-                        .disable()
-                        .finish()
-                } else {
-                    appearance
-                        .ui_builder()
-                        .checkbox(
-                            self.mouse_state_handles.redact_secrets_mouse_state.clone(),
-                            Some(CHECKBOX_SIZE),
-                        )
-                        .check(self.obfuscate_secrets.is_visually_obfuscated())
-                        .build()
-                        .on_click(move |ctx, _, _| {
-                            ctx.dispatch_typed_action(ShareBlockModalAction::ToggleObfuscateSecrets)
-                        })
-                        .finish()
-                };
+            // Simplified: local version has no enterprise secret redaction
+            // Always allow user to toggle obfuscate secrets
+            let redact_secrets_checkbox = appearance
+                .ui_builder()
+                .checkbox(
+                    self.mouse_state_handles.redact_secrets_mouse_state.clone(),
+                    Some(CHECKBOX_SIZE),
+                )
+                .check(self.obfuscate_secrets.is_visually_obfuscated())
+                .build()
+                .on_click(move |ctx, _, _| {
+                    ctx.dispatch_typed_action(ShareBlockModalAction::ToggleObfuscateSecrets)
+                })
+                .finish();
 
             let redact_secrets_description = appearance
                 .ui_builder()
