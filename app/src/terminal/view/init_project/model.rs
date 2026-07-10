@@ -178,6 +178,8 @@ impl InitProjectModel {
     pub fn should_have_available_steps(path: &Path, ctx: &cuteui::AppContext) -> bool {
         // Note that we consider auto-indexing setting to true to satisfy the codebase context step.
         // This avoids the potential race condition with the banner showing just when we start auto-indexing.
+        // Cloud feature: codebase context is a cloud-only feature
+        // In local version, this always returns false
         let has_pending_codebase_context = UserWorkspaces::as_ref(ctx)
             .is_codebase_context_enabled(ctx)
             && CodebaseIndexManager::as_ref(ctx)

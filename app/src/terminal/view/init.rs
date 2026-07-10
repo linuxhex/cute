@@ -20,7 +20,9 @@ use crate::terminal::input::{
 };
 use crate::terminal::model::escape_sequences::{self, EscCodes};
 use crate::terminal::model::selection::SelectionDirection;
-use crate::terminal::shared_session::{SharedSessionActionSource, SharedSessionStatus};
+// 已注释：清理 shared_session 共享会话功能，使用 stub 类型
+// use crate::terminal::shared_session::{SharedSessionActionSource, SharedSessionStatus};
+use crate::SharedSessionStatus;
 use crate::terminal::ssh::error::{SshErrorBlockAction, SSH_ERROR_BLOCK_VISIBLE_KEY};
 use crate::terminal::view::passive_suggestions::PromptSuggestionResolution;
 use crate::terminal::view::{

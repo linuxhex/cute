@@ -89,7 +89,9 @@ use crate::terminal::profile_model_selector::{ProfileModelSelector, ProfileModel
 use crate::terminal::session_settings::{
     SessionSettings, SessionSettingsChangedEvent, ToolbarChipSelection,
 };
-use crate::terminal::shared_session::SharedSessionStatus;
+// 已注释：清理 shared_session 共享会话功能，使用 stub 类型
+// use crate::terminal::shared_session::SharedSessionStatus;
+use crate::SharedSessionStatus;
 use crate::terminal::view::ambient_agent::{
     AmbientAgentViewModel, ModelSelector,
 };

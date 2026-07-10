@@ -3210,3 +3210,216 @@ pub type OpenWarpDriveObjectSettings = OpenCuteDriveObjectSettings;
 pub type OpenWarpDriveObjectArgs = OpenCuteDriveObjectArgs;
 pub type WarpDriveSettings = CuteDriveSettings;
 pub type WarpDriveSettingsChangedEvent = CuteDriveSettingsChangedEvent;
+
+// ===== SharedSessionStatus Stub (Session Sharing) =====
+
+/// Minimal stub for SharedSessionStatus - session sharing status
+/// This is a cloud feature that's disabled in the local version.
+/// All variants return "NotShared" for keymap context.
+#[derive(Clone, Debug, PartialEq, Eq, Default)]
+pub enum SharedSessionStatus {
+    #[default]
+    NotShared,
+    SharePending,
+    SharePendingPreBootstrap,
+}
+
+impl SharedSessionStatus {
+    /// Returns the keymap context string for this status.
+    /// Always returns "NotShared" in the stub implementation.
+    pub fn as_keymap_context(&self) -> &'static str {
+        "NotShared"
+    }
+}
+
+// ===== UserProfiles Stub (User Profile Management) =====
+
+/// Minimal stub for UserProfile - individual user profile
+/// This is a cloud feature that's disabled in the local version.
+#[derive(Clone, Debug, Default)]
+pub struct UserProfile {
+    pub email: String,
+    pub photo_url: String,
+}
+
+impl UserProfile {
+    /// Returns a displayable identifier for this user.
+    /// Always returns empty string in the stub implementation.
+    pub fn displayable_identifier(&self) -> String {
+        String::new()
+    }
+}
+
+/// Minimal stub for UserProfiles - user profile management
+/// This is a cloud feature that's disabled in the local version.
+/// All methods return default values or empty strings.
+#[derive(Clone, Debug, Default)]
+pub struct UserProfiles {
+    // No internal state needed for stub
+}
+
+impl cuteui::Entity for UserProfiles {
+    type Event = ();
+}
+
+impl cuteui::SingletonEntity for UserProfiles {}
+
+impl UserProfiles {
+    /// Returns a displayable identifier for the given user UID.
+    /// Always returns None in the stub implementation.
+    pub fn displayable_identifier_for_uid(&self, _uid: crate::auth::UserUid) -> Option<String> {
+        None
+    }
+
+    /// Returns a reference to the UserProfiles singleton.
+    pub fn as_ref(_ctx: &AppContext) -> &Self {
+        static INSTANCE: UserProfiles = UserProfiles {};
+        &INSTANCE
+    }
+
+    /// Returns a handle to the UserProfiles singleton.
+    pub fn handle(_ctx: &AppContext) -> cuteui::ModelHandle<Self> {
+        <Self as cuteui::SingletonEntity>::handle(_ctx)
+    }
+
+    /// Creates a new UserProfiles instance.
+    pub fn new(_profiles: Vec<()>) -> Self {
+        Self::default()
+    }
+
+    /// Stub method for getting user profile by UID.
+    /// Always returns None in the stub implementation.
+    pub fn profile_for_uid(&self, _uid: crate::auth::UserUid) -> Option<UserProfile> {
+        None
+    }
+
+    /// Stub method for getting user profile by UID (reference version).
+    pub fn get(&self, _uid: &crate::auth::UserUid) -> Option<&UserProfile> {
+        None
+    }
+}
+
+// ===== UserWorkspaces Stub (Cloud Workspace Management) =====
+
+/// Minimal stub for UserWorkspaces - cloud workspace management
+/// This is a cloud feature that's disabled in the local version.
+/// All methods return appropriate default values (false/None/empty collections).
+#[derive(Clone, Debug, Default)]
+pub struct UserWorkspaces {
+    // No internal state needed for stub
+}
+
+/// Event type for UserWorkspaces (stub)
+#[derive(Clone, Debug)]
+pub enum UserWorkspacesEvent {
+    TeamsChanged,
+    CodebaseContextEnablementChanged,
+    // Add other events as needed for compatibility
+}
+
+impl cuteui::Entity for UserWorkspaces {
+    type Event = UserWorkspacesEvent;
+}
+
+impl cuteui::SingletonEntity for UserWorkspaces {}
+
+impl UserWorkspaces {
+    pub fn new(
+        _team_client: std::sync::Arc<dyn crate::server::server_api::team::TeamClient>,
+        _workspace_client: std::sync::Arc<dyn crate::server::server_api::workspace::WorkspaceClient>,
+        _cached_workspaces: Vec<WorkspaceMetadata>,
+        _ctx: &mut cuteui::ModelContext<Self>,
+    ) -> Self {
+        Self::default()
+    }
+
+    pub fn handle(_ctx: &AppContext) -> cuteui::ModelHandle<Self> {
+        <Self as cuteui::SingletonEntity>::handle(_ctx)
+    }
+
+    pub fn as_ref(_ctx: &AppContext) -> &Self {
+        // Stub - returns a static instance
+        static INSTANCE: UserWorkspaces = UserWorkspaces {};
+        &INSTANCE
+    }
+
+    /// Returns whether enterprise secret redaction is enabled.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn is_enterprise_secret_redaction_enabled(&self) -> bool {
+        // Cloud feature disabled in local version
+        false
+    }
+
+    /// Returns whether AI is allowed for the current team.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn ai_allowed_for_current_team(&self) -> bool {
+        // Cloud feature disabled in local version
+        false
+    }
+
+    /// Returns whether codebase context is enabled.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn is_codebase_context_enabled(&self, _ctx: &AppContext) -> bool {
+        // Cloud feature disabled in local version
+        false
+    }
+
+    /// Returns the default host slug for orchestration.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn default_host_slug(&self) -> Option<&str> {
+        // Cloud feature disabled in local version
+        None
+    }
+
+    /// Returns the team metadata for a given team UID.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn team_from_uid(&self, _team_uid: ServerId) -> Option<&TeamMetadata> {
+        // Cloud feature disabled in local version
+        None
+    }
+
+    /// Returns all user spaces (personal + teams).
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn all_user_spaces(&self, _ctx: &AppContext) -> Vec<Space> {
+        // Cloud feature disabled in local version - return empty vector
+        Vec::new()
+    }
+
+    /// Returns the current team UID if on a team.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn current_team_uid(&self) -> Option<ServerId> {
+        // Cloud feature disabled in local version
+        None
+    }
+
+    /// Returns the current team metadata if on a team.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn current_team(&self) -> Option<&TeamMetadata> {
+        // Cloud feature disabled in local version
+        None
+    }
+
+    /// Returns the personal drive space.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn personal_drive(&self, _ctx: &AppContext) -> Option<Owner> {
+        // Cloud feature disabled in local version
+        None
+    }
+
+    /// Returns cloud conversation storage enablement setting.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn get_cloud_conversation_storage_enablement_setting(&self) -> crate::settings::AdminEnablementSetting {
+        // Cloud feature disabled in local version
+        crate::settings::AdminEnablementSetting::Disabled
+    }
+
+    /// Converts owner to space.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn owner_to_space(&self, owner: Owner, _ctx: &AppContext) -> Space {
+        // Simplified: convert owner to space without cloud logic
+        match owner {
+            Owner::User { .. } => Space::Personal,
+            Owner::Team { team_uid } => Space::Team { team_uid },
+        }
+    }
+}

@@ -103,6 +103,8 @@ define_settings_group!(SafeModeSettings, settings: [
 /// Returns whether the rendering should obfuscate secrets given the current safe mode settings.
 pub fn get_secret_obfuscation_mode(app: &AppContext) -> ObfuscateSecrets {
     let safe_mode_settings = SafeModeSettings::as_ref(app);
+    // Cloud feature: enterprise secret redaction is a cloud-only feature
+    // In local version, this always returns false
     let is_enterprise_secret_redaction_enabled =
         UserWorkspaces::as_ref(app).is_enterprise_secret_redaction_enabled();
 

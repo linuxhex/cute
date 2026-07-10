@@ -1123,6 +1123,8 @@ impl View for ShareBlockModal {
 fn should_send_title_gen_request(ctx: &ViewContext<ShareBlockModal>) -> bool {
     FeatureFlag::SharedBlockTitleGeneration.is_enabled()
         && AISettings::as_ref(ctx).is_shared_block_title_generation_enabled(ctx)
+        // Cloud feature: AI allowed check for current team
+        // In local version, this always returns false (cloud feature disabled)
         && UserWorkspaces::as_ref(ctx).ai_allowed_for_current_team()
 }
 

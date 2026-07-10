@@ -109,7 +109,9 @@ use crate::appearance::Appearance;
 use crate::code::diff_viewer::DisplayMode;
 use crate::code::editor_management::CodeSource;
 use crate::settings_view::SettingsSection;
-use crate::terminal::shared_session::SharedSessionStatus;
+// 已注释：清理 shared_session 共享会话功能，使用 stub 类型
+// use crate::terminal::shared_session::SharedSessionStatus;
+use crate::SharedSessionStatus;
 use crate::terminal::ShellLaunchData;
 use crate::ui_components::blended_colors;
 use crate::ui_components::buttons::icon_button;

@@ -25074,6 +25074,8 @@ impl TypedActionView for TerminalView {
             }
             SummarizeConversation => self.summarize_conversation(ctx),
             IndexProjectSpeedbump => {
+                // Cloud feature: codebase context is a cloud-only feature
+                // In local version, this always returns false
                 let codebase_context_enabled =
                     UserWorkspaces::as_ref(ctx).is_codebase_context_enabled(ctx);
 

@@ -533,6 +533,8 @@ impl UniversalDeveloperInputButtonBar {
         ctx.subscribe_to_model(&NetworkStatus::handle(ctx), |_, _, _, ctx| {
             ctx.notify();
         });
+        // Cloud feature: UserWorkspaces subscription
+        // In local version, this subscription won't receive any events (cloud feature disabled)
         ctx.subscribe_to_model(&UserWorkspaces::handle(ctx), |_, _, _, ctx| {
             ctx.notify();
         });

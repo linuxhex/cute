@@ -78,7 +78,7 @@ pub async fn generate_multi_agent_output(
                 ..Default::default()
             }),
             rules_enabled: params.is_memory_enabled,
-            warp_drive_context_enabled: params.warp_drive_context_enabled,
+            warp_drive_context_enabled: params.cute_drive_context_enabled,
             web_context_retrieval_enabled: true,
             supports_parallel_tool_calls: true,
             use_anthropic_text_editor_tools: false,

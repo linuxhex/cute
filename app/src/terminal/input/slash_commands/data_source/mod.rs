@@ -133,6 +133,8 @@ impl SlashCommandDataSource {
                 me.recompute_active_commands(ctx);
             }
         });
+        // Cloud feature: UserWorkspaces subscription
+        // In local version, this subscription won't receive any events (cloud feature disabled)
         ctx.subscribe_to_model(&UserWorkspaces::handle(ctx), |me, event, ctx| {
             if matches!(
                 event,
@@ -279,6 +281,8 @@ impl SlashCommandDataSource {
             session_context |= Availability::ACTIVE_CONVERSATION;
         }
 
+        // Cloud feature: codebase context is a cloud-only feature
+        // In local version, this always returns false
         if UserWorkspaces::as_ref(ctx).is_codebase_context_enabled(ctx) {
             session_context |= Availability::CODEBASE_CONTEXT;
         }
@@ -300,6 +304,8 @@ impl SlashCommandDataSource {
             .ok()
             .filter(|s| !s.is_empty())
             .is_some()
+            // Cloud feature: default host slug is a cloud-only feature
+            // In local version, this always returns None
             || UserWorkspaces::as_ref(ctx).default_host_slug().is_some();
 
         let ai_settings = AISettings::as_ref(ctx);
