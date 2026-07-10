@@ -235,41 +235,23 @@ impl AIDocumentModel {
 
     /// Sends a request to create a new cloud notebook with the document's contents.
     /// Returns true if the create document request was sent successfully (or if there was already a notebook entry).
-    /// Actually creating the notebook is done asynchronously in the background.
+    /// Cloud sync disabled for local version - documents stored in SQLite only.
     pub fn sync_to_cute_drive(&mut self, id: AIDocumentId, ctx: &mut ModelContext<Self>) -> bool {
+        // Cloud sync disabled - AI documents stored locally only
         let Some(document) = self.documents.get(&id) else {
             return false;
         };
         if document.sync_id.is_some() {
-            // Already created. Return early.
+            // Already marked as "synced" (actually local-only)
             return true;
         }
 
-        let title = document.title.clone();
-        let content = document.editor.as_ref(ctx).markdown(ctx);
-
-        let Some(owner) = Self::get_plan_owner(ctx) else {
-            log::warn!("Failed to get owner while saving AI Document to Cute Drive. Skipping");
-            return false;
-        };
-
-        let Some(plan_folder_id) = self.get_or_create_plan_folder(owner, ctx).into_server() else {
-            // Plan folder is still being created (has ClientId only).
-            // If we save using the ClientId as the parent folder, the document
-            // will end up in a broken state once the folder is saved.
-            // Queue the document for creation until the folder gets a ServerId.
-            self.pending_document_queue
-                .push(PendingDocument { id, title, content });
-
-            if let Some(document) = self.documents.get_mut(&id) {
-                let client_id = ClientId::new();
-                document.sync_id = Some(SyncId::ClientId(client_id));
-            }
-            return true;
-        };
-
-        self.create_notebook_in_plan_folder(id, &title, &content, owner, plan_folder_id, ctx);
+        // Mark document as saved locally without cloud sync
+        if let Some(doc) = self.documents.get_mut(&id) {
+            doc.sync_id = Some(SyncId::ClientId(ClientId::new()));
+        }
         ctx.emit(AIDocumentModelEvent::DocumentSaveStatusUpdated(id));
+        log::info!("AI Document saved locally (cloud sync disabled): {}", id);
         true
     }
 
@@ -289,77 +271,15 @@ impl AIDocumentModel {
         }
     }
 
+    /// Handles UpdateManager events.
+    /// Cloud sync disabled for local version - no longer processes cloud object operations.
     fn handle_update_manager_event(
         &mut self,
         event: &UpdateManagerEvent,
         ctx: &mut ModelContext<Self>,
     ) {
-        let UpdateManagerEvent::ObjectOperationComplete { result } = event else {
-            return;
-        };
-        if !matches!(result.operation, ObjectOperation::Create { .. })
-            || result.success_type != OperationSuccessType::Success
-        {
-            return;
-        }
-        let (Some(client_id), Some(server_id)) = (result.client_id, result.server_id) else {
-            return;
-        };
-
-        // If we're waiting on a Plans folder to complete creation, ensure the Plans folder exists
-        // (creating it if needed) and if it has a ServerId, process the pending document queue.
-        //
-        // NOTE: this handler runs for *all* Cute Drive object creations, so we must only create the
-        // Plans folder when we actually have a plan notebook waiting to be created.
-        if !self.pending_document_queue.is_empty() {
-            if let Some(owner) = Self::get_plan_owner(ctx) {
-                if let Some(folder_id) = self.get_or_create_plan_folder(owner, ctx).into_server() {
-                    let queue = std::mem::take(&mut self.pending_document_queue);
-
-                    for pending in queue {
-                        self.create_notebook_in_plan_folder(
-                            pending.id,
-                            &pending.title,
-                            &pending.content,
-                            owner,
-                            folder_id,
-                            ctx,
-                        );
-                        ctx.emit(AIDocumentModelEvent::DocumentSaveStatusUpdated(pending.id));
-                    }
-                }
-            }
-        }
-
-        let Some((doc_id, doc)) = self
-            .documents
-            .iter_mut()
-            .find(|(_, doc)| doc.sync_id.and_then(|id| id.into_client()) == Some(client_id))
-        else {
-            return;
-        };
-
-        let conversation_id = doc.conversation_id;
-        let ai_document_id = *doc_id;
-        doc.sync_id = Some(SyncId::ServerId(server_id));
-        ctx.emit(AIDocumentModelEvent::DocumentSaveStatusUpdated(
-            ai_document_id,
-        ));
-
-        // Update the plan artifact's notebook_uid in the conversation
-        let notebook_uid = NotebookId::from(server_id);
-        BlocklistAIHistoryModel::handle(ctx).update(ctx, |history_model, ctx| {
-            let terminal_view_id =
-                history_model.terminal_view_id_for_conversation(&conversation_id);
-            if let Some(conversation) = history_model.conversation_mut(&conversation_id) {
-                conversation.update_plan_notebook_uid(
-                    ai_document_id,
-                    notebook_uid,
-                    terminal_view_id,
-                    ctx,
-                );
-            }
-        });
+        // Cloud sync disabled - ignore all UpdateManager events
+        let _ = event;
     }
 
     /// Create a new document with default title/content and return its ID.
@@ -1047,21 +967,15 @@ impl AIDocumentModel {
         }
     }
 
+    /// Updates cloud notebook data.
+    /// Cloud sync disabled for local version - no UpdateManager call.
     fn maybe_update_cloud_notebook_data(
         &mut self,
         id: &AIDocumentId,
         ctx: &mut ModelContext<Self>,
     ) {
-        let Some(doc) = self.documents.get(id) else {
-            return;
-        };
-        let Some(sync_id) = doc.sync_id else {
-            return;
-        };
-        let content = doc.editor.as_ref(ctx).markdown(ctx);
-        UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-            update_manager.update_notebook_data(content.into(), sync_id, None, ctx);
-        });
+        // Cloud sync disabled - AI documents stored locally only
+        let _ = (id, ctx);
     }
 
     /// Get a specific version of a document by version.
@@ -1100,39 +1014,12 @@ impl AIDocumentModel {
         }
     }
 
-    /// Get or create the Plans folder in the appropriate drive.
-    /// Returns the SyncId of the folder (new ClientId if just created).
+    /// Get or create the Plans folder.
+    /// Cloud sync disabled for local version - returns a local-only SyncId.
     fn get_or_create_plan_folder(&mut self, owner: Owner, ctx: &mut ModelContext<Self>) -> SyncId {
-        let cloud_model = CloudModel::as_ref(ctx);
-
-        // Search for existing Plans folder at root level in the appropriate drive.
-        let existing_folder = cloud_model.get_all_active_folders().find(|folder| {
-            folder.model().name == PLAN_FOLDER_NAME
-                && folder.metadata.folder_id.is_none()
-                && folder.permissions.owner == owner
-        });
-
-        if let Some(folder) = existing_folder {
-            return folder.id;
-        }
-
-        // Folder doesn't exist, create it.
-        let client_id = ClientId::new();
-        let folder_id = SyncId::ClientId(client_id);
-
-        UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-            update_manager.create_folder(
-                PLAN_FOLDER_NAME.to_string(),
-                owner,
-                client_id,
-                None,
-                false,
-                InitiatedBy::System,
-                ctx,
-            );
-        });
-
-        folder_id
+        // Cloud sync disabled - Plans folder concept not applicable in local-only mode
+        // Return a dummy ClientId to satisfy the interface
+        SyncId::ClientId(ClientId::new())
     }
 
     /// Look up server_conversation_token for a document's conversation.
@@ -1146,6 +1033,7 @@ impl AIDocumentModel {
     }
 
     /// Helper method to create a notebook in the Plan folder.
+    /// Cloud sync disabled for local version - no UpdateManager call.
     fn create_notebook_in_plan_folder(
         &mut self,
         id: AIDocumentId,
@@ -1155,33 +1043,11 @@ impl AIDocumentModel {
         plan_folder_id: ServerId,
         ctx: &mut ModelContext<Self>,
     ) {
-        let client_id = ClientId::new();
-        let server_conversation_id = self.get_server_conversation_id(&id, ctx);
+        // Cloud sync disabled - AI documents stored locally only
         if let Some(document) = self.documents.get_mut(&id) {
-            document.sync_id = Some(SyncId::ClientId(client_id));
-        } else {
-            log::warn!("Document {} not found when creating notebook", id);
-            return;
+            document.sync_id = Some(SyncId::ClientId(ClientId::new()));
         }
-
-        let notebook_model = CloudNotebookModel {
-            title: title.to_string(),
-            data: content.to_string(),
-            ai_document_id: Some(id),
-            conversation_id: server_conversation_id,
-        };
-
-        UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-            update_manager.create_notebook_with_model(
-                client_id,
-                owner,
-                Some(SyncId::ServerId(plan_folder_id)),
-                notebook_model,
-                CloudObjectEventEntrypoint::Unknown,
-                true,
-                ctx,
-            );
-        });
+        log::info!("AI Document '{}' created locally (cloud sync disabled)", title);
     }
 
     // ── Orchestration config: history event → hydration ──────────

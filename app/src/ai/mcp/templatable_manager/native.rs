@@ -398,6 +398,7 @@ impl TemplatableMCPServerManager {
     }
 
     /// Creates a new templatable MCP server in the specified space.
+    /// Cloud sync disabled for local version - no UpdateManager call.
     pub fn create_templatable_mcp_server(
         &mut self,
         templatable_mcp_server: TemplatableMCPServer,
@@ -405,24 +406,8 @@ impl TemplatableMCPServerManager {
         initiated_by: InitiatedBy,
         ctx: &mut ModelContext<Self>,
     ) {
-        let owner = UserWorkspaces::as_ref(ctx).space_to_owner(space, ctx);
-        if let Some(owner) = owner {
-            let owner_str = match owner {
-                crate::cloud_stub_types::Owner::User { user_uid } => user_uid.to_string(),
-                crate::cloud_stub_types::Owner::Team { team_uid } => team_uid.to_string(),
-            };
-            let update_manager = UpdateManager::handle(ctx);
-            update_manager.update(ctx, |update_manager, ctx| {
-                let client_id = ClientId::default();
-                update_manager.create_templatable_mcp_server(
-                    templatable_mcp_server.clone(),
-                    client_id,
-                    owner_str,
-                    initiated_by,
-                    ctx,
-                );
-            });
-        }
+        // Cloud sync disabled - MCP servers stored locally only
+        log::info!("Creating templatable MCP server locally (cloud sync disabled): {}", templatable_mcp_server.name);
     }
 
     pub fn get_all_templatable_mcp_servers(&self) -> Vec<&TemplatableMCPServer> {
@@ -432,34 +417,21 @@ impl TemplatableMCPServerManager {
             .collect()
     }
 
+    /// Updates a templatable MCP server.
+    /// Cloud sync disabled for local version - no UpdateManager call.
     pub fn update_templatable_mcp_server(
         &mut self,
         template_server: TemplatableMCPServer,
         ctx: &mut ModelContext<Self>,
     ) {
-        let cloud_templatable_mcp_server =
-            self.get_cloud_templatable_mcp_server(template_server.uuid);
-        if let Some(cloud_templatable_mcp_server) = cloud_templatable_mcp_server {
-            let revision_str = cloud_templatable_mcp_server
-                .metadata
-                .revision
-                .clone()
-                .and_then(|r| Some(r.utc().to_string()))
-                .unwrap_or_default();
-            let update_manager = UpdateManager::handle(ctx);
-            update_manager.update(ctx, |update_manager, ctx| {
-                update_manager.update_templatable_mcp_server(
-                    template_server,
-                    cloud_templatable_mcp_server.id,
-                    revision_str,
-                    ctx,
-                );
-            });
-        }
+        // Cloud sync disabled - MCP servers stored locally only
+        log::info!("Updating templatable MCP server locally (cloud sync disabled): {}", template_server.name);
     }
 
+    /// Deletes a templatable MCP server and its installations.
+    /// Cloud sync disabled for local version - only deletes local data.
     pub fn delete_templatable_mcp_server(&mut self, uuid: Uuid, ctx: &mut ModelContext<Self>) {
-        // Delete any existing installations of this template
+        // Delete any existing installations of this template (local only)
         let installation = self.get_installation_by_template_uuid(uuid);
         if let Some(installation) = installation {
             let installation_uuid = installation.uuid();
@@ -467,42 +439,20 @@ impl TemplatableMCPServerManager {
             self.delete_templatable_mcp_server_installation(installation_uuid, ctx);
         }
 
-        let cloud_templatable_mcp_server = self.get_cloud_templatable_mcp_server(uuid);
-        if let Some(cloud_templatable_mcp_server) = cloud_templatable_mcp_server {
-            let cloud_object_type_and_id = CloudObjectTypeAndId::from_generic_string_object(
-                GenericStringObjectFormat::Json(JsonObjectType::TemplatableMCPServer),
-                cloud_templatable_mcp_server.id,
-            );
-
-            let update_manager = UpdateManager::handle(ctx);
-            update_manager.update(ctx, |update_manager, ctx| {
-                update_manager.delete_object_by_user(cloud_object_type_and_id, ctx);
-            });
-        }
+        // Cloud sync disabled - no UpdateManager call for cloud deletion
+        log::info!("Deleting templatable MCP server locally (cloud sync disabled): {}", uuid);
     }
 
+    /// Deletes a legacy MCP server.
+    /// Cloud sync disabled for local version - no UpdateManager call.
     pub fn delete_legacy_mcp_server(
         &mut self,
         sync_id: SyncId,
         initiated_by: InitiatedBy,
         ctx: &mut ModelContext<Self>,
     ) {
-        // The legacy MCPServerManager no longer runs servers, so we only need
-        // to delete the cloud object. OAuth credentials were already copied
-        // during conversion.
-        let cloud_object_type_and_id = CloudObjectTypeAndId::from_generic_string_object(
-            GenericStringObjectFormat::Json(JsonObjectType::MCPServer),
-            sync_id,
-        );
-
-        let update_manager = UpdateManager::handle(ctx);
-        update_manager.update(ctx, |update_manager, ctx| {
-            update_manager.delete_object_with_initiated_by(
-                cloud_object_type_and_id,
-                initiated_by,
-                ctx,
-            );
-        });
+        // Cloud sync disabled - no cloud object deletion
+        log::info!("Deleting legacy MCP server locally (cloud sync disabled): {}", sync_id);
     }
 
     /// Get all runnable MCP servers (templatable installations).
@@ -1387,43 +1337,15 @@ impl TemplatableMCPServerManager {
         }
     }
 
+    /// Shares a templatable MCP server with a team.
+    /// Cloud sync disabled for local version - no UpdateManager call.
     pub fn share_templatable_mcp_server(
         &mut self,
         template_uuid: Uuid,
         ctx: &mut ModelContext<Self>,
     ) {
-        let sync_id = self
-            .get_cloud_templatable_mcp_server(template_uuid)
-            .map(|server| server.sync_id());
-        let team_uid = TemplatableMCPServerManager::get_first_team_space_id(ctx);
-
-        if let Some(sync_id) = sync_id {
-            if let Some(team_uid) = team_uid {
-                let object_type_and_id = CloudObjectTypeAndId::from_generic_string_object(
-                    GenericStringObjectFormat::Json(JsonObjectType::TemplatableMCPServer),
-                    sync_id,
-                );
-                UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-                    let (destination_folder_id, space) = match CloudObjectLocation::Space(Space::Team { team_uid }) {
-                        CloudObjectLocation::Space(space) => (None, space),
-                        CloudObjectLocation::Folder(folder_id) => {
-                            let server_id = match folder_id {
-                                SyncId::ClientId(_) => None,
-                                SyncId::ServerId(id) => Some(id),
-                            };
-                            (server_id, Space::Personal)
-                        },
-                        CloudObjectLocation::Trash => (None, Space::Personal),
-                    };
-                    update_manager.move_object_to_location(
-                        object_type_and_id,
-                        destination_folder_id,
-                        space,
-                        ctx,
-                    );
-                });
-            }
-        }
+        // Cloud sync disabled - sharing not supported in local-only mode
+        log::info!("Sharing templatable MCP server disabled (cloud sync disabled): {}", template_uuid);
     }
 
     pub fn share_templatable_mcp_server_installation(
@@ -1437,40 +1359,15 @@ impl TemplatableMCPServerManager {
         }
     }
 
+    /// Unshares a templatable MCP server.
+    /// Cloud sync disabled for local version - no UpdateManager call.
     pub fn unshare_templatable_mcp_server(
         &mut self,
         template_uuid: Uuid,
         ctx: &mut ModelContext<Self>,
     ) {
-        let cloud_templatable_mcp_server = self.get_cloud_templatable_mcp_server(template_uuid);
-
-        if let Some(cloud_templatable_mcp_server) = cloud_templatable_mcp_server {
-            let sync_id = cloud_templatable_mcp_server.sync_id();
-
-            let object_type_and_id = CloudObjectTypeAndId::from_generic_string_object(
-                GenericStringObjectFormat::Json(JsonObjectType::TemplatableMCPServer),
-                sync_id,
-            );
-            UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-                let (destination_folder_id, space) = match CloudObjectLocation::Space(Space::Personal) {
-                    CloudObjectLocation::Space(space) => (None, space),
-                    CloudObjectLocation::Folder(folder_id) => {
-                        let server_id = match folder_id {
-                            SyncId::ClientId(_) => None,
-                            SyncId::ServerId(id) => Some(id),
-                        };
-                        (server_id, Space::Personal)
-                    },
-                    CloudObjectLocation::Trash => (None, Space::Personal),
-                };
-                update_manager.move_object_to_location(
-                    object_type_and_id,
-                    destination_folder_id,
-                    space,
-                    ctx,
-                );
-            });
-        }
+        // Cloud sync disabled - unsharing not supported in local-only mode
+        log::info!("Unsharing templatable MCP server disabled (cloud sync disabled): {}", template_uuid);
     }
 
     pub fn unshare_templatable_mcp_server_installation(
