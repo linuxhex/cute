@@ -1362,8 +1362,8 @@ impl AISettings {
         let contains_restored_remote_blocks =
             FocusedTerminalInfo::as_ref(app).contains_any_restored_remote_blocks();
 
-        let is_ai_allowed_in_remote_sessions =
-            UserWorkspaces::as_ref(app).is_ai_allowed_in_remote_sessions();
+        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
+        let is_ai_allowed_in_remote_sessions = true; // UserWorkspaces::as_ref(app).is_ai_allowed_in_remote_sessions();
 
         if is_ai_allowed_in_remote_sessions {
             return false;

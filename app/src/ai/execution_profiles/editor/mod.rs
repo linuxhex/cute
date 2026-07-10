@@ -772,24 +772,25 @@ impl ExecutionProfileEditorView {
             },
         );
 
-        let workspace = UserWorkspaces::handle(ctx);
-        ctx.subscribe_to_model(&workspace, |me, workspace, event, ctx| {
-            if let UserWorkspacesEvent::TeamsChanged = event {
-                Self::update_all_editor_interaction_states(me, workspace, ctx);
-                me.update_mouse_state_handles(ctx);
-                ctx.notify();
-            }
-        });
-        ctx.subscribe_to_model(&AISettings::handle(ctx), |me, _, event, ctx| {
-            if let AISettingsChangedEvent::IsAnyAIEnabled { .. } = event {
-                let workspace = UserWorkspaces::handle(ctx);
-                Self::update_all_editor_interaction_states(me, workspace, ctx);
-                me.sync_context_window_editor(ctx, true);
-                ctx.notify();
-            }
-        });
-
-        Self::update_all_editor_interaction_states(&view, workspace, ctx);
+        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
+        // let workspace = UserWorkspaces::handle(ctx);
+        // ctx.subscribe_to_model(&workspace, |me, workspace, event, ctx| {
+        //     if let UserWorkspacesEvent::TeamsChanged = event {
+        //         Self::update_all_editor_interaction_states(me, workspace, ctx);
+        //         me.update_mouse_state_handles(ctx);
+        //         ctx.notify();
+        //     }
+        // });
+        // ctx.subscribe_to_model(&AISettings::handle(ctx), |me, _, event, ctx| {
+        //     if let AISettingsChangedEvent::IsAnyAIEnabled { .. } = event {
+        //         let workspace = UserWorkspaces::handle(ctx);
+        //         Self::update_all_editor_interaction_states(me, workspace, ctx);
+        //         me.sync_context_window_editor(ctx, true);
+        //         ctx.notify();
+        //     }
+        // });
+        //
+        // Self::update_all_editor_interaction_states(&view, workspace, ctx);
 
         view.refresh_profile_state(ctx);
 

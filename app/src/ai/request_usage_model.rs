@@ -450,10 +450,11 @@ impl AIRequestUsageModel {
 
     #[allow(dead_code)]
     pub fn total_current_workspace_bonus_credits_remaining(&self, ctx: &AppContext) -> i32 {
-        UserWorkspaces::as_ref(ctx)
-            .current_workspace()
-            .map(|workspace| self.total_workspace_bonus_credits_remaining(workspace.uid))
-            .unwrap_or(0)
+        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
+        0 // UserWorkspaces::as_ref(ctx)
+        //     .current_workspace()
+        //     .map(|workspace| self.total_workspace_bonus_credits_remaining(workspace.uid))
+        //     .unwrap_or(0)
     }
 
     pub fn total_user_interactive_bonus_credits_remaining(&self) -> i32 {

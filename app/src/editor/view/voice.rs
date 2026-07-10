@@ -129,7 +129,8 @@ impl EditorView {
         options: VoiceTranscriptionOptions,
         ctx: &mut ViewContext<Self>,
     ) {
-        if !UserWorkspaces::handle(ctx).as_ref(ctx).is_voice_enabled() {
+        // COMMENTED: UserWorkspaces disabled in local version - voice disabled
+        if true /*!UserWorkspaces::handle(ctx).as_ref(ctx).is_voice_enabled()*/ {
             return;
         }
 
@@ -155,7 +156,8 @@ impl EditorView {
         cancel_transcription: bool,
         ctx: &mut ViewContext<Self>,
     ) {
-        if !UserWorkspaces::handle(ctx).as_ref(ctx).is_voice_enabled() {
+        // COMMENTED: UserWorkspaces disabled in local version - voice disabled
+        if true /*!UserWorkspaces::handle(ctx).as_ref(ctx).is_voice_enabled()*/ {
             return;
         }
 
@@ -199,7 +201,8 @@ impl EditorView {
         source: &voice_input::VoiceInputToggledFrom,
         ctx: &mut ViewContext<Self>,
     ) -> bool {
-        if !UserWorkspaces::handle(ctx).as_ref(ctx).is_voice_enabled() {
+        // COMMENTED: UserWorkspaces disabled in local version - voice disabled
+        if true /*!UserWorkspaces::handle(ctx).as_ref(ctx).is_voice_enabled()*/ {
             return false;
         }
 
@@ -397,7 +400,8 @@ impl EditorView {
         result: VoiceSessionResult,
         ctx: &mut ViewContext<Self>,
     ) {
-        if !UserWorkspaces::handle(ctx).as_ref(ctx).is_voice_enabled() {
+        // COMMENTED: UserWorkspaces disabled in local version - voice disabled
+        if true /*!UserWorkspaces::handle(ctx).as_ref(ctx).is_voice_enabled()*/ {
             return;
         }
 

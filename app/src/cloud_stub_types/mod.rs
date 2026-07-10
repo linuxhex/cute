@@ -2525,7 +2525,8 @@ pub trait CloudObject: Debug {
     }
 
     fn space(&self, app: &AppContext) -> Space {
-        UserWorkspaces::as_ref(app).owner_to_space(self.permissions().owner, app)
+        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
+        Space::Personal // UserWorkspaces::as_ref(app).owner_to_space(self.permissions().owner, app)
     }
 
     fn can_leave(&self, _app: &AppContext) -> bool {

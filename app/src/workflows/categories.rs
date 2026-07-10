@@ -390,11 +390,11 @@ impl CategoriesView {
             ),
         );
 
-        // Notify if there were changes to the team workflows, so we can reload
-        let user_workspaces = UserWorkspaces::handle(ctx);
-        ctx.observe(&user_workspaces, |_, _, ctx| {
-            ctx.notify();
-        });
+        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
+        // let user_workspaces = UserWorkspaces::handle(ctx);
+        // ctx.observe(&user_workspaces, |_, _, ctx| {
+        //     ctx.notify();
+        // });
 
         ctx.subscribe_to_model(&WarpConfig::handle(ctx), |me, _, event, ctx| {
             if let WarpConfigUpdateEvent::LocalUserWorkflows = event {
@@ -484,27 +484,28 @@ impl CategoriesView {
         );
     }
 
-    pub fn load_cloud_workflows(&mut self, ctx: &mut ViewContext<Self>) {
-        let user_workspaces = UserWorkspaces::as_ref(ctx);
-        let cloud_model = CloudModel::as_ref(ctx);
-
-        for space in user_workspaces.all_user_spaces(ctx) {
-            let workflows_in_space = cloud_model.active_workflows_in_space(space, ctx);
-            let new_workflows_in_space = Self::categorize_workflows(
-                // Don't include AI workflows.
-                workflows_in_space
-                    .into_iter()
-                    .filter(|workflow| !workflow.model().data.is_agent_mode_workflow())
-                    .map(|w| Arc::new(WorkflowType::Cloud(Box::new(w.clone())))),
-            );
-            self.workflows_by_source
-                .insert(space.into(), new_workflows_in_space);
-        }
-
-        self.selected_workflow_index = 0;
-        self.compute_active_workflows(ctx);
-        ctx.notify();
-    }
+    // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
+    // pub fn load_cloud_workflows(&mut self, ctx: &mut ViewContext<Self>) {
+    //     let user_workspaces = UserWorkspaces::as_ref(ctx);
+    //     let cloud_model = CloudModel::as_ref(ctx);
+    //
+    //     for space in user_workspaces.all_user_spaces(ctx) {
+    //         let workflows_in_space = cloud_model.active_workflows_in_space(space, ctx);
+    //         let new_workflows_in_space = Self::categorize_workflows(
+    //             // Don't include AI workflows.
+    //             workflows_in_space
+    //                 .into_iter()
+    //                 .filter(|workflow| !workflow.model().data.is_agent_mode_workflow())
+    //                 .map(|w| Arc::new(WorkflowType::Cloud(Box::new(w.clone())))),
+    //         );
+    //         self.workflows_by_source
+    //             .insert(space.into(), new_workflows_in_space);
+    //     }
+    //
+    //     self.selected_workflow_index = 0;
+    //     self.compute_active_workflows(ctx);
+    //     ctx.notify();
+    // }
 
     /// Given an iterator of a Vector workflows, constructs a `Vector` of `Workflow` and
     /// `WorkflowSource` pairs.
@@ -560,22 +561,24 @@ impl CategoriesView {
                     )
                 })
                 .unwrap_or_default(),
+            // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
             WorkflowViewType::Team => {
                 // TODO: this only assumes one team
-                let team_uid = UserWorkspaces::as_ref(ctx).current_team_uid();
-                if let Some(team_uid) = team_uid {
-                    self.workflows_by_source
-                        .get(&WorkflowSource::Team { team_uid })
-                        .map(|categorized_workflows| {
-                            Self::create_workflow_source_pair(
-                                categorized_workflows.values(),
-                                WorkflowSource::Team { team_uid },
-                            )
-                        })
-                        .unwrap_or_default()
-                } else {
-                    Default::default()
-                }
+                // let team_uid = UserWorkspaces::as_ref(ctx).current_team_uid();
+                // if let Some(team_uid) = team_uid {
+                //     self.workflows_by_source
+                //         .get(&WorkflowSource::Team { team_uid })
+                //         .map(|categorized_workflows| {
+                //             Self::create_workflow_source_pair(
+                //                 categorized_workflows.values(),
+                //                 WorkflowSource::Team { team_uid },
+                //             )
+                //         })
+                //         .unwrap_or_default()
+                // } else {
+                //     Default::default()
+                // }
+                Default::default()
             }
             WorkflowViewType::LocalPersonal => {
                 let local = self.workflows_by_source.get(&WorkflowSource::Local).map(

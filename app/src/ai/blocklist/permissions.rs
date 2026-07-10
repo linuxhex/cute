@@ -221,14 +221,15 @@ impl BlocklistAIPermissions {
     /// In sandboxed mode, returns settings derived from the sandboxed agent config.
     /// In unsandboxed mode, returns the standard AI autonomy settings.
     fn workspace_autonomy_settings(ctx: &AppContext) -> AiAutonomySettings {
+        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
         if AppExecutionMode::as_ref(ctx).is_sandboxed() {
-            let sandboxed = UserWorkspaces::as_ref(ctx).sandboxed_agent_settings();
+            let sandboxed = None; // UserWorkspaces::as_ref(ctx).sandboxed_agent_settings();
             AiAutonomySettings {
                 execute_commands_denylist: sandboxed.and_then(|s| s.execute_commands_denylist),
                 ..Default::default()
             }
         } else {
-            UserWorkspaces::as_ref(ctx).ai_autonomy_settings()
+            Default::default() // UserWorkspaces::as_ref(ctx).ai_autonomy_settings()
         }
     }
 

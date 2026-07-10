@@ -366,7 +366,8 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
             AISettings::as_ref(app)
                 .git_operations_autogen_enabled_internal
                 .is_supported_on_current_platform()
-                && UserWorkspaces::as_ref(app).is_git_operations_ai_enabled(),
+                // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
+                && true, // UserWorkspaces::as_ref(app).is_git_operations_ai_enabled(),
         )],
         app,
     );
@@ -614,40 +615,41 @@ impl AISettingsPageView {
     pub fn new(ctx: &mut ViewContext<Self>) -> Self {
         let is_any_ai_enabled = AISettings::as_ref(ctx).is_any_ai_enabled(ctx);
 
-        let workspace = UserWorkspaces::handle(ctx);
-        let ai_autonomy_settings = workspace.as_ref(ctx).ai_autonomy_settings();
-        ctx.subscribe_to_model(&workspace, |me, workspace, event, ctx| {
-            if let UserWorkspacesEvent::TeamsChanged = event {
-                me.refresh_all_execution_profile_ui(ctx);
-                me.reset_execution_profile_mouse_state_handles(ctx);
-
-                let is_any_ai_enabled = AISettings::as_ref(ctx).is_any_ai_enabled(ctx);
-                let ai_autonomy_settings = workspace.as_ref(ctx).ai_autonomy_settings();
-
-                Self::update_editor_interaction_state(
-                    me.command_denylist_editor.as_ref(ctx).editor().clone(),
-                    is_any_ai_enabled,
-                    ctx,
-                );
-
-                Self::update_editor_interaction_state(
-                    me.command_allowlist_editor.as_ref(ctx).editor().clone(),
-                    is_any_ai_enabled
-                        && !ai_autonomy_settings.has_override_for_execute_commands_allowlist(),
-                    ctx,
-                );
-
-                Self::update_editor_interaction_state(
-                    me.directory_allowlist_editor.as_ref(ctx).editor().clone(),
-                    is_any_ai_enabled
-                        && !ai_autonomy_settings.has_override_for_read_files_allowlist(),
-                    ctx,
-                );
-
-                me.sync_custom_endpoint_buttons(ctx);
-                ctx.notify();
-            }
-        });
+        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
+        // let workspace = UserWorkspaces::handle(ctx);
+        // let ai_autonomy_settings = workspace.as_ref(ctx).ai_autonomy_settings();
+        // ctx.subscribe_to_model(&workspace, |me, workspace, event, ctx| {
+        //     if let UserWorkspacesEvent::TeamsChanged = event {
+        //         me.refresh_all_execution_profile_ui(ctx);
+        //         me.reset_execution_profile_mouse_state_handles(ctx);
+        //
+        //         let is_any_ai_enabled = AISettings::as_ref(ctx).is_any_ai_enabled(ctx);
+        //         let ai_autonomy_settings = workspace.as_ref(ctx).ai_autonomy_settings();
+        //
+        //         Self::update_editor_interaction_state(
+        //             me.command_denylist_editor.as_ref(ctx).editor().clone(),
+        //             is_any_ai_enabled,
+        //             ctx,
+        //         );
+        //
+        //         Self::update_editor_interaction_state(
+        //             me.command_allowlist_editor.as_ref(ctx).editor().clone(),
+        //             is_any_ai_enabled
+        //                 && !ai_autonomy_settings.has_override_for_execute_commands_allowlist(),
+        //             ctx,
+        //         );
+        //
+        //         Self::update_editor_interaction_state(
+        //             me.directory_allowlist_editor.as_ref(ctx).editor().clone(),
+        //             is_any_ai_enabled
+        //                 && !ai_autonomy_settings.has_override_for_read_files_allowlist(),
+        //             ctx,
+        //         );
+        //
+        //         me.sync_custom_endpoint_buttons(ctx);
+        //         ctx.notify();
+        //     }
+        // });
 
         let voice_input_toggle_key_dropdown = ctx.add_typed_action_view(|ctx| {
             let mut dropdown = Dropdown::new(ctx);

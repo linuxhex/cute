@@ -233,14 +233,15 @@ impl RequestParams {
 
         let should_redact_secrets = get_secret_obfuscation_mode(app).should_redact_secret();
 
-        let user_workspaces = UserWorkspaces::as_ref(app);
+        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
+        let user_workspaces = false; // UserWorkspaces::as_ref(app);
         let api_key_manager = ApiKeyManager::as_ref(app);
-        let is_byo_enabled = user_workspaces.is_byo_api_key_enabled(app);
+        let is_byo_enabled = false; // user_workspaces.is_byo_api_key_enabled(app);
         let api_keys = api_key_manager.api_keys_for_request(
             is_byo_enabled,
-            user_workspaces.is_aws_bedrock_credentials_enabled(app),
+            false, // user_workspaces.is_aws_bedrock_credentials_enabled(app),
         );
-        let is_custom_inference_enabled = user_workspaces.is_custom_inference_enabled(app);
+        let is_custom_inference_enabled = false; // user_workspaces.is_custom_inference_enabled(app);
         let custom_model_providers = FeatureFlag::CustomInferenceEndpoints
             .is_enabled()
             .then(|| {

@@ -20,20 +20,22 @@ use crate::server::server_api::ServerApiProvider;
 /// Checks if a user's' API key is being used for the given provider.
 /// Returns `true` if BYO API key is enabled and a key exists for the provider.
 pub fn is_using_api_key_for_provider(provider: &LLMProvider, app: &AppContext) -> bool {
-    let api_keys = UserWorkspaces::as_ref(app)
-        .is_byo_api_key_enabled(app)
-        .then(|| ApiKeyManager::as_ref(app).keys().clone());
+    // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
+    let api_keys = false; // UserWorkspaces::as_ref(app)
+        // .is_byo_api_key_enabled(app)
+        // .then(|| ApiKeyManager::as_ref(app).keys().clone());
 
     match provider {
-        LLMProvider::OpenAI => api_keys.is_some_and(|keys| keys.openai.is_some()),
-        LLMProvider::Anthropic => api_keys.is_some_and(|keys| keys.anthropic.is_some()),
-        LLMProvider::Google => api_keys.is_some_and(|keys| keys.google.is_some()),
+        LLMProvider::OpenAI => api_keys, // api_keys.is_some_and(|keys| keys.openai.is_some()),
+        LLMProvider::Anthropic => api_keys, // api_keys.is_some_and(|keys| keys.anthropic.is_some()),
+        LLMProvider::Google => api_keys, // api_keys.is_some_and(|keys| keys.google.is_some()),
         _ => false,
     }
 }
 
 pub fn should_show_bedrock_icon_for_model(llm: &LLMInfo, app: &AppContext) -> bool {
-    UserWorkspaces::as_ref(app).is_aws_bedrock_credentials_enabled(app)
+    // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
+    false // UserWorkspaces::as_ref(app).is_aws_bedrock_credentials_enabled(app)
         && llm
             .host_configs
             .get(&LLMModelHost::AwsBedrock)
@@ -587,12 +589,13 @@ impl LLMPreferences {
             }
         });
 
-        ctx.subscribe_to_model(&UserWorkspaces::handle(ctx), |me, event, ctx| {
-            if let UserWorkspacesEvent::TeamsChanged = event {
-                me.sanitize_disabled_custom_model_preferences(ctx);
-                me.refresh_authed_models(ctx);
-            }
-        });
+        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
+        // ctx.subscribe_to_model(&UserWorkspaces::handle(ctx), |me, event, ctx| {
+        //     if let UserWorkspacesEvent::TeamsChanged = event {
+        //         me.sanitize_disabled_custom_model_preferences(ctx);
+        //         me.refresh_authed_models(ctx);
+        //     }
+        // });
 
         // Re-reconcile disabled model preferences when BYOK keys change, since
         // RequiresUpgrade models may become usable or unusable.

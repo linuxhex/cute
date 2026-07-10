@@ -2194,8 +2194,9 @@ enum SecretTooltip {
 }
 
 pub fn is_prompt_suggestions_enabled(app: &AppContext) -> bool {
+    // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
     AISettings::as_ref(app).is_prompt_suggestions_enabled(app)
-        && UserWorkspaces::as_ref(app).is_prompt_suggestions_toggleable()
+        && true // UserWorkspaces::as_ref(app).is_prompt_suggestions_toggleable()
 }
 
 type TerminalViewCallback = Box<dyn FnOnce(&mut TerminalView, &mut ViewContext<TerminalView>)>;
@@ -3355,11 +3356,12 @@ impl TerminalView {
             },
         );
 
-        ctx.subscribe_to_model(&UserWorkspaces::handle(ctx), |me, _, event, ctx| {
-            if matches!(event, UserWorkspacesEvent::TeamsChanged) {
-                me.update_focused_terminal_info(ctx);
-            }
-        });
+        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
+        // ctx.subscribe_to_model(&UserWorkspaces::handle(ctx), |me, _, event, ctx| {
+        //     if matches!(event, UserWorkspacesEvent::TeamsChanged) {
+        //         me.update_focused_terminal_info(ctx);
+        //     }
+        // });
 
         let (resize_tx, resize_rx) = async_channel::unbounded();
         let (find_link_tx, find_link_rx) = async_channel::unbounded();
@@ -3845,7 +3847,8 @@ impl TerminalView {
 
         ctx.subscribe_to_model(&AISettings::handle(ctx), |me, _, ai_settings_event, ctx| {
             if let AISettingsChangedEvent::AwsBedrockCredentialsEnabled { .. } = ai_settings_event {
-                if !UserWorkspaces::as_ref(ctx).is_aws_bedrock_credentials_enabled(ctx) {
+                // COMMENTED: UserWorkspaces disabled in local version - AWS Bedrock disabled
+                if true /*!UserWorkspaces::as_ref(ctx).is_aws_bedrock_credentials_enabled(ctx)*/ {
                     me.remove_aws_bedrock_login_banner(ctx);
                 }
             }
@@ -6919,8 +6922,8 @@ impl TerminalView {
             return;
         }
 
-        let is_ai_allowed_in_remote_sessions =
-            UserWorkspaces::as_ref(ctx).is_ai_allowed_in_remote_sessions();
+        // COMMENTED: UserWorkspaces disabled in local version - AI allowed in remote sessions
+        let is_ai_allowed_in_remote_sessions = true; // UserWorkspaces::as_ref(ctx).is_ai_allowed_in_remote_sessions();
 
         // Only update the FocusedTerminalInfo model if the user has disabled AI in remote sessions
         // because it's a potentially expensive operation.
@@ -9140,7 +9143,8 @@ impl TerminalView {
         let ai_settings = AISettings::as_ref(ctx);
         let is_prompt_suggestions_enabled = ai_settings.is_prompt_suggestions_enabled(ctx);
         let is_setting_enabled = ai_settings.is_code_suggestions_enabled(ctx);
-        let is_setting_toggleable = UserWorkspaces::as_ref(ctx).is_code_suggestions_toggleable();
+        // COMMENTED: UserWorkspaces disabled in local version - code suggestions always toggleable
+        let is_setting_toggleable = true; // UserWorkspaces::as_ref(ctx).is_code_suggestions_toggleable();
         is_prompt_suggestions_enabled && is_setting_enabled && is_setting_toggleable
     }
 
@@ -9577,8 +9581,9 @@ impl TerminalView {
             return;
         }
 
+        // COMMENTED: UserWorkspaces disabled in local version - AWS Bedrock disabled
         // Check if AWS Bedrock is available in the workspace
-        if !UserWorkspaces::as_ref(ctx).is_aws_bedrock_credentials_enabled(ctx) {
+        if true /*!UserWorkspaces::as_ref(ctx).is_aws_bedrock_credentials_enabled(ctx)*/ {
             return;
         }
 
@@ -10016,12 +10021,14 @@ impl TerminalView {
             return false;
         };
 
-        if UserWorkspaces::as_ref(app).is_ai_allowed_in_remote_sessions() {
+        // COMMENTED: UserWorkspaces disabled in local version - AI allowed in remote sessions
+        if true /*UserWorkspaces::as_ref(app).is_ai_allowed_in_remote_sessions()*/ {
             // We don't check any regexes if the user is allowed to run AI in remote sessions.
             return false;
         }
 
-        let remote_session_regex_list = UserWorkspaces::as_ref(app).get_remote_session_regex_list();
+        // COMMENTED: UserWorkspaces disabled in local version - no remote session regex list
+        let remote_session_regex_list = Vec::new(); // UserWorkspaces::as_ref(app).get_remote_session_regex_list();
 
         // First check if the command matches any of the regexes in the list.
         if remote_session_regex_list
@@ -13831,8 +13838,9 @@ impl TerminalView {
         if let Some(correction) = corrections.into_iter().next() {
             let rule = correction.rule_applied;
 
+            // COMMENTED: UserWorkspaces disabled in local version - next command disabled
             if AISettings::as_ref(ctx).is_intelligent_autosuggestions_enabled(ctx)
-                && UserWorkspaces::as_ref(ctx).is_next_command_enabled()
+                && false /*UserWorkspaces::as_ref(ctx).is_next_command_enabled()*/
                 && COMMAND_CORRECTIONS_PREFERRED_DENYLIST.contains(rule.to_str())
             {
                 // Defer to Next Command if the rule is in the denylist.

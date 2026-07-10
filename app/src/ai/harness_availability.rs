@@ -161,11 +161,12 @@ impl HarnessAvailabilityModel {
             }
         });
 
-        ctx.subscribe_to_model(&UserWorkspaces::handle(ctx), |me, event, ctx| {
-            if let UserWorkspacesEvent::TeamsChanged = event {
-                me.refresh(ctx);
-            }
-        });
+        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
+        // ctx.subscribe_to_model(&UserWorkspaces::handle(ctx), |me, event, ctx| {
+        //     if let UserWorkspacesEvent::TeamsChanged = event {
+        //         me.refresh(ctx);
+        //     }
+        // });
 
         let me = Self {
             harnesses,

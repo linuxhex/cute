@@ -673,8 +673,9 @@ impl TypedActionView for CodeSettingsPageView {
     fn handle_action(&mut self, action: &Self::Action, ctx: &mut ViewContext<Self>) {
         match action {
             CodeSettingsPageAction::ToggleCodebaseContext => {
+                // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
                 // If the organization has an explicit setting (on or off), ignore user toggles.
-                let setting = UserWorkspaces::as_ref(ctx).team_allows_codebase_context();
+                let setting = AdminEnablementSetting::RespectUserSetting; // UserWorkspaces::as_ref(ctx).team_allows_codebase_context();
                 match setting {
                     AdminEnablementSetting::Enable | AdminEnablementSetting::Disable => {
                         return;

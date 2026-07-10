@@ -1709,9 +1709,10 @@ impl RootView {
             let (models, default_model_id) =
                 build_onboarding_models(LLMPreferences::as_ref(ctx), ctx);
 
-            let workspace_enforces_autonomy = UserWorkspaces::as_ref(ctx)
-                .ai_autonomy_settings()
-                .has_any_overrides();
+            // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
+            let workspace_enforces_autonomy = false; // UserWorkspaces::as_ref(ctx)
+            //     .ai_autonomy_settings()
+            //     .has_any_overrides();
 
             let agent_price_cents = Self::build_plan_yearly_price_cents(ctx);
 
@@ -1750,35 +1751,36 @@ impl RootView {
             },
         );
 
+        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
         // Subscribe to workspace changes to update autonomy enforcement state and detect upgrades.
         // TeamsChanged fires whenever the workspace/billing metadata poll returns, which is also
         // when a free→paid upgrade would be reflected (customer_type changes).
-        let onboarding_view_for_workspaces = onboarding_view.clone();
-        ctx.subscribe_to_model(
-            &UserWorkspaces::handle(ctx),
-            move |_, user_workspaces, event, ctx| {
-                match event {
-                    UserWorkspacesEvent::UpdateWorkspaceSettingsSuccess => {
-                        let workspace_enforces_autonomy = user_workspaces
-                            .as_ref(ctx)
-                            .ai_autonomy_settings()
-                            .has_any_overrides();
-                        onboarding_view_for_workspaces.update(ctx, |onboarding_view, ctx| {
-                            onboarding_view
-                                .set_workspace_enforces_autonomy(workspace_enforces_autonomy, ctx);
-                        });
-                    }
-                    UserWorkspacesEvent::TeamsChanged => {
-                        // Experiments removed - no free user experiment check
-                    }
-                    _ => {}
-                }
-                let auth_state = current_onboarding_auth_state(ctx);
-                onboarding_view_for_workspaces.update(ctx, |onboarding_view, ctx| {
-                    onboarding_view.set_auth_state(auth_state, ctx);
-                });
-            },
-        );
+        // let onboarding_view_for_workspaces = onboarding_view.clone();
+        // ctx.subscribe_to_model(
+        //     &UserWorkspaces::handle(ctx),
+        //     move |_, user_workspaces, event, ctx| {
+        //         match event {
+        //             UserWorkspacesEvent::UpdateWorkspaceSettingsSuccess => {
+        //                 let workspace_enforces_autonomy = user_workspaces
+        //                     .as_ref(ctx)
+        //                     .ai_autonomy_settings()
+        //                     .has_any_overrides();
+        //                 onboarding_view_for_workspaces.update(ctx, |onboarding_view, ctx| {
+        //                     onboarding_view
+        //                         .set_workspace_enforces_autonomy(workspace_enforces_autonomy, ctx);
+        //                 });
+        //             }
+        //             UserWorkspacesEvent::TeamsChanged => {
+        //                 // Experiments removed - no free user experiment check
+        //             }
+        //             _ => {}
+        //         }
+        //         let auth_state = current_onboarding_auth_state(ctx);
+        //         onboarding_view_for_workspaces.update(ctx, |onboarding_view, ctx| {
+        //             onboarding_view.set_auth_state(auth_state, ctx);
+        //         });
+        //     },
+        // );
 
         let onboarding_view_for_auth = onboarding_view.clone();
         ctx.subscribe_to_model(
