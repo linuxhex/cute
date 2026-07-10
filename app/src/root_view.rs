@@ -1889,10 +1889,11 @@ impl RootView {
                     mark_hoa_onboarding_completed(ctx);
                 }
 
-                if AuthStateProvider::as_ref(ctx).get().is_logged_in() {
-                    AuthManager::handle(ctx)
-                        .update(ctx, |model, ctx| model.set_user_onboarded(ctx));
-                }
+                // 注释掉登录状态检查 - 本地版本不需要
+                // if AuthStateProvider::as_ref(ctx).get().is_logged_in() {
+                //     AuthManager::handle(ctx)
+                //         .update(ctx, |model, ctx| model.set_user_onboarded(ctx));
+                // }
 
                 let workspace = target.to_workspace(ctx);
                 self.auth_onboarding_state = AuthOnboardingState::Terminal(workspace);

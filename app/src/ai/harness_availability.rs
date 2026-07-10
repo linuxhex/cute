@@ -235,9 +235,10 @@ impl HarnessAvailabilityModel {
             return;
         };
 
-        if !AuthStateProvider::as_ref(ctx).get().is_logged_in() {
-            return;
-        }
+        // 注释掉登录状态检查 - 本地版本不需要
+        // if !AuthStateProvider::as_ref(ctx).get().is_logged_in() {
+        //     return;
+        // }
 
         self.auth_secrets
             .insert(harness, AuthSecretFetchState::Loading);
@@ -389,9 +390,10 @@ impl HarnessAvailabilityModel {
             return;
         }
 
-        if !AuthStateProvider::as_ref(ctx).get().is_logged_in() {
-            return;
-        }
+        // 注释掉登录状态检查 - 本地版本不需要
+        // if !AuthStateProvider::as_ref(ctx).get().is_logged_in() {
+        //     return;
+        // }
 
         let ai_client = ServerApiProvider::as_ref(ctx).get_ai_client();
         ctx.spawn(

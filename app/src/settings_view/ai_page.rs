@@ -2822,15 +2822,16 @@ pub enum AISettingsPageAction {
     },
 }
 
-impl From<&AISettingsPageAction> for LoginGatedFeature {
-    fn from(val: &AISettingsPageAction) -> LoginGatedFeature {
-        use AISettingsPageAction::*;
-        match val {
-            AttemptLoginGatedUpgrade => LoginGatedFeature,
-            _ => LoginGatedFeature,
-        }
-    }
-}
+// 注释掉登录相关逻辑 - 本地版本不需要
+// impl From<&AISettingsPageAction> for LoginGatedFeature {
+//     fn from(val: &AISettingsPageAction) -> LoginGatedFeature {
+//         use AISettingsPageAction::*;
+//         match val {
+//             AttemptLoginGatedUpgrade => LoginGatedFeature,
+//             _ => LoginGatedFeature,
+//         }
+//     }
+// }
 
 impl TypedActionView for AISettingsPageView {
     type Action = AISettingsPageAction;
@@ -3108,14 +3109,19 @@ impl TypedActionView for AISettingsPageView {
                 });
                 ctx.notify();
             }
+            // 注释掉登录升级逻辑 - 本地版本不需要
+            // AISettingsPageAction::AttemptLoginGatedUpgrade => {
+            //     AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
+            //         auth_manager.attempt_login_gated_feature(
+            //             WorkspaceAction::AttemptLoginGatedAIUpgrade,
+            //             AuthViewVariant::RequireLoginCloseable,
+            //             ctx,
+            //         )
+            //     });
+            // }
             AISettingsPageAction::AttemptLoginGatedUpgrade => {
-                AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
-                    auth_manager.attempt_login_gated_feature(
-                        WorkspaceAction::AttemptLoginGatedAIUpgrade,
-                        AuthViewVariant::RequireLoginCloseable,
-                        ctx,
-                    )
-                });
+                // Local version: no login gated features
+                log::info!("AttemptLoginGatedUpgrade action ignored in local version");
             }
             AISettingsPageAction::RemoveCLIAgentToolbarEnabledCommand(command) => {
                 AISettings::handle(ctx).update(ctx, |settings, ctx| {

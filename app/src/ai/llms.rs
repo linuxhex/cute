@@ -1074,10 +1074,11 @@ impl LLMPreferences {
 
     /// Fetches the latest set of models from the server for the currently logged in user, and updates the model.
     pub fn refresh_authed_models(&self, ctx: &mut ModelContext<Self>) {
-        // Don't try to fetch auth'd models if the user is not logged in yet.
-        if !AuthStateProvider::as_ref(ctx).get().is_logged_in() {
-            return;
-        }
+        // 注释掉登录状态检查 - 本地版本不需要
+        // // Don't try to fetch auth'd models if the user is not logged in yet.
+        // if !AuthStateProvider::as_ref(ctx).get().is_logged_in() {
+        //     return;
+        // }
 
         let ai_api_client = ServerApiProvider::as_ref(ctx).get_ai_client();
         ctx.spawn(

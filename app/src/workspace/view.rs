@@ -21471,22 +21471,24 @@ impl Workspace {
         entrypoint: AnonymousUserSignupEntrypoint,
         ctx: &mut ViewContext<Self>,
     ) {
-        if self.auth_state.is_user_anonymous().unwrap_or_default() {
-            // User has a Firebase anonymous account — use the linking flow.
-            AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
-                auth_manager.initiate_anonymous_user_linking(entrypoint, ctx);
-            });
-        } else {
-            // User is fully logged out (no Firebase user) — open the regular sign-up page.
-            AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
-                let sign_up_url = auth_manager.sign_up_url();
-                ctx.open_url(&sign_up_url);
-            });
-        }
-        self.require_login_modal.update(ctx, |auth_modal, ctx| {
-            auth_modal.skip_to_browser_open_step(ctx);
-        });
-        self.open_require_login_modal(AuthViewVariant::RequireLoginCloseable, ctx);
+        // 注释掉匿名用户链接和注册流程 - 本地版本不需要
+        // if self.auth_state.is_user_anonymous().unwrap_or_default() {
+        //     // User has a Firebase anonymous account — use the linking flow.
+        //     AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
+        //         auth_manager.initiate_anonymous_user_linking(entrypoint, ctx);
+        //     });
+        // } else {
+        //     // User is fully logged out (no Firebase user) — open the regular sign-up page.
+        //     AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
+        //         let sign_up_url = auth_manager.sign_up_url();
+        //         ctx.open_url(&sign_up_url);
+        //     });
+        // }
+        // self.require_login_modal.update(ctx, |auth_modal, ctx| {
+        //     auth_modal.skip_to_browser_open_step(ctx);
+        // });
+        // self.open_require_login_modal(AuthViewVariant::RequireLoginCloseable, ctx);
+        log::info!("User signup flow skipped in local version for entrypoint: {:?}", entrypoint);
     }
 
     fn redirect_to_sign_in(&mut self) {
@@ -22566,11 +22568,15 @@ impl TypedActionView for Workspace {
                     view.add_ephemeral_toast(new_toast, ctx);
                 });
             }
+            // 注释掉重新认证流程 - 本地版本不需要
+            // Reauth => {
+            //     AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
+            //         let sign_in_url = auth_manager.sign_in_url();
+            //         ctx.open_url(&sign_in_url);
+            //     });
+            // }
             Reauth => {
-                AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
-                    let sign_in_url = auth_manager.sign_in_url();
-                    ctx.open_url(&sign_in_url);
-                });
+                log::info!("Reauth action ignored in local version");
             }
             SignupAnonymousUser => {
                 self.initiate_user_signup(AnonymousUserSignupEntrypoint::SIGN_UP_BUTTON, ctx);

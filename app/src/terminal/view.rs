@@ -12252,11 +12252,12 @@ impl TerminalView {
         self.is_login_shell_bootstrapped = true;
         self.hide_slow_bootstrap_banner(ctx);
 
-        if self.auth_state.is_anonymous_or_logged_out()
-            && !FeatureFlag::OpenWarpNewSettingsModes.is_enabled()
-        {
-            self.insert_anonymous_user_ai_sign_up_banner(ctx);
-        }
+        // 注释掉匿名用户注册 Banner - 本地版本不需要
+        // if self.auth_state.is_anonymous_or_logged_out()
+        //     && !FeatureFlag::OpenWarpNewSettingsModes.is_enabled()
+        // {
+        //     self.insert_anonymous_user_ai_sign_up_banner(ctx);
+        // }
 
         if self.should_display_vim_banner(&session, ctx) {
             self.insert_vim_mode_banner(ctx);
@@ -19244,19 +19245,20 @@ impl TerminalView {
         block_index: BlockIndex,
         ctx: &mut ViewContext<Self>,
     ) {
-        if AuthStateProvider::as_ref(ctx)
-            .get()
-            .is_anonymous_or_logged_out()
-        {
-            AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
-                auth_manager.attempt_login_gated_feature(
-                    crate::workspace::WorkspaceAction::OpenShareSessionModal(0),
-                    AuthViewVariant::ShareRequirementCloseable,
-                    ctx,
-                )
-            });
-            return;
-        }
+        // 注释掉分享前的登录检查 - 本地版本不需要
+        // if AuthStateProvider::as_ref(ctx)
+        //     .get()
+        //     .is_anonymous_or_logged_out()
+        // {
+        //     AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
+        //         auth_manager.attempt_login_gated_feature(
+        //             crate::workspace::WorkspaceAction::OpenShareSessionModal(0),
+        //             AuthViewVariant::ShareRequirementCloseable,
+        //             ctx,
+        //         )
+        //     });
+        //     return;
+        // }
 
         self.tips_completed.update(ctx, |tips, ctx| {
             mark_feature_used_and_write_to_user_defaults(
@@ -24579,12 +24581,22 @@ impl TypedActionView for TerminalView {
             VimModeBanner(action) => self.handle_vim_banner_action(*action, ctx),
             OnboardingFlow(version) => {
                 // Don't show onboarding if it's already active or if this is a shared session or if user is anonymous
+                // 注释掉匿名用户检查 - 本地版本不需要
+                // if self
+                //     .model
+                //     .lock()
+                //     .shared_session_status()
+                //     .is_sharer_or_viewer()
+                //     || self.auth_state.is_anonymous_or_logged_out()
+                // {
+                //     return;
+                // };
+                // 只检查分享者或查看者状态
                 if self
                     .model
                     .lock()
                     .shared_session_status()
                     .is_sharer_or_viewer()
-                    || self.auth_state.is_anonymous_or_logged_out()
                 {
                     return;
                 };
@@ -24753,14 +24765,18 @@ impl TypedActionView for TerminalView {
                 ctx.notify();
                 ctx.open_url(&hyperlink.url);
             }
+            // 注释掉登录门控功能 - 本地版本不需要
+            // AttemptLoginGatedFeature => {
+            //     AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
+            //         auth_manager.attempt_login_gated_feature(
+            //             crate::workspace::WorkspaceAction::AttemptLoginGatedAIUpgrade,
+            //             AuthViewVariant::RequireLoginCloseable,
+            //             ctx,
+            //         )
+            //     });
+            // }
             AttemptLoginGatedFeature => {
-                AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
-                    auth_manager.attempt_login_gated_feature(
-                        crate::workspace::WorkspaceAction::AttemptLoginGatedAIUpgrade,
-                        AuthViewVariant::RequireLoginCloseable,
-                        ctx,
-                    )
-                });
+                log::info!("AttemptLoginGatedFeature ignored in local version");
             }
             StartFileDropTarget => {
                 let Some(session) = self
