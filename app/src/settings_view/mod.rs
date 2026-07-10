@@ -94,7 +94,7 @@ mod show_blocks_view;
 mod telemetry;
 // mod transfer_ownership_confirmation_modal; // Removed: unused cloud feature
 pub mod update_environment_form;
-mod cute_drive_page;
+// mod cute_drive_page; // Removed: drive module deleted
 mod cuteify_page;
 
 #[cfg(not(target_family = "wasm"))]
@@ -580,7 +580,7 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
     privacy_page::init_actions_from_parent_view(app, context, builder);
     ai_page::init_actions_from_parent_view(app, context, builder);
     code_page::init_actions_from_parent_view(app, context, builder);
-    cute_drive_page::init_actions_from_parent_view(app, context, builder);
+    // cute_drive_page::init_actions_from_parent_view(app, context, builder); // Removed: drive module deleted
 
     if ChannelState::enable_debug_features() || cfg!(windows) {
         ToggleSettingActionPair::add_toggle_setting_action_pairs_as_bindings(
@@ -883,7 +883,7 @@ pub enum SettingsAction {
     PrivacyPageToggle(PrivacyPageAction),
     AI(AISettingsPageAction),
     Code(CodeSettingsPageAction),
-    WarpDrive(cute_drive_page::WarpDriveSettingsPageAction),
+    // WarpDrive(cute_drive_page::WarpDriveSettingsPageAction), // Removed: drive module deleted
     WarpifyPageToggle(WarpifyPageAction),
     Tab,
     Split(Direction),
@@ -1146,12 +1146,12 @@ impl SettingsView {
             me.handle_privacy_page_event(event, ctx);
         });
 
-        // Warp Drive page
-        let warp_drive_page_handle =
-            ctx.add_typed_action_view(cute_drive_page::WarpDriveSettingsPageView::new);
-        ctx.subscribe_to_view(&warp_drive_page_handle, |me, _, event, ctx| {
-            me.handle_warp_drive_page_event(event, ctx);
-        });
+        // COMMENTED: Warp Drive page removed
+        // let warp_drive_page_handle =
+        //     ctx.add_typed_action_view(cute_drive_page::WarpDriveSettingsPageView::new);
+        // ctx.subscribe_to_view(&warp_drive_page_handle, |me, _, event, ctx| {
+        //     me.handle_warp_drive_page_event(event, ctx);
+        // });
 
         let platform_page_handle = ctx.add_typed_action_view(platform_page::PlatformPageView::new);
         ctx.subscribe_to_view(&platform_page_handle, |me, _, event, ctx| {
@@ -1721,17 +1721,18 @@ impl SettingsView {
         }
     }
 
-    fn handle_warp_drive_page_event(
-        &mut self,
-        event: &cute_drive_page::WarpDriveSettingsPageEvent,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        match event {
-            cute_drive_page::WarpDriveSettingsPageEvent::SignUp => {
-                ctx.emit(SettingsViewEvent::SignupAnonymousUser)
-            }
-        }
-    }
+    // COMMENTED: Warp Drive page removed
+    // fn handle_warp_drive_page_event(
+    //     &mut self,
+    //     event: &cute_drive_page::WarpDriveSettingsPageEvent,
+    //     ctx: &mut ViewContext<Self>,
+    // ) {
+    //     match event {
+    //         cute_drive_page::WarpDriveSettingsPageEvent::SignUp => {
+    //             ctx.emit(SettingsViewEvent::SignupAnonymousUser)
+    //         }
+    //     }
+    // }
 
     fn handle_ai_page_event(&mut self, event: &AISettingsPageEvent, ctx: &mut ViewContext<Self>) {
         match event {
