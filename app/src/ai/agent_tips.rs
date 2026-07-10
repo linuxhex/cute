@@ -117,13 +117,14 @@ static DEFAULT_TIPS: LazyLock<Vec<AgentTip>> = LazyLock::new(|| {
             }),
             kind: AgentTipKind::General,
         },
-        AgentTip {
-            description: "Store reusable workflows, notebooks, and prompts in your".to_string(),
-            link: Some("https://docs.cute.dev/knowledge-and-collaboration/cute-drive".to_string()),
-            binding_name: None,
-            action: Some(WorkspaceAction::OpenCuteDrive),
-            kind: AgentTipKind::CuteDrive,
-        },
+        // COMMENTED: CuteDrive tip disabled for local version
+        // AgentTip {
+        //     description: "Store reusable workflows, notebooks, and prompts in your".to_string(),
+        //     link: Some("https://docs.cute.dev/knowledge-and-collaboration/cute-drive".to_string()),
+        //     binding_name: None,
+        //     action: Some(WorkspaceAction::OpenCuteDrive),
+        //     kind: AgentTipKind::CuteDrive,
+        // },
         AgentTip {
             description: "Enter a new prompt to redirect the agent while it's running.".to_string(),
             link: None,

@@ -14,7 +14,8 @@ use super::cloud_preferences_syncer::CloudPreferencesSyncer;
 use crate::ai::blocklist::telemetry_banner::should_collect_ai_ugc_telemetry;
 use crate::auth::auth_state::AuthState;
 use crate::auth::AuthStateProvider;
-use crate::cloud_stub_types::model::persistence::CloudModel;
+// COMMENTED: Cloud model import disabled for local version
+// use crate::cloud_stub_types::model::persistence::CloudModel;
 use crate::report_error;
 
 #[cfg(test)]

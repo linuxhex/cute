@@ -1374,6 +1374,7 @@ impl AISettings {
 
     pub fn is_any_ai_enabled(&self, _app: &AppContext) -> bool {
         // Cute: Always enable AI features for local mode (no auth required)
+        // COMMENTED: Team workspace check disabled for local version
         *self.is_any_ai_enabled
     }
 
@@ -1588,57 +1589,64 @@ impl AISettings {
     }
 
     pub fn is_command_allowlist_editable(&self, app: &AppContext) -> bool {
-        let set_by_workspace = UserWorkspaces::as_ref(app)
-            .ai_autonomy_settings()
-            .has_override_for_execute_commands_allowlist();
-
-        self.is_any_ai_enabled(app) && !set_by_workspace
+        // COMMENTED: Team workspace override check disabled for local version
+        // let set_by_workspace = UserWorkspaces::as_ref(app)
+        //     .ai_autonomy_settings()
+        //     .has_override_for_execute_commands_allowlist();
+        
+        self.is_any_ai_enabled(app) // && !set_by_workspace
     }
 
     pub fn is_directory_allowlist_editable(&self, app: &AppContext) -> bool {
-        let set_by_workspace = UserWorkspaces::as_ref(app)
-            .ai_autonomy_settings()
-            .has_override_for_read_files_allowlist();
+        // COMMENTED: Team workspace override check disabled for local version
+        // let set_by_workspace = UserWorkspaces::as_ref(app)
+        //     .ai_autonomy_settings()
+        //     .has_override_for_read_files_allowlist();
 
-        self.is_any_ai_enabled(app) && !set_by_workspace
+        self.is_any_ai_enabled(app) // && !set_by_workspace
     }
 
     pub fn is_execute_commands_permissions_editable(&self, app: &AppContext) -> bool {
-        let set_by_workspace = UserWorkspaces::as_ref(app)
-            .ai_autonomy_settings()
-            .has_override_for_execute_commands();
+        // COMMENTED: Team workspace override check disabled for local version
+        // let set_by_workspace = UserWorkspaces::as_ref(app)
+        //     .ai_autonomy_settings()
+        //     .has_override_for_execute_commands();
 
-        self.is_any_ai_enabled(app) && !set_by_workspace
+        self.is_any_ai_enabled(app) // && !set_by_workspace
     }
 
     pub fn is_write_to_pty_permissions_editable(&self, app: &AppContext) -> bool {
-        let set_by_workspace = UserWorkspaces::as_ref(app)
-            .ai_autonomy_settings()
-            .has_override_for_write_to_pty();
-        self.is_any_ai_enabled(app) && !set_by_workspace
+        // COMMENTED: Team workspace override check disabled for local version
+        // let set_by_workspace = UserWorkspaces::as_ref(app)
+        //     .ai_autonomy_settings()
+        //     .has_override_for_write_to_pty();
+        self.is_any_ai_enabled(app) // && !set_by_workspace
     }
 
     pub fn is_computer_use_permissions_editable(&self, app: &AppContext) -> bool {
-        let set_by_workspace = UserWorkspaces::as_ref(app)
-            .ai_autonomy_settings()
-            .has_override_for_computer_use();
-        self.is_any_ai_enabled(app) && !set_by_workspace
+        // COMMENTED: Team workspace override check disabled for local version
+        // let set_by_workspace = UserWorkspaces::as_ref(app)
+        //     .ai_autonomy_settings()
+        //     .has_override_for_computer_use();
+        self.is_any_ai_enabled(app) // && !set_by_workspace
     }
 
     pub fn is_read_files_permissions_editable(&self, app: &AppContext) -> bool {
-        let set_by_workspace = UserWorkspaces::as_ref(app)
-            .ai_autonomy_settings()
-            .has_override_for_read_files();
+        // COMMENTED: Team workspace override check disabled for local version
+        // let set_by_workspace = UserWorkspaces::as_ref(app)
+        //     .ai_autonomy_settings()
+        //     .has_override_for_read_files();
 
-        self.is_any_ai_enabled(app) && !set_by_workspace
+        self.is_any_ai_enabled(app) // && !set_by_workspace
     }
 
     pub fn is_code_diffs_permissions_editable(&self, app: &AppContext) -> bool {
-        let set_by_workspace = UserWorkspaces::as_ref(app)
-            .ai_autonomy_settings()
-            .has_override_for_code_diffs();
+        // COMMENTED: Team workspace override check disabled for local version
+        // let set_by_workspace = UserWorkspaces::as_ref(app)
+        //     .ai_autonomy_settings()
+        //     .has_override_for_code_diffs();
 
-        self.is_any_ai_enabled(app) && !set_by_workspace
+        self.is_any_ai_enabled(app) // && !set_by_workspace
     }
 
     pub fn is_ask_user_question_permissions_editable(&self, app: &AppContext) -> bool {

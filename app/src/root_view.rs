@@ -41,10 +41,11 @@ use crate::appearance::Appearance;
 use crate::auth::auth_manager::{AuthManager, AuthManagerEvent};
 use crate::auth::AuthStateProvider;
 use crate::changelog_model::ChangelogRequestType;
-use crate::cloud_stub_types::model::persistence::CloudModel;
-use crate::cloud_stub_types::{GenericStringObjectFormat, JsonObjectType, ObjectType};
-use crate::cloud_stub_types::items::WarpDriveItemId;
-use crate::cloud_stub_types::{CloudObjectTypeAndId, OpenWarpDriveObjectArgs, OpenWarpDriveObjectSettings};
+// COMMENTED: Cloud model and drive object imports disabled for local version
+// use crate::cloud_stub_types::model::persistence::CloudModel;
+// use crate::cloud_stub_types::{GenericStringObjectFormat, JsonObjectType, ObjectType};
+// use crate::cloud_stub_types::items::WarpDriveItemId;
+// use crate::cloud_stub_types::{CloudObjectTypeAndId, OpenWarpDriveObjectArgs, OpenWarpDriveObjectSettings};
 use crate::features::FeatureFlag;
 use crate::interval_timer::IntervalTimer;
 use crate::launch_configs::launch_config;
@@ -276,14 +277,15 @@ pub fn init(app: &mut AppContext) {
         "root_view:add_session_at_path",
         RootView::add_session_at_path,
     );
-    app.add_action(
-        "root_view:handle_team_intent_link_action",
-        RootView::handle_team_intent_link_action,
-    );
-    app.add_action(
-        "root_view:open_team_settings_page",
-        RootView::open_team_settings_page,
-    );
+    // COMMENTED: Team intent link action disabled for local version
+    // app.add_action(
+    //     "root_view:handle_team_intent_link_action",
+    //     RootView::handle_team_intent_link_action,
+    // );
+    // app.add_action(
+    //     "root_view:open_team_settings_page",
+    //     RootView::open_team_settings_page,
+    // );
     app.add_action(
         "root_view:handle_notification_click",
         RootView::handle_notification_click,
@@ -326,14 +328,15 @@ pub fn init(app: &mut AppContext) {
         "root_view:create_environment_in_existing_window_and_run",
         RootView::create_environment_in_existing_window_and_run,
     );
-    app.add_global_action(
-        "root_view:open_drive_object_new_window",
-        open_warp_drive_object,
-    );
-    app.add_action(
-        "root_view:open_drive_object_existing_window",
-        RootView::open_warp_drive_object_in_existing_window,
-    );
+    // COMMENTED: Warp Drive object opening disabled for local version
+    // app.add_global_action(
+    //     "root_view:open_drive_object_new_window",
+    //     open_warp_drive_object,
+    // );
+    // app.add_action(
+    //     "root_view:open_drive_object_existing_window",
+    //     RootView::open_warp_drive_object_in_existing_window,
+    // );
 
     app.add_global_action(
         "root_view:open_settings_page_in_new_window",
@@ -962,24 +965,25 @@ fn open_linear_issue_work_in_new_window(args: &LinearIssueWork, ctx: &mut AppCon
     });
 }
 
-fn open_warp_drive_object(arg: &OpenWarpDriveObjectArgs, ctx: &mut AppContext) {
-    if cfg!(feature = "skip_login") {
-        return;
-    }
-    match arg.object_type {
-        ObjectType::Notebook => open_new_workspace_with_notebook_open(
-            SyncId::ServerId(arg.server_id),
-            arg.settings.clone(),
-            ctx,
-        ),
-        ObjectType::Workflow => open_new_workspace_with_workflow_open(
-            SyncId::ServerId(arg.server_id),
-            arg.settings.clone(),
-            ctx,
-        ),
-        _ => log::info!("Open object type {:?} not yet supported", arg.object_type),
-    }
-}
+// COMMENTED: Warp Drive object opening disabled for local version
+// fn open_warp_drive_object(arg: &OpenWarpDriveObjectArgs, ctx: &mut AppContext) {
+//     if cfg!(feature = "skip_login") {
+//         return;
+//     }
+//     match arg.object_type {
+//         ObjectType::Notebook => open_new_workspace_with_notebook_open(
+//             SyncId::ServerId(arg.server_id),
+//             arg.settings.clone(),
+//             ctx,
+//         ),
+//         ObjectType::Workflow => open_new_workspace_with_workflow_open(
+//             SyncId::ServerId(arg.server_id),
+//             arg.settings.clone(),
+//             ctx,
+//         ),
+//         _ => log::info!("Open object type {:?} not yet supported", arg.object_type),
+//     }
+// }
 
 fn display_object_missing_error_in_window(window_id: WindowId, ctx: &mut AppContext) {
     crate::workspace::ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
@@ -988,39 +992,41 @@ fn display_object_missing_error_in_window(window_id: WindowId, ctx: &mut AppCont
     });
 }
 
-fn open_new_workspace_with_notebook_open(
-    notebook_id: SyncId,
-    settings: OpenWarpDriveObjectSettings,
-    ctx: &mut AppContext,
-) {
-    if cfg!(feature = "skip_login") {
-        return;
-    }
-    open_new_with_workspace_source(
-        NewWorkspaceSource::NotebookById {
-            id: notebook_id,
-            settings,
-        },
-        ctx,
-    );
-}
+// COMMENTED: Workspace notebook opening disabled for local version
+// fn open_new_workspace_with_notebook_open(
+//     notebook_id: SyncId,
+//     settings: OpenWarpDriveObjectSettings,
+//     ctx: &mut AppContext,
+// ) {
+//     if cfg!(feature = "skip_login") {
+//         return;
+//     }
+//     open_new_with_workspace_source(
+//         NewWorkspaceSource::NotebookById {
+//             id: notebook_id,
+//             settings,
+//         },
+//         ctx,
+//     );
+// }
 
-fn open_new_workspace_with_workflow_open(
-    workflow_id: SyncId,
-    settings: OpenWarpDriveObjectSettings,
-    ctx: &mut AppContext,
-) {
-    if cfg!(feature = "skip_login") {
-        return;
-    }
-    open_new_with_workspace_source(
-        NewWorkspaceSource::WorkflowById {
-            id: workflow_id,
-            settings,
-        },
-        ctx,
-    );
-}
+// COMMENTED: Workspace workflow opening disabled for local version
+// fn open_new_workspace_with_workflow_open(
+//     workflow_id: SyncId,
+//     settings: OpenWarpDriveObjectSettings,
+//     ctx: &mut AppContext,
+// ) {
+//     if cfg!(feature = "skip_login") {
+//         return;
+//     }
+//     open_new_with_workspace_source(
+//         NewWorkspaceSource::WorkflowById {
+//             id: workflow_id,
+//             settings,
+//         },
+//         ctx,
+//     );
+// }
 
 /// Opens a new window with a file-based notebook open.
 fn open_new_with_file_notebook(arg: &PathBuf, ctx: &mut AppContext) {
@@ -2017,97 +2023,98 @@ impl RootView {
         true
     }
 
-    pub fn open_warp_drive_object_in_existing_window(
-        &mut self,
-        arg: &OpenWarpDriveObjectArgs,
-        ctx: &mut ViewContext<Self>,
-    ) -> bool {
-        if let AuthOnboardingState::Terminal(handle) = &self.auth_onboarding_state {
-            let cloud_model = CloudModel::as_ref(ctx);
-
-            match arg.object_type {
-                ObjectType::Notebook => {
-                    handle.update(ctx, |workspace, ctx| {
-                        let initialized_section_states =
-                            workspace.has_warp_drive_initialized_sections(ctx);
-                        let notebook_id = SyncId::ServerId(arg.server_id);
-                        let settings = arg.settings.clone();
-                        let _ = ctx.spawn(async move { initialized_section_states }, move |workspace, _, ctx| {
-                            workspace.open_notebook(
-                                &NotebookSource::Existing(notebook_id),
-                                &settings,
-                                ctx,
-                                false,
-                            );
-                        });
-                    });
-                }
-                ObjectType::Workflow => {
-                    handle.update(ctx, |workspace, ctx| {
-                        let initialized_section_states =
-                            workspace.has_warp_drive_initialized_sections(ctx);
-                        let workflow_id = SyncId::ServerId(arg.server_id);
-                        let settings = arg.settings.clone();
-                        let _ = ctx.spawn(async move { initialized_section_states }, move |workspace, _, ctx| {
-                            workspace.open_workflow_from_intent(workflow_id, &settings, ctx);
-                        });
-                    });
-                }
-                ObjectType::GenericStringObject(GenericStringObjectFormat::Json(
-                    JsonObjectType::EnvVarCollection,
-                )) => {
-                    if cloud_model.get_by_uid(&arg.server_id.uid()).is_none() {
-                        display_object_missing_error_in_window(ctx.window_id(), ctx);
-                        return false;
-                    }
-
-                    let item_id =
-                        WarpDriveItemId::Object(CloudObjectTypeAndId::from_generic_string_object(
-                            GenericStringObjectFormat::Json(JsonObjectType::EnvVarCollection),
-                            SyncId::ServerId(arg.server_id),
-                        ));
-
-                    handle.update(ctx, |workspace, ctx| {
-                        let initialized_section_states =
-                            workspace.has_warp_drive_initialized_sections(ctx);
-                        let _ = ctx.spawn(async move { initialized_section_states }, move |workspace, _, ctx| {
-                            workspace.view_in_and_focus_warp_drive(item_id, ctx);
-                        });
-                    });
-                }
-                ObjectType::Folder => {
-                    if cloud_model.get_by_uid(&arg.server_id.uid()).is_none() {
-                        display_object_missing_error_in_window(ctx.window_id(), ctx);
-                        return false;
-                    }
-
-                    let item_id = WarpDriveItemId::Object(CloudObjectTypeAndId::Folder(
-                        SyncId::ServerId(arg.server_id),
-                    ));
-                    handle.update(ctx, |workspace, ctx| {
-                        let initialized_section_states =
-                            workspace.has_warp_drive_initialized_sections(ctx);
-                        let _ = ctx.spawn(async move { initialized_section_states }, move |workspace, _, ctx| {
-                            workspace.view_in_and_focus_warp_drive(item_id, ctx);
-                        });
-                    });
-                }
-                _ => {
-                    log::info!(
-                        "Object type {:?} not support yet for opening via link",
-                        arg.object_type
-                    )
-                }
-            }
-
-            let window_id = ctx.window_id();
-            ctx.windows().show_window_and_focus_app(window_id);
-            ctx.notify();
-        } else {
-            log::warn!("Auth not complete before trying to open warp drive object");
-        }
-        true
-    }
+    // COMMENTED: Warp Drive object opening disabled for local version
+    // pub fn open_warp_drive_object_in_existing_window(
+    //     &mut self,
+    //     arg: &OpenWarpDriveObjectArgs,
+    //     ctx: &mut ViewContext<Self>,
+    // ) -> bool {
+    //     if let AuthOnboardingState::Terminal(handle) = &self.auth_onboarding_state {
+    //         let cloud_model = CloudModel::as_ref(ctx);
+    //
+    //         match arg.object_type {
+    //             ObjectType::Notebook => {
+    //                 handle.update(ctx, |workspace, ctx| {
+    //                     let initialized_section_states =
+    //                         workspace.has_warp_drive_initialized_sections(ctx);
+    //                     let notebook_id = SyncId::ServerId(arg.server_id);
+    //                     let settings = arg.settings.clone();
+    //                     let _ = ctx.spawn(async move { initialized_section_states }, move |workspace, _, ctx| {
+    //                         workspace.open_notebook(
+    //                             &NotebookSource::Existing(notebook_id),
+    //                             &settings,
+    //                             ctx,
+    //                             false,
+    //                         );
+    //                     });
+    //                 });
+    //             }
+    //             ObjectType::Workflow => {
+    //                 handle.update(ctx, |workspace, ctx| {
+    //                     let initialized_section_states =
+    //                         workspace.has_warp_drive_initialized_sections(ctx);
+    //                     let workflow_id = SyncId::ServerId(arg.server_id);
+    //                     let settings = arg.settings.clone();
+    //                     let _ = ctx.spawn(async move { initialized_section_states }, move |workspace, _, ctx| {
+    //                         workspace.open_workflow_from_intent(workflow_id, &settings, ctx);
+    //                     });
+    //                 });
+    //             }
+    //             ObjectType::GenericStringObject(GenericStringObjectFormat::Json(
+    //                 JsonObjectType::EnvVarCollection,
+    //             )) => {
+    //                 if cloud_model.get_by_uid(&arg.server_id.uid()).is_none() {
+    //                     display_object_missing_error_in_window(ctx.window_id(), ctx);
+    //                     return false;
+    //                 }
+    //
+    //                 let item_id =
+    //                     WarpDriveItemId::Object(CloudObjectTypeAndId::from_generic_string_object(
+    //                         GenericStringObjectFormat::Json(JsonObjectType::EnvVarCollection),
+    //                         SyncId::ServerId(arg.server_id),
+    //                     ));
+    //
+    //                 handle.update(ctx, |workspace, ctx| {
+    //                     let initialized_section_states =
+    //                         workspace.has_warp_drive_initialized_sections(ctx);
+    //                     let _ = ctx.spawn(async move { initialized_section_states }, move |workspace, _, ctx| {
+    //                         workspace.view_in_and_focus_warp_drive(item_id, ctx);
+    //                     });
+    //                 });
+    //             }
+    //             ObjectType::Folder => {
+    //                 if cloud_model.get_by_uid(&arg.server_id.uid()).is_none() {
+    //                     display_object_missing_error_in_window(ctx.window_id(), ctx);
+    //                     return false;
+    //                 }
+    //
+    //                 let item_id = WarpDriveItemId::Object(CloudObjectTypeAndId::Folder(
+    //                     SyncId::ServerId(arg.server_id),
+    //                 ));
+    //                 handle.update(ctx, |workspace, ctx| {
+    //                     let initialized_section_states =
+    //                         workspace.has_warp_drive_initialized_sections(ctx);
+    //                     let _ = ctx.spawn(async move { initialized_section_states }, move |workspace, _, ctx| {
+    //                         workspace.view_in_and_focus_warp_drive(item_id, ctx);
+    //                     });
+    //                 });
+    //             }
+    //             _ => {
+    //                 log::info!(
+    //                     "Object type {:?} not support yet for opening via link",
+    //                     arg.object_type
+    //                 )
+    //             }
+    //         }
+    //
+    //         let window_id = ctx.window_id();
+    //         ctx.windows().show_window_and_focus_app(window_id);
+    //         ctx.notify();
+    //     } else {
+    //         log::warn!("Auth not complete before trying to open warp drive object");
+    //     }
+    //     true
+    // }
 
     /// Opens a cloud conversation in an existing window.
     /// If the user owns the conversation, restores or navigates to it directly.
@@ -2254,43 +2261,45 @@ impl RootView {
         true
     }
 
-    /// Shows the user the settings view of their newly joined team
-    /// within the app.
-    pub fn handle_team_intent_link_action(&mut self, _: &(), ctx: &mut ViewContext<Self>) -> bool {
-        // Force-open warp drive.
-        let window_id = ctx.window_id();
-        if let AuthOnboardingState::Terminal(handle) = &self.auth_onboarding_state {
-            ctx.dispatch_typed_action_for_view(
-                window_id,
-                handle.id(),
-                &WorkspaceAction::OpenWarpDrive,
-            );
-            ctx.windows().show_window_and_focus_app(window_id);
-        } else {
-            log::error!("Auth not complete before trying to open warp drive");
-        }
+    // COMMENTED: Team intent link action disabled for local version
+    // /// Shows the user the settings view of their newly joined team
+    // /// within the app.
+    // pub fn handle_team_intent_link_action(&mut self, _: &(), ctx: &mut ViewContext<Self>) -> bool {
+    //     // Force-open warp drive.
+    //     let window_id = ctx.window_id();
+    //     if let AuthOnboardingState::Terminal(handle) = &self.auth_onboarding_state {
+    //         ctx.dispatch_typed_action_for_view(
+    //             window_id,
+    //             handle.id(),
+    //             &WorkspaceAction::OpenWarpDrive,
+    //         );
+    //         ctx.windows().show_window_and_focus_app(window_id);
+    //     } else {
+    //         log::error!("Auth not complete before trying to open warp drive");
+    //     }
+    //
+    //     // Use the team tester model to notify relevant subscribers to refresh their data.
+    //     TeamTesterStatus::handle(ctx).update(ctx, |model, ctx| {
+    //         model.initiate_data_pollers(true, ctx);
+    //     });
+    //     true
+    // }
 
-        // Use the team tester model to notify relevant subscribers to refresh their data.
-        TeamTesterStatus::handle(ctx).update(ctx, |model, ctx| {
-            model.initiate_data_pollers(true, ctx);
-        });
-        true
-    }
-
-    pub fn open_team_settings_page(&mut self, _: &(), ctx: &mut ViewContext<Self>) -> bool {
-        let window_id = ctx.window_id();
-        if let AuthOnboardingState::Terminal(handle) = &self.auth_onboarding_state {
-            ctx.dispatch_typed_action_for_view(
-                window_id,
-                handle.id(),
-                &WorkspaceAction::ShowSettingsPage(SettingsSection::Teams),
-            );
-            ctx.windows().show_window_and_focus_app(window_id);
-        } else {
-            log::error!("Auth not complete before trying to open team settings page");
-        }
-        true
-    }
+    // COMMENTED: Team settings page opening disabled for local version
+    // pub fn open_team_settings_page(&mut self, _: &(), ctx: &mut ViewContext<Self>) -> bool {
+    //     let window_id = ctx.window_id();
+    //     if let AuthOnboardingState::Terminal(handle) = &self.auth_onboarding_state {
+    //         ctx.dispatch_typed_action_for_view(
+    //             window_id,
+    //             handle.id(),
+    //             &WorkspaceAction::ShowSettingsPage(SettingsSection::Teams),
+    //         );
+    //         ctx.windows().show_window_and_focus_app(window_id);
+    //     } else {
+    //         log::error!("Auth not complete before trying to open team settings page");
+    //     }
+    //     true
+    // }
 
     pub fn open_settings_page_in_existing_window(
         &mut self,
