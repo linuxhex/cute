@@ -2630,11 +2630,12 @@ impl SettingsPageMeta for CodeSettingsPageView {
     }
 
     fn on_page_selected(&mut self, _: bool, ctx: &mut ViewContext<Self>) {
+        // COMMENTED: TeamUpdateManager disabled
         // We want to immediately see if the user is part of a workspace rather than wait for the next poll.
-        std::mem::drop(
-            TeamUpdateManager::handle(ctx)
-                .update(ctx, |manager, ctx| manager.refresh_workspace_metadata(ctx)),
-        );
+        // std::mem::drop(
+        //     TeamUpdateManager::handle(ctx)
+        //         .update(ctx, |manager, ctx| manager.refresh_workspace_metadata(ctx)),
+        // );
     }
 
     fn scroll_to_widget(&mut self, widget_id: &'static str) {

@@ -1796,9 +1796,10 @@ impl RootView {
                         LLMPreferences::handle(ctx).update(ctx, |prefs, ctx| {
                             prefs.refresh_available_models(ctx);
                         });
-                        TeamUpdateManager::handle(ctx).update(ctx, |manager, ctx| {
-                            drop(manager.refresh_workspace_metadata(ctx));
-                        });
+                        // COMMENTED: TeamUpdateManager disabled
+                        // TeamUpdateManager::handle(ctx).update(ctx, |manager, ctx| {
+                        //     drop(manager.refresh_workspace_metadata(ctx));
+                        // });
                     }
                 }
             },
@@ -1926,9 +1927,10 @@ impl RootView {
                 LLMPreferences::handle(ctx).update(ctx, |prefs, ctx| {
                     prefs.refresh_available_models(ctx);
                 });
-                TeamUpdateManager::handle(ctx).update(ctx, |manager, ctx| {
-                    drop(manager.refresh_workspace_metadata(ctx));
-                });
+                // COMMENTED: TeamUpdateManager disabled
+                // TeamUpdateManager::handle(ctx).update(ctx, |manager, ctx| {
+                //     drop(manager.refresh_workspace_metadata(ctx));
+                // });
             }
         }
     }

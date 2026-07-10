@@ -121,16 +121,18 @@ pub fn refresh_workspace_metadata<C>(
 where
     C: GetSingletonModelHandle + UpdateModel,
 {
-    let refresh_future = TeamUpdateManager::handle(ctx).update(ctx, |manager, ctx| {
-        manager
-            .refresh_workspace_metadata(ctx)
-            .with_timeout(WORKSPACE_METADATA_REFRESH_TIMEOUT)
-    });
+    // COMMENTED: TeamUpdateManager disabled in local version
+    // let refresh_future = TeamUpdateManager::handle(ctx).update(ctx, |manager, ctx| {
+    //     manager
+    //         .refresh_workspace_metadata(ctx)
+    //         .with_timeout(WORKSPACE_METADATA_REFRESH_TIMEOUT)
+    // });
 
     async move {
-        let _ = refresh_future
-            .await
-            .map_err(|_| anyhow::anyhow!("Timed out refreshing team metadata"))?;
+        // Simplified: always return success in local version
+        // let _ = refresh_future
+        //     .await
+        //     .map_err(|_| anyhow::anyhow!("Timed out refreshing team metadata"))?;
         Ok(())
     }
 }

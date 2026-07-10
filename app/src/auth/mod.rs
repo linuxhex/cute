@@ -175,9 +175,10 @@ pub fn log_out(app: &mut AppContext) {
         agent_conversations_model.reset();
     });
 
-    crate::workspaces::update_manager::TeamUpdateManager::handle(app).update(app, |manager, _| {
-        manager.stop_polling_for_workspace_metadata_updates();
-    });
+    // COMMENTED: TeamUpdateManager disabled
+    // crate::workspaces::update_manager::TeamUpdateManager::handle(app).update(app, |manager, _| {
+    //     manager.stop_polling_for_workspace_metadata_updates();
+    // });
     remove_cloud_persisted_settings(app);
     NotebookManager::handle(app).update(app, |manager, app| manager.reset(app));
     EnvVarCollectionManager::handle(app).update(app, |manager, _| manager.reset());
