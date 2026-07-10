@@ -376,32 +376,40 @@ impl CreateApiKeyModal {
             None
         };
 
-        let server_api = crate::server::server_api::ServerApiProvider::as_ref(ctx).get();
-        ctx.spawn(
-            async move { server_api.create_api_key(final_name, team_id, agent_uid, expires_at).await },
-            |me, res, ctx| {
-                match res {
-                    Ok(cute_graphql::mutations::generate_api_key::GenerateApiKeyResult::GenerateApiKeyOutput(output)) => {
-                        ctx.emit(CreateApiKeyModalEvent::Created { api_key: output.api_key });
-                        me.request_state = RequestState::Succeeded;
-                        me.raw_key_copied = false;
-                        me.raw_key = Some(output.raw_api_key);
-                        ctx.notify();
-                    }
-                    Ok(cute_graphql::mutations::generate_api_key::GenerateApiKeyResult::UserFacingError(e)) => {
-                        let msg = cute_graphql::client::get_user_facing_error_message(e);
-                        me.request_state = RequestState::Idle;
-                        ctx.emit(CreateApiKeyModalEvent::Error { message: msg });
-                        ctx.notify();
-                    }
-                    Ok(cute_graphql::mutations::generate_api_key::GenerateApiKeyResult::Unknown) | Err(_) => {
-                        me.request_state = RequestState::Idle;
-                        ctx.emit(CreateApiKeyModalEvent::Error { message: "Failed to create API key. Please try again.".to_string() });
-                        ctx.notify();
-                    }
-                }
-            },
-        );
+        // 注释掉 GraphQL mutation 调用 - 本地版本不支持
+        // let server_api = crate::server::server_api::ServerApiProvider::as_ref(ctx).get();
+        // ctx.spawn(
+        //     async move { server_api.create_api_key(final_name, team_id, agent_uid, expires_at).await },
+        //     |me, res, ctx| {
+        //         match res {
+        //             Ok(cute_graphql::mutations::generate_api_key::GenerateApiKeyResult::GenerateApiKeyOutput(output)) => {
+        //                 ctx.emit(CreateApiKeyModalEvent::Created { api_key: output.api_key });
+        //                 me.request_state = RequestState::Succeeded;
+        //                 me.raw_key_copied = false;
+        //                 me.raw_key = Some(output.raw_api_key);
+        //                 ctx.notify();
+        //             }
+        //             Ok(cute_graphql::mutations::generate_api_key::GenerateApiKeyResult::UserFacingError(e)) => {
+        //                 let msg = cute_graphql::client::get_user_facing_error_message(e);
+        //                 me.request_state = RequestState::Idle;
+        //                 ctx.emit(CreateApiKeyModalEvent::Error { message: msg });
+        //                 ctx.notify();
+        //             }
+        //             Ok(cute_graphql::mutations::generate_api_key::GenerateApiKeyResult::Unknown) | Err(_) => {
+        //                 me.request_state = RequestState::Idle;
+        //                 ctx.emit(CreateApiKeyModalEvent::Error { message: "Failed to create API key. Please try again.".to_string() });
+        //                 ctx.notify();
+        //             }
+        //         }
+        //     },
+        // );
+
+        // 本地版本:直接返回错误
+        self.request_state = RequestState::Idle;
+        ctx.emit(CreateApiKeyModalEvent::Error {
+            message: "API key management not supported in local version".to_string(),
+        });
+        ctx.notify();
     }
 
     fn cancel(&mut self, ctx: &mut ViewContext<Self>) {

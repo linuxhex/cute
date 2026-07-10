@@ -144,44 +144,23 @@ struct EnvironmentCommandRunner;
 
 impl EnvironmentCommandRunner {
     fn list_images(&self, global_options: GlobalOptions, ctx: &mut ModelContext<Self>) {
-        let server_api = ServerApiProvider::as_ref(ctx).get();
+        // 注释掉 GraphQL query 调用 - 本地版本不支持
+        // let server_api = ServerApiProvider::as_ref(ctx).get();
+        // let operation = ListWarpDevImages::build(ListWarpDevImagesVariables {});
+        // let fetch_images = async move { server_api.send_graphql_request(operation, None).await };
 
-        let operation = ListWarpDevImages::build(ListWarpDevImagesVariables {});
-        let fetch_images = async move { server_api.send_graphql_request(operation, None).await };
-
-        ctx.spawn(fetch_images, move |_, result, ctx| match result {
-            Ok(response) => match response.list_warp_dev_images {
-                ListWarpDevImagesResult::ListWarpDevImagesOutput(output) => {
-                    let image_infos: Vec<_> = output
-                        .images
-                        .into_iter()
-                        .map(|img| ImageInfo {
-                            image: img.image,
-                            repository: img.repository,
-                            tag: img.tag,
-                        })
-                        .collect();
-
-                    if matches!(
-                        global_options.output_format,
-                        OutputFormat::Text | OutputFormat::Pretty
-                    ) {
-                        println!(
-                            "All Warp dev images contain Python and Node. For more information, see: {}\n",
-                            WARP_DEV_ENVIRONMENTS_REPO
-                        );
-                    }
-                    output::print_list(image_infos, global_options.output_format);
-                    ctx.terminate_app(cuteui::platform::TerminationMode::ForceTerminate, None);
-                }
-                ListWarpDevImagesResult::UserFacingError(_) | ListWarpDevImagesResult::Unknown => {
-                    super::report_fatal_error(anyhow::anyhow!("Failed to fetch images"), ctx);
-                }
-            },
-            Err(err) => {
-                super::report_fatal_error(anyhow::anyhow!("Failed to fetch images: {}", err), ctx);
-            }
-        });
+        // 本地版本:返回空列表
+        if matches!(
+            global_options.output_format,
+            OutputFormat::Text | OutputFormat::Pretty
+        ) {
+            println!(
+                "Cloud image listing not available in local version. See {} for available images.\n",
+                WARP_DEV_ENVIRONMENTS_REPO
+            );
+        }
+        output::print_list(vec![], global_options.output_format);
+        ctx.terminate_app(cuteui::platform::TerminationMode::ForceTerminate, None);
     }
 
     fn list(&self, global_options: GlobalOptions, ctx: &mut ModelContext<Self>) {
@@ -340,80 +319,32 @@ impl EnvironmentCommandRunner {
     where
         F: FnOnce(String, &mut ModelContext<Self>) + Send + 'static,
     {
-        const CUSTOM_IMAGE_OPTION: &str = "Custom Docker image";
+        // 注释掉 GraphQL query 调用 - 本地版本不支持
+        // const CUSTOM_IMAGE_OPTION: &str = "Custom Docker image";
+        // let server_api = ServerApiProvider::as_ref(ctx).get();
+        // let operation = ListWarpDevImages::build(ListWarpDevImagesVariables {});
+        // let fetch_images = async move { server_api.send_graphql_request(operation, None).await };
 
-        let server_api = ServerApiProvider::as_ref(ctx).get();
-        let operation = ListWarpDevImages::build(ListWarpDevImagesVariables {});
-        let fetch_images = async move { server_api.send_graphql_request(operation, None).await };
+        // 本地版本:提示用户输入自定义镜像名称
+        println!(
+            "Cloud image listing not available in local version. Please specify a Docker image manually.\n"
+        );
+        println!(
+            "For available images, see: {}\n",
+            WARP_DEV_ENVIRONMENTS_REPO
+        );
 
-        ctx.spawn(fetch_images, move |_, result, ctx| match result {
-            Ok(response) => match response.list_warp_dev_images {
-                ListWarpDevImagesResult::ListWarpDevImagesOutput(output) => {
-                    if output.images.is_empty() {
-                        super::report_fatal_error(
-                            anyhow::anyhow!("No Warp dev images available."),
-                            ctx,
-                        );
-                        return;
-                    }
-
-                    println!(
-                        "No docker image provided, please select a base image.\n"
-                    );
-                    println!(
-                        "All warpdotdev images contain Python and Node, in addition to language-specific tooling. For more info: {}\n",
-                        WARP_DEV_ENVIRONMENTS_REPO
-                    );
-
-                    let mut image_choices: Vec<String> =
-                        output.images.into_iter().map(|img| img.image).collect();
-                    image_choices.push(CUSTOM_IMAGE_OPTION.to_string());
-
-                    let selected_image = match Select::new("Select a base image:", image_choices)
-                        .prompt()
-                    {
-                        Ok(image) => image,
-                        Err(err) => {
-                            if !Self::handle_inquire_error(err, ctx) {
-                                super::report_fatal_error(
-                                    anyhow::anyhow!("Error selecting image"),
-                                    ctx,
-                                );
-                            }
-                            return;
-                        }
-                    };
-
-                    let final_image = if selected_image == CUSTOM_IMAGE_OPTION {
-                        match inquire::Text::new("Enter custom Docker image name:").prompt() {
-                            Ok(custom) => custom,
-                            Err(err) => {
-                                if !Self::handle_inquire_error(err, ctx) {
-                                    super::report_fatal_error(
-                                        anyhow::anyhow!("Error entering custom image"),
-                                        ctx,
-                                    );
-                                }
-                                return;
-                            }
-                        }
-                    } else {
-                        selected_image
-                    };
-
-                    continuation(final_image, ctx);
-                }
-                ListWarpDevImagesResult::UserFacingError(_) | ListWarpDevImagesResult::Unknown => {
+        match inquire::Text::new("Enter Docker image name:").prompt() {
+            Ok(custom_image) => continuation(custom_image, ctx),
+            Err(err) => {
+                if !Self::handle_inquire_error(err, ctx) {
                     super::report_fatal_error(
-                        anyhow::anyhow!("Failed to fetch list of base images"),
+                        anyhow::anyhow!("Error entering custom image"),
                         ctx,
                     );
                 }
-            },
-            Err(err) => {
-                super::report_fatal_error(anyhow::anyhow!("Failed to fetch images: {err}"), ctx);
             }
-        });
+        }
     }
 
     #[allow(clippy::too_many_arguments)]

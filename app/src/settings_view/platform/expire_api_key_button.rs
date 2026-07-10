@@ -46,40 +46,48 @@ impl ExpireApiKeyButton {
         self.request_state = RequestState::Pending;
         ctx.notify();
 
-        let server_api = crate::server::server_api::ServerApiProvider::as_ref(ctx).get();
-        let uid_for_req = self.key_uid.clone();
-        ctx.spawn(
-            async move { server_api.expire_api_key(&uid_for_req).await },
-            move |me, res, ctx| match res {
-                Ok(
-                    cute_graphql::mutations::expire_api_key::ExpireApiKeyResult::ExpireApiKeyOutput(
-                        _output,
-                    ),
-                ) => {
-                    me.request_state = RequestState::Idle;
-                    ctx.emit(ExpireApiKeyButtonEvent::ExpireApiKeySucceeded {
-                        uid: me.key_uid.clone(),
-                    });
-                    ctx.notify();
-                }
-                Ok(
-                    cute_graphql::mutations::expire_api_key::ExpireApiKeyResult::UserFacingError(e),
-                ) => {
-                    let _msg = cute_graphql::client::get_user_facing_error_message(e);
-                    me.request_state = RequestState::Idle;
-                    ctx.emit(ExpireApiKeyButtonEvent::ExpireApiKeyFailed { message: _msg });
-                    ctx.notify();
-                }
-                Ok(cute_graphql::mutations::expire_api_key::ExpireApiKeyResult::Unknown)
-                | Err(_) => {
-                    me.request_state = RequestState::Idle;
-                    ctx.emit(ExpireApiKeyButtonEvent::ExpireApiKeyFailed {
-                        message: "Failed to delete API key. Please try again.".to_string(),
-                    });
-                    ctx.notify();
-                }
-            },
-        );
+        // 注释掉 GraphQL mutation 调用 - 本地版本不支持
+        // let server_api = crate::server::server_api::ServerApiProvider::as_ref(ctx).get();
+        // let uid_for_req = self.key_uid.clone();
+        // ctx.spawn(
+        //     async move { server_api.expire_api_key(&uid_for_req).await },
+        //     move |me, res, ctx| match res {
+        //         Ok(
+        //             cute_graphql::mutations::expire_api_key::ExpireApiKeyResult::ExpireApiKeyOutput(
+        //                 _output,
+        //             ),
+        //         ) => {
+        //             me.request_state = RequestState::Idle;
+        //             ctx.emit(ExpireApiKeyButtonEvent::ExpireApiKeySucceeded {
+        //                 uid: me.key_uid.clone(),
+        //             });
+        //             ctx.notify();
+        //         }
+        //         Ok(
+        //             cute_graphql::mutations::expire_api_key::ExpireApiKeyResult::UserFacingError(e),
+        //         ) => {
+        //             let _msg = cute_graphql::client::get_user_facing_error_message(e);
+        //             me.request_state = RequestState::Idle;
+        //             ctx.emit(ExpireApiKeyButtonEvent::ExpireApiKeyFailed { message: _msg });
+        //             ctx.notify();
+        //         }
+        //         Ok(cute_graphql::mutations::expire_api_key::ExpireApiKeyResult::Unknown)
+        //         | Err(_) => {
+        //             me.request_state = RequestState::Idle;
+        //             ctx.emit(ExpireApiKeyButtonEvent::ExpireApiKeyFailed {
+        //                 message: "Failed to delete API key. Please try again.".to_string(),
+        //             });
+        //             ctx.notify();
+        //         }
+        //     },
+        // );
+
+        // 本地版本:直接返回错误
+        self.request_state = RequestState::Idle;
+        ctx.emit(ExpireApiKeyButtonEvent::ExpireApiKeyFailed {
+            message: "API key management not supported in local version".to_string(),
+        });
+        ctx.notify();
     }
 }
 
