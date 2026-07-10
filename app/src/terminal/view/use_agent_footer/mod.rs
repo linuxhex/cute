@@ -17,6 +17,14 @@ use crate::terminal::cli_agent_sessions::{CLIAgentInputEntrypoint, CLIAgentSessi
 // use crate::terminal::shared_session::{
 //     SharedSessionActionSource, SharedSessionScrollbackType, SharedSessionSource,
 // };
+
+// 定义本地替代类型（shared_session 模块已删除）
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SharedSessionScrollbackType {
+    None,
+    All,
+}
+
 use crate::util::image::{infer_mime_type, MAX_IMAGE_SIZE_BYTES_FOR_CLI_AGENT, MIME_SNIFF_BYTES};
 mod cuteify_footer;
 

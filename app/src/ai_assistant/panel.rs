@@ -974,9 +974,11 @@ impl AIAssistantPanelView {
             .finish(),
         );
 
-        let is_custom_llm_enabled: bool = UserWorkspaces::as_ref(app)
-            .current_team()
-            .is_some_and(|team| team.is_custom_llm_enabled());
+        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
+        // let is_custom_llm_enabled: bool = UserWorkspaces::as_ref(app)
+        //     .current_team()
+        //     .is_some_and(|team| team.is_custom_llm_enabled());
+        let is_custom_llm_enabled: bool = false; // Default disabled for local version
 
         if !is_custom_llm_enabled {
             column.add_child(

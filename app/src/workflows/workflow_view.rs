@@ -2501,9 +2501,11 @@ impl WorkflowView {
         user_id: UserUid,
         ctx: &mut ViewContext<Self>,
     ) {
-        let upgrade_link = team_uid
-            .map(UserWorkspaces::upgrade_link_for_team)
-            .unwrap_or_else(|| UserWorkspaces::upgrade_link(user_id));
+        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
+        // let upgrade_link = team_uid
+        //     .map(UserWorkspaces::upgrade_link_for_team)
+        //     .unwrap_or_else(|| UserWorkspaces::upgrade_link(user_id));
+        let upgrade_link = "".to_string(); // Default empty link for local version
 
         let window_id = ctx.window_id();
         let toast_link = if self.auth_state.is_anonymous_or_logged_out() {

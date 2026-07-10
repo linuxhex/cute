@@ -118,7 +118,9 @@ fn apply_agent_settings(agent_settings: &AgentDevelopmentSettings, app: &mut App
             .set_value(default_mode, ctx));
     });
 
-    let workspace_autonomy_settings = UserWorkspaces::as_ref(app).ai_autonomy_settings();
+    // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
+    // let workspace_autonomy_settings = UserWorkspaces::as_ref(app).ai_autonomy_settings();
+    let workspace_autonomy_settings = Default::default(); // Default autonomy settings for local version
 
     AISettings::handle(app).update(app, |settings, ctx| {
         report_if_error!(settings

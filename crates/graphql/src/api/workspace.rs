@@ -241,7 +241,7 @@ pub enum ComputerUseAutonomyValue {
     Other(String),
 }
 
-#[derive(cynic::QueryFragment, Debug, Clone)]
+#[derive(cynic::QueryFragment, Debug, Clone, Default)]
 pub struct AiAutonomySettings {
     pub apply_code_diffs_setting: Option<AiAutonomyValue>,
     pub read_files_setting: Option<AiAutonomyValue>,
@@ -252,6 +252,37 @@ pub struct AiAutonomySettings {
     pub execute_commands_denylist: Option<Vec<String>>,
     pub write_to_pty_setting: Option<WriteToPtyAutonomyValue>,
     pub computer_use_setting: Option<ComputerUseAutonomyValue>,
+}
+
+// Local version: No workspace overrides, so all has_override methods return false
+impl AiAutonomySettings {
+    pub fn has_override_for_code_diffs(&self) -> bool {
+        false
+    }
+
+    pub fn has_override_for_read_files(&self) -> bool {
+        false
+    }
+
+    pub fn has_override_for_execute_commands(&self) -> bool {
+        false
+    }
+
+    pub fn has_override_for_write_to_pty(&self) -> bool {
+        false
+    }
+
+    pub fn has_override_for_execute_commands_allowlist(&self) -> bool {
+        false
+    }
+
+    pub fn has_override_for_read_files_allowlist(&self) -> bool {
+        false
+    }
+
+    pub fn has_override_for_computer_use(&self) -> bool {
+        false
+    }
 }
 
 #[derive(cynic::QueryFragment, Debug, Clone)]
