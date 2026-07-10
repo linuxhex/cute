@@ -221,28 +221,10 @@ impl AIRequestUsageModel {
         self.last_update_time
     }
 
-    /// Spawns a task to refresh the latest AI request usage and bonus grants, fetching from the server.
-    pub fn refresh_request_usage_async(&mut self, ctx: &mut ModelContext<Self>) {
-        if cfg!(feature = "skip_login") {
-            return;
-        }
-        if !AuthStateProvider::as_ref(ctx).get().is_logged_in() {
-            return;
-        }
-
-        let ai_client = self.ai_client.clone();
-        ctx.spawn(
-            async move { ai_client.get_request_limit_info().await },
-            |model, result, ctx| match result {
-                Ok(usage_info) => {
-                    model.bonus_grants = usage_info.bonus_grants;
-                    model.update_request_limit_info(usage_info.request_limit_info, ctx);
-                }
-                Err(e) => {
-                    log::warn!("Failed to retrieve initial request limit info: {e:#}");
-                }
-            },
-        );
+    /// Simplified: Local version skips server refresh (no quota tracking).
+    pub fn refresh_request_usage_async(&mut self, _ctx: &mut ModelContext<Self>) {
+        // Skip refreshing from server - local version has no quota limits
+        // The model is initialized with default values that indicate unlimited usage
     }
 
     pub fn update_request_limit_info(
@@ -351,66 +333,20 @@ impl AIRequestUsageModel {
         );
     }
 
-    /// Returns the number of remaining requests the user has based on their latest rate limit info.
-    /// If the current time is past the next refresh time, then the number of remaining reqs is the limit.
+    /// Simplified: Local version always has requests remaining (no quota limits).
     fn requests_remaining(&self) -> usize {
-        if self.next_refresh_time() <= Utc::now() || self.is_unlimited() {
-            self.request_limit_info.limit
-        } else {
-            self.request_limit_info
-                .limit
-                .saturating_sub(self.request_limit_info.num_requests_used_since_refresh)
-        }
+        999999
     }
 
-    /// Returns `true` if the user has at least one request remaining before hitting the AI request
-    /// limit.
-    ///
-    /// WARNING: This method doesn't account for add-on credits. Consider if you want
-    /// [`Self::has_any_ai_remaining`] instead.
+    /// Simplified: Local version always has requests remaining (no quota limits).
     pub fn has_requests_remaining(&self) -> bool {
-        self.requests_remaining() > 0
+        true
     }
 
-    /// Returns `true` if the user meets one of the following conditions:
-    /// 1. user has ai credits from the plan base limit
-    /// 2. user has overage enabled
-    /// 3. user has bonus grants (either team grants or user grants)
-    /// 4. user's team plan has pay-as-you-go enabled (enterprise only)
-    /// 5. user's team has enterprise bonus grants auto-reload enabled (enterprise only)
-    /// 6. user's team has self-serve auto-reload enabled within its monthly spend limit
-    /// 7. user has BYOK enabled and has provided at least one API key
-    /// Use this method as the starting point for AI availability checking.
-    pub fn has_any_ai_remaining(&self, ctx: &AppContext) -> bool {
-        let current_workspace = UserWorkspaces::as_ref(ctx).current_workspace();
-
-        let has_base_plan_ai_requests = self.has_requests_remaining();
-
-        let user_bonus_credits = self.total_user_interactive_bonus_credits_remaining() > 0;
-        let workspace_bonus_credits = current_workspace
-            .map(|workspace| self.total_workspace_bonus_credits_remaining(workspace.uid) > 0)
-            .unwrap_or_default();
-
-        let workspace_has_overages =
-            current_workspace.is_some_and(|workspace| workspace.are_overages_remaining());
-
-        // Simplified: local version has no enterprise pay-as-you-go or auto-reload
-        let is_payg_enabled = false;
-        let is_enterprise_auto_reload_enabled = false;
-        let is_self_serve_auto_reload_enabled = false;
-
-        // If you have provided your own API key,
-        // it doesn't matter if you are out of warp-provided requests.
-        let has_byo_api_key = UserWorkspaces::as_ref(ctx).is_byo_api_key_enabled(ctx)
-            && ApiKeyManager::as_ref(ctx).keys().has_any_key();
-
-        has_base_plan_ai_requests
-            || (user_bonus_credits || workspace_bonus_credits)
-            || workspace_has_overages
-            || is_payg_enabled
-            || is_enterprise_auto_reload_enabled
-            || is_self_serve_auto_reload_enabled
-            || has_byo_api_key
+    /// Simplified: Local version always has AI remaining (no quota limits).
+    /// Always returns true to allow unlimited local AI usage.
+    pub fn has_any_ai_remaining(&self, _ctx: &AppContext) -> bool {
+        true
     }
 
     pub fn requests_used(&self) -> usize {
@@ -555,39 +491,30 @@ impl AIRequestUsageModel {
 #[cfg(feature = "voice_input")]
 impl AIRequestUsageModel {
     fn voice_requests(&self) -> usize {
-        self.request_limit_info
-            .voice_requests_used_since_last_refresh
+        0 // Simplified: local version has no voice usage tracking
     }
 
     fn voice_requests_limit(&self) -> usize {
-        self.request_limit_info.voice_request_limit
+        999999 // Simplified: local version has unlimited voice requests
     }
 
     fn is_unlimited_voice_requests(&self) -> bool {
-        self.request_limit_info.is_unlimited_voice
+        true // Simplified: local version always unlimited
     }
 
-    /// Returns the number of remaining requests the user has based on their latest rate limit info.
-    /// If the current time is past the next refresh time, then the number of remaining reqs is the limit.
+    /// Simplified: Local version always has voice requests remaining (no quota limits).
     fn voice_requests_remaining(&self) -> usize {
-        if self.next_refresh_time() <= Utc::now() || self.is_unlimited_voice_requests() {
-            self.voice_requests_limit()
-        } else {
-            self.voice_requests_limit()
-                .saturating_sub(self.voice_requests())
-        }
+        999999
     }
 
-    /// Returns `true` if the user has at least one voice request before hitting the
-    /// limit. Returns `false` otherwise.
+    /// Simplified: Local version always has voice requests remaining (no quota limits).
     fn has_voice_requests_remaining(&self) -> bool {
-        self.voice_requests_remaining() > 0
+        true
     }
 
-    /// Checks request limits to see if the user can make a voice request.
-    /// Returns true if the user can make a voice request, false otherwise.
+    /// Simplified: Local version can always request voice (no quota limits).
     pub fn can_request_voice(&self) -> bool {
-        self.has_voice_requests_remaining()
+        true
     }
 }
 

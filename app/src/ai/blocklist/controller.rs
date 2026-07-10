@@ -181,8 +181,7 @@ pub enum BlocklistAIControllerEvent {
     ExecuteLocalHarnessCommand {
         command: String,
     },
-
-    FreeTierLimitCheckTriggered,
+    // Removed: FreeTierLimitCheckTriggered - local version has no quota limits
 }
 
 #[derive(Debug)]
@@ -2576,22 +2575,8 @@ impl BlocklistAIController {
                         }
                     }
                     Err(e) => {
-                        if matches!(e.as_ref(), AIApiError::QuotaLimit { .. }) {
-                            // If the error is a quota limit, we want to refresh workspace metadata
-                            // So the current state of AI overages is immediately up to date.
-                            TeamUpdateManager::handle(ctx).update(
-                                ctx,
-                                |team_update_manager, ctx| {
-                                    std::mem::drop(
-                                        team_update_manager.refresh_workspace_metadata(ctx),
-                                    );
-                                },
-                            );
-                            AIRequestUsageModel::handle(ctx).update(ctx, |model, ctx| {
-                                model.enable_buy_credits_banner(ctx);
-                            });
-                        }
-
+                        // Simplified: Local version has no quota limits, skip QuotaLimit handling
+                        // Process other errors normally
                         let mut renderable_error: RenderableAIError = e.as_ref().into();
                         if let RenderableAIError::Other {
                             will_attempt_resume,
@@ -2795,33 +2780,9 @@ impl BlocklistAIController {
     /// Checks if we should refresh AI overage information after an AI request completes.
     /// This is used to ensure the UI matches the state of the workspace,
     /// especially because overages are not real-time communicated to clients.
-    fn maybe_refresh_ai_overages(&mut self, ctx: &mut ModelContext<Self>) {
-        let workspace = UserWorkspaces::as_ref(ctx).current_workspace();
-        let Some(workspace) = workspace else {
-            return;
-        };
-
-        // We want to minimize the number of times we ping our backend for updated usage information;
-        // doing it after every AI query finishes would be very expensive.
-
-        // If a user is below their personal limits, then we know that they won't eat into overages,
-        // so we don't need to refresh.
-        let has_no_requests_remaining = !AIRequestUsageModel::as_ref(ctx).has_requests_remaining();
-        // If overages aren't enabled, we're not going to reap the benefit of refreshing at all anyway.
-        let are_overages_enabled = workspace.are_overages_enabled();
-
-        if are_overages_enabled && has_no_requests_remaining {
-            // Give a one second delay to ensure that Stripe has been charged and the database is completely updated,
-            // before syncing new AI overages data.
-            ctx.spawn(
-                async move { Timer::after(Duration::from_secs(1)).await },
-                |_, _, ctx| {
-                    UserWorkspaces::handle(ctx).update(ctx, |user_workspaces, ctx| {
-                        user_workspaces.refresh_ai_overages(ctx);
-                    });
-                },
-            );
-        }
+    /// Simplified: Local version has no overages (no quota limits).
+    fn maybe_refresh_ai_overages(&mut self, _ctx: &mut ModelContext<Self>) {
+        // Skip overages refresh - local version has unlimited AI usage
     }
 
     pub(super) fn handle_response_stream_finished(
@@ -2889,19 +2850,8 @@ impl BlocklistAIController {
                     );
                 });
             }
-            Some(cute_multi_agent_api::response_event::stream_finished::Reason::QuotaLimit(_)) => {
-                history_model.update(ctx, |history_model, ctx| {
-                    history_model.mark_response_stream_completed_with_error(
-                        RenderableAIError::QuotaLimit {
-                            user_display_message: None,
-                        },
-                        stream_id,
-                        conversation_id,
-                        self.terminal_view_id,
-                        ctx,
-                    );
-                });
-            }
+            // Simplified: Local version has no quota limits, skip QuotaLimit handling
+            // QuotaLimit case removed - local version has unlimited usage
             Some(cute_multi_agent_api::response_event::stream_finished::Reason::LlmUnavailable(_)) => {
                 let error_message = "The LLM is currently unavailable.";
                 history_model.update(ctx, |history_model, ctx| {
@@ -2992,7 +2942,7 @@ impl BlocklistAIController {
             LLMPreferences::handle(ctx).update(ctx, |llm_preferences, ctx| {
                 llm_preferences.refresh_authed_models(ctx);
             });
-            ctx.emit(BlocklistAIControllerEvent::FreeTierLimitCheckTriggered);
+            // Removed: FreeTierLimitCheckTriggered event - local version has no quota limits
         }
     }
 
