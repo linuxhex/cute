@@ -255,8 +255,8 @@ use crate::projects::ProjectManagementModel;
 use crate::root_view::{
     quake_mode_window_id, quake_mode_window_is_open, OpenFromRestoredArg, OpenPath,
 };
-use crate::server::cloud_objects::listener::Listener;
-use crate::server::cloud_objects::update_manager::UpdateManager;
+// use crate::server::cloud_objects::listener::Listener; // Removed: cloud_objects module deleted
+// use crate::server::cloud_objects::update_manager::UpdateManager; // Removed: cloud_objects module deleted
 use crate::server::sync_queue::SyncQueue;
 #[cfg(not(target_family = "wasm"))]
 use crate::server::iap::IapManager;
@@ -1537,24 +1537,25 @@ pub(crate) fn initialize_app(
     ctx.add_singleton_model(|_| AudibleBell::new());
 
     // This model has to be registered after the user workspaces model because it relies on it,
-    // and before the UpdateManager models because they rely on the TeamTester model.
-    ctx.add_singleton_model(TeamTesterStatus::new);
-
-    ctx.add_singleton_model(|ctx| {
-        TeamUpdateManager::new(
-            server_api_provider.as_ref(ctx).get_team_client(),
-            persistence_writer.sender(),
-            ctx,
-        )
-    });
-
-    ctx.add_singleton_model(|ctx| {
-        UpdateManager::new(
-            persistence_writer.sender(),
-            server_api_provider.as_ref(ctx).get_cloud_objects_client(),
-            ctx,
-        )
-    });
+    // COMMENTED: 禁用团队和云端对象更新管理器
+    // // and before the UpdateManager models because they rely on the TeamTester model.
+    // ctx.add_singleton_model(TeamTesterStatus::new);
+    //
+    // ctx.add_singleton_model(|ctx| {
+    //     TeamUpdateManager::new(
+    //         server_api_provider.as_ref(ctx).get_team_client(),
+    //         persistence_writer.sender(),
+    //         ctx,
+    //     )
+    // });
+    //
+    // ctx.add_singleton_model(|ctx| {
+    //     UpdateManager::new(
+    //         persistence_writer.sender(),
+    //         server_api_provider.as_ref(ctx).get_cloud_objects_client(),
+    //         ctx,
+    //     )
+    // });
 
     let toml_file_path = settings::user_preferences_toml_file_path();
     // Cute OMJF-11111: 注册 stub syncer（不向云端同步，仅满足订阅方 InitialLoadCompleted）
@@ -1615,12 +1616,13 @@ pub(crate) fn initialize_app(
     ctx.add_singleton_model(NotebookKeybindings::new);
     ctx.add_singleton_model(TerminalKeybindings::new);
     ctx.add_singleton_model(|_| ActiveSession::default());
-    ctx.add_singleton_model(|ctx| {
-        Listener::new(
-            server_api_provider.as_ref(ctx).get_cloud_objects_client(),
-            ctx,
-        )
-    });
+    // COMMENTED: 禁用云端对象监听器
+    // ctx.add_singleton_model(|ctx| {
+    //     Listener::new(
+    //         server_api_provider.as_ref(ctx).get_cloud_objects_client(),
+    //         ctx,
+    //     )
+    // });
 
     #[cfg(all(not(target_family = "wasm"), feature = "local_tty"))]
     {

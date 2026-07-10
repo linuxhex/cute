@@ -5,7 +5,7 @@ mod agent_toast;
 pub mod alert;
 pub mod callout_bubble;
 // mod clickable_text_input; // Removed: unused cloud feature
-mod compact_dropdown;
+// mod compact_dropdown; // Removed: unused cloud feature
 pub mod compactible_action_button;
 pub mod compactible_split_action_button;
 pub mod copyable_text_field;
@@ -21,7 +21,7 @@ mod warning_box;
 pub use agent_toast::*;
 pub use alert::Alert;
 // pub use clickable_text_input::*; // Removed: unused cloud feature
-pub use compact_dropdown::{CompactDropdown, CompactDropdownEvent, CompactDropdownItem};
+// pub use compact_dropdown::*; // Removed: unused cloud feature
 pub use copyable_text_field::*;
 pub use dismissible_toast::*;
 pub use dropdown::{Dropdown, DropdownItem, DropdownItemAction};

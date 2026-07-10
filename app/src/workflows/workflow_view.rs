@@ -1,14 +1,14 @@
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
-use alias_bar::{AliasBar, AliasBarEvent};
+// use alias_bar::{AliasBar, AliasBarEvent}; // Removed: unused cloud feature
 use argument_editor::{ArgumentEditorRow, DEFAULT_ARGUMENT_PREFIX};
 use env_var_selector::{EnvVarSelector, EnvVarSelectorEvent};
 use itertools::Itertools;
 use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::vec2f;
 use string_offset::CharOffset;
-use syntax_highlightable::SyntaxHighlightable;
+// use syntax_highlightable::SyntaxHighlightable; // Removed: unused cloud feature
 use url::Url;
 use cute_core::context_flag::ContextFlag;
 use cute_core::settings::Setting;
@@ -91,11 +91,11 @@ use crate::workflows::CloudWorkflow;
 use crate::workspace::{ToastStack, WorkspaceAction};
 use crate::{FeatureFlag, UserWorkspaces};
 
-mod alias_argument_selector;
-mod alias_bar;
+// mod alias_argument_selector; // Removed: unused cloud feature
+// mod alias_bar; // Removed: unused cloud feature
 pub(crate) mod argument_editor;
 pub mod env_var_selector;
-mod syntax_highlightable;
+// mod syntax_highlightable; // Removed: unused cloud feature
 
 pub fn init(app: &mut AppContext) {
     use cuteui::keymap::macros::id;
