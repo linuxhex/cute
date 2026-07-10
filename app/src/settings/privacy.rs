@@ -21,7 +21,7 @@ use crate::report_error;
 #[cfg(test)]
 use crate::server::server_api::auth::MockAuthClient;
 use crate::server::server_api::auth::{AuthClient, SyncedUserSettings};
-use crate::server::cloud_objects::update_manager::UpdateManager;
+// use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::server_api::ServerApiProvider;
 use crate::terminal::safe_mode_settings::SafeModeSettings;
 

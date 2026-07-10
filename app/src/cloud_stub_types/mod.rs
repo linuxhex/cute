@@ -3211,6 +3211,33 @@ pub type OpenWarpDriveObjectArgs = OpenCuteDriveObjectArgs;
 pub type WarpDriveSettings = CuteDriveSettings;
 pub type WarpDriveSettingsChangedEvent = CuteDriveSettingsChangedEvent;
 
+// ===== IsSharedSessionCreator Stub =====
+
+/// Minimal stub for IsSharedSessionCreator - shared session creator status
+/// This is a cloud feature that's disabled in the local version.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum IsSharedSessionCreator {
+    Yes { source: SharedSessionSource },
+    No,
+}
+
+impl Default for IsSharedSessionCreator {
+    fn default() -> Self {
+        IsSharedSessionCreator::No
+    }
+}
+
+// ===== SharedSessionSource Stub =====
+
+/// Minimal stub for SharedSessionSource - shared session source
+#[derive(Clone, Debug, PartialEq, Eq, Default)]
+pub enum SharedSessionSource {
+    #[default]
+    Terminal,
+    Pane,
+    CommandPalette,
+}
+
 // ===== SharedSessionStatus Stub (Session Sharing) =====
 
 /// Minimal stub for SharedSessionStatus - session sharing status

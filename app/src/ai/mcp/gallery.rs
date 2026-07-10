@@ -8,7 +8,8 @@ use crate::ai::mcp::templatable::{
     GalleryData, JsonTemplate, TemplatableMCPServer,
 };
 
-use crate::server::cloud_objects::{UpdateManager, UpdateManagerEvent};
+// DELETED: 云端功能 UpdateManager 相关导入已移除
+// use crate::server::cloud_objects::{UpdateManager, UpdateManagerEvent};
 use crate::server::datetime_ext::DateTimeExt;
 
 #[derive(Clone, Debug)]
@@ -124,13 +125,14 @@ impl MCPGalleryManager {
             templatable_mcp_servers: Default::default(),
         };
 
-        // Subscribe to UpdateManager events to receive MCP gallery updates
-        let update_manager = UpdateManager::handle(ctx);
-        ctx.subscribe_to_model(&update_manager, |me, event, ctx| {
-            if let UpdateManagerEvent::MCPGalleryUpdated { templates } = event {
-                me.update_gallery_items(templates.clone(), ctx);
-            }
-        });
+        // COMMENTED: 云端功能 UpdateManager 订阅已禁用
+        // // Subscribe to UpdateManager events to receive MCP gallery updates
+        // let update_manager = UpdateManager::handle(ctx);
+        // ctx.subscribe_to_model(&update_manager, |me, event, ctx| {
+        //     if let UpdateManagerEvent::MCPGalleryUpdated { templates } = event {
+        //         me.update_gallery_items(templates.clone(), ctx);
+        //     }
+        // });
 
         gallery_manager
     }

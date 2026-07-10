@@ -19,7 +19,7 @@ use crate::cloud_stub_types::{CloudObject as _, CloudObjectLookup as _};
 use crate::ai::llms::{LLMId, LLMPreferences};
 use crate::auth::auth_state::AuthStateProvider;
 use crate::cloud_stub_types::Owner;
-use crate::server::cloud_objects::update_manager::UpdateManager;
+// use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::server_api::ai::AIClient;
 use crate::server::server_api::ServerApiProvider;

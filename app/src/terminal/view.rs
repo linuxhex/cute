@@ -352,7 +352,7 @@ use crate::resource_center::{
     mark_feature_used_and_write_to_user_defaults, Tip, TipHint, TipsCompleted,
 };
 use crate::search::slash_command_menu::static_commands::commands;
-use crate::server::cloud_objects::update_manager::UpdateManager;
+// use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::ids::{ObjectUid, SyncId};
 use crate::server::server_api::ServerApi;
 use crate::server::telemetry::{
@@ -3848,9 +3848,9 @@ impl TerminalView {
         ctx.subscribe_to_model(&AISettings::handle(ctx), |me, _, ai_settings_event, ctx| {
             if let AISettingsChangedEvent::AwsBedrockCredentialsEnabled { .. } = ai_settings_event {
                 // COMMENTED: UserWorkspaces disabled in local version - AWS Bedrock disabled
-                if true /*!UserWorkspaces::as_ref(ctx).is_aws_bedrock_credentials_enabled(ctx)*/ {
+                // if !UserWorkspaces::as_ref(ctx).is_aws_bedrock_credentials_enabled(ctx) {
                     me.remove_aws_bedrock_login_banner(ctx);
-                }
+                // }
             }
         });
 
@@ -9583,9 +9583,9 @@ impl TerminalView {
 
         // COMMENTED: UserWorkspaces disabled in local version - AWS Bedrock disabled
         // Check if AWS Bedrock is available in the workspace
-        if true /*!UserWorkspaces::as_ref(ctx).is_aws_bedrock_credentials_enabled(ctx)*/ {
+        // if !UserWorkspaces::as_ref(ctx).is_aws_bedrock_credentials_enabled(ctx) {
             return;
-        }
+        // }
 
         // Check if the model supports AWS Bedrock routing
         let llm_prefs = LLMPreferences::as_ref(ctx);
@@ -11177,18 +11177,20 @@ impl TerminalView {
                             .to_string();
 
                     // If the block was a cloud workflow, record the workflow execution as an object action.
+                    // COMMENTED: 云端功能 UpdateManager 调用已禁用
                     if let Some(cloud_workflow_id) = cloud_workflow_id {
                         let id_and_type = CloudObjectTypeAndId::Workflow(*cloud_workflow_id);
-                        UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
-                            update_manager.record_object_action(
-                                id_and_type,
-                                ObjectActionType::Execute,
-                                Some(exit_code_data.clone()),
-                                ctx,
-                            )
-                        });
+                        // UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
+                        //     update_manager.record_object_action(
+                        //         id_and_type,
+                        //         ObjectActionType::Execute,
+                        //         Some(exit_code_data.clone()),
+                        //         ctx,
+                        //     )
+                        // });
                     }
 
+                    // COMMENTED: 云端功能 UpdateManager 调用已禁用
                     if let Some(cloud_env_var_collection_id) = cloud_env_var_collection_id {
                         let id_and_type = CloudObjectTypeAndId::GenericStringObject {
                             object_type: GenericStringObjectFormat::Json(
@@ -11196,14 +11198,14 @@ impl TerminalView {
                             ),
                             id: cloud_env_var_collection_id.clone(),
                         };
-                        UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
-                            update_manager.record_object_action(
-                                id_and_type,
-                                ObjectActionType::Execute,
-                                Some(exit_code_data.clone()),
-                                ctx,
-                            )
-                        });
+                        // UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
+                        //     update_manager.record_object_action(
+                        //         id_and_type,
+                        //         ObjectActionType::Execute,
+                        //         Some(exit_code_data.clone()),
+                        //         ctx,
+                        //     )
+                        // });
                     }
 
                     if let (
@@ -23237,14 +23239,15 @@ impl TerminalView {
                         },
                     }));
 
-                    UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-                        update_manager.record_object_action(
-                            cloud_object_type_and_id.clone(),
-                            ObjectActionType::Execute,
-                            None,
-                            ctx,
-                        )
-                    });
+                    // COMMENTED: 云端功能 UpdateManager 调用已禁用
+                    // UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
+                    //     update_manager.record_object_action(
+                    //         cloud_object_type_and_id.clone(),
+                    //         ObjectActionType::Execute,
+                    //         None,
+                    //         ctx,
+                    //     )
+                    // });
                     me.reset_focus_after_rich_block(ctx);
                 }
                 EnvVarCollectionBlockEvent::Cancelled => {
@@ -23443,14 +23446,15 @@ impl TerminalView {
         self.set_and_execute_subshell_command(&shell_path_string, shell_type, ctx);
 
         // Ok to update the execution record here because we auto-execute when in subshell
-        UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
-            update_manager.record_object_action(
-                cloud_env_var_collection.cloud_object_type_and_id(),
-                ObjectActionType::Execute,
-                None,
-                ctx,
-            )
-        });
+        // COMMENTED: 云端功能 UpdateManager 调用已禁用
+        // UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
+        //     update_manager.record_object_action(
+        //         cloud_env_var_collection.cloud_object_type_and_id(),
+        //         ObjectActionType::Execute,
+        //         None,
+        //         ctx,
+        //     )
+        // });
     }
 
     #[cfg(feature = "integration_tests")]

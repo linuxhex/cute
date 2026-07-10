@@ -14,7 +14,7 @@ use crate::ai::cloud_environments::{self, CloudAmbientAgentEnvironmentModel};
 use crate::appearance::Appearance;
 use crate::modal::MODAL_BACKDROP_OPACITY;
 
-use crate::server::cloud_objects::update_manager::UpdateManager;
+// use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::ids::{ClientId, SyncId};
 use crate::settings_view::update_environment_form::{
     EnvironmentFormInitArgs, UpdateEnvironmentForm, UpdateEnvironmentFormEvent,
@@ -121,29 +121,35 @@ impl HandoffEnvironmentCreationModal {
                     return;
                 };
 
-                let client_id = ClientId::default();
-                let create_future =
-                    UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-                        update_manager.create_ambient_agent_environment_online(
-                            CloudAmbientAgentEnvironmentModel::new(environment.clone()),
-                            client_id,
-                            owner,
-                            ctx,
-                        )
-                    });
+                // COMMENTED: 云端功能 UpdateManager 调用已禁用
+                // let client_id = ClientId::default();
+                // let create_future =
+                //     UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
+                //         update_manager.create_ambient_agent_environment_online(
+                //             CloudAmbientAgentEnvironmentModel::new(environment.clone()),
+                //             client_id,
+                //             owner,
+                //             ctx,
+                //         )
+                //     });
 
-                ctx.spawn(create_future, |_me, result, ctx| match result {
-                    Ok(server_id) => {
-                        let env_id = SyncId::ServerId(server_id);
-                        ctx.emit(HandoffEnvironmentCreationModalEvent::Created { env_id });
-                    }
-                    Err(err) => {
-                        log::error!("Failed to create environment for handoff: {err:#}");
-                        ctx.emit(HandoffEnvironmentCreationModalEvent::CreationFailed {
-                            error_message: err.to_string(),
-                        });
-                    }
-                });
+                // ctx.spawn(create_future, |_me, result, ctx| match result {
+                //     Ok(server_id) => {
+                //         let env_id = SyncId::ServerId(server_id);
+                //         ctx.emit(HandoffEnvironmentCreationModalEvent::Created { env_id });
+                //     }
+                //     Err(err) => {
+                //         log::error!("Failed to create environment for handoff: {err:#}");
+                //         ctx.emit(HandoffEnvironmentCreationModalEvent::CreationFailed {
+                //             error_message: err.to_string(),
+                //         });
+                //     }
+                // });
+
+                // 本地模式：直接发出创建成功事件
+                let client_id = ClientId::default();
+                let env_id = SyncId::ClientId(client_id);
+                ctx.emit(HandoffEnvironmentCreationModalEvent::Created { env_id });
             }
             UpdateEnvironmentFormEvent::Cancelled => {
                 ctx.emit(HandoffEnvironmentCreationModalEvent::Cancelled);

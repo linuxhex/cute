@@ -233,7 +233,7 @@ use crate::search::ai_context_menu::search::is_valid_search_query;
 use crate::search::ai_context_menu::view::AIContextMenuAction;
 use crate::search::slash_command_menu::static_commands::commands::{self, COMMAND_REGISTRY};
 use crate::search::QueryFilter;
-use crate::server::cloud_objects::update_manager::UpdateManager;
+// use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::ids::SyncId;
 use crate::server::server_api::ai::AttachmentFileInfo;
 use crate::server::server_api::ServerApi;

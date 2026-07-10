@@ -12,7 +12,8 @@ use crate::env_vars::active_env_var_collection_data::TrashStatus;
 use crate::external_secrets::SecretManager;
 use crate::menu::{Event as MenuEvent, Menu, MenuItem, MenuItemFields};
 use crate::pane_group::PaneEvent;
-use crate::server::cloud_objects::update_manager::UpdateManager;
+// DELETED: 云端功能 UpdateManager 导入已移除
+// use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::ui_components::icons::Icon;
 use crate::util::bindings::{
     keybinding_name_to_display_string, trigger_to_keystroke, CustomAction,
@@ -424,17 +425,19 @@ impl EnvVarCollectionView {
                 return;
             }
 
-            UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
-                update_manager.untrash_object(
-                    CloudObjectTypeAndId::from_generic_string_object(
-                        GenericStringObjectFormat::Json(
-                            crate::cloud_stub_types::JsonObjectType::EnvVarCollection,
-                        ),
-                        env_var_collection_id,
-                    ),
-                    ctx,
-                );
-            });
+            // COMMENTED: 云端功能 UpdateManager untrash 已禁用
+            // UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
+            //     update_manager.untrash_object(
+            //         CloudObjectTypeAndId::from_generic_string_object(
+            //             GenericStringObjectFormat::Json(
+            //                 crate::cloud_stub_types::JsonObjectType::EnvVarCollection,
+            //             ),
+            //             env_var_collection_id,
+            //         ),
+            //         ctx,
+            //     );
+            // });
+            log::warn!("云端恢复功能已禁用 - 无法恢复环境变量集合");
         }
         ctx.notify();
     }
@@ -443,34 +446,38 @@ impl EnvVarCollectionView {
         if let Some(env_var_collection_id) = self.env_var_collection_id(ctx) {
             self.close_env_var_collection(ctx);
 
-            UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
-                update_manager.trash_object(
-                    CloudObjectTypeAndId::from_generic_string_object(
-                        GenericStringObjectFormat::Json(
-                            crate::cloud_stub_types::JsonObjectType::EnvVarCollection,
-                        ),
-                        env_var_collection_id,
-                    ),
-                    ctx,
-                );
-            });
+            // COMMENTED: 云端功能 UpdateManager trash 已禁用
+            // UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
+            //     update_manager.trash_object(
+            //         CloudObjectTypeAndId::from_generic_string_object(
+            //             GenericStringObjectFormat::Json(
+            //                 crate::cloud_stub_types::JsonObjectType::EnvVarCollection,
+            //             ),
+            //             env_var_collection_id,
+            //         ),
+            //         ctx,
+            //     );
+            // });
+            log::warn!("云端删除功能已禁用 - 无法删除环境变量集合");
             ctx.notify();
         }
     }
 
     pub(super) fn duplicate_env_var_collection(&self, ctx: &mut ViewContext<Self>) {
         if let Some(env_var_collection_id) = self.env_var_collection_id(ctx) {
-            UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-                update_manager.duplicate_object(
-                    &CloudObjectTypeAndId::from_generic_string_object(
-                        GenericStringObjectFormat::Json(
-                            crate::cloud_stub_types::JsonObjectType::EnvVarCollection,
-                        ),
-                        env_var_collection_id,
-                    ),
-                    ctx,
-                );
-            });
+            // COMMENTED: 云端功能 UpdateManager duplicate 已禁用
+            // UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
+            //     update_manager.duplicate_object(
+            //         &CloudObjectTypeAndId::from_generic_string_object(
+            //             GenericStringObjectFormat::Json(
+            //                 crate::cloud_stub_types::JsonObjectType::EnvVarCollection,
+            //             ),
+            //             env_var_collection_id,
+            //         ),
+            //         ctx,
+            //     );
+            // });
+            log::warn!("云端复制功能已禁用 - 无法复制环境变量集合");
             ctx.notify();
         }
     }

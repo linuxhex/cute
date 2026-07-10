@@ -1974,12 +1974,12 @@ impl TerminalModel {
         }
     }
 
-    // 已注释：清理 shared_session 共享会话功能
+    // 已注释：清理 shared_session 共享会话功能，返回 SharedSessionStatus stub
     // pub fn shared_session_status(&self) -> &SharedSessionStatus {
     //     &self.shared_session_status
     // }
-    pub fn shared_session_status(&self) -> bool {
-        self.shared_session_status
+    pub fn shared_session_status(&self) -> SharedSessionStatus {
+        SharedSessionStatus::default() // 返回默认的 NotShared 状态
     }
 
     // pub fn set_shared_session_status(&mut self, shared_session_status: SharedSessionStatus) {

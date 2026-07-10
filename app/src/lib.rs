@@ -244,6 +244,8 @@ pub use crate::cloud_stub_types::DriveIndexVariant;
 pub use crate::cloud_stub_types::UserWorkspaces;
 pub use crate::cloud_stub_types::UserWorkspacesEvent;
 pub use crate::cloud_stub_types::SharedSessionStatus;
+pub use crate::cloud_stub_types::IsSharedSessionCreator;
+pub use crate::cloud_stub_types::SharedSessionSource;
 pub use crate::cloud_stub_types::UserProfiles;
 pub use crate::cloud_stub_types::UserProfile;
 use crate::gpu_state::GPUState;

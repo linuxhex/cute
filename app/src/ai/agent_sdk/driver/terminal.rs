@@ -30,7 +30,7 @@ use crate::terminal::model::grid::RespectDisplayedOutput;
 use crate::terminal::model::index::Point;
 use crate::terminal::model::session::ExecuteCommandOptions;
 use crate::terminal::model::RespectObfuscatedSecrets;
-use crate::terminal::shared_session::{IsSharedSessionCreator, SharedSessionSource};
+// use crate::terminal::shared_session::{IsSharedSessionCreator, SharedSessionSource}; // Removed: session sharing feature
 use crate::terminal::shell::ShellType;
 use crate::terminal::view::ConversationRestorationInNewPaneType;
 use crate::terminal::TerminalView;

@@ -13,9 +13,9 @@ use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
 use crate::cloud_stub_types::models::ai_fact::{AIFact, AIMemory, CloudAIFactModel};
 use crate::cloud_stub_types::{GenericStringObjectId};
 use crate::cloud_stub_types::CloudObjectTypeAndId;
-use crate::server::cloud_objects::update_manager::{
-    ObjectOperation, OperationSuccessType, UpdateManager, UpdateManagerEvent,
-};
+// use crate::server::cloud_objects::update_manager::{
+//     ObjectOperation, OperationSuccessType, UpdateManager, UpdateManagerEvent,
+// };
 use crate::server::ids::{ClientId, SyncId};
 use crate::ui_components::blended_colors;
 use crate::ui_components::icons::Icon;

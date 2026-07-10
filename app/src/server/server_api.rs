@@ -53,7 +53,7 @@ use crate::auth::auth_manager::AuthManager;
 use crate::auth::auth_state::AuthState;
 use crate::auth::UserUid;
 use crate::server::graphql::default_request_options;
-use crate::server::iap::{IapManager, IapState};
+// use crate::server::iap::{IapManager, IapState}; // Cute: 已注释，清理 IAP 模块
 use crate::server::server_api::presigned_upload::HttpStatusError;
 use crate::settings::PrivacySettingsSnapshot;
 use crate::ChannelState;

@@ -53,7 +53,7 @@ use crate::persistence::{
 };
 use crate::server::sync_queue::InitiatedBy;
 use crate::server::ids::{ClientId, ServerId, SyncId};
-use crate::server::cloud_objects::UpdateManager;
+// use crate::server::cloud_objects::UpdateManager; // Removed: cloud sync feature
 use crate::settings::AISettings;
 use crate::view_components::DismissibleToast;
 use crate::workspace::ToastStack;

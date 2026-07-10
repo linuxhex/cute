@@ -130,7 +130,8 @@ impl EditorView {
         ctx: &mut ViewContext<Self>,
     ) {
         // COMMENTED: UserWorkspaces disabled in local version - voice disabled
-        if true /*!UserWorkspaces::handle(ctx).as_ref(ctx).is_voice_enabled()*/ {
+        // COMMENTED: UserWorkspaces disabled in local version - voice disabled
+        // if !UserWorkspaces::handle(ctx).as_ref(ctx).is_voice_enabled() {
             return;
         }
 
@@ -157,7 +158,8 @@ impl EditorView {
         ctx: &mut ViewContext<Self>,
     ) {
         // COMMENTED: UserWorkspaces disabled in local version - voice disabled
-        if true /*!UserWorkspaces::handle(ctx).as_ref(ctx).is_voice_enabled()*/ {
+        // COMMENTED: UserWorkspaces disabled in local version - voice disabled
+        // if !UserWorkspaces::handle(ctx).as_ref(ctx).is_voice_enabled() {
             return;
         }
 
@@ -401,7 +403,8 @@ impl EditorView {
         ctx: &mut ViewContext<Self>,
     ) {
         // COMMENTED: UserWorkspaces disabled in local version - voice disabled
-        if true /*!UserWorkspaces::handle(ctx).as_ref(ctx).is_voice_enabled()*/ {
+        // COMMENTED: UserWorkspaces disabled in local version - voice disabled
+        // if !UserWorkspaces::handle(ctx).as_ref(ctx).is_voice_enabled() {
             return;
         }
 

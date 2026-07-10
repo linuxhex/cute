@@ -47,7 +47,8 @@ use session_sharing_protocol::common::SessionId;
 use crate::cloud_stub_types::CloudObjectLookup as _;
 use crate::network::{NetworkStatus, NetworkStatusEvent, NetworkStatusKind};
 
-use crate::server::cloud_objects::{UpdateManager, UpdateManagerEvent};
+// DELETED: 云端功能 UpdateManager 相关导入已移除
+// use crate::server::cloud_objects::{UpdateManager, UpdateManagerEvent};
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::retry_strategies::{
     is_transient_http_error, OUT_OF_BAND_REQUEST_RETRY_STRATEGY, PERIODIC_POLL_RETRY_STRATEGY,
@@ -635,11 +636,12 @@ impl AgentConversationsModel {
             me.sync_conversations(ctx);
         });
 
-        // Subscribe to UpdateManager for RTC task updates
-        if FeatureFlag::AmbientAgentsRTC.is_enabled() {
-            let update_manager = UpdateManager::handle(ctx);
-            ctx.subscribe_to_model(&update_manager, Self::handle_update_manager_event);
-        }
+        // COMMENTED: 云端功能 UpdateManager 订阅已禁用
+        // // Subscribe to UpdateManager for RTC task updates
+        // if FeatureFlag::AmbientAgentsRTC.is_enabled() {
+        //     let update_manager = UpdateManager::handle(ctx);
+        //     ctx.subscribe_to_model(&update_manager, Self::handle_update_manager_event);
+        // }
 
         let mut model = Self {
             tasks: HashMap::new(),
@@ -711,35 +713,36 @@ impl AgentConversationsModel {
         }
     }
 
-    fn handle_update_manager_event(
-        &mut self,
-        event: &UpdateManagerEvent,
-        ctx: &mut ModelContext<Self>,
-    ) {
-        let UpdateManagerEvent::AmbientTaskUpdated { task_id, timestamp } = event else {
-            return;
-        };
-
-        let has_list_consumers = self
-            .active_data_consumers_per_window
-            .values()
-            .any(|views| !views.is_empty());
-        if has_list_consumers {
-            // (a) If management view or conversation list is open, throttled list-fetch.
-            self.handle_rtc_for_list_views(*timestamp, ctx);
-        } else {
-            let has_open_tab = ActiveAgentViewsModel::as_ref(ctx)
-                .get_terminal_view_id_for_ambient_task(*task_id)
-                .is_some();
-            if has_open_tab {
-                // (b) If this task has an open tab (any window), force a re-fetch.
-                self.async_fetch_task(task_id, ctx);
-            } else {
-                // (c) No list surface open: record earliest timestamp for flush on next view open.
-                record_earliest_rtc_task_refresh_timestamp(&mut self.dirty_since, *timestamp);
-            }
-        }
-    }
+    // COMMENTED: 云端功能 UpdateManagerEvent 处理已禁用
+    // fn handle_update_manager_event(
+    //     &mut self,
+    //     event: &UpdateManagerEvent,
+    //     ctx: &mut ModelContext<Self>,
+    // ) {
+    //     let UpdateManagerEvent::AmbientTaskUpdated { task_id, timestamp } = event else {
+    //         return;
+    //     };
+    //
+    //     let has_list_consumers = self
+    //         .active_data_consumers_per_window
+    //         .values()
+    //         .any(|views| !views.is_empty());
+    //     if has_list_consumers {
+    //         // (a) If management view or conversation list is open, throttled list-fetch.
+    //         self.handle_rtc_for_list_views(*timestamp, ctx);
+    //     } else {
+    //         let has_open_tab = ActiveAgentViewsModel::as_ref(ctx)
+    //             .get_terminal_view_id_for_ambient_task(*task_id)
+    //             .is_some();
+    //         if has_open_tab {
+    //             // (b) If this task has an open tab (any window), force a re-fetch.
+    //             self.async_fetch_task(task_id, ctx);
+    //         } else {
+    //             // (c) No list surface open: record earliest timestamp for flush on next view open.
+    //             record_earliest_rtc_task_refresh_timestamp(&mut self.dirty_since, *timestamp);
+    //         }
+    //     }
+    // }
 
     // Handle RTC invalidations for list views, respecting the refresh throttling.
     fn handle_rtc_for_list_views(

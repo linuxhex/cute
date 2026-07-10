@@ -41,7 +41,8 @@ use crate::pane_group::focus_state::PaneFocusHandle;
 use crate::pane_group::pane::view;
 use crate::pane_group::{BackingView, PaneConfiguration, PaneEvent};
 use crate::search::external_secrets::view::ExternalSecretsMenu;
-use crate::server::cloud_objects::update_manager::{FetchSingleObjectOption, UpdateManager};
+// DELETED: 云端功能 UpdateManager 相关导入已移除
+// use crate::server::cloud_objects::update_manager::{FetchSingleObjectOption, UpdateManager};
 use crate::server::ids::{ServerId, SyncId};
 use crate::terminal::model::secrets::SecretLevel;
 use crate::terminal::safe_mode_settings::get_secret_obfuscation_mode;
@@ -628,27 +629,34 @@ impl EnvVarCollectionView {
         window_id: WindowId,
         ctx: &mut ViewContext<Self>,
     ) {
-        let fetch_cloud_object_rx =
-            UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-                update_manager.fetch_single_cloud_object(
-                    &env_var_collection_id,
-                    FetchSingleObjectOption::None,
-                    ctx,
-                )
-            });
-        ctx.spawn(fetch_cloud_object_rx, move |me, _, ctx| {
-            if let Some(env_var_collection) = CloudModel::as_ref(ctx)
-                .get_env_var_collection(&SyncId::ServerId(env_var_collection_id))
-                .cloned()
-            {
-                me.load(env_var_collection, ctx);
-            } else {
-                ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
-                    toast_stack.add_ephemeral_toast_by_type(ToastType::CloudObjectNotFound, window_id, ctx);
-                });
-                log::warn!("Tried to open unknown env var collection {env_var_collection_id:?} after fetching");
-            }
+        // COMMENTED: 云端功能 UpdateManager fetch 已禁用
+        // let fetch_cloud_object_rx =
+        //     UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
+        //         update_manager.fetch_single_cloud_object(
+        //             &env_var_collection_id,
+        //             FetchSingleObjectOption::None,
+        //             ctx,
+        //         )
+        //     });
+        // ctx.spawn(fetch_cloud_object_rx, move |me, _, ctx| {
+        //     if let Some(env_var_collection) = CloudModel::as_ref(ctx)
+        //         .get_env_var_collection(&SyncId::ServerId(env_var_collection_id))
+        //         .cloned()
+        //     {
+        //         me.load(env_var_collection, ctx);
+        //     } else {
+        //         ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+        //             toast_stack.add_ephemeral_toast_by_type(ToastType::CloudObjectNotFound, window_id, ctx);
+        //         });
+        //         log::warn!("Tried to open unknown env var collection {env_var_collection_id:?} after fetching");
+        //     }
+        // });
+
+        // 本地版本：直接显示错误
+        ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+            toast_stack.add_ephemeral_toast_by_type(ToastType::CloudObjectNotFound, window_id, ctx);
         });
+        log::warn!("Tried to open unknown env var collection {env_var_collection_id:?} - cloud fetch disabled");
     }
 
     pub fn load(&mut self, env_var_collection: CloudEnvVarCollection, ctx: &mut ViewContext<Self>) {
@@ -828,44 +836,50 @@ impl EnvVarCollectionView {
             .active_env_var_collection();
 
         match active_env_var_collection {
+            // COMMENTED: 云端功能 UpdateManager 已禁用
             // If the EVC has already been committed, then update the local
             // memory and server data via update manager
-            ActiveEnvVarCollection::CommittedEnvVarCollection(id) => UpdateManager::handle(ctx)
-                .update(ctx, |update_manager, ctx| {
-                    let revision = self.active_env_var_collection_data
-                        .update(ctx, |data, _| data.revision_ts.clone())
-                        .map(|r| r.timestamp_micros().to_string())
-                        .unwrap_or_default();
-                    update_manager.update_env_var_collection(
-                        new_env_var_collection,
-                        id,
-                        revision,
-                        ctx,
-                    );
-                }),
+            ActiveEnvVarCollection::CommittedEnvVarCollection(id) => {
+                // UpdateManager::handle(ctx)
+                //     .update(ctx, |update_manager, ctx| {
+                //         let revision = self.active_env_var_collection_data
+                //             .update(ctx, |data, _| data.revision_ts.clone())
+                //             .map(|r| r.timestamp_micros().to_string())
+                //             .unwrap_or_default();
+                //         update_manager.update_env_var_collection(
+                //             new_env_var_collection,
+                //             id,
+                //             revision,
+                //             ctx,
+                //         );
+                //     });
+                log::warn!("云端更新功能已禁用 - 无法保存已提交的环境变量集合");
+            }
+            // COMMENTED: 云端功能 UpdateManager 已禁用
             // If the EVC hasn't been committed yet, create the EVC through update
             // manager, and update the active EVC
             ActiveEnvVarCollection::NewEnvVarCollection(env_var_collection) => {
-                if let Some(client_id) = env_var_collection.id.into_client() {
-                    UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-                        update_manager.create_env_var_collection(
-                            client_id,
-                            env_var_collection.permissions.owner,
-                            env_var_collection.metadata.folder_id,
-                            CloudEnvVarCollectionModel::new(new_env_var_collection),
-                            CloudObjectEventEntrypoint::Unknown,
-                            true,
-                            ctx,
-                        );
-                    });
-
-                    self.active_env_var_collection_data.update(ctx, |data, _| {
-                        data.active_env_var_collection =
-                            ActiveEnvVarCollection::CommittedEnvVarCollection(SyncId::ClientId(
-                                client_id,
-                            ))
-                    });
-                }
+                // if let Some(client_id) = env_var_collection.id.into_client() {
+                //     UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
+                //         update_manager.create_env_var_collection(
+                //             client_id,
+                //             env_var_collection.permissions.owner,
+                //             env_var_collection.metadata.folder_id,
+                //             CloudEnvVarCollectionModel::new(new_env_var_collection),
+                //             CloudObjectEventEntrypoint::Unknown,
+                //             true,
+                //             ctx,
+                //         );
+                //     });
+                //
+                //     self.active_env_var_collection_data.update(ctx, |data, _| {
+                //         data.active_env_var_collection =
+                //             ActiveEnvVarCollection::CommittedEnvVarCollection(SyncId::ClientId(
+                //                 client_id,
+                //             ))
+                //     });
+                // }
+                log::warn!("云端创建功能已禁用 - 无法保存新环境变量集合");
             }
             ActiveEnvVarCollection::None => {
                 log::error!("Tried to save EVC, but none were active")

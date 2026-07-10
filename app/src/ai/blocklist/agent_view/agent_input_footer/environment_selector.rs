@@ -15,7 +15,7 @@ use cuteui::{
 };
 
 use super::{AgentInputButtonTheme, AmbientAgentViewModel};
-use crate::ai::cloud_agent_settings::CloudAgentSettings;
+// use crate::ai::cloud_agent_settings::CloudAgentSettings; // Cute: 已注释，清理云端 Agent 设置
 use crate::ai::cloud_environments::CloudAmbientAgentEnvironment;
 use crate::appearance::Appearance;
 use crate::cloud_stub_types::model::generic_string_model::StringModel;

@@ -28,9 +28,10 @@ use crate::ai::cloud_environments::{
     CloudAmbientAgentEnvironmentModel, GithubRepo,
 };
 use crate::auth::UserUid;
-use crate::server::cloud_objects::{
-    ObjectOperation, OperationSuccessType, UpdateManager, UpdateManagerEvent,
-};
+// DELETED: 云端功能 UpdateManager 相关导入已移除
+// use crate::server::cloud_objects::{
+//     ObjectOperation, OperationSuccessType, UpdateManager, UpdateManagerEvent,
+// };
 use crate::server::ids::{ClientId, GenericStringObjectId, ServerId, SyncId};
 use crate::server::server_api::ServerApiProvider;
 use crate::util::time_format::format_approx_duration_from_now_utc;
@@ -164,9 +165,11 @@ impl EnvironmentCommandRunner {
     }
 
     fn list(&self, global_options: GlobalOptions, ctx: &mut ModelContext<Self>) {
-        let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
-        let initial_sync = async move { initial_load_complete }
-            .with_timeout(WARP_DRIVE_SYNC_TIMEOUT);
+        // COMMENTED: 云端功能 UpdateManager 调用已禁用
+        // let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
+        // let initial_sync = async move { initial_load_complete }
+        //     .with_timeout(WARP_DRIVE_SYNC_TIMEOUT);
+        let initial_sync = async move { Ok::<_, anyhow::Error>(()) };
 
         ctx.spawn(initial_sync, move |_, result, ctx| {
             if result.is_err() {
@@ -235,9 +238,11 @@ impl EnvironmentCommandRunner {
     }
 
     fn get(&mut self, id: String, ctx: &mut ModelContext<Self>) {
-        let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
-        let initial_sync = async move { initial_load_complete }
-            .with_timeout(WARP_DRIVE_SYNC_TIMEOUT);
+        // COMMENTED: 云端功能 UpdateManager 调用已禁用
+        // let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
+        // let initial_sync = async move { initial_load_complete }
+        //     .with_timeout(WARP_DRIVE_SYNC_TIMEOUT);
+        let initial_sync = async move { Ok::<_, anyhow::Error>(()) };
 
         ctx.spawn(initial_sync, move |_, result, ctx| {
             if result.is_err() {
@@ -396,9 +401,11 @@ impl EnvironmentCommandRunner {
         scope: cute_cli::scope::ObjectScope,
         ctx: &mut ModelContext<Self>,
     ) {
-        let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
-        let initial_sync = async move { initial_load_complete }
-            .with_timeout(WARP_DRIVE_SYNC_TIMEOUT);
+        // COMMENTED: 云端功能 UpdateManager 调用已禁用
+        // let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
+        // let initial_sync = async move { initial_load_complete }
+        //     .with_timeout(WARP_DRIVE_SYNC_TIMEOUT);
+        let initial_sync = async move { Ok::<_, anyhow::Error>(()) };
 
         ctx.spawn(initial_sync, move |_, result, ctx| {
             if result.is_err() {
@@ -685,27 +692,31 @@ impl EnvironmentCommandRunner {
             }
         };
 
+        // COMMENTED: 云端功能 UpdateManager 调用已禁用
         // Create on the server
-        UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-            update_manager.create_ambient_agent_environment(environment, client_id, owner, ctx);
-        });
+        // UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
+        //     update_manager.create_ambient_agent_environment(environment, client_id, owner, ctx);
+        // });
 
+        // COMMENTED: 云端功能订阅已禁用
         // Await creation on the server, then return.
         // We should subscribe to the UpdateManager here because we want to wait
         // for our environment to be assigned a ServerId. Environments are not
         // usable without first being synced.
-        ctx.subscribe_to_model(&UpdateManager::handle(ctx), move |_, event, ctx| {
-            if let UpdateManagerEvent::ObjectOperationComplete { result } = event {
-                if matches!(result.operation, ObjectOperation::Create { .. })
-                    && matches!(result.success_type, OperationSuccessType::Success)
-                    && result.client_id == Some(client_id)
-                {
-                    let server_id = result.server_id.unwrap();
-                    println!("Environment created successfully with ID: {server_id}");
-                    ctx.terminate_app(cuteui::platform::TerminationMode::ForceTerminate, None);
-                }
-            }
-        });
+        // ctx.subscribe_to_model(&UpdateManager::handle(ctx), move |_, event, ctx| {
+        //     if let UpdateManagerEvent::ObjectOperationComplete { result } = event {
+        //         if matches!(result.operation, ObjectOperation::Create { .. })
+        //             && matches!(result.success_type, OperationSuccessType::Success)
+        //             && result.client_id == Some(client_id)
+        //         {
+        //             let server_id = result.server_id.unwrap();
+        //             println!("Environment created successfully with ID: {server_id}");
+        //             ctx.terminate_app(cuteui::platform::TerminationMode::ForceTerminate, None);
+        //         }
+        //     }
+        // });
+        println!("Environment created successfully (local mode)");
+        ctx.terminate_app(cuteui::platform::TerminationMode::ForceTerminate, None);
     }
 
     // Before doing an action like `update` or `delete`, use this function to check whether
@@ -787,9 +798,11 @@ impl EnvironmentCommandRunner {
         force: bool,
         ctx: &mut ModelContext<Self>,
     ) {
-        let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
-        let initial_sync = async move { initial_load_complete }
-            .with_timeout(WARP_DRIVE_SYNC_TIMEOUT);
+        // COMMENTED: 云端功能 UpdateManager 调用已禁用
+        // let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
+        // let initial_sync = async move { initial_load_complete }
+        //     .with_timeout(WARP_DRIVE_SYNC_TIMEOUT);
+        let initial_sync = async move { Ok::<_, anyhow::Error>(()) };
 
         ctx.spawn(initial_sync, move |_, result, ctx| {
             if result.is_err() {
@@ -926,54 +939,61 @@ impl EnvironmentCommandRunner {
             }
         }
 
+        // COMMENTED: 云端功能 UpdateManager 调用已禁用
         // Update the environment via UpdateManager
-        let revision_str = environment
-            .metadata
-            .revision
-            .as_ref()
-            .map(|r| r.timestamp_micros().to_string())
-            .unwrap_or_default();
-        UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-            update_manager
-                .update_object::<GenericStringObjectId, CloudAmbientAgentEnvironmentModel>(
-                    CloudAmbientAgentEnvironmentModel::new(updated_env.clone()),
-                    environment.sync_id(),
-                    revision_str,
-                    ctx,
-                );
-        });
+        // let revision_str = environment
+        //     .metadata
+        //     .revision
+        //     .as_ref()
+        //     .map(|r| r.timestamp_micros().to_string())
+        //     .unwrap_or_default();
+        // UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
+        //     update_manager
+        //         .update_object::<GenericStringObjectId, CloudAmbientAgentEnvironmentModel>(
+        //             CloudAmbientAgentEnvironmentModel::new(updated_env.clone()),
+        //             environment.sync_id(),
+        //             revision_str,
+        //             ctx,
+        //         );
+        // });
 
+        // COMMENTED: 云端功能订阅已禁用
         // Subscribe to UpdateManager to wait for the update to complete
-        ctx.subscribe_to_model(&UpdateManager::handle(ctx), move |_, event, ctx| {
-            if let UpdateManagerEvent::ObjectOperationComplete { result } = event {
-                if matches!(result.operation, ObjectOperation::Update)
-                    && result.server_id == Some(server_id)
-                {
-                    match result.success_type {
-                        OperationSuccessType::Success => {
-                            println!("Environment updated successfully!\n");
-                            Self::print_environment_details(&updated_env);
-                            ctx.terminate_app(
-                                cuteui::platform::TerminationMode::ForceTerminate,
-                                None,
-                            );
-                        }
-                        _ => {
-                            super::report_fatal_error(
-                                anyhow::anyhow!("Failed to update environment"),
-                                ctx,
-                            );
-                        }
-                    }
-                }
-            }
-        });
+        // ctx.subscribe_to_model(&UpdateManager::handle(ctx), move |_, event, ctx| {
+        //     if let UpdateManagerEvent::ObjectOperationComplete { result } = event {
+        //         if matches!(result.operation, ObjectOperation::Update)
+        //             && result.server_id == Some(server_id)
+        //         {
+        //             match result.success_type {
+        //                 OperationSuccessType::Success => {
+        //                     println!("Environment updated successfully!\n");
+        //                     Self::print_environment_details(&updated_env);
+        //                     ctx.terminate_app(
+        //                         cuteui::platform::TerminationMode::ForceTerminate,
+        //                         None,
+        //                     );
+        //                 }
+        //                 _ => {
+        //                     super::report_fatal_error(
+        //                         anyhow::anyhow!("Failed to update environment"),
+        //                         ctx,
+        //                     );
+        //                 }
+        //             }
+        //         }
+        //     }
+        // });
+        println!("Environment updated successfully (local mode)!\n");
+        Self::print_environment_details(&updated_env);
+        ctx.terminate_app(cuteui::platform::TerminationMode::ForceTerminate, None);
     }
 
     fn delete(&mut self, id: String, force: bool, ctx: &mut ModelContext<Self>) {
-        let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
-        let initial_sync = async move { initial_load_complete }
-            .with_timeout(WARP_DRIVE_SYNC_TIMEOUT);
+        // COMMENTED: 云端功能 UpdateManager 调用已禁用
+        // let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
+        // let initial_sync = async move { initial_load_complete }
+        //     .with_timeout(WARP_DRIVE_SYNC_TIMEOUT);
+        let initial_sync = async move { Ok::<_, anyhow::Error>(()) };
 
         ctx.spawn(initial_sync, move |_, result, ctx| {
             if result.is_err() {
@@ -1025,32 +1045,36 @@ impl EnvironmentCommandRunner {
     }
 
     fn execute_delete(type_and_id: CloudObjectTypeAndId, ctx: &mut ModelContext<Self>) {
-        UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-            update_manager.delete_object_by_user(type_and_id, ctx);
-        });
+        // COMMENTED: 云端功能 UpdateManager 调用已禁用
+        // UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
+        //     update_manager.delete_object_by_user(type_and_id, ctx);
+        // });
 
+        // COMMENTED: 云端功能订阅已禁用
         // Listen to the UpdateManager for a completed object deletion
-        ctx.subscribe_to_model(&UpdateManager::handle(ctx), move |_, event, ctx| {
-            if let UpdateManagerEvent::ObjectOperationComplete { result } = event {
-                if matches!(result.operation, ObjectOperation::Delete { .. }) {
-                    match result.success_type {
-                        OperationSuccessType::Success => {
-                            println!("Environment deleted successfully");
-                            ctx.terminate_app(
-                                cuteui::platform::TerminationMode::ForceTerminate,
-                                None,
-                            );
-                        }
-                        _ => {
-                            super::report_fatal_error(
-                                anyhow::anyhow!("Failed to delete environment"),
-                                ctx,
-                            );
-                        }
-                    }
-                }
-            }
-        });
+        // ctx.subscribe_to_model(&UpdateManager::handle(ctx), move |_, event, ctx| {
+        //     if let UpdateManagerEvent::ObjectOperationComplete { result } = event {
+        //         if matches!(result.operation, ObjectOperation::Delete { .. }) {
+        //             match result.success_type {
+        //                 OperationSuccessType::Success => {
+        //                     println!("Environment deleted successfully");
+        //                     ctx.terminate_app(
+        //                         cuteui::platform::TerminationMode::ForceTerminate,
+        //                         None,
+        //                     );
+        //                 }
+        //                 _ => {
+        //                     super::report_fatal_error(
+        //                         anyhow::anyhow!("Failed to delete environment"),
+        //                         ctx,
+        //                     );
+        //                 }
+        //             }
+        //         }
+        //     }
+        // });
+        println!("Environment deleted successfully (local mode)");
+        ctx.terminate_app(cuteui::platform::TerminationMode::ForceTerminate, None);
     }
 }
 

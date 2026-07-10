@@ -34,9 +34,10 @@ use crate::cloud_stub_types::MarkdownDisplayMode;
 use crate::cloud_stub_types::rich_text_styles;
 use crate::cloud_stub_types::NotebookId;
 use crate::persistence::ModelEvent;
-use crate::server::cloud_objects::update_manager::{
-    ObjectOperation, OperationSuccessType, UpdateManager, UpdateManagerEvent,
-};
+// DELETED: 云端功能 UpdateManager 相关导入已移除
+// use crate::server::cloud_objects::update_manager::{
+//     ObjectOperation, OperationSuccessType, UpdateManager, UpdateManagerEvent,
+// };
 use crate::server::sync_queue::InitiatedBy;
 use crate::server::ids::{ClientId, ServerId, SyncId};
 use crate::settings::FontSettings;
@@ -187,9 +188,10 @@ pub struct AIDocumentModel {
 
 impl AIDocumentModel {
     pub fn new(ctx: &mut ModelContext<Self>) -> Self {
-        ctx.subscribe_to_model(&UpdateManager::handle(ctx), |me, event, ctx| {
-            me.handle_update_manager_event(event, ctx);
-        });
+        // COMMENTED: 云端功能 UpdateManager 订阅已禁用
+        // ctx.subscribe_to_model(&UpdateManager::handle(ctx), |me, event, ctx| {
+        //     me.handle_update_manager_event(event, ctx);
+        // });
 
         // Subscribe to history events so we can hydrate the orchestration
         // config from OrchestrationConfigSnapshot messages that arrive
@@ -273,14 +275,15 @@ impl AIDocumentModel {
 
     /// Handles UpdateManager events.
     /// Cloud sync disabled for local version - no longer processes cloud object operations.
-    fn handle_update_manager_event(
-        &mut self,
-        event: &UpdateManagerEvent,
-        ctx: &mut ModelContext<Self>,
-    ) {
-        // Cloud sync disabled - ignore all UpdateManager events
-        let _ = event;
-    }
+    // COMMENTED: 云端功能 UpdateManagerEvent 处理已禁用
+    // fn handle_update_manager_event(
+    //     &mut self,
+    //     event: &UpdateManagerEvent,
+    //     ctx: &mut ModelContext<Self>,
+    // ) {
+    //     // Cloud sync disabled - ignore all UpdateManager events
+    //     let _ = event;
+    // }
 
     /// Create a new document with default title/content and return its ID.
     pub fn create_document(

@@ -60,6 +60,8 @@ const DEFAULT_HOST_ENV_VAR: &str = "CUTE_CLOUD_MODE_DEFAULT_HOST";
 // ── Shared constants ────────────────────────────────────────────────
 
 pub const ORCHESTRATION_CUTE_WORKER_HOST: &str = WARP_WORKER_HOST;
+// Cute: 已注释，清理云端功能 - ORCHESTRATION_WARP_WORKER_HOST 替换为空字符串
+pub const ORCHESTRATION_WARP_WORKER_HOST: &str = "";
 pub const ORCHESTRATION_ENV_NONE_LABEL: &str = "Empty environment";
 
 pub const ORCHESTRATION_PICKER_HEIGHT: f32 = 36.;

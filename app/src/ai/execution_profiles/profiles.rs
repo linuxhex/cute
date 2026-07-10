@@ -19,7 +19,8 @@ use crate::cloud_stub_types::model::generic_string_model::GenericStringObjectId;
 use crate::cloud_stub_types::model::persistence::{CloudModelEvent, UpdateSource};
 use crate::cloud_stub_types::CloudObjectTypeAndId;
 use cute_server_client::cloud_object::{GenericStringObjectFormat, JsonObjectType};
-use crate::server::cloud_objects::update_manager::UpdateManager;
+// DELETED: 云端功能 UpdateManager 导入已移除
+// use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::ids::{ClientId, SyncId};
 use crate::settings::AgentModeCommandExecutionPredicate;
 use crate::{CloudModel, LaunchMode};
@@ -280,11 +281,13 @@ impl AIExecutionProfilesModel {
         new_profile.is_default_profile = false;
         new_profile.autosync_plans_to_warp_drive = true;
 
-        let update_manager = UpdateManager::handle(ctx);
+        // COMMENTED: 云端功能 UpdateManager 调用已禁用
+        // let update_manager = UpdateManager::handle(ctx);
+        // let client_id = ClientId::default();
+        // update_manager.update(ctx, |update_manager, ctx| {
+        //     update_manager.create_ai_execution_profile(new_profile, client_id, owner, ctx);
+        // });
         let client_id = ClientId::default();
-        update_manager.update(ctx, |update_manager, ctx| {
-            update_manager.create_ai_execution_profile(new_profile, client_id, owner, ctx);
-        });
 
         self.profile_id_to_sync_id
             .insert(profile_id, SyncId::ClientId(client_id));
@@ -311,10 +314,11 @@ impl AIExecutionProfilesModel {
 
         self.profile_id_to_sync_id.remove(&profile_id);
 
-        let update_manager = UpdateManager::handle(ctx);
-        update_manager.update(ctx, |update_manager, ctx| {
-            update_manager.delete_ai_execution_profile(sync_id, ctx);
-        });
+        // COMMENTED: 云端功能 UpdateManager 调用已禁用
+        // let update_manager = UpdateManager::handle(ctx);
+        // update_manager.update(ctx, |update_manager, ctx| {
+        //     update_manager.delete_ai_execution_profile(sync_id, ctx);
+        // });
 
         ctx.emit(AIExecutionProfilesModelEvent::ProfileDeleted);
     }
@@ -1067,16 +1071,17 @@ impl AIExecutionProfilesModel {
                 }
 
                 if let Some(owner) = UserWorkspaces::as_ref(ctx).personal_drive(ctx) {
-                    let update_manager = UpdateManager::handle(ctx);
+                    // COMMENTED: 云端功能 UpdateManager 调用已禁用
+                    // let update_manager = UpdateManager::handle(ctx);
                     let client_id = ClientId::default();
-                    update_manager.update(ctx, |update_manager, ctx| {
-                        update_manager.create_ai_execution_profile(
-                            new_profile,
-                            client_id,
-                            owner,
-                            ctx,
-                        );
-                    });
+                    // update_manager.update(ctx, |update_manager, ctx| {
+                    //     update_manager.create_ai_execution_profile(
+                    //         new_profile,
+                    //         client_id,
+                    //         owner,
+                    //         ctx,
+                    //     );
+                    // });
 
                     // For forever on, the default profile state is synced.
                     let sync_id = SyncId::ClientId(client_id);
@@ -1120,10 +1125,11 @@ impl AIExecutionProfilesModel {
                 if !value_changed {
                     return false;
                 }
-                let update_manager = UpdateManager::handle(ctx);
-                update_manager.update(ctx, |update_manager, ctx| {
-                    update_manager.update_ai_execution_profile(data, *sync_id, None, ctx);
-                });
+                // COMMENTED: 云端功能 UpdateManager 调用已禁用
+                // let update_manager = UpdateManager::handle(ctx);
+                // update_manager.update(ctx, |update_manager, ctx| {
+                //     update_manager.update_ai_execution_profile(data, *sync_id, None, ctx);
+                // });
 
                 log::info!("Edited execution profile with id: {profile_id:?}");
             } else {

@@ -594,3 +594,7 @@ pub fn user_preferences_file_path() -> PathBuf {
 pub fn user_preferences_toml_file_path() -> PathBuf {
     cute_core::paths::config_local_dir().join("settings.toml")
 }
+
+// Re-export types from graphql for settings compatibility
+pub use cute_graphql::api::workspace::AdminEnablementSetting;
+pub use cute_graphql::api::workspace::UgcCollectionEnablementSetting;

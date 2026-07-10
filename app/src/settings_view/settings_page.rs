@@ -36,7 +36,7 @@ use super::mcp_servers_page::MCPServersSettingsPageView;
 use super::privacy_page::PrivacyPageView;
 // use super::referrals_page::ReferralsPageView; // Removed: referral feature
 use super::show_blocks_view::ShowBlocksView;
-use super::cute_drive_page::WarpDriveSettingsPageView;
+// use super::cute_drive_page::WarpDriveSettingsPageView; // Removed: cute drive feature
 use super::cuteify_page::WarpifyPageView;
 use super::SettingsSection;
 use crate::appearance::Appearance;
