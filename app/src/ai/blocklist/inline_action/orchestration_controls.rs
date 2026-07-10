@@ -992,14 +992,6 @@ pub fn harness_save_key(harness_type: &str) -> &str {
 pub fn resolve_default_environment_id(_ctx: &AppContext) -> Option<String> {
     None
 }
-                a.model()
-                    .string_model
-                    .name
-                    .cmp(&b.model().string_model.name)
-            })
-    });
-    envs.first().map(|e| e.id.uid())
-}
 
 /// Persists the user's environment selection to settings so it can
 /// be restored as the default next time. Shared by both the plan
@@ -1010,18 +1002,6 @@ pub fn persist_environment_selection<V: View>(environment_id: &str, ctx: &mut Vi
     }
     // Cute: 已注释，清理云端 environment 保存逻辑
     // 本地 Agent 不需要保存云端 environment 选择
-    // let all_envs = CloudAmbientAgentEnvironment::get_all(ctx);
-    // if let Some(env) = all_envs.iter().find(|e| e.id.uid() == environment_id) {
-    //     let sync_id = env.id;
-    //     CloudAgentSettings::handle(ctx).update(ctx, |settings, ctx| {
-    //         if let Err(e) = settings
-    //             .last_selected_environment_id
-    //             .set_value(Some(sync_id), ctx)
-    //         {
-    //             log::warn!("Failed to persist environment selection: {e:?}");
-            }
-        });
-    }
 }
 
 // ── Auth secret helpers ────────────────────────────────────────────

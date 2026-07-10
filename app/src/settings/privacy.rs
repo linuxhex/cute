@@ -158,7 +158,7 @@ pub struct PrivacySettings {
     /// user local/cloud settings. If false, we fall back to the user's settings.
     /// This is populated by the server when teams data is fetched.
     pub is_telemetry_force_enabled: bool,
-    /// Simplified: local version has no enterprise secret redaction
+    // Simplified: local version has no enterprise secret redaction
     // pub is_enterprise_secret_redaction_enabled: bool,
 }
 

@@ -1206,17 +1206,16 @@ impl BlockListElement {
                 false,
                 true,
                 self.mouse_states
-                        .save_as_workflow_button_mouse_state
-                        .clone(),
-                    &self.warp_theme,
-                    &self.ui_builder,
-                    move |ctx: &mut EventContext, _, _| {
-                        ctx.dispatch_typed_action(TerminalAction::OpenWorkflowModalForBlock(
-                            block_index,
-                        ));
-                    },
-                )
-            };
+                    .save_as_workflow_button_mouse_state
+                    .clone(),
+                &self.warp_theme,
+                &self.ui_builder,
+                move |ctx: &mut EventContext, _, _| {
+                    ctx.dispatch_typed_action(TerminalAction::OpenWorkflowModalForBlock(
+                        block_index,
+                    ));
+                },
+            );
 
             self.save_as_workflow_button = Some(element);
         }

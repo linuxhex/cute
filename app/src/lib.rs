@@ -1150,15 +1150,16 @@ pub(crate) fn initialize_app(
 
     ctx.add_singleton_model(|ctx| AIRequestUsageModel::new(ai_client, ctx));
 
-    ctx.add_singleton_model(|ctx| {
-        UserWorkspaces::new(
-            server_api_provider.as_ref(ctx).get_team_client(),
-            server_api_provider.as_ref(ctx).get_workspace_client(),
-            cached_workspaces,
-            current_workspace_uid,
-            ctx,
-        )
-    });
+    // COMMENTED: UserWorkspaces disabled in local version
+    // ctx.add_singleton_model(|ctx| {
+    //     UserWorkspaces::new(
+    //         server_api_provider.as_ref(ctx).get_team_client(),
+    //         server_api_provider.as_ref(ctx).get_workspace_client(),
+    //         cached_workspaces,
+    //         current_workspace_uid,
+    //         ctx,
+    //     )
+    // });
 
     // Initialize ApiKeyManager after UserWorkspaces so it can subscribe to workspace/settings changes
     ctx.add_singleton_model(|ctx| {
@@ -1669,13 +1670,14 @@ pub(crate) fn initialize_app(
         // the org level). Billing metadata — including `warp_ai_policy.is_voice_enabled`
         // — lives inside the team data, so `TeamsChanged` covers all policy updates.
         let tip_model_handle_for_teams = tip_model_handle.clone();
-        ctx.subscribe_to_model(&UserWorkspaces::handle(ctx), move |_, event, ctx| {
-            if matches!(event, UserWorkspacesEvent::TeamsChanged) {
-                tip_model_handle_for_teams.update(ctx, |model, ctx| {
-                    model.revalidate_tips(ctx);
-                });
-            }
-        });
+        // COMMENTED: UserWorkspaces disabled in local version
+        // ctx.subscribe_to_model(&UserWorkspaces::handle(ctx), move |_, event, ctx| {
+        //     if matches!(event, UserWorkspacesEvent::TeamsChanged) {
+        //         tip_model_handle_for_teams.update(ctx, |model, ctx| {
+        //             model.revalidate_tips(ctx);
+        //         });
+        //     }
+        // });
         // Revalidate when any keybinding changes so tips with `<keybinding>`
         // placeholders are hidden/shown when the referenced binding is cleared
         // or reassigned.
@@ -1706,8 +1708,9 @@ pub(crate) fn initialize_app(
     ctx.add_singleton_model(DefaultTerminal::new);
 
     ctx.add_singleton_model(|ctx| {
+        // COMMENTED: UserWorkspaces disabled in local version
         let should_restore_indices = launch_mode.supports_indexing()
-            && UserWorkspaces::as_ref(ctx).is_codebase_context_enabled(ctx);
+            && false; // UserWorkspaces::as_ref(ctx).is_codebase_context_enabled(ctx);
         let indices_to_restore = if should_restore_indices {
             persisted_workspaces.clone()
         } else {

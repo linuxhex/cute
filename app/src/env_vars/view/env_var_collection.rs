@@ -620,21 +620,6 @@ impl EnvVarCollectionView {
             log::warn!("Tried to open unknown env var collection {env_var_collection_id:?}");
         }
         // COMMENTED: Cloud load wait disabled in local version
-        // } else {
-        //     // If initial load is not complete, fetch the env var collection directly
-        //     if let Some(server_id) = env_var_collection_id.into_server() {
-        //         self.fetch_and_load_env_var_collection(server_id, window_id, ctx);
-        //     } else {
-        //         ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
-        //             toast_stack.add_ephemeral_toast_by_type(
-        //                 ToastType::CloudObjectNotFound,
-                        window_id,
-                        ctx,
-                    );
-                });
-                log::warn!("Tried to open unknown env var collection {env_var_collection_id:?}");
-            }
-        }
     }
 
     fn fetch_and_load_env_var_collection(

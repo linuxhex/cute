@@ -49,10 +49,8 @@ use crate::terminal::safe_mode_settings::{
 use crate::ui_components::buttons::icon_button;
 use crate::ui_components::icons::Icon;
 use crate::util::links::PRIVACY_POLICY_URL;
-use crate::view_components::{Dropdown, DropdownItem};
-    // COMMENTED: Team admin setting imports disabled for local version
-    // AdminEnablementSetting, UgcCollectionEnablementSetting,
-};
+// COMMENTED: Team admin setting imports disabled for local version
+// use crate::view_components::{Dropdown, DropdownItem};
 use crate::report_if_error;
 
 const FONT_SIZE: f32 = 12.;
