@@ -7,41 +7,50 @@ use cuteui::r#async::Timer;
 
 use crate::server::server_api::integrations::IntegrationsClient;
 
-/// Shared helpers for OAuth-based connect flows (txId + polling).
-///
-/// This is used by the integration CLI create flow, and can be reused by
-/// other command flows that rely on the same OAuth connect transaction API.
+// 注释掉 OAuth 轮询逻辑 - 本地版本不需要 OAuth 认证
+// /// Shared helpers for OAuth-based connect flows (txId + polling).
+// ///
+// /// This is used by the integration CLI create flow, and can be reused by
+// /// other command flows that rely on the same OAuth connect transaction API.
+// pub async fn poll_oauth_until_terminal(
+//     integrations_client: Arc<dyn IntegrationsClient>,
+//     tx_id: String,
+// ) -> Result<OauthConnectTxStatus> {
+//     const POLL_INTERVAL: Duration = Duration::from_secs(5);
+//     const MAX_ATTEMPTS: u32 = 120; // 10 minutes total
+//                                    // TODO(bens): render some kind of spinner here
+//     println!(
+//         "Waiting for authorization to complete... If this doesn't update after authorizing, please restart the command and try again.\n"
+//     );
+
+//     for attempt in 1..=MAX_ATTEMPTS {
+//         Timer::after(POLL_INTERVAL).await;
+
+//         let status = integrations_client
+//             .poll_oauth_connect_status(tx_id.clone())
+//             .await?;
+
+//         match status {
+//             OauthConnectTxStatus::Completed
+//             | OauthConnectTxStatus::Failed
+//             | OauthConnectTxStatus::Expired => {
+//                 return Ok(status);
+//             }
+//             OauthConnectTxStatus::Pending | OauthConnectTxStatus::InProgress => {
+//                 if attempt % 5 == 0 {
+//                     log::debug!("Still waiting for authorization... ({attempt}/{MAX_ATTEMPTS})",);
+//                 }
+//             }
+//         }
+//     }
+
+//     Err(anyhow!("Timed out waiting for OAuth authorization"))
+// }
+
+// 保留函数签名但返回错误
 pub async fn poll_oauth_until_terminal(
-    integrations_client: Arc<dyn IntegrationsClient>,
-    tx_id: String,
+    _integrations_client: Arc<dyn IntegrationsClient>,
+    _tx_id: String,
 ) -> Result<OauthConnectTxStatus> {
-    const POLL_INTERVAL: Duration = Duration::from_secs(5);
-    const MAX_ATTEMPTS: u32 = 120; // 10 minutes total
-                                   // TODO(bens): render some kind of spinner here
-    println!(
-        "Waiting for authorization to complete... If this doesn't update after authorizing, please restart the command and try again.\n"
-    );
-
-    for attempt in 1..=MAX_ATTEMPTS {
-        Timer::after(POLL_INTERVAL).await;
-
-        let status = integrations_client
-            .poll_oauth_connect_status(tx_id.clone())
-            .await?;
-
-        match status {
-            OauthConnectTxStatus::Completed
-            | OauthConnectTxStatus::Failed
-            | OauthConnectTxStatus::Expired => {
-                return Ok(status);
-            }
-            OauthConnectTxStatus::Pending | OauthConnectTxStatus::InProgress => {
-                if attempt % 5 == 0 {
-                    log::debug!("Still waiting for authorization... ({attempt}/{MAX_ATTEMPTS})",);
-                }
-            }
-        }
-    }
-
-    Err(anyhow!("Timed out waiting for OAuth authorization"))
+    Err(anyhow!("OAuth authentication not supported in local version"))
 }

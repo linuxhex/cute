@@ -616,97 +616,106 @@ impl EnvironmentCommandRunner {
                         return;
                     }
 
-                    // We have blocking issues with private repos.
-                    // Handle OAuth flow if server provides auth_url + tx_id.
-                    match (response.auth_url, response.tx_id) {
-                        (Some(auth_url), Some(tx_id)) => {
-                            // Open URL and poll for OAuth completion.
-                            println!("\nAuthorization required for private repository access.");
-                            println!("Opening browser for GitHub authorization: {auth_url}\n");
-                            ctx.open_url(&auth_url);
+                    // 注释掉 OAuth 认证流程 - 本地版本不支持
+                    // // We have blocking issues with private repos.
+                    // // Handle OAuth flow if server provides auth_url + tx_id.
+                    // match (response.auth_url, response.tx_id) {
+                    //     (Some(auth_url), Some(tx_id)) => {
+                    //         // Open URL and poll for OAuth completion.
+                    //         println!("\nAuthorization required for private repository access.");
+                    //         println!("Opening browser for GitHub authorization: {auth_url}\n");
+                    //         ctx.open_url(&auth_url);
 
-                            let integrations_client = ServerApiProvider::as_ref(ctx)
-                                .get_integrations_client();
-                            let tx_id = tx_id.into_inner();
-                            let poll_future = poll_oauth_until_terminal(integrations_client, tx_id);
+                    //         let integrations_client = ServerApiProvider::as_ref(ctx)
+                    //             .get_integrations_client();
+                    //         let tx_id = tx_id.into_inner();
+                    //         let poll_future = poll_oauth_until_terminal(integrations_client, tx_id);
 
-                            let next_attempt = attempt + 1;
+                    //         let next_attempt = attempt + 1;
 
-                            ctx.spawn(
-                                poll_future,
-                                move |_, poll_result, ctx| {
-                                    match poll_result {
-                                        Ok(OauthConnectTxStatus::Completed) => {
-                                            // OAuth completed, retry auth check and operation.
-                                            Self::auth_repos_then_execute(repos, next_attempt, operation_name, on_success, ctx);
-                                        }
-                                        Ok(OauthConnectTxStatus::Failed) => {
-                                            ctx.terminate_app(
-                                                cuteui::platform::TerminationMode::ForceTerminate,
-                                                Some(Err(anyhow::anyhow!(
-                                                    "GitHub authorization failed. Please try again."
-                                                ))),
-                                            );
-                                        }
-                                        Ok(OauthConnectTxStatus::Expired) => {
-                                            ctx.terminate_app(
-                                                cuteui::platform::TerminationMode::ForceTerminate,
-                                                Some(Err(anyhow::anyhow!(
-                                                    "GitHub authorization expired. Please try again."
-                                                ))),
-                                            );
-                                        }
-                                        Ok(OauthConnectTxStatus::Pending)
-                                        | Ok(OauthConnectTxStatus::InProgress) => {
-                                            // Should not be returned by poll_oauth_until_terminal.
-                                            ctx.terminate_app(
-                                                cuteui::platform::TerminationMode::ForceTerminate,
-                                                Some(Err(anyhow::anyhow!(
-                                                    "Unexpected non-terminal OAuth status returned"
-                                                ))),
-                                            );
-                                        }
-                                        Err(err) => {
-                                            ctx.terminate_app(
-                                                cuteui::platform::TerminationMode::ForceTerminate,
-                                                Some(Err(anyhow::anyhow!(
-                                                    "Error polling OAuth status: {err}"
-                                                ))),
-                                            );
-                                        }
-                                    }
-                                },
-                            );
-                        }
-                        (Some(auth_url), None) => {
-                            // Legacy flow: no txId, print URL and exit.
-                            println!("\nAuthorize access here: {auth_url}\n");
-                            println!("After authorizing, please re-run this command.");
-                            ctx.terminate_app(
-                                cuteui::platform::TerminationMode::ForceTerminate,
-                                None,
-                            );
-                        }
-                        (None, Some(_)) => {
-                            // Server returned txId without authUrl - unexpected.
-                            ctx.terminate_app(
-                                cuteui::platform::TerminationMode::ForceTerminate,
-                                Some(Err(anyhow::anyhow!(
-                                    "Server error: did not receive auth URL for OAuth flow"
-                                ))),
-                            );
-                        }
-                        (None, None) => {
-                            // No auth URL or txId provided, but we have auth issues.
-                            ctx.terminate_app(
-                                cuteui::platform::TerminationMode::ForceTerminate,
-                                Some(Err(anyhow::anyhow!(
-                                    "Cannot {} environment: authorization required but no auth flow provided by server",
-                                    operation_name
-                                ))),
-                            );
-                        }
-                    }
+                    //         ctx.spawn(
+                    //             poll_future,
+                    //             move |_, poll_result, ctx| {
+                    //                 match poll_result {
+                    //                     Ok(OauthConnectTxStatus::Completed) => {
+                    //                         // OAuth completed, retry auth check and operation.
+                    //                         Self::auth_repos_then_execute(repos, next_attempt, operation_name, on_success, ctx);
+                    //                     }
+                    //                     Ok(OauthConnectTxStatus::Failed) => {
+                    //                         ctx.terminate_app(
+                    //                             cuteui::platform::TerminationMode::ForceTerminate,
+                    //                             Some(Err(anyhow::anyhow!(
+                    //                                 "GitHub authorization failed. Please try again."
+                    //                             ))),
+                    //                         );
+                    //                     }
+                    //                     Ok(OauthConnectTxStatus::Expired) => {
+                    //                         ctx.terminate_app(
+                    //                             cuteui::platform::TerminationMode::ForceTerminate,
+                    //                             Some(Err(anyhow::anyhow!(
+                    //                                 "GitHub authorization expired. Please try again."
+                    //                             ))),
+                    //                         );
+                    //                     }
+                    //                     Ok(OauthConnectTxStatus::Pending)
+                    //                     | Ok(OauthConnectTxStatus::InProgress) => {
+                    //                         // Should not be returned by poll_oauth_until_terminal.
+                    //                         ctx.terminate_app(
+                    //                             cuteui::platform::TerminationMode::ForceTerminate,
+                    //                             Some(Err(anyhow::anyhow!(
+                    //                                 "Unexpected non-terminal OAuth status returned"
+                    //                             ))),
+                    //                         );
+                    //                     }
+                    //                     Err(err) => {
+                    //                         ctx.terminate_app(
+                    //                             cuteui::platform::TerminationMode::ForceTerminate,
+                    //                             Some(Err(anyhow::anyhow!(
+                    //                                 "Error polling OAuth status: {err}"
+                    //                             ))),
+                    //                         );
+                    //                     }
+                    //                 }
+                    //             },
+                    //         );
+                    //     }
+                    //     (Some(auth_url), None) => {
+                    //         // Legacy flow: no txId, print URL and exit.
+                    //         println!("\nAuthorize access here: {auth_url}\n");
+                    //         println!("After authorizing, please re-run this command.");
+                    //         ctx.terminate_app(
+                    //             cuteui::platform::TerminationMode::ForceTerminate,
+                    //             None,
+                    //         );
+                    //     }
+                    //     (None, Some(_)) => {
+                    //         // Server returned txId without authUrl - unexpected.
+                    //         ctx.terminate_app(
+                    //             cuteui::platform::TerminationMode::ForceTerminate,
+                    //             Some(Err(anyhow::anyhow!(
+                    //                 "Server error: did not receive auth URL for OAuth flow"
+                    //             ))),
+                    //         );
+                    //     }
+                    //     (None, None) => {
+                    //         // No auth URL or txId provided, but we have auth issues.
+                    //         ctx.terminate_app(
+                    //             cuteui::platform::TerminationMode::ForceTerminate,
+                    //             Some(Err(anyhow::anyhow!(
+                    //                 "Cannot {} environment: authorization required but no auth flow provided by server",
+                    //                 operation_name
+                    //             ))),
+                    //         );
+                    //     }
+                    // }
+
+                    // 本地版本：直接返回错误，不支持云端 OAuth 认证
+                    ctx.terminate_app(
+                        cuteui::platform::TerminationMode::ForceTerminate,
+                        Some(Err(anyhow::anyhow!(
+                            "Private repository access requires GitHub authorization, which is not supported in local version. Please use public repositories only."
+                        ))),
+                    );
                 }
                 Err(e) => {
                     ctx.terminate_app(

@@ -4,15 +4,16 @@ use async_trait::async_trait;
 use super::ServerApi;
 use cute_core::errors::AnyhowErrorExt as _;
 
-/// OAuth2 client type alias for device authentication flow.
-/// This type has auth_url, device_auth_url, and token_url endpoints set.
-pub type OAuth2Client = oauth2::basic::BasicClient<
-    oauth2::EndpointSet,       // HasAuthUrl
-    oauth2::EndpointSet,       // HasDeviceAuthUrl
-    oauth2::EndpointNotSet,    // HasIntrospectionUrl
-    oauth2::EndpointNotSet,    // HasRevocationUrl
-    oauth2::EndpointSet,       // HasTokenUrl
->;
+// 注释掉 OAuth2 客户端类型定义 - 本地版本不需要 OAuth 认证
+// /// OAuth2 client type alias for device authentication flow.
+// /// This type has auth_url, device_auth_url, and token_url endpoints set.
+// pub type OAuth2Client = oauth2::basic::BasicClient<
+//     oauth2::EndpointSet,       // HasAuthUrl
+//     oauth2::EndpointSet,       // HasDeviceAuthUrl
+//     oauth2::EndpointNotSet,    // HasIntrospectionUrl
+//     oauth2::EndpointNotSet,    // HasRevocationUrl
+//     oauth2::EndpointSet,       // HasTokenUrl
+// >;
 use crate::auth::credentials::{AuthToken, Credentials};
 use crate::auth::user::User;
 

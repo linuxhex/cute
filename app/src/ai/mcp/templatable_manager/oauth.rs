@@ -197,71 +197,34 @@ pub enum CallbackResult {
     Error { error: Option<String> },
 }
 
-/// Makes an authenticated client for the given authorization server.
-///
-/// This takes in the URL of the resource to authenticate for, and uses that
-/// to determine the authorization server.
-///
-/// Upon success, returns the client and a boolean indicating whether the user was required to
-/// re-authenticate (e.g. re-log in).
+// 注释掉 make_authenticated_client 函数的实现 - 本地版本不支持 OAuth
+// /// Makes an authenticated client for the given authorization server.
+// ///
+// /// This takes in the URL of the resource to authenticate for, and uses that
+// /// to determine the authorization server.
+// ///
+// /// Upon success, returns the client and a boolean indicating whether the user was required to
+// /// re-authenticate (e.g. re-log in).
+// pub async fn make_authenticated_client(
+//     resource_url: &str,
+//     auth_context: AuthContext,
+// ) -> Result<(AuthClient<reqwest::Client>, bool), AuthError> {
+//     ... (详细实现被注释掉)
+// }
+
+// 本地版本的简化实现：不支持 OAuth 认证
 pub async fn make_authenticated_client(
-    resource_url: &str,
+    _resource_url: &str,
     auth_context: AuthContext,
 ) -> Result<(AuthClient<reqwest::Client>, bool), AuthError> {
-    let AuthContext {
-        oauth_result_rx,
-        spawner,
-        uuid,
-        persisted_credentials,
-        is_headless,
-        is_file_based,
-    } = auth_context;
-
-    // Build the redirect URI using the channel's URL scheme.
-    // Routing data (the server UUID) is passed via the OAuth `state` parameter instead
-    // of the redirect URI so that the URI exactly matches what is registered during
-    // Dynamic Client Registration, satisfying RFC 6749 §3.1.2.2 exact-match validation.
-    let redirect_uri = format!("{}://mcp/oauth2callback", ChannelState::url_scheme());
-
-    // Create the auth manager and initialize it with a backing credential store that persists
-    // new credentials to secure storage.
-    let client_id = persisted_credentials
-        .as_ref()
-        .map(|c| c.credentials.client_id.clone());
-    let client_secret = persisted_credentials
-        .as_ref()
-        .and_then(|c| c.client_secret.clone());
-    let mut auth_manager = AuthorizationManager::new(resource_url).await?;
-    install_persisting_credential_store(
-        &mut auth_manager,
-        persisted_credentials,
-        spawner.clone(),
-        uuid,
-    )
-    .await;
-
-    // If we loaded persisted credentials from the store, and we have a valid access token
-    // (or successfully refreshed a valid refresh token), we're already authorized and good
-    // to go.
-    if auth_manager.initialize_from_store().await? && auth_manager.get_access_token().await.is_ok()
-    {
-        if let (Some(client_id), Some(client_secret)) = (client_id, client_secret) {
-            auth_manager.configure_client(
-                OAuthClientConfig::new(client_id, redirect_uri.clone())
-                    .with_client_secret(client_secret),
-            )?;
-        }
-        return Ok((AuthClient::new(reqwest::Client::new(), auth_manager), false));
-    }
-
-    // If we're in headless mode and we reach here, it means we either have no credentials
-    // or the cached credentials failed to refresh. Block interactive OAuth in headless mode.
-    if is_headless {
-        if is_file_based {
+    // 如果是 headless 模式，直接返回错误
+    if auth_context.is_headless {
+        if auth_context.is_file_based {
             log::warn!(
-                "File-based MCP server {uuid} requires OAuth authentication; \
+                "File-based MCP server {} requires OAuth authentication; \
                  skipping in headless mode. To use this server, authenticate it \
-                 in the Warp desktop app first."
+                 in the Warp desktop app first.",
+                auth_context.uuid
             );
         }
         return Err(AuthError::AuthorizationFailed(
@@ -270,153 +233,28 @@ pub async fn make_authenticated_client(
                 .to_string(),
         ));
     }
-
-    let metadata = auth_manager.discover_metadata().await?;
-
-    // Configure the auth manager's OAuth client using dynamic or static client registration.
-    let mut oauth_state = if let Some(provider) = metadata
-        .issuer
-        .as_deref()
-        .and_then(ChannelState::mcp_oauth_provider_by_issuer)
-    {
-        // Configure the auth manager based on the static MCP configuration for this
-        // issuer.
-        auth_manager.set_metadata(metadata);
-
-        let scopes = if provider.issuer == GITHUB_ISSUER {
-            GITHUB_OAUTH_SCOPES
-                .into_iter()
-                .map(ToString::to_string)
-                .collect()
-        } else {
-            vec![]
-        };
-        auth_manager.configure_client(
-            OAuthClientConfig::new(provider.client_id, redirect_uri.clone())
-                .with_client_secret(provider.client_secret)
-                .with_scopes(scopes),
-        )?;
-
-        // We do a scope "upgrade" with no additional scopes here as it's the easiest way
-        // to construct an auth URL.
-        let auth_url = auth_manager.request_scope_upgrade("").await?;
-        OAuthState::Session(AuthorizationSession::for_scope_upgrade(
-            auth_manager,
-            auth_url,
-            &redirect_uri,
-        ))
-    } else {
-        // Try dynamic client registration.
-        let mut oauth_state = OAuthState::Unauthorized(auth_manager);
-        oauth_state
-            .start_authorization(&[], &redirect_uri, Some("Warp"))
-            .await?;
-        oauth_state
-    };
-
-    let auth_url = oauth_state.get_authorization_url().await?;
-
-    // Extract the CSRF token that rmcp embedded as the `state` query parameter in the
-    // authorization URL. We register a csrf→uuid mapping on the manager so that
-    // `handle_oauth_callback` can route the callback to the right server without
-    // relying on `server_id` being present in the redirect URI.
-    let csrf_state = Url::parse(&auth_url)
-        .ok()
-        .and_then(|u| {
-            u.query_pairs()
-                .find(|(k, _)| k == "state")
-                .map(|(_, v)| v.into_owned())
-        })
-        .unwrap_or_default();
-
-    if let Err(e) = spawner
-        .spawn(move |manager, ctx| {
-            if !csrf_state.is_empty() {
-                manager.pending_oauth_csrf.insert(csrf_state, uuid);
-            }
-            ctx.open_url(&auth_url);
-            manager.change_server_state(uuid, MCPServerState::Authenticating, ctx);
-        })
-        .await
-    {
-        log::warn!("Failed to emit RequiresAuthentication state: {e:?}");
-    }
-
-    // Wait for the authorization code from the OAuth callback channel.
-    let oauth_result = oauth_result_rx
-        .recv()
-        .await
-        .map_err(|e| AuthError::InternalError(e.to_string()))?;
-
-    let (code, csrf_token) = match &oauth_result {
-        CallbackResult::Success { code, csrf_token } => (code, csrf_token),
-        CallbackResult::Error { error } => {
-            return Err(AuthError::AuthorizationFailed(
-                error.as_deref().unwrap_or("unknown error").to_string(),
-            ));
-        }
-    };
-
-    // Handle the callback with the received authorization code and CSRF token.
-    oauth_state.handle_callback(code, csrf_token).await?;
-
-    let auth_manager = oauth_state.into_authorization_manager().ok_or_else(|| {
-        AuthError::InternalError("Failed to create authorization manager".to_string())
-    })?;
-
-    Ok((AuthClient::new(reqwest::Client::new(), auth_manager), true))
+    
+    // 本地版本不支持 OAuth 认证
+    Err(AuthError::AuthorizationFailed(
+        "OAuth authentication is not supported in local version. Please use MCP servers without OAuth requirements."
+            .to_string(),
+    ))
 }
 
 impl TemplatableMCPServerManager {
-    /// Handles an incoming OAuth callback URL.
-    ///
-    /// Routes the callback to the correct in-flight OAuth flow using the `state` query
-    /// parameter (the CSRF token that rmcp embedded in the authorization URL). This avoids
-    /// encoding routing data in the redirect URI, keeping it RFC 6749 §3.1.2.2 compliant.
-    pub fn handle_oauth_callback(&mut self, url: &Url) -> anyhow::Result<()> {
-        // Ensure the URL has the expected path
-        if url.path() != "/oauth2callback" {
-            bail!(
-                "Invalid OAuth callback path: expected '/oauth2callback', got '{}'",
-                url.path()
-            );
-        }
-
-        let query_params: HashMap<_, _> = url.query_pairs().collect();
-
-        let Some(state) = query_params.get("state") else {
-            bail!("Missing 'state' parameter in OAuth callback");
-        };
-
-        let code = query_params.get("code");
-        let error = query_params.get("error");
-
-        let result = match code {
-            Some(code) => CallbackResult::Success {
-                code: code.to_string(),
-                // Pass the state value through as the CSRF token; rmcp will validate it
-                // against the token it stored when generating the authorization URL.
-                csrf_token: state.to_string(),
-            },
-            None => CallbackResult::Error {
-                error: error.map(|e| e.to_string()),
-            },
-        };
-
-        let Some(&server_uuid) = self.pending_oauth_csrf.get(state.as_ref() as &str) else {
-            bail!("No active OAuth flow found for state={state}");
-        };
-
-        let Some(server_info) = self.spawned_servers.get(&server_uuid) else {
-            bail!("No spawned server found for uuid={server_uuid}");
-        };
-
-        cuteui::r#async::block_on(server_info.oauth_result_tx.send(result)).map_err(|_| {
-            anyhow!("Failed to send OAuth result to server {server_uuid} - receiver dropped")
-        })?;
-
-        self.pending_oauth_csrf.remove(state.as_ref() as &str);
-        Ok(())
+    // 注释掉 OAuth 回调处理 - 本地版本不支持
+    // /// Handles an incoming OAuth callback URL.
+    // ///
+    // /// Routes the callback to the correct in-flight OAuth flow using the `state` query
+    // /// parameter (the CSRF token that rmcp embedded in the authorization URL). This avoids
+    // /// encoding routing data in the redirect URI, keeping it RFC 6749 §3.1.2.2 compliant.
+    // pub fn handle_oauth_callback(&mut self, url: &Url) -> anyhow::Result<()> {
+    //     ... (详细实现被注释掉)
+    // }
+    
+    // 本地版本的简化实现：不支持 OAuth 回调处理
+    pub fn handle_oauth_callback(&mut self, _url: &Url) -> anyhow::Result<()> {
+        Err(anyhow::anyhow!("OAuth callback handling is not supported in local version"))
     }
 
     pub fn save_credentials_to_secure_storage(

@@ -36,44 +36,48 @@ impl ProviderCommandRunner {
         personal: bool,
         ctx: &mut ModelContext<Self>,
     ) -> anyhow::Result<()> {
-        // Construct the OAuth connect URL
-        let server_url = ChannelState::server_root_url();
+        // 注释掉 OAuth URL 生成和打开流程 - 本地版本不支持
+        // // Construct the OAuth connect URL
+        // let server_url = ChannelState::server_root_url();
 
-        let mut use_team_auth = team;
-        if !team && !personal {
-            if provider_type.allowed_in_team_context()
-                && provider_type.allowed_in_personal_context()
-            {
-                return Err(anyhow::anyhow!(
-                    "Provider '{}' must be setup for either a team or personal account",
-                    provider_type.slug()
-                ));
-            }
-            use_team_auth = provider_type.allowed_in_team_context();
-        } else if personal {
-            use_team_auth = false;
-        }
+        // let mut use_team_auth = team;
+        // if !team && !personal {
+        //     if provider_type.allowed_in_team_context()
+        //         && provider_type.allowed_in_personal_context()
+        //     {
+        //         return Err(anyhow::anyhow!(
+        //             "Provider '{}' must be setup for either a team or personal account",
+        //             provider_type.slug()
+        //         ));
+        //     }
+        //     use_team_auth = provider_type.allowed_in_team_context();
+        // } else if personal {
+        //     use_team_auth = false;
+        // }
 
-        // TODO(bens): initiate the OAuth flow and use the login-less auth URL
-        let slug = provider_type.slug();
-        let url = if use_team_auth {
-            let team_uid = match UserWorkspaces::as_ref(ctx).current_team_uid() {
-                Some(uid) => uid,
-                None => {
-                    return Err(anyhow::anyhow!("User is not on a team"));
-                }
-            };
-            format!("{server_url}/oauth/connect/{slug}?principalType=team&principalId={team_uid}")
-        } else {
-            format!("{server_url}/oauth/connect/{slug}")
-        };
+        // // TODO(bens): initiate the OAuth flow and use the login-less auth URL
+        // let slug = provider_type.slug();
+        // let url = if use_team_auth {
+        //     let team_uid = match UserWorkspaces::as_ref(ctx).current_team_uid() {
+        //         Some(uid) => uid,
+        //         None => {
+        //             return Err(anyhow::anyhow!("User is not on a team"));
+        //         }
+        //     };
+        //     format!("{server_url}/oauth/connect/{slug}?principalType=team&principalId={team_uid}")
+        // } else {
+        //     format!("{server_url}/oauth/connect/{slug}")
+        // };
 
-        println!("To authenticate {slug}, open this URL in your browser: {url}");
+        // println!("To authenticate {slug}, open this URL in your browser: {url}");
 
-        // Open the URL in the default browser
-        ctx.open_url(&url);
+        // // Open the URL in the default browser
+        // ctx.open_url(&url);
 
-        // TODO(bens): poll/subscribe until connection is created
+        // // TODO(bens): poll/subscribe until connection is created
+
+        // 本地版本：不支持 Provider OAuth 认证
+        println!("Provider setup is not supported in local version. Provider '{}' requires cloud authentication.", provider_type.slug());
 
         ctx.terminate_app(TerminationMode::ForceTerminate, None);
 

@@ -87,56 +87,57 @@ impl AuthState {
         *self.credentials.write() = credentials;
     }
 
-    #[cfg(any(not(target_family = "wasm"), test))]
-    pub(crate) fn apply_remote_server_auth_context(
-        &self,
-        auth_token: String,
-        user_id: String,
-        user_email: String,
-    ) {
-        self.set_remote_server_bearer_token(auth_token);
-        self.set_remote_server_user(user_id, user_email);
-    }
+    // 注释掉云端认证相关方法 - 本地版本不需要
+    // #[cfg(any(not(target_family = "wasm"), test))]
+    // pub(crate) fn apply_remote_server_auth_context(
+    //     &self,
+    //     auth_token: String,
+    //     user_id: String,
+    //     user_email: String,
+    // ) {
+    //     self.set_remote_server_bearer_token(auth_token);
+    //     self.set_remote_server_user(user_id, user_email);
+    // }
 
-    #[cfg(any(not(target_family = "wasm"), test))]
-    pub(crate) fn set_remote_server_bearer_token(&self, auth_token: String) {
-        if auth_token.is_empty() {
-            self.set_credentials(None);
-            return;
-        }
-        self.set_credentials(Some(Credentials::Bearer(auth_token)));
-    }
+    // #[cfg(any(not(target_family = "wasm"), test))]
+    // pub(crate) fn set_remote_server_bearer_token(&self, auth_token: String) {
+    //     if auth_token.is_empty() {
+    //         self.set_credentials(None);
+    //         return;
+    //     }
+    //     self.set_credentials(Some(Credentials::Bearer(auth_token)));
+    // }
 
-    #[cfg(any(not(target_family = "wasm"), test))]
-    fn set_remote_server_user(&self, user_id: String, user_email: String) {
-        let mut user = self.user.write();
-        if user_id.is_empty() {
-            *user = None;
-            return;
-        }
+    // #[cfg(any(not(target_family = "wasm"), test))]
+    // fn set_remote_server_user(&self, user_id: String, user_email: String) {
+    //     let mut user = self.user.write();
+    //     if user_id.is_empty() {
+    //         *user = None;
+    //         return;
+    //     }
 
-        match user.as_mut() {
-            Some(user) => {
-                user.local_id = UserUid::new(&user_id);
-                user.metadata.email = user_email;
-            }
-            None => {
-                *user = Some(User {
-                    local_id: UserUid::new(&user_id),
-                    metadata: Default::default(),
-                    is_onboarded: false,
-                    needs_sso_link: false,
-                    anonymous_user_type: None,
-                    is_on_work_domain: false,
-                    linked_at: None,
-                    personal_object_limits: None,
-                    principal_type: Default::default(),
-                    global_skills: Vec::new(),
-                });
-                user.as_mut().unwrap().metadata.email = user_email;
-            }
-        }
-    }
+    //     match user.as_mut() {
+    //         Some(user) => {
+    //             user.local_id = UserUid::new(&user_id);
+    //             user.metadata.email = user_email;
+    //         }
+    //         None => {
+    //             *user = Some(User {
+    //                 local_id: UserUid::new(&user_id),
+    //                 metadata: Default::default(),
+    //                 is_onboarded: false,
+    //                 needs_sso_link: false,
+    //                 anonymous_user_type: None,
+    //                 is_on_work_domain: false,
+    //                 linked_at: None,
+    //                 personal_object_limits: None,
+    //                 principal_type: Default::default(),
+    //                 global_skills: Vec::new(),
+    //             });
+    //             user.as_mut().unwrap().metadata.email = user_email;
+    //         }
+    //     }
+    // }
 
     pub fn is_logged_in(&self) -> bool {
         self.credentials.read().is_some()

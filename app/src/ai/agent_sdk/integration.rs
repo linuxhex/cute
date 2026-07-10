@@ -251,115 +251,129 @@ impl IntegrationCommandRunner {
                     Ok(output) => {
                         println!("{}", output.message);
 
-                        let auth_url = output.auth_url;
-                        let tx_id = output.tx_id;
+                        // 注释掉 OAuth 认证处理 - 本地版本不支持
+                        // let auth_url = output.auth_url;
+                        // let tx_id = output.tx_id;
 
-                        match (auth_url, tx_id) {
-                            (Some(auth_url), Some(tx_id)) => {
-                                // We have another auth step: open URL and poll txId.
-                                println!("Authorize the provider here: {auth_url}\n");
-                                ctx.open_url(&auth_url);
+                        // match (auth_url, tx_id) {
+                        //     (Some(auth_url), Some(tx_id)) => {
+                        //         // We have another auth step: open URL and poll txId.
+                        //         println!("Authorize the provider here: {auth_url}\n");
+                        //         ctx.open_url(&auth_url);
 
-                                let integrations_client = ServerApiProvider::as_ref(ctx)
-                                    .get_integrations_client();
-                                let tx_id = tx_id.into_inner();
+                        //         let integrations_client = ServerApiProvider::as_ref(ctx)
+                        //             .get_integrations_client();
+                        //         let tx_id = tx_id.into_inner();
 
-                                let poll_future =
-                                    poll_oauth_until_terminal(integrations_client, tx_id);
+                        //         let poll_future =
+                        //             poll_oauth_until_terminal(integrations_client, tx_id);
 
-                                let next_integration_type = integration_type.clone();
-                                let next_environment_uid = environment_uid.clone();
-                                let next_base_prompt = base_prompt.clone();
-                                let next_model_id = model_id.clone();
-                                let next_mcp_servers_json = mcp_servers_json.clone();
-                                let next_remove_mcp_server_names = remove_mcp_server_names.clone();
-                                let next_worker_host = worker_host.clone();
-                                let next_enabled = enabled;
-                                let next_is_update = is_update;
-                                let next_attempt = attempt + 1;
+                        //         let next_integration_type = integration_type.clone();
+                        //         let next_environment_uid = environment_uid.clone();
+                        //         let next_base_prompt = base_prompt.clone();
+                        //         let next_model_id = model_id.clone();
+                        //         let next_mcp_servers_json = mcp_servers_json.clone();
+                        //         let next_remove_mcp_server_names = remove_mcp_server_names.clone();
+                        //         let next_worker_host = worker_host.clone();
+                        //         let next_enabled = enabled;
+                        //         let next_is_update = is_update;
+                        //         let next_attempt = attempt + 1;
 
-                                ctx.spawn(
-                                    poll_future,
-                                    move |runner, poll_result, ctx| {
-                                        match poll_result {
-                                            Ok(OauthConnectTxStatus::Completed) => {
-                                                // Inner loop done; try create or update again (outer loop).
-                                                // This may happen multiple times if the user needs to authorize multiple services.
-                                                runner.start_create_or_update_flow(
-                                                    ctx,
-                                                    next_integration_type,
-                                                    next_environment_uid,
-                                                    next_base_prompt,
-                                                    next_model_id,
-                                                    next_mcp_servers_json,
-                                                    next_remove_mcp_server_names,
-                                                    next_worker_host,
-                                                    next_enabled,
-                                                    next_is_update,
-                                                    next_attempt,
-                                                );
-                                            }
-                                            Ok(OauthConnectTxStatus::Failed) => {
-                                                ctx.terminate_app(
-                                                    TerminationMode::ForceTerminate,
-                                                    Some(Err(anyhow::anyhow!("OAuth authorization failed."))),
-                                                );
-                                            }
-                                            Ok(OauthConnectTxStatus::Expired) => {
-                                                ctx.terminate_app(
-                                                    TerminationMode::ForceTerminate,
-                                                    Some(Err(anyhow::anyhow!("OAuth authorization expired."))),
-                                                );
-                                            }
-                                            Ok(OauthConnectTxStatus::Pending)
-                                            | Ok(OauthConnectTxStatus::InProgress) => {
-                                                // Should not be returned by poll_oauth_until_terminal.
-                                                ctx.terminate_app(
-                                                    TerminationMode::ForceTerminate,
-                                                    Some(Err(anyhow::anyhow!("Unexpected non-terminal OAuth status returned"))),
-                                                );
-                                            }
-                                            Err(err) => {
-                                                ctx.terminate_app(
-                                                    TerminationMode::ForceTerminate,
-                                                    Some(Err(anyhow::anyhow!("Error polling OAuth status: {err}"))),
-                                                );
-                                            }
-                                        }
-                                    },
-                                );
-                            }
-                            (Some(auth_url), None) => {
-                                println!("Authorize the provider here: {auth_url}\n");
-                                ctx.open_url(&auth_url);
-                                println!(
-                                    "After authorizing, re-run the command to continue the integration {action} process.",
-                                );
-                                ctx.terminate_app(
-                                    TerminationMode::ForceTerminate,
-                                    None,
-                                );
-                            }
-                            (None, Some(_)) => {
-                                ctx.terminate_app(
-                                    TerminationMode::ForceTerminate,
-                                    Some(Err(anyhow::anyhow!("Server did not return an authURL for the integration creation process."))),
-                                );
-                            }
-                            (None, None) => {
-                                // No more auth steps; finalize.
-                                if output.success {
-                                    ctx.terminate_app(
-                                        TerminationMode::ForceTerminate,
-                                        None,
-                                    );
-                                } else {
-                                    ctx.terminate_app(
-                                        TerminationMode::ForceTerminate,
-                                        Some(Err(anyhow::anyhow!("Integration creation reported failure: {}", output.message))),
-                                    );
-                                }
-                            }
+                        //         ctx.spawn(
+                        //             poll_future,
+                        //             move |runner, poll_result, ctx| {
+                        //                 match poll_result {
+                        //                     Ok(OauthConnectTxStatus::Completed) => {
+                        //                         // Inner loop done; try create or update again (outer loop).
+                        //                         // This may happen multiple times if the user needs to authorize multiple services.
+                        //                         runner.start_create_or_update_flow(
+                        //                             ctx,
+                        //                             next_integration_type,
+                        //                             next_environment_uid,
+                        //                             next_base_prompt,
+                        //                             next_model_id,
+                        //                             next_mcp_servers_json,
+                        //                             next_remove_mcp_server_names,
+                        //                             next_worker_host,
+                        //                             next_enabled,
+                        //                             next_is_update,
+                        //                             next_attempt,
+                        //                         );
+                        //                     }
+                        //                     Ok(OauthConnectTxStatus::Failed) => {
+                        //                         ctx.terminate_app(
+                        //                             TerminationMode::ForceTerminate,
+                        //                             Some(Err(anyhow::anyhow!("OAuth authorization failed."))),
+                        //                         );
+                        //                     }
+                        //                     Ok(OauthConnectTxStatus::Expired) => {
+                        //                         ctx.terminate_app(
+                        //                             TerminationMode::ForceTerminate,
+                        //                             Some(Err(anyhow::anyhow!("OAuth authorization expired."))),
+                        //                         );
+                        //                     }
+                        //                     Ok(OauthConnectTxStatus::Pending)
+                        //                     | Ok(OauthConnectTxStatus::InProgress) => {
+                        //                         // Should not be returned by poll_oauth_until_terminal.
+                        //                         ctx.terminate_app(
+                        //                             TerminationMode::ForceTerminate,
+                        //                             Some(Err(anyhow::anyhow!("Unexpected non-terminal OAuth status returned"))),
+                        //                         );
+                        //                     }
+                        //                     Err(err) => {
+                        //                         ctx.terminate_app(
+                        //                             TerminationMode::ForceTerminate,
+                        //                             Some(Err(anyhow::anyhow!("Error polling OAuth status: {err}"))),
+                        //                         );
+                        //                     }
+                        //                 }
+                        //             },
+                        //         );
+                        //     }
+                        //     (Some(auth_url), None) => {
+                        //         println!("Authorize the provider here: {auth_url}\n");
+                        //         ctx.open_url(&auth_url);
+                        //         println!(
+                        //             "After authorizing, re-run the command to continue the integration {action} process.",
+                        //         );
+                        //         ctx.terminate_app(
+                        //             TerminationMode::ForceTerminate,
+                        //             None,
+                        //         );
+                        //     }
+                        //     (None, Some(_)) => {
+                        //         ctx.terminate_app(
+                        //             TerminationMode::ForceTerminate,
+                        //             Some(Err(anyhow::anyhow!("Server did not return an authURL for the integration creation process."))),
+                        //         );
+                        //     }
+                        //     (None, None) => {
+                        //         // No more auth steps; finalize.
+                        //         if output.success {
+                        //             ctx.terminate_app(
+                        //                 TerminationMode::ForceTerminate,
+                        //                 None,
+                        //             );
+                        //         } else {
+                        //             ctx.terminate_app(
+                        //                 TerminationMode::ForceTerminate,
+                        //                 Some(Err(anyhow::anyhow!("Integration creation reported failure: {}", output.message))),
+                        //             );
+                        //         }
+                        //     }
+                        // }
+
+                        // 本地版本：不支持 OAuth 认证，直接检查成功状态
+                        if output.success {
+                            ctx.terminate_app(
+                                TerminationMode::ForceTerminate,
+                                None,
+                            );
+                        } else {
+                            ctx.terminate_app(
+                                TerminationMode::ForceTerminate,
+                                Some(Err(anyhow::anyhow!("Integration creation reported failure: {}", output.message))),
+                            );
                         }
                     }
                     Err(err) => {
