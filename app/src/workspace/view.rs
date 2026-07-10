@@ -23208,17 +23208,18 @@ impl TypedActionView for Workspace {
                                             ty: Some(AttachmentType::Attachment),
                                             ..Default::default()
                                         };
-                                        sentry::with_scope(
-                                            |scope| {
-                                                scope.add_attachment(attachment);
-                                            },
-                                            || {
-                                                sentry::capture_message(
-                                                    "[FOR PERFORMANCE BOT] Dev took performance sample with results: ",
-                                                    sentry::Level::Warning,
-                                                )
-                                            },
-                                        );
+                                        // Sentry performance reporting disabled - local logging preserved
+                                        // sentry::with_scope(
+                                        //     |scope| {
+                                        //         scope.add_attachment(attachment);
+                                        //     },
+                                        //     || {
+                                        //         sentry::capture_message(
+                                        //             "[FOR PERFORMANCE BOT] Dev took performance sample with results: ",
+                                        //             sentry::Level::Warning,
+                                        //         )
+                                        //     },
+                                        // );
                                     }
                                 }
 

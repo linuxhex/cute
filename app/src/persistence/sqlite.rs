@@ -243,28 +243,29 @@ unsafe fn init_logging() {
             // debug messages are ignored.
             // In local builds without crash reporting, all SQLite messages get logged locally.
 
-            #[cfg(feature = "crash_reporting")]
-            if level == log::Level::Error {
-                sentry::with_scope(
-                    |scope| {
-                        let mut context = std::collections::BTreeMap::new();
-                        context.insert("message".to_string(), err_message.into());
-                        context.insert("code".to_string(), err_code.into());
-                        context.insert(
-                            "code_description".to_string(),
-                            sqlite3::code_to_str(err_code).into(),
-                        );
-                        scope.set_context("sqlite", sentry::protocol::Context::Other(context));
-                    },
-                    || {
-                        sentry::capture_message(
-                            "Sqlite Error",
-                            sentry_log::convert_log_level(level),
-                        )
-                    },
-                );
-                return;
-            }
+            // Sentry error reporting disabled - local logging preserved
+            // #[cfg(feature = "crash_reporting")]
+            // if level == log::Level::Error {
+            //     sentry::with_scope(
+            //         |scope| {
+            //             let mut context = std::collections::BTreeMap::new();
+            //             context.insert("message".to_string(), err_message.into());
+            //             context.insert("code".to_string(), err_code.into());
+            //             context.insert(
+            //                 "code_description".to_string(),
+            //                 sqlite3::code_to_str(err_code).into(),
+            //             );
+            //             scope.set_context("sqlite", sentry::protocol::Context::Other(context));
+            //         },
+            //         || {
+            //             sentry::capture_message(
+            //                 "Sqlite Error",
+            //                 sentry_log::convert_log_level(level),
+            //             )
+            //         },
+            //     );
+            //     return;
+            // }
 
             log::log!(
                 level,

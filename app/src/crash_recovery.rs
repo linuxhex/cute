@@ -109,8 +109,9 @@ impl CrashRecoveryProcess {
                 );
 
             // Uninitialize sentry (ensuring any remaining events get flushed) before hard exiting.
-            #[cfg(feature = "crash_reporting")]
-            crate::crash_reporting::uninit_sentry();
+            // Sentry cleanup disabled - telemetry simplified
+            // #[cfg(feature = "crash_reporting")]
+            // crate::crash_reporting::uninit_sentry();
 
             std::process::exit(1);
         }

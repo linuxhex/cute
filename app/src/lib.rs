@@ -663,14 +663,15 @@ fn run_internal(mut launch_mode: LaunchMode) -> Result<()> {
     // for other entrypoints.
     features::init_feature_flags();
 
-    #[cfg(feature = "crash_reporting")]
-    if launch_mode.needs_crash_reporting() {
-        // Ensure that the main/root Sentry hub is initialized on the main
-        // thread.  PtySpawner creates a background thread to receive logs from
-        // the terminal server process, and we don't want it to be the host of
-        // the primary sentry::Hub.
-        sentry::Hub::main();
-    }
+    // Sentry initialization disabled - telemetry simplified
+    // #[cfg(feature = "crash_reporting")]
+    // if launch_mode.needs_crash_reporting() {
+    //     // Ensure that the main/root Sentry hub is initialized on the main
+    //     // thread.  PtySpawner creates a background thread to receive logs from
+    //     // the terminal server process, and we don't want it to be the host of
+    //     // the primary sentry::Hub.
+    //     sentry::Hub::main();
+    // }
 
     if launch_mode.needs_profiling() {
         tracing::init()?;
@@ -1175,10 +1176,11 @@ pub(crate) fn initialize_app(
         }
     }
     // Send buffered pre-init errors to Sentry now that the client is ready.
-    #[cfg(feature = "crash_reporting")]
-    for err in _pre_sentry_errors {
-        sentry::integrations::anyhow::capture_anyhow(&err);
-    }
+    // Sentry error reporting disabled - telemetry simplified
+    // #[cfg(feature = "crash_reporting")]
+    // for err in _pre_sentry_errors {
+    //     sentry::integrations::anyhow::capture_anyhow(&err);
+    // }
     timer.mark_interval_end("INIT_CRASH_REPORTING");
 
     ctx.set_fallback_font_source_provider(|url| ::asset_cache::url_source(url));

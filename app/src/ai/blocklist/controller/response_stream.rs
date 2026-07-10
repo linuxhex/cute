@@ -286,25 +286,26 @@ impl ResponseStream {
                     self.should_resume_conversation_after_stream_finished = true;
                 }
 
-                #[cfg(feature = "crash_reporting")]
-                sentry::with_scope(
-                    |scope| {
-                        scope.set_tag(
-                            "has_received_client_actions",
-                            self.has_received_client_actions,
-                        );
-                        scope.set_tag("error", format!("{e:?}"));
-                        scope.set_tag("is_retryable", e.is_retryable());
-                        scope.set_tag("is_online", is_online);
-                        scope.set_tag("retry_count", self.retry_count);
-                    },
-                    || {
-                        report_error!(anyhow!(e.clone()).context(format!(
-                            "MultiAgent request failed after {} retries",
-                            self.retry_count
-                        )));
-                    },
-                );
+                // Sentry error reporting disabled - local logging preserved
+                // #[cfg(feature = "crash_reporting")]
+                // sentry::with_scope(
+                //     |scope| {
+                //         scope.set_tag(
+                //             "has_received_client_actions",
+                //             self.has_received_client_actions,
+                //         );
+                //         scope.set_tag("error", format!("{e:?}"));
+                //         scope.set_tag("is_retryable", e.is_retryable());
+                //         scope.set_tag("is_online", is_online);
+                //         scope.set_tag("retry_count", self.retry_count);
+                //     },
+                //     || {
+                //         report_error!(anyhow!(e.clone()).context(format!(
+                //             "MultiAgent request failed after {} retries",
+                //             self.retry_count
+                //         )));
+                //     },
+                // );
                 #[cfg(not(feature = "crash_reporting"))]
                 {
                     report_error!(anyhow!(e.clone()).context(format!(
