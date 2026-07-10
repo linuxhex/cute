@@ -1412,7 +1412,8 @@ pub(crate) fn initialize_app(
     let display_count = ctx.windows().display_count();
     ctx.add_singleton_model(|_| DisplayCount(display_count));
 
-    ctx.add_singleton_model(|_| ChangelogModel::new(server_api.clone()));
+    // COMMENTED: Cloud changelog model disabled for local version
+    // ctx.add_singleton_model(|_| ChangelogModel::new(server_api.clone()));
     ctx.add_singleton_model(|_| GitHubAuthNotifier::new());
     ctx.add_singleton_model(|_| NetworkStatus::new());
     ctx.add_singleton_model(|_| SystemStats::new());

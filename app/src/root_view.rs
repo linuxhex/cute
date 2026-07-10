@@ -1616,14 +1616,15 @@ impl RootView {
             paste_auth_token_modal: None,
         };
 
-        match &root_view.auth_onboarding_state {
-            AuthOnboardingState::Terminal(workspace) if FeatureFlag::Changelog.is_enabled() => {
-                workspace.update(ctx, |workspace, ctx| {
-                    workspace.check_for_changelog(ChangelogRequestType::WindowLaunch, ctx);
-                })
-            }
-            _ => {}
-        }
+        // COMMENTED: Cloud changelog check disabled for local version
+        // match &root_view.auth_onboarding_state {
+        //     AuthOnboardingState::Terminal(workspace) if FeatureFlag::Changelog.is_enabled() => {
+        //         workspace.update(ctx, |workspace, ctx| {
+        //             workspace.check_for_changelog(ChangelogRequestType::WindowLaunch, ctx);
+        //         })
+        //     }
+        //     _ => {}
+        // }
 
         if let AuthOnboardingState::Onboarding {
             onboarding_view, ..

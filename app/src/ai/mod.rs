@@ -64,6 +64,7 @@ pub fn init(app: &mut AppContext) {
     blocklist::suggested_rule_modal::init(app);
     ai_document_view::init(app);
     conversation_details_panel::init(app);
-    #[cfg(feature = "agent_management_view")]
-    agent_management::init(app);
+    // COMMENTED: Cloud agent management view disabled for local version
+    // #[cfg(feature = "agent_management_view")]
+    // agent_management::init(app);
 }
