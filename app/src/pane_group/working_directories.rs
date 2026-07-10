@@ -382,10 +382,11 @@ impl WorkingDirectoriesModel {
                 let path = path.clone();
                 ctx.add_model(|ctx| DiffStateModel::new_local(path, ctx))
             }
-            LocalOrRemotePath::Remote(_) => {
-                // RemoteServerManager has been removed; remote paths are not supported.
-                return None;
-            }
+            // 注释掉远程路径处理逻辑 - 已禁用云端文件同步
+            // LocalOrRemotePath::Remote(_) => {
+            //     // RemoteServerManager has been removed; remote paths are not supported.
+            //     return None;
+            // }
         };
 
         match key {
