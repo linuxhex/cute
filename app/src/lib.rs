@@ -258,8 +258,9 @@ use crate::root_view::{
 // use crate::server::cloud_objects::listener::Listener; // Removed: cloud_objects module deleted
 // use crate::server::cloud_objects::update_manager::UpdateManager; // Removed: cloud_objects module deleted
 use crate::server::sync_queue::SyncQueue;
-#[cfg(not(target_family = "wasm"))]
-use crate::server::iap::IapManager;
+// COMMENTED: IAP disabled in local version
+// #[cfg(not(target_family = "wasm"))]
+// use crate::server::iap::IapManager;
 use crate::session_management::{RunningSessionSummary, SessionNavigationData};
 use crate::settings::cloud_preferences_syncer::initialize_cloud_preferences_syncer;
 use crate::settings::manager::SettingsManager;
@@ -1009,23 +1010,25 @@ pub(crate) fn initialize_app(
     let agent_source = determine_agent_source(launch_mode);
 
 
-    // Create a shared IAP state for staging builds. The same `Arc<IapState>`
-    // is handed to both `ServerApi` (for sync reads on the request path) and
-    // `IapManager` (which owns refresh logic on the main thread).
-    #[cfg(not(target_family = "wasm"))]
-    let iap_state =
-        ChannelState::iap_config().map(|cfg| Arc::new(crate::server::iap::IapState::new(&cfg)));
-    #[cfg(target_family = "wasm")]
-    let iap_state: Option<Arc<crate::server::iap::IapState>> = None;
+    // COMMENTED: IAP disabled in local version
+    // // Create a shared IAP state for staging builds. The same `Arc<IapState>`
+    // // is handed to both `ServerApi` (for sync reads on the request path) and
+    // // `IapManager` (which owns refresh logic on the main thread).
+    // #[cfg(not(target_family = "wasm"))]
+    // let iap_state =
+    //     ChannelState::iap_config().map(|cfg| Arc::new(crate::server::iap::IapState::new(&cfg)));
+    // #[cfg(target_family = "wasm")]
+    // let iap_state: Option<Arc<crate::server::iap::IapState>> = None;
 
     let server_api_provider = ctx.add_singleton_model({
         let auth_state = auth_state.clone();
-        let iap_state = iap_state.clone();
-        move |ctx| ServerApiProvider::new(auth_state, agent_source, iap_state, ctx)
+        // let iap_state = iap_state.clone();
+        move |ctx| ServerApiProvider::new(auth_state, agent_source, None, ctx)
     });
 
-    #[cfg(not(target_family = "wasm"))]
-    ctx.add_singleton_model(move |ctx| IapManager::new(iap_state, ctx));
+    // COMMENTED: IAP disabled in local version
+    // #[cfg(not(target_family = "wasm"))]
+    // ctx.add_singleton_model(move |ctx| IapManager::new(iap_state, ctx));
     let server_api = server_api_provider.as_ref(ctx).get();
     let ai_client = server_api_provider.as_ref(ctx).get_ai_client();
 
