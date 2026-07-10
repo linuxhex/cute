@@ -80,7 +80,8 @@ mod common;
 mod config_file;
 pub(crate) mod driver;
 mod environment;
-mod federate;
+// COMMENTED: 禁用联邦功能
+// mod federate;
 mod harness_support;
 #[cfg(not(target_family = "wasm"))]
 mod integration;
@@ -94,7 +95,8 @@ pub mod output;
 mod profiles;
 mod provider;
 pub(crate) mod retry;
-mod schedule;
+// COMMENTED: 禁用定时 Agent 功能
+// mod schedule;
 mod secret;
 pub(crate) mod setup_observability;
 mod telemetry;
@@ -162,11 +164,15 @@ fn dispatch_command(
         CliCommand::Integration(_) => {
             return Err(anyhow::anyhow!("invalid value 'integration'"));
         }
-        CliCommand::Schedule(schedule_cmd) => {
-            if !FeatureFlag::ScheduledAmbientAgents.is_enabled() {
-                return Err(anyhow::anyhow!("invalid value 'schedule'"));
-            }
-            schedule::run(ctx, global_options, schedule_cmd)
+        // COMMENTED: 禁用定时 Agent 和自动化功能
+        // CliCommand::Schedule(schedule_cmd) => {
+        //     if !FeatureFlag::ScheduledAmbientAgents.is_enabled() {
+        //         return Err(anyhow::anyhow!("invalid value 'schedule'"));
+        //     }
+        //     schedule::run(ctx, global_options, schedule_cmd)
+        // }
+        CliCommand::Schedule(_) => {
+            return Err(anyhow::anyhow!("Scheduled agents are disabled in this version"));
         }
         CliCommand::Secret(secret_cmd) => {
             if !FeatureFlag::WarpManagedSecrets.is_enabled() {
@@ -174,11 +180,15 @@ fn dispatch_command(
             }
             secret::run(ctx, global_options, secret_cmd)
         }
-        CliCommand::Federate(federate_cmd) => {
-            if !FeatureFlag::OzIdentityFederation.is_enabled() {
-                return Err(anyhow::anyhow!("invalid value 'federate'"));
-            }
-            federate::run(ctx, global_options, federate_cmd)
+        // COMMENTED: 禁用联邦和跨区域功能
+        // CliCommand::Federate(federate_cmd) => {
+        //     if !FeatureFlag::OzIdentityFederation.is_enabled() {
+        //         return Err(anyhow::anyhow!("invalid value 'federate'"));
+        //     }
+        //     federate::run(ctx, global_options, federate_cmd)
+        // }
+        CliCommand::Federate(_) => {
+            return Err(anyhow::anyhow!("Identity federation is disabled in this version"));
         }
         CliCommand::HarnessSupport(args) => {
             if !FeatureFlag::AgentHarness.is_enabled() {
@@ -1365,15 +1375,16 @@ impl AgentDriverRunner {
             })
             .await??;
 
-        if FeatureFlag::OzIdentityFederation.is_enabled() {
-            let run_id = driver_options
-                .task_id
-                .map(|id| id.to_string())
-                .unwrap_or_else(|| "local".to_string());
-            driver_options.cloud_providers =
-                driver::cloud_provider::load_providers(&environment.providers, &run_id)
-                    .map_err(AgentDriverError::CloudProviderSetupFailed)?;
-        }
+        // COMMENTED: 禁用云提供商联邦认证
+                // if FeatureFlag::OzIdentityFederation.is_enabled() {
+                //     let run_id = driver_options
+                //         .task_id
+                //         .map(|id| id.to_string())
+                //         .unwrap_or_else(|| "local".to_string());
+                //     driver_options.cloud_providers =
+                //         driver::cloud_provider::load_providers(&environment.providers, &run_id)
+                //             .map_err(AgentDriverError::CloudProviderSetupFailed)?;
+                // }
 
         driver_options.environment = Some(environment);
         Ok(())

@@ -117,9 +117,13 @@ pub(super) enum CliTelemetryEvent {
     SecretUpdate,
     /// Executing `warp secret list`
     SecretList,
-    /// Executing `warp federate issue-token`
+    /// COMMENTED: 禁用联邦功能
+    /// FederateIssueToken => "CLI.Execute.Federate.IssueToken",
+    /// FederateIssueGcpToken => "CLI.Execute.Federate.IssueGcpToken",
+    // placeholder to avoid unused variant warnings
+    #[allow(dead_code)]
     FederateIssueToken,
-    /// Executing `warp federate issue-gcp-token`
+    #[allow(dead_code)]
     FederateIssueGcpToken,
     /// Executing `warp harness-support ping`
     HarnessSupportPing,
@@ -205,6 +209,9 @@ impl TelemetryEvent for CliTelemetryEvent {
             CliTelemetryEvent::SecretDelete => None,
             CliTelemetryEvent::SecretUpdate => None,
             CliTelemetryEvent::SecretList => None,
+            // COMMENTED: 禁用联邦功能的遥测事件
+            // CliTelemetryEvent::FederateIssueToken => None,
+            // CliTelemetryEvent::FederateIssueGcpToken => None,
             CliTelemetryEvent::FederateIssueToken => None,
             CliTelemetryEvent::FederateIssueGcpToken => None,
             CliTelemetryEvent::HarnessSupportPing => None,
@@ -296,6 +303,11 @@ impl TelemetryEventDesc for CliTelemetryEventDiscriminants {
             CliTelemetryEventDiscriminants::SecretDelete => "CLI.Execute.Secret.Delete",
             CliTelemetryEventDiscriminants::SecretUpdate => "CLI.Execute.Secret.Update",
             CliTelemetryEventDiscriminants::SecretList => "CLI.Execute.Secret.List",
+            // COMMENTED: 禁用联邦功能的遥测事件名称
+            // CliTelemetryEventDiscriminants::FederateIssueToken => "CLI.Execute.Federate.IssueToken",
+            // CliTelemetryEventDiscriminants::FederateIssueGcpToken => {
+            //     "CLI.Execute.Federate.IssueGcpToken"
+            // }
             CliTelemetryEventDiscriminants::FederateIssueToken => "CLI.Execute.Federate.IssueToken",
             CliTelemetryEventDiscriminants::FederateIssueGcpToken => {
                 "CLI.Execute.Federate.IssueGcpToken"
@@ -425,6 +437,13 @@ impl TelemetryEventDesc for CliTelemetryEventDiscriminants {
             CliTelemetryEventDiscriminants::SecretDelete => "Deleted a secret from the Warp CLI",
             CliTelemetryEventDiscriminants::SecretUpdate => "Updated a secret from the Warp CLI",
             CliTelemetryEventDiscriminants::SecretList => "Listed secrets from the Warp CLI",
+            // COMMENTED: 禁用联邦功能的遥测事件描述
+            // CliTelemetryEventDiscriminants::FederateIssueToken => {
+            //     "Issued a federated identity token from the Warp CLI"
+            // }
+            // CliTelemetryEventDiscriminants::FederateIssueGcpToken => {
+            //     "Issued a GCP federated identity token from the Warp CLI"
+            // }
             CliTelemetryEventDiscriminants::FederateIssueToken => {
                 "Issued a federated identity token from the Warp CLI"
             }
@@ -451,6 +470,10 @@ impl TelemetryEventDesc for CliTelemetryEventDiscriminants {
 
     fn enablement_state(&self) -> EnablementState {
         match self {
+            // COMMENTED: 禁用联邦功能的特性标志检查
+            // Self::FederateIssueToken | Self::FederateIssueGcpToken => {
+            //     EnablementState::Flag(FeatureFlag::OzIdentityFederation)
+            // }
             Self::FederateIssueToken | Self::FederateIssueGcpToken => {
                 EnablementState::Flag(FeatureFlag::OzIdentityFederation)
             }

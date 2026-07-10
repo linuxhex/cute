@@ -1636,9 +1636,10 @@ pub(crate) fn initialize_app(
     ctx.add_singleton_model(EnvVarCollectionManager::new);
     ctx.add_singleton_model(WorkflowManager::new);
 
-    if FeatureFlag::ScheduledAmbientAgents.is_enabled() {
-        ctx.add_singleton_model(ScheduledAgentManager::new);
-    }
+    // COMMENTED: 禁用定时 Agent 和自动化功能
+    // if FeatureFlag::ScheduledAmbientAgents.is_enabled() {
+    //     ctx.add_singleton_model(ScheduledAgentManager::new);
+    // }
 
     ctx.add_singleton_model(LocalWorkflows::new);
 
