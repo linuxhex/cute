@@ -179,7 +179,9 @@ impl RuleView {
             ctx.notify();
         });
 
-        let owner = UserWorkspaces::as_ref(ctx).personal_drive(ctx);
+        // COMMENTED: 云端功能 UserWorkspaces 已禁用
+        // let owner = UserWorkspaces::as_ref(ctx).personal_drive(ctx);
+        let owner: Option<Owner> = None; // 本地版本没有个人 drive
 
         ctx.subscribe_to_model(&AISettings::handle(ctx), |_, _, event, ctx| {
             if matches!(
