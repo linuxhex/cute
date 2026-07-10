@@ -6812,17 +6812,18 @@ impl Workspace {
                     &locator,
                 );
             }
+            // COMMENTED: Team invitation - invitee_email handling
             // If the was an invitee email, open the share dialog as well after focusing the pane.
-            if let Some(invitee_email) = settings.invitee_email.clone() {
-                if let NotebookSource::Existing(sync_id) = source {
-                    self.open_object_sharing_settings(
-                        CloudObjectTypeAndId::from_id_and_type(*sync_id, ObjectType::Notebook),
-                        Some(invitee_email),
-                        SharingDialogSource::InviteeRequest,
-                        ctx,
-                    );
-                }
-            }
+            // if let Some(invitee_email) = settings.invitee_email.clone() {
+            //     if let NotebookSource::Existing(sync_id) = source {
+            //         self.open_object_sharing_settings(
+            //             CloudObjectTypeAndId::from_id_and_type(*sync_id, ObjectType::Notebook),
+            //             Some(invitee_email),
+            //             SharingDialogSource::InviteeRequest,
+            //             ctx,
+            //         );
+            //     }
+            // }
         } else if default_to_new_pane {
             let window_id = ctx.window_id();
             notebook_manager.update(ctx, |manager, ctx| {
@@ -6873,9 +6874,11 @@ impl Workspace {
         }
         // If running workflows is supported, do so. Otherwise, or if the workflow isn't in memory,
         // fall back to the workflow pane.
+        // COMMENTED: Team invitation - invitee_email check removed, always run workflow
         // We don't want to run the workflow if the invitee email is set, as we want to open the share dialog instead with the
         // workflow open in a pane.
-        if ContextFlag::RunWorkflow.is_enabled() && settings.invitee_email.is_none() {
+        // if ContextFlag::RunWorkflow.is_enabled() && settings.invitee_email.is_none() {
+        if ContextFlag::RunWorkflow.is_enabled() {
             match CloudModel::as_ref(ctx).get_workflow(&workflow_id).cloned() {
                 Some(workflow) => {
                     self.open_or_toggle_warp_drive(false, false, ctx);

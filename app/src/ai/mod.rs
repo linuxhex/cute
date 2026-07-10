@@ -46,7 +46,7 @@ pub use request_usage_model::*;
 use cuteui::AppContext;
 #[cfg(not(target_family = "wasm"))]
 pub mod agent_sdk;
-pub mod cloud_agent_settings;
+// pub mod cloud_agent_settings; // Cute: 已注释，清理云端 Agent 设置模块
 pub mod connected_self_hosted_workers;
 pub(crate) mod generate_block_title;
 pub(crate) mod generate_code_review_content;

@@ -34,7 +34,7 @@ use crate::ai::blocklist::prompt::PromptIconButtonTheme;
 use crate::ai::blocklist::{
     BlocklistAIController, BlocklistAIControllerEvent, BlocklistAIInputEvent, BlocklistAIInputModel,
 };
-use crate::ai::cloud_agent_settings::CloudAgentSettings;
+// use crate::ai::cloud_agent_settings::CloudAgentSettings; // Cute: 已注释，清理云端 Agent 设置
 use crate::ai::execution_profiles::model_menu_items::{
     available_model_menu_items, has_reasoning_variants, is_auto,
 };
@@ -507,21 +507,23 @@ impl ProfileModelSelector {
             },
         );
 
-        if let Some(ref ambient_model) = ambient_agent_view_model {
-            ctx.subscribe_to_model(ambient_model, |me, _, event, ctx| {
-                use crate::terminal::view::ambient_agent::AmbientAgentViewModelEvent;
-                if matches!(
-                    event,
-                    AmbientAgentViewModelEvent::HarnessSelected
-                        | AmbientAgentViewModelEvent::HarnessModelSelected
-                        | AmbientAgentViewModelEvent::RunLifecycleChanged
-                        | AmbientAgentViewModelEvent::SessionReady { .. }
-                        | AmbientAgentViewModelEvent::FollowupDispatched
-                ) {
-                    me.refresh_state(ctx);
-                }
-            });
-        }
+        // Cute: 已注释，清理云端 Agent 事件订阅
+        // 本地 Agent 不需要订阅云端 Agent 的 harness/model 选择事件
+        // if let Some(ref ambient_model) = ambient_agent_view_model {
+        //     ctx.subscribe_to_model(ambient_model, |me, _, event, ctx| {
+        //         use crate::terminal::view::ambient_agent::AmbientAgentViewModelEvent;
+        //         if matches!(
+        //             event,
+        //             AmbientAgentViewModelEvent::HarnessSelected
+        //                 | AmbientAgentViewModelEvent::HarnessModelSelected
+        //                 | AmbientAgentViewModelEvent::RunLifecycleChanged
+        //                 | AmbientAgentViewModelEvent::SessionReady { .. }
+        //                 | AmbientAgentViewModelEvent::FollowupDispatched
+        //         ) {
+        //             me.refresh_state(ctx);
+        //         }
+        //     });
+        // }
 
         ctx.subscribe_to_model(
             &HarnessAvailabilityModel::handle(ctx),
@@ -2129,28 +2131,30 @@ impl TypedActionView for ProfileModelSelector {
                 reasoning_level,
             } => {
                 let is_default = model_id.is_empty();
-                if let Some(ambient_agent_model) = self.ambient_agent_view_model.clone() {
-                    ambient_agent_model.update(ctx, |model, ctx| {
-                        model.set_harness_model_selection(
-                            (!is_default).then(|| model_id.clone()),
-                            if is_default {
-                                None
-                            } else {
-                                reasoning_level.clone()
-                            },
-                            ctx,
-                        );
-                    });
-                    let harness = ambient_agent_model.as_ref(ctx).selected_harness();
-                    CloudAgentSettings::handle(ctx).update(ctx, |settings, ctx| {
-                        settings.persist_harness_model_selection(
-                            harness,
-                            model_id,
-                            reasoning_level.clone(),
-                            ctx,
-                        );
-                    });
-                }
+                // Cute: 已注释，清理云端 Agent 模型选择和持久化逻辑
+                // 本地 Agent 的模型选择由 LLMPreferences 管理，不需要 CloudAgentSettings
+                // if let Some(ambient_agent_model) = self.ambient_agent_view_model.clone() {
+                //     ambient_agent_model.update(ctx, |model, ctx| {
+                //         model.set_harness_model_selection(
+                //             (!is_default).then(|| model_id.clone()),
+                //             if is_default {
+                //                 None
+                //             } else {
+                //                 reasoning_level.clone()
+                //             },
+                //             ctx,
+                //         );
+                //     });
+                //     let harness = ambient_agent_model.as_ref(ctx).selected_harness();
+                //     CloudAgentSettings::handle(ctx).update(ctx, |settings, ctx| {
+                //         settings.persist_harness_model_selection(
+                //             harness,
+                //             model_id,
+                //             reasoning_level.clone(),
+                //             ctx,
+                //         );
+                //     });
+                // }
                 self.set_model_menu_visibility(false, ctx);
             }
             ProfileModelSelectorAction::ManageProfiles => {

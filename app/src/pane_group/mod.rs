@@ -510,13 +510,14 @@ pub enum Event {
     OpenWorkflowModalWithCommand(String),
     // Tell the workspace to open the workflow for edit.
     OpenCloudWorkflowForEdit(SyncId),
+    // COMMENTED: Team invitation - OpenDriveObjectShareDialog
     // Tell the workspace to open the share dialog for the given drive object. The share dialog will
     // open in the index. If the invitee email is provided, it will be added to the share dialog.
-    OpenDriveObjectShareDialog {
-        cloud_object_type_and_id: CloudObjectTypeAndId,
-        invitee_email: Option<String>,
-        source: SharingDialogSource,
-    },
+    // OpenDriveObjectShareDialog {
+    //     cloud_object_type_and_id: CloudObjectTypeAndId,
+    //     invitee_email: Option<String>,
+    //     source: SharingDialogSource,
+    // },
     // Tell the workspace to open the workflow modal with an unsaved workflow.
     OpenWorkflowModalWithTemporary(Box<Workflow>),
     OpenPromptEditor,

@@ -192,17 +192,18 @@ fn handle_workflow_event(
         WorkflowViewEvent::UpdatedWorkflow(_id) => {
             log::warn!("Updates not yet handled in pane")
         }
-        WorkflowViewEvent::OpenDriveObjectShareDialog {
-            cloud_object_type_and_id,
-            invitee_email,
-            source,
-        } => {
-            ctx.emit(crate::pane_group::Event::OpenDriveObjectShareDialog {
-                cloud_object_type_and_id: cloud_object_type_and_id.clone(),
-                invitee_email: invitee_email.clone(),
-                source: source.clone(),
-            });
-        }
+        // COMMENTED: Team invitation - OpenDriveObjectShareDialog event handling
+        // WorkflowViewEvent::OpenDriveObjectShareDialog {
+        //     cloud_object_type_and_id,
+        //     invitee_email,
+        //     source,
+        // } => {
+        //     ctx.emit(crate::pane_group::Event::OpenDriveObjectShareDialog {
+        //         cloud_object_type_and_id: cloud_object_type_and_id.clone(),
+        //         invitee_email: invitee_email.clone(),
+        //         source: source.clone(),
+        //     });
+        // }
         WorkflowViewEvent::CreatedWorkflow(_) => {
             // No op in a pane.
         }

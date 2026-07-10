@@ -31,7 +31,7 @@ use cuteui::{
 
 use crate::ai::auth_secret_types::auth_secret_types_for_harness;
 use crate::ai::blocklist::inline_action::host_picker::HostPicker;
-use crate::ai::cloud_agent_settings::CloudAgentSettings;
+// use crate::ai::cloud_agent_settings::CloudAgentSettings; // Cute: 已注释，清理云端 Agent 设置
 use crate::ai::cloud_environments::CloudAmbientAgentEnvironment;
 use crate::ai::connected_self_hosted_workers::{ConnectedSelfHostedWorkersModel, WARP_WORKER_HOST};
 use crate::ai::execution_profiles::model_menu_items::available_model_menu_items;
@@ -948,33 +948,26 @@ pub fn resolve_default_host_slug(ctx: &AppContext) -> Option<String> {
 /// Returns the user's last-selected custom host slug from
 /// `CloudAgentSettings.last_selected_host`, excluding `"warp"` and the
 /// workspace default (those are surfaced as separate menu rows).
-pub fn resolve_recent_host_slug(ctx: &AppContext) -> Option<String> {
-    let last = CloudAgentSettings::as_ref(ctx)
-        .last_selected_host
-        .value()
-        .clone()
-        .filter(|s| !s.trim().is_empty())?;
-    if last.eq_ignore_ascii_case(ORCHESTRATION_WARP_WORKER_HOST) {
-        return None;
-    }
-    if resolve_default_host_slug(ctx).as_deref() == Some(last.as_str()) {
-        return None;
-    }
-    Some(last)
+/// Cute: 已注释，清理云端 Agent host 选择逻辑
+/// 本地 Agent 不需要云端 host 选择，直接返回 None
+pub fn resolve_recent_host_slug(_ctx: &AppContext) -> Option<String> {
+    None
 }
 
 /// Persists the user's most-recent host selection to
 /// `CloudAgentSettings.last_selected_host`. Skipped for `"warp"` and
 /// empty values (those don't represent a custom slug worth remembering).
 pub fn persist_host_selection<V: View>(worker_host: &str, ctx: &mut ViewContext<V>) {
-    let trimmed = worker_host.trim();
-    if trimmed.is_empty() || trimmed.eq_ignore_ascii_case(ORCHESTRATION_WARP_WORKER_HOST) {
-        return;
-    }
-    let value = trimmed.to_string();
-    CloudAgentSettings::handle(ctx).update(ctx, |settings, ctx| {
-        report_if_error!(settings.last_selected_host.set_value(Some(value), ctx));
-    });
+    // Cute: 已注释，清理云端 host 保存逻辑
+    // 本地 Agent 不需要保存云端 host 选择
+    // let trimmed = worker_host.trim();
+    // if trimmed.is_empty() || trimmed.eq_ignore_ascii_case(ORCHESTRATION_WARP_WORKER_HOST) {
+    //     return;
+    // }
+    // let value = trimmed.to_string();
+    // CloudAgentSettings::handle(ctx).update(ctx, |settings, ctx| {
+    //     report_if_error!(settings.last_selected_host.set_value(Some(value), ctx));
+    // });
 }
 
 /// Normalizes a harness_type string for use as a HashMap key in
@@ -994,21 +987,11 @@ pub fn harness_save_key(harness_type: &str) -> &str {
 /// `/cloud-agent` environment selector: first tries the user's
 /// last-selected environment from settings, then falls back to the
 /// most recently used environment.
-pub fn resolve_default_environment_id(ctx: &AppContext) -> Option<String> {
-    if let Some(env_id) = *CloudAgentSettings::as_ref(ctx)
-        .last_selected_environment_id
-        .value()
-    {
-        if CloudAmbientAgentEnvironment::get_by_id(&env_id, ctx).is_some() {
-            return Some(env_id.uid());
-        }
-    }
-    let mut envs = CloudAmbientAgentEnvironment::get_all(ctx);
-    envs.sort_by(|a, b| {
-        b.metadata
-            .last_task_run_ts
-            .cmp(&a.metadata.last_task_run_ts)
-            .then_with(|| {
+/// Cute: 已注释，清理云端 environment 选择逻辑
+/// 本地 Agent 不需要云端 environment 选择，直接返回 None
+pub fn resolve_default_environment_id(_ctx: &AppContext) -> Option<String> {
+    None
+}
                 a.model()
                     .string_model
                     .name
@@ -1025,15 +1008,17 @@ pub fn persist_environment_selection<V: View>(environment_id: &str, ctx: &mut Vi
     if environment_id.is_empty() {
         return;
     }
-    let all_envs = CloudAmbientAgentEnvironment::get_all(ctx);
-    if let Some(env) = all_envs.iter().find(|e| e.id.uid() == environment_id) {
-        let sync_id = env.id;
-        CloudAgentSettings::handle(ctx).update(ctx, |settings, ctx| {
-            if let Err(e) = settings
-                .last_selected_environment_id
-                .set_value(Some(sync_id), ctx)
-            {
-                log::warn!("Failed to persist environment selection: {e:?}");
+    // Cute: 已注释，清理云端 environment 保存逻辑
+    // 本地 Agent 不需要保存云端 environment 选择
+    // let all_envs = CloudAmbientAgentEnvironment::get_all(ctx);
+    // if let Some(env) = all_envs.iter().find(|e| e.id.uid() == environment_id) {
+    //     let sync_id = env.id;
+    //     CloudAgentSettings::handle(ctx).update(ctx, |settings, ctx| {
+    //         if let Err(e) = settings
+    //             .last_selected_environment_id
+    //             .set_value(Some(sync_id), ctx)
+    //         {
+    //             log::warn!("Failed to persist environment selection: {e:?}");
             }
         });
     }
@@ -1061,40 +1046,45 @@ pub fn should_show_auth_secret_picker(state: &OrchestrationEditState) -> bool {
 /// `None`. Only promotes a persisted name; never auto-picks the first
 /// loaded secret. Validates against the loaded secrets list when present,
 /// returning `None` if the persisted name has been deleted server-side.
+/// Cute: 已注释，清理云端 auth secret 选择逻辑
+/// 本地 Agent 不需要云端 auth secret 选择
 pub fn resolve_default_auth_secret_for_harness(
     harness_type: &str,
-    ctx: &AppContext,
+    _ctx: &AppContext,
 ) -> Option<String> {
     let harness = Harness::parse_orchestration_harness(harness_type)?;
     if harness == Harness::Oz {
         return None;
     }
-    let persisted = CloudAgentSettings::as_ref(ctx)
-        .last_selected_auth_secret
-        .value()
-        .get(harness.config_name())
-        .cloned()
-        .filter(|name| !name.trim().is_empty());
-
-    let availability = HarnessAvailabilityModel::as_ref(ctx);
-    match availability.auth_secrets_for(harness) {
-        AuthSecretFetchState::Loaded(secrets) => {
-            // Drop the persisted name if the secret was deleted server-side.
-            persisted.filter(|name| secrets.iter().any(|s| s.name == *name))
-        }
-        // Pre-fetch: optimistically show the persisted name; the
-        // `AuthSecretsLoaded` subscription will re-resolve.
-        _ => persisted,
-    }
+    None
+    // let persisted = CloudAgentSettings::as_ref(ctx)
+    //     .last_selected_auth_secret
+    //     .value()
+    //     .get(harness.config_name())
+    //     .cloned()
+    //     .filter(|name| !name.trim().is_empty());
+    //
+    // let availability = HarnessAvailabilityModel::as_ref(ctx);
+    // match availability.auth_secrets_for(harness) {
+    //     AuthSecretFetchState::Loaded(secrets) => {
+    //         // Drop the persisted name if the secret was deleted server-side.
+    //         persisted.filter(|name| secrets.iter().any(|s| s.name == *name))
+    //     }
+    //     // Pre-fetch: optimistically show the persisted name; the
+    //     // `AuthSecretsLoaded` subscription will re-resolve.
+    //     _ => persisted,
+    // }
 }
 
 /// Returns the full persisted selection (Named / Inherit / Unset) for
 /// this harness. Prefers an explicit `Inherit` choice over a `Named`
 /// fallback so the plan card's "Inherit" survives across the RunAgents
 /// handoff (the `OrchestrationConfig` proto doesn't carry auth state).
+/// Cute: 已注释，清理云端 auth secret 选择逻辑
+/// 本地 Agent 不需要云端 auth secret 选择
 pub fn resolve_auth_secret_selection_for_harness(
     harness_type: &str,
-    ctx: &AppContext,
+    _ctx: &AppContext,
 ) -> AuthSecretSelection {
     let Some(harness) = Harness::parse_orchestration_harness(harness_type) else {
         return AuthSecretSelection::Unset;
@@ -1102,20 +1092,21 @@ pub fn resolve_auth_secret_selection_for_harness(
     if harness == Harness::Oz {
         return AuthSecretSelection::Unset;
     }
+    AuthSecretSelection::Unset
     // Explicit Inherit wins over a stale Named fallback.
-    let inherit_chosen = CloudAgentSettings::as_ref(ctx)
-        .inherit_auth_secret_harnesses
-        .value()
-        .get(harness.config_name())
-        .copied()
-        .unwrap_or(false);
-    if inherit_chosen {
-        return AuthSecretSelection::Inherit;
-    }
-    match resolve_default_auth_secret_for_harness(harness_type, ctx) {
-        Some(name) => AuthSecretSelection::Named(name),
-        None => AuthSecretSelection::Unset,
-    }
+    // let inherit_chosen = CloudAgentSettings::as_ref(ctx)
+    //     .inherit_auth_secret_harnesses
+    //     .value()
+    //     .get(harness.config_name())
+    //     .copied()
+    //     .unwrap_or(false);
+    // if inherit_chosen {
+    //     return AuthSecretSelection::Inherit;
+    // }
+    // match resolve_default_auth_secret_for_harness(harness_type, ctx) {
+    //     Some(name) => AuthSecretSelection::Named(name),
+    //     None => AuthSecretSelection::Unset,
+    // }
 }
 
 /// `true` when the user must pick an API key (or Inherit) before Accept is
@@ -1321,10 +1312,12 @@ pub fn apply_created_auth_secret_if_matches<V: View>(
 /// `Named` writes to `last_selected_auth_secret` and clears any prior
 /// `Inherit` flag. `Inherit` clears the named entry and sets the inherit
 /// flag. `Unset` clears both (no recorded choice). No-op for Oz / unknown.
+/// Cute: 已注释，清理云端 auth secret 保存逻辑
+/// 本地 Agent 不需要保存云端 auth secret 选择
 fn persist_auth_secret_selection<V: View>(
     harness_type: &str,
-    selection: &AuthSecretSelection,
-    ctx: &mut ViewContext<V>,
+    _selection: &AuthSecretSelection,
+    _ctx: &mut ViewContext<V>,
 ) {
     let Some(harness) = Harness::parse_orchestration_harness(harness_type) else {
         return;
@@ -1332,29 +1325,29 @@ fn persist_auth_secret_selection<V: View>(
     if harness == Harness::Oz {
         return;
     }
-    let key = harness.config_name().to_string();
-    CloudAgentSettings::handle(ctx).update(ctx, |settings, ctx| {
-        let mut named_map = settings.last_selected_auth_secret.value().clone();
-        let mut inherit_map = settings.inherit_auth_secret_harnesses.value().clone();
-        match selection {
-            AuthSecretSelection::Named(name) => {
-                named_map.insert(key.clone(), name.clone());
-                inherit_map.remove(&key);
-            }
-            AuthSecretSelection::Inherit => {
-                named_map.remove(&key);
-                inherit_map.insert(key, true);
-            }
-            AuthSecretSelection::Unset => {
-                named_map.remove(&key);
-                inherit_map.remove(&key);
-            }
-        }
-        report_if_error!(settings.last_selected_auth_secret.set_value(named_map, ctx));
-        report_if_error!(settings
-            .inherit_auth_secret_harnesses
-            .set_value(inherit_map, ctx));
-    });
+    // let key = harness.config_name().to_string();
+    // CloudAgentSettings::handle(ctx).update(ctx, |settings, ctx| {
+    //     let mut named_map = settings.last_selected_auth_secret.value().clone();
+    //     let mut inherit_map = settings.inherit_auth_secret_harnesses.value().clone();
+    //     match selection {
+    //         AuthSecretSelection::Named(name) => {
+    //             named_map.insert(key.clone(), name.clone());
+    //             inherit_map.remove(&key);
+    //         }
+    //         AuthSecretSelection::Inherit => {
+    //             named_map.remove(&key);
+    //             inherit_map.insert(key, true);
+    //         }
+    //         AuthSecretSelection::Unset => {
+    //             named_map.remove(&key);
+    //             inherit_map.remove(&key);
+    //         }
+    //     }
+    //     report_if_error!(settings.last_selected_auth_secret.set_value(named_map, ctx));
+    //     report_if_error!(settings
+    //         .inherit_auth_secret_harnesses
+    //         .set_value(inherit_map, ctx));
+    // });
 }
 
 // ── Shared action helpers ───────────────────────────────────────────

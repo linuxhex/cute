@@ -228,11 +228,12 @@ pub enum WorkflowViewEvent {
     CreatedWorkflow(SyncId),
     UpdatedWorkflow(SyncId),
     ViewInWarpDrive(WarpDriveItemId),
-    OpenDriveObjectShareDialog {
-        cloud_object_type_and_id: CloudObjectTypeAndId,
-        invitee_email: Option<String>,
-        source: SharingDialogSource,
-    },
+    // COMMENTED: Team invitation related - OpenDriveObjectShareDialog
+    // OpenDriveObjectShareDialog {
+    //     cloud_object_type_and_id: CloudObjectTypeAndId,
+    //     invitee_email: Option<String>,
+    //     source: SharingDialogSource,
+    // },
     RunWorkflow {
         workflow: Arc<WorkflowType>,
         source: WorkflowSource,
@@ -717,17 +718,18 @@ impl WorkflowView {
             );
         }
 
-        if let Some(invitee_email) = settings.invitee_email.clone() {
-            let object_id_to_share = settings
-                .focused_folder_id
-                .map(|id| CloudObjectTypeAndId::Folder(SyncId::ServerId(id)))
-                .unwrap_or(CloudObjectTypeAndId::Workflow(workflow.id));
-            ctx.emit(WorkflowViewEvent::OpenDriveObjectShareDialog {
-                cloud_object_type_and_id: object_id_to_share,
-                invitee_email: Some(invitee_email),
-                source: SharingDialogSource::InviteeRequest,
-            });
-        }
+        // COMMENTED: Team invitation logic - invitee_email handling
+        // if let Some(invitee_email) = settings.invitee_email.clone() {
+        //     let object_id_to_share = settings
+        //         .focused_folder_id
+        //         .map(|id| CloudObjectTypeAndId::Folder(SyncId::ServerId(id)))
+        //         .unwrap_or(CloudObjectTypeAndId::Workflow(workflow.id));
+        //     ctx.emit(WorkflowViewEvent::OpenDriveObjectShareDialog {
+        //         cloud_object_type_and_id: object_id_to_share,
+        //         invitee_email: Some(invitee_email),
+        //         source: SharingDialogSource::InviteeRequest,
+        //     });
+        // }
 
         if matches!(mode, WorkflowViewMode::View) {
             self.focus_first_argument_value(ctx);

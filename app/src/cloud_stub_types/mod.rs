@@ -282,7 +282,10 @@ pub struct OpenCuteDriveObjectSettings {
     pub open_mode: WorkflowOpenMode,
     pub focus_pane: bool,
     pub focused_folder_id: Option<crate::server::ids::ServerId>,
-    pub invitee_email: Option<String>,
+    // COMMENTED: Team invitation - invitee_email field
+    // pub invitee_email: Option<String>,
+    #[allow(dead_code)]
+    invitee_email: Option<String>, // Simplified: kept for struct compatibility but not used
 }
 
 /// Minimal stub for CuteDriveSettings
@@ -1577,7 +1580,8 @@ impl ShareableObject {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SharingDialogSource {
     ConversationList,
-    InviteeRequest,
+    // COMMENTED: Team invitation - InviteeRequest variant
+    // InviteeRequest,
     WorkflowView,
     DrivePanel,
     PaneHeader,

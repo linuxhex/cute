@@ -222,8 +222,9 @@ impl UriHost {
                     .get("focused_folder_id")
                     .map(ServerId::from_string_lossy);
 
-                let invitee_email: Option<String> =
-                    query_string.get("invitee_email").map(|s| s.to_string());
+                // COMMENTED: Team invitation - invitee_email query param
+                // let invitee_email: Option<String> =
+                //     query_string.get("invitee_email").map(|s| s.to_string());
 
                 if let Some((object_type, server_id)) = object_type.zip(object_server_id) {
                     let primary_window_and_view = primary_window_id.and_then(|window_id| {
@@ -237,7 +238,9 @@ impl UriHost {
                             open_mode: Default::default(),
                             focus_pane: false,
                             focused_folder_id,
-                            invitee_email,
+                            // COMMENTED: Team invitation - invitee_email in settings
+                            // invitee_email,
+                            invitee_email: None, // Simplified: always None for local version
                         },
                     };
                     // If there's an existing window, open the object in that window, otherwise open a new window
