@@ -1643,13 +1643,25 @@ impl Workspace {
             self.current_workspace_state.clear_tab_being_renamed();
             let title = self.tab_rename_editor.as_ref(ctx).buffer_text(ctx);
             let tab = &self.tabs[tab_index];
-            tab.pane_group.update(ctx, |view, ctx| {
-                // Only update the title if it was actually changed. Otherwise, lets assume
-                // user's intend was to cancel the operation.
-                if view.display_title(ctx) != title {
-                    view.set_title(&title, ctx);
-                }
-            });
+
+            // Cute: 如果标题为空或通用 shell 名称，不设置
+            if !title.is_empty() && !is_generic_shell_tab_title(&title) {
+                tab.pane_group.update(ctx, |pane_group, ctx| {
+                    // 如果是终端 pane，设置 terminal 的 custom_title
+                    if let Some(terminal_view) = pane_group.focused_session_view(ctx) {
+                        terminal_view.update(ctx, |view, ctx| {
+                            view.model.lock().set_custom_title(Some(title.clone()));
+                            view.update_pane_configuration(ctx);
+                        });
+                    } else {
+                        // 如果不是终端 pane，设置 pane_group 的 custom_title
+                        if pane_group.display_title(ctx) != title {
+                            pane_group.set_title(&title, ctx);
+                        }
+                    }
+                });
+            }
+
             self.clear_tab_name_editor(ctx);
             self.update_window_title(ctx);
             ctx.notify();
