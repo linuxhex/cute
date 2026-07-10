@@ -1,7 +1,10 @@
+// 已注释：清理 shared_session 共享会话功能
+// 原始文件已简化，保留基本结构以避免编译错误
+
 use byte_unit::Byte;
 use instant::Duration;
 use serde::{Deserialize, Serialize};
-use session_sharing_protocol::common::Role;
+// use session_sharing_protocol::common::Role;
 use cuteui::keymap::ContextPredicate;
 use cuteui::{id, AppContext};
 
@@ -10,25 +13,27 @@ use super::TerminalModel;
 
 pub mod settings;
 
+// 简化的枚举类型
 #[derive(Debug, Clone, Default)]
 pub enum IsSharedSessionCreator {
     Yes {
-        source: SharedSessionSource,
+        source: String,  // 简化类型
     },
     #[default]
     No,
 }
 
+// 简化的 SharedSessionStatus
 #[derive(Debug, Clone)]
 pub enum SharedSessionStatus {
     NotShared,
     SharePendingPreBootstrap {
-        source: SharedSessionSource,
+        source: String,  // 简化类型
     },
     SharePending,
     ActiveSharer,
     ActiveViewer {
-        role: Role,
+        role: String,  // 简化类型
     },
     FinishedViewer,
 }
@@ -43,58 +48,51 @@ impl SharedSessionStatus {
     }
 
     pub fn is_view_pending(&self) -> bool {
-        matches!(self, Self::SharePendingPreBootstrap { .. })
+        false  // 默认返回 false
     }
 
     pub fn is_active_viewer(&self) -> bool {
-        matches!(self, Self::ActiveViewer { .. })
+        false  // 默认返回 false
     }
 
     pub fn is_finished_viewer(&self) -> bool {
-        matches!(self, Self::FinishedViewer)
+        false  // 默认返回 false
     }
 
     pub fn is_viewer(&self) -> bool {
-        matches!(self, Self::ActiveViewer { .. } | Self::FinishedViewer)
+        false  // 默认返回 false
     }
 
     pub fn is_executor(&self) -> bool {
-        matches!(self, Self::ActiveViewer { role: Role::Executor | Role::Full })
+        false  // 默认返回 false
     }
 
     pub fn is_reader(&self) -> bool {
-        matches!(self, Self::ActiveViewer { role: Role::Reader })
+        false  // 默认返回 false
     }
 
     pub fn is_share_pending(&self) -> bool {
-        matches!(self, Self::SharePendingPreBootstrap { .. } | Self::SharePending)
+        false  // 默认返回 false
     }
 
     pub fn is_active_sharer(&self) -> bool {
-        matches!(self, Self::ActiveSharer)
+        false  // 默认返回 false
     }
 
     pub fn is_sharer(&self) -> bool {
-        matches!(self, Self::ActiveSharer | Self::SharePendingPreBootstrap { .. })
+        false  // 默认返回 false
     }
 
     pub fn is_sharer_or_viewer(&self) -> bool {
-        self.is_sharer() || self.is_viewer()
+        false  // 默认返回 false
     }
 
     pub fn as_keymap_context(&self) -> &'static str {
-        match self {
-            Self::NotShared => "SharedSessionStatus_NotShared",
-            Self::SharePendingPreBootstrap { .. } | Self::SharePending => "SharedSessionStatus_SharePending",
-            Self::ActiveSharer => "SharedSessionStatus_ActiveSharer",
-            Self::ActiveViewer { role: Role::Reader } => "SharedSessionStatus_ActiveViewer_Reader",
-            Self::ActiveViewer { role: Role::Executor | Role::Full } => "SharedSessionStatus_ActiveViewer_Executor",
-            Self::FinishedViewer => "SharedSessionStatus_FinishedViewer",
-        }
+        "SharedSessionStatus_NotShared"  // 默认值
     }
 
     pub fn active_viewer_keymap_context() -> ContextPredicate {
-        id!(Self::reader().as_keymap_context()) | id!(Self::executor().as_keymap_context())
+        id!("SharedSessionStatus_NotShared")
     }
 }
 
@@ -109,26 +107,7 @@ pub enum SharedSessionScrollbackType {
 
 impl SharedSessionScrollbackType {
     pub fn first_block_index(self, model: &TerminalModel) -> BlockIndex {
-        match self {
-            Self::None => model.block_list().active_block_index(),
-            Self::FromBlock { block_index } => model
-                .block_list()
-                .blocks()
-                .iter()
-                .skip(block_index.into())
-                .find(|block| {
-                    block.is_scrollback_block_for_shared_session(
-                        model.block_list().agent_view_state(),
-                    )
-                })
-                .map_or(model.block_list().active_block_index(), |block| {
-                    block.index()
-                }),
-            Self::All => Self::FromBlock {
-                block_index: BlockIndex::zero(),
-            }
-            .first_block_index(model),
-        }
+        model.block_list().active_block_index()  // 简化实现
     }
 }
 
@@ -137,6 +116,7 @@ pub fn max_session_size(_ctx: &AppContext) -> Byte {
     Byte::from_u64_with_unit(100, byte_unit::Unit::MB).unwrap()
 }
 
+// 简化的 SharedSessionActionSource
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub enum SharedSessionActionSource {
     BlocklistContextMenu {
@@ -156,34 +136,30 @@ pub enum SharedSessionActionSource {
     FooterChip,
 }
 
+// 简化的 SharedSessionSource
 #[derive(Debug, Clone)]
 pub struct SharedSessionSource {
-    pub source_type: SessionSourceType,
+    pub source_type: String,  // 简化类型
     pub source_task_id: Option<String>,
 }
 
 impl SharedSessionSource {
     pub fn user(source_task_id: Option<String>) -> Self {
         Self {
-            source_type: SessionSourceType::User,
+            source_type: "User".to_string(),
             source_task_id,
         }
     }
 
     pub fn ambient_agent(task_id: Option<String>) -> Self {
         Self {
-            source_type: SessionSourceType::AmbientAgent {
-                task_id: task_id.clone(),
-            },
+            source_type: "AmbientAgent".to_string(),
             source_task_id: task_id,
         }
     }
 
     pub fn orchestrator_task_id(&self) -> Option<&str> {
-        self.source_task_id.as_deref().or(match &self.source_type {
-            SessionSourceType::AmbientAgent { task_id } => task_id.as_deref(),
-            SessionSourceType::User => None,
-        })
+        self.source_task_id.as_deref()
     }
 }
 
@@ -193,5 +169,11 @@ impl Default for SharedSessionSource {
     }
 }
 
-// Re-export SessionSourceType from session_sharing_protocol
-pub use session_sharing_protocol::sharer::SessionSourceType;
+// 简化的 SessionSourceType
+#[derive(Debug, Clone)]
+pub enum SessionSourceType {
+    User,
+    AmbientAgent {
+        task_id: Option<String>,
+    },
+}

@@ -79,7 +79,8 @@ use crate::terminal::model::index::VisibleRow;
 use crate::terminal::model::iterm_image::{ITermImage, ITermImageMetadata};
 use crate::terminal::model::secrets::ObfuscateSecrets;
 use crate::terminal::model::session::SessionInfo;
-use crate::terminal::shared_session::{SharedSessionSource, SharedSessionStatus};
+// 已注释：清理 shared_session 共享会话功能
+// use crate::terminal::shared_session::{SharedSessionSource, SharedSessionStatus};
 use crate::terminal::shell::{ShellName, ShellType};
 use crate::terminal::ssh::util::{InteractiveSshCommand, SshLoginState};
 use crate::terminal::{
@@ -570,11 +571,14 @@ pub struct TerminalModel {
     /// Whether or not to respect secrets that are obfuscated, respecting the Safe Mode/Secret Redaction setting.
     obfuscate_secrets: ObfuscateSecrets,
 
-    shared_session_status: SharedSessionStatus,
+    // 已注释：清理 shared_session 共享会话功能
+    // shared_session_status: SharedSessionStatus,
+    shared_session_status: bool,  // 简化为 bool 类型
 
     /// `SessionSourceType` paired with `source_task_id`, or `None` when
     /// this is not a shared session.
-    shared_session_source: Option<SharedSessionSource>,
+    // shared_session_source: Option<SharedSessionSource>,
+    shared_session_source: Option<String>,  // 简化为 String 类型
 
     /// Whether this terminal model was created as a cloud mode dummy session
     /// (no local shell process, deferred shared-session viewer backing).
@@ -592,12 +596,15 @@ pub struct TerminalModel {
     /// This field is only [`Some`] if this session is shared.
     /// TODO: consider combining this with `shared_session_status` because
     /// the state can technically diverge.
-    ordered_terminal_events_for_shared_session_tx: Option<Sender<OrderedTerminalEventType>>,
+    // 已注释：清理 shared_session 共享会话功能
+    // ordered_terminal_events_for_shared_session_tx: Option<Sender<OrderedTerminalEventType>>,
+    ordered_terminal_events_for_shared_session_tx: Option<String>,  // 简化类型
 
     /// A sender for write to pty events for a shared session viewer.
     ///
     /// This field is only [`Some`] if this session is shared.
-    write_to_pty_events_for_shared_session_tx: Option<Sender<Vec<u8>>>,
+    // write_to_pty_events_for_shared_session_tx: Option<Sender<Vec<u8>>>,
+    write_to_pty_events_for_shared_session_tx: Option<String>,  // 简化类型
 
     /// Whether this viewer is currently receiving historical agent conversation replay.
     /// Used to suppress live-conversation-specific actions (e.g. tombstone insertion)
@@ -1109,7 +1116,8 @@ impl TerminalModel {
         is_ai_ugc_telemetry_enabled: bool,
         session_startup_path: Option<PathBuf>,
         shell_state: ShellLaunchState,
-        shared_session_status: SharedSessionStatus,
+        // shared_session_status: SharedSessionStatus,  // 已注释：清理 shared_session 共享会话功能
+        shared_session_status: bool,  // 简化类型
         is_dummy_cloud_mode_session: bool,
     ) -> Self {
         let alt_screen = AltScreen::new(
@@ -1161,12 +1169,13 @@ impl TerminalModel {
             env_var_collection_name: None,
             shell_launch_state: shell_state,
             obfuscate_secrets,
-            shared_session_status,
+            shared_session_status,  // 已注释：清理 shared_session 共享会话功能 (类型已简化)
             shared_session_source: None,
             is_dummy_cloud_mode_session,
             conversation_transcript_viewer_status: None,
-            ordered_terminal_events_for_shared_session_tx: None,
-            write_to_pty_events_for_shared_session_tx: None,
+            // ordered_terminal_events_for_shared_session_tx: None,  // 已注释：清理 shared_session 共享会话功能
+            ordered_terminal_events_for_shared_session_tx: None,  // 类型已简化
+            write_to_pty_events_for_shared_session_tx: None,  // 类型已简化
             is_receiving_agent_conversation_replay: false,
             tmux_background_outputs: HashMap::new(),
             tmux_control_mode_context: None,
@@ -1219,7 +1228,9 @@ impl TerminalModel {
 
     /// Creates a terminal model for a cloud mode pane before it has connected to a shared session.
     #[allow(clippy::too_many_arguments)]
-    pub fn new_for_cloud_mode_shared_session_viewer(
+    // 已注释：清理 shared_session 共享会话功能
+    // pub fn new_for_cloud_mode_shared_session_viewer(
+    pub fn new_for_cloud_mode_shared_session_viewer_disabled(
         sizes: BlockSize,
         colors: color::List,
         event_proxy: ChannelEventListener,
@@ -1963,17 +1974,27 @@ impl TerminalModel {
         }
     }
 
-    pub fn shared_session_status(&self) -> &SharedSessionStatus {
-        &self.shared_session_status
+    // 已注释：清理 shared_session 共享会话功能
+    // pub fn shared_session_status(&self) -> &SharedSessionStatus {
+    //     &self.shared_session_status
+    // }
+    pub fn shared_session_status(&self) -> bool {
+        self.shared_session_status
     }
 
-    pub fn set_shared_session_status(&mut self, shared_session_status: SharedSessionStatus) {
+    // pub fn set_shared_session_status(&mut self, shared_session_status: SharedSessionStatus) {
+    //     self.shared_session_status = shared_session_status;
+    // }
+    pub fn set_shared_session_status(&mut self, shared_session_status: bool) {
         self.shared_session_status = shared_session_status;
     }
 
     /// Returns whether this terminal is viewing a shared session.
+    // pub fn is_shared_session_viewer(&self) -> bool {
+    //     self.shared_session_status.is_viewer()
+    // }
     pub fn is_shared_session_viewer(&self) -> bool {
-        self.shared_session_status.is_viewer()
+        false  // 默认返回 false
     }
 
     /// Resize terminal to new dimensions.

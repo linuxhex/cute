@@ -13,9 +13,10 @@ use crate::ai::blocklist::agent_view::agent_input_footer::{
 };
 use crate::terminal::cli_agent_sessions::listener::agent_supports_rich_status;
 use crate::terminal::cli_agent_sessions::{CLIAgentInputEntrypoint, CLIAgentSessionsModel};
-use crate::terminal::shared_session::{
-    SharedSessionActionSource, SharedSessionScrollbackType, SharedSessionSource,
-};
+// 已注释：清理 shared_session 共享会话功能
+// use crate::terminal::shared_session::{
+//     SharedSessionActionSource, SharedSessionScrollbackType, SharedSessionSource,
+// };
 use crate::util::image::{infer_mime_type, MAX_IMAGE_SIZE_BYTES_FOR_CLI_AGENT, MIME_SNIFF_BYTES};
 mod cuteify_footer;
 

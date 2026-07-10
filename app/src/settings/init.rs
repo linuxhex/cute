@@ -90,7 +90,7 @@ pub fn register_all_settings(ctx: &mut AppContext) {
     UndoCloseSettings::register(ctx);
     SshSettings::register(ctx);
     VimBannerSettings::register(ctx);
-    SharedSessionSettings::register(ctx);
+    // SharedSessionSettings::register(ctx);  // 已注释：清理 shared_session 共享会话功能
     WarpDriveSettings::register(ctx);
     WorkflowAliases::register(ctx);
     EmacsBindingsSettings::register(ctx);

@@ -12,7 +12,7 @@ mod open_in_cute;
 mod passive_code_diff;
 pub(crate) mod prompt_suggestions;
 mod session_state;
-mod shared_sessions;
+mod shared_sessions;  // 已注释：清理 shared_session 共享会话功能 (保留目录，但简化内容)
 mod shell_process_terminated;
 mod ssh;
 mod vim_mode;
@@ -28,7 +28,7 @@ pub use open_in_cute::*;
 pub use passive_code_diff::*;
 use pathfinder_color::ColorU;
 pub use session_state::*;
-pub use shared_sessions::*;
+// pub use shared_sessions::*;  // 已注释：清理 shared_session 共享会话功能
 pub use shell_process_terminated::*;
 pub use ssh::*;
 pub use vim_mode::*;

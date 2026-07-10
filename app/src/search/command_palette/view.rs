@@ -395,12 +395,15 @@ impl View {
 
     /// Sets whether the active session is a shared session viewer.
     /// This should be called by the workspace before opening the palette.
-    pub fn set_is_shared_session_viewer(&mut self, is_viewer: bool, ctx: &mut ViewContext<Self>) {
-        self.is_shared_session_viewer = is_viewer;
+    // 已注释：清理 shared_session 共享会话功能
+    pub fn set_is_shared_session_viewer(&mut self, _is_viewer: bool, ctx: &mut ViewContext<Self>) {
+        // self.is_shared_session_viewer = is_viewer;
+        self.is_shared_session_viewer = false;  // 默认设置为 false
 
         let mixer = self.search_bar.as_ref(ctx).mixer().clone();
         self.data_source_store.update(ctx, |store, ctx| {
-            store.reset_search_mixer(mixer.clone(), self.is_shared_session_viewer, ctx);
+            // store.reset_search_mixer(mixer.clone(), self.is_shared_session_viewer, ctx);
+            store.reset_search_mixer(mixer.clone(), false, ctx);  // 默认传递 false
             ctx.notify();
         });
     }

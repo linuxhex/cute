@@ -1643,8 +1643,10 @@ impl ProfileModelSelector {
                 });
         let terminal_model = self.terminal_model.lock();
         let has_edit_access = is_composing_ambient_agent
-            || !terminal_model.shared_session_status().is_viewer()
-            || terminal_model.shared_session_status().is_executor();
+            // 已注释：清理 shared_session 共享会话功能
+            // || !terminal_model.shared_session_status().is_viewer()
+            // || terminal_model.shared_session_status().is_executor()
+            || true;  // 保持默认值允许编辑
         let is_lrc = FeatureFlag::InlineMenuHeaders.is_enabled()
             && terminal_model
                 .block_list()
@@ -2188,11 +2190,13 @@ impl View for ProfileModelSelector {
         let has_multiple_profiles = profiles_model.has_multiple_profiles();
 
         // Check if user is a viewer in a shared session
-        let is_viewer = self
-            .terminal_model
-            .lock()
-            .shared_session_status()
-            .is_viewer();
+        // 已注释：清理 shared_session 共享会话功能
+        let is_viewer = false;  // 默认设置为 false
+        // let is_viewer = self
+        //     .terminal_model
+        //     .lock()
+        //     .shared_session_status()
+        //     .is_viewer();
 
         let mut compact_row = Flex::row().with_cross_axis_alignment(CrossAxisAlignment::Center);
 
