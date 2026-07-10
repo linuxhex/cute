@@ -592,38 +592,41 @@ impl EnvVarCollectionView {
         window_id: WindowId,
         ctx: &mut ViewContext<Self>,
     ) {
-        let initial_load_complete = UpdateManager::handle(ctx).update(ctx, |update_manager, _| {
-            update_manager.initial_load_complete()
-        });
-
-        // Since initial_load_complete() returns a bool, not a future,
-        // we directly check the result instead of spawning a future
-        if initial_load_complete {
-            let env_var_collection = CloudModel::as_ref(ctx)
-                .get_env_var_collection(&env_var_collection_id)
-                .cloned();
-            if let Some(env_var_collection) = env_var_collection {
-                self.load(env_var_collection, ctx);
-            } else if let Some(server_id) = env_var_collection_id.into_server() {
-                self.fetch_and_load_env_var_collection(server_id, window_id, ctx);
-            } else {
-                ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
-                    toast_stack.add_ephemeral_toast_by_type(
-                        ToastType::CloudObjectNotFound,
-                        window_id,
-                        ctx,
-                    );
-                });
-                log::warn!("Tried to open unknown env var collection {env_var_collection_id:?}");
-            }
+        // COMMENTED: Cloud load wait disabled in local version
+        // let initial_load_complete = UpdateManager::handle(ctx).update(ctx, |update_manager, _| {
+        //     update_manager.initial_load_complete()
+        // });
+        //
+        // // Since initial_load_complete() returns a bool, not a future,
+        // // we directly check the result instead of spawning a future
+        // if initial_load_complete {
+        // Simplified: directly try to load env var collection without waiting for cloud
+        let env_var_collection = CloudModel::as_ref(ctx)
+            .get_env_var_collection(&env_var_collection_id)
+            .cloned();
+        if let Some(env_var_collection) = env_var_collection {
+            self.load(env_var_collection, ctx);
+        } else if let Some(server_id) = env_var_collection_id.into_server() {
+            self.fetch_and_load_env_var_collection(server_id, window_id, ctx);
         } else {
-            // If initial load is not complete, fetch the env var collection directly
-            if let Some(server_id) = env_var_collection_id.into_server() {
-                self.fetch_and_load_env_var_collection(server_id, window_id, ctx);
-            } else {
-                ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
-                    toast_stack.add_ephemeral_toast_by_type(
-                        ToastType::CloudObjectNotFound,
+            ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                toast_stack.add_ephemeral_toast_by_type(
+                    ToastType::CloudObjectNotFound,
+                    window_id,
+                    ctx,
+                );
+            });
+            log::warn!("Tried to open unknown env var collection {env_var_collection_id:?}");
+        }
+        // COMMENTED: Cloud load wait disabled in local version
+        // } else {
+        //     // If initial load is not complete, fetch the env var collection directly
+        //     if let Some(server_id) = env_var_collection_id.into_server() {
+        //         self.fetch_and_load_env_var_collection(server_id, window_id, ctx);
+        //     } else {
+        //         ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+        //             toast_stack.add_ephemeral_toast_by_type(
+        //                 ToastType::CloudObjectNotFound,
                         window_id,
                         ctx,
                     );

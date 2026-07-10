@@ -9,6 +9,7 @@ use crate::channel::{Channel, ChannelState};
 use crate::report_error;
 use crate::server::server_api::{ServerApi, FETCH_CHANNEL_VERSIONS_TIMEOUT};
 
+// Simplified: fetch channel versions from local file or return error in local version
 // Fetches channel versions asynchronously from the Warp server. If the Warp server request fails,
 // then fetches from GCP JSON storage as a fallback.
 pub async fn fetch_channel_versions(
@@ -17,6 +18,7 @@ pub async fn fetch_channel_versions(
     include_changelogs: bool,
     is_daily: bool,
 ) -> Result<ChannelVersions> {
+    // Local file loading (kept for testing)
     if let Ok(path) = env::var("WARP_CHANNEL_VERSIONS_PATH") {
         // Load channel versions from local filesystem. Used for testing both
         // autoupdate and changelog behavior.
@@ -26,26 +28,30 @@ pub async fn fetch_channel_versions(
             .context("Failed to parse channel versions JSON");
     }
 
-    let channel_versions = server_api
-        .fetch_channel_versions(include_changelogs, is_daily)
-        .await
-        .context("Failed to retrieve channel versions from Warp server");
-    match channel_versions {
-        channel_versions @ Ok(_) => channel_versions,
-        Err(err) => {
-            match ChannelState::channel() {
-                // Only log an error on Dev and Preview -- if this is failing, its likely to be
-                // failing for all users, and Stable has too many users (this error would flood
-                // our Sentry logs).
-                Channel::Dev | Channel::Preview => report_error!(err),
-                _ => log::warn!(
-                    "Failed to retrieve channel versions from Warp server, falling \
-                back to GCP JSON storage."
-                ),
-            }
-            fetch_channel_versions_from_json_storage(server_api.http_client(), nonce).await
-        }
-    }
+    // COMMENTED: Cloud channel version fetching disabled in local version
+    // let channel_versions = server_api
+    //     .fetch_channel_versions(include_changelogs, is_daily)
+    //     .await
+    //     .context("Failed to retrieve channel versions from Warp server");
+    // match channel_versions {
+    //     channel_versions @ Ok(_) => channel_versions,
+    //     Err(err) => {
+    //         match ChannelState::channel() {
+    //             // Only log an error on Dev and Preview -- if this is failing, its likely to be
+    //             // failing for all users, and Stable has too many users (this error would flood
+    //             // our Sentry logs).
+    //             Channel::Dev | Channel::Preview => report_error!(err),
+    //             _ => log::warn!(
+    //                 "Failed to retrieve channel versions from Warp server, falling \
+    //             back to GCP JSON storage."
+    //             ),
+    //         }
+    //         fetch_channel_versions_from_json_storage(server_api.http_client(), nonce).await
+    //     }
+    // }
+
+    // Simplified: return error in local version
+    Err(anyhow::anyhow!("Channel version fetching disabled in local version. Set WARP_CHANNEL_VERSIONS_PATH for local testing."))
 }
 
 // Synchronously fetches updated Warp [`ChannelVersions`] from GCP JSON storage. This will soon

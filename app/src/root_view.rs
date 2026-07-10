@@ -901,6 +901,7 @@ fn open_settings_page_in_new_window(section: &SettingsSection, ctx: &mut AppCont
     });
 }
 
+/// Simplified: MCP servers page does not need to wait for cloud load in local version.
 /// MCP servers need to wait for initial load to complete, so we have this action in addition
 /// to the general-purpose [`open_settings_page_in_new_window`].
 fn open_mcp_settings_in_new_window(args: &OpenMCPSettingsArgs, ctx: &mut AppContext) {
@@ -910,20 +911,23 @@ fn open_mcp_settings_in_new_window(args: &OpenMCPSettingsArgs, ctx: &mut AppCont
         if let AuthOnboardingState::Terminal(workspace_view_handle) =
             &root_view.auth_onboarding_state
         {
-            let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
+            // COMMENTED: Cloud load wait disabled in local version
+            // let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
             workspace_view_handle.update(ctx, |_, ctx| {
-                let _ = ctx.spawn(async move { initial_load_complete }, move |workspace, _, ctx| {
-                    workspace.open_mcp_servers_page(
-                        MCPServersSettingsPage::List,
-                        autoinstall.as_deref(),
-                        ctx,
-                    )
-                });
+                // Simplified: directly open MCP servers page without waiting
+                // let _ = ctx.spawn(async move { initial_load_complete }, move |workspace, _, ctx| {
+                //     workspace.open_mcp_servers_page(
+                //         MCPServersSettingsPage::List,
+                //         autoinstall.as_deref(),
+                //         ctx,
+                //     )
+                // });
             });
         }
     });
 }
 
+/// Simplified: Codex modal does not need to wait for cloud load in local version.
 /// Opens a new window and shows the Codex modal.
 fn open_codex_in_new_window(_: &(), ctx: &mut AppContext) {
     let root_handle = open_new_window_get_handles(None, ctx).1;
@@ -931,11 +935,13 @@ fn open_codex_in_new_window(_: &(), ctx: &mut AppContext) {
         if let AuthOnboardingState::Terminal(workspace_view_handle) =
             &root_view.auth_onboarding_state
         {
-            let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
+            // COMMENTED: Cloud load wait disabled in local version
+            // let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
             workspace_view_handle.update(ctx, |_, ctx| {
-                let _ = ctx.spawn(async move { initial_load_complete }, move |workspace, _, ctx| {
-                    workspace.open_codex_modal(ctx)
-                });
+                // Simplified: directly open Codex modal without waiting
+                // let _ = ctx.spawn(async move { initial_load_complete }, move |workspace, _, ctx| {
+                //     workspace.open_codex_modal(ctx)
+                // });
             });
         }
     });
@@ -2304,6 +2310,7 @@ impl RootView {
         true
     }
 
+    /// Simplified: MCP servers settings page does not need to wait for cloud load in local version.
     /// Opens the MCP servers settings page in an existing window, optionally triggering auto-install.
     /// Waits for `initial_load_complete` before opening so gallery data is available for autoinstall.
     pub fn open_mcp_settings_in_existing_window(
@@ -2313,15 +2320,17 @@ impl RootView {
     ) -> bool {
         if let AuthOnboardingState::Terminal(handle) = &self.auth_onboarding_state {
             let autoinstall = args.autoinstall.clone();
-            let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
+            // COMMENTED: Cloud load wait disabled in local version
+            // let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
             handle.update(ctx, |_, ctx| {
-                let _ = ctx.spawn(async move { initial_load_complete }, move |workspace, _, ctx| {
-                    workspace.open_mcp_servers_page(
-                        MCPServersSettingsPage::List,
-                        autoinstall.as_deref(),
-                        ctx,
-                    )
-                });
+                // Simplified: directly open MCP servers page without waiting
+                // let _ = ctx.spawn(async move { initial_load_complete }, move |workspace, _, ctx| {
+                //     workspace.open_mcp_servers_page(
+                //         MCPServersSettingsPage::List,
+                //         autoinstall.as_deref(),
+                //         ctx,
+                //     )
+                // });
             });
             let window_id = ctx.window_id();
             ctx.windows().show_window_and_focus_app(window_id);

@@ -132,17 +132,21 @@ where
     }
 }
 
+/// Simplified: local version always returns success without waiting for cloud load
 /// Refresh Warp Drive before executing an operation.
 pub fn refresh_cute_drive(
     ctx: &AppContext,
 ) -> impl Future<Output = anyhow::Result<()>> + Send + 'static {
-    let load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
+    // COMMENTED: Cloud load check disabled in local version
+    // let load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
     async move {
-        if load_complete {
-            Ok(())
-        } else {
-            Err(anyhow::anyhow!("Warp Drive not loaded"))
-        }
+        // Simplified: always return success in local version
+        // if load_complete {
+        //     Ok(())
+        // } else {
+        //     Err(anyhow::anyhow!("Warp Drive not loaded"))
+        // }
+        Ok(())
     }
 }
 

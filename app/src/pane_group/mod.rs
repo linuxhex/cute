@@ -6968,28 +6968,30 @@ impl PaneGroup {
         let _ = ctx;
     }
 
+    // Simplified: browser URL update does not need to wait for cloud load in local version
     #[cfg(target_family = "wasm")]
     fn update_browser_url(&self, ctx: &mut ViewContext<Self>) {
-        // We need to wait for the app to be loaded before we attempt to get the
-        // shareable links. This is because the links come from CloudModel objects
-
-        let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
-        ctx.spawn(initial_load_complete, move |me, _, ctx| {
-            if let Some(pane) = me.focused_pane_content(ctx) {
-                match pane.shareable_link(ctx) {
-                    Ok(crate::pane_group::pane::ShareableLink::Base) => {
-                        update_browser_url(None, false)
-                    }
-                    Ok(crate::pane_group::pane::ShareableLink::Pane { url }) => {
-                        update_browser_url(Some(url), false)
-                    }
-                    Err(crate::pane_group::pane::ShareableLinkError::Expected) => {}
-                    Err(crate::pane_group::pane::ShareableLinkError::Unexpected(message)) => {
-                        log::error!("Failed to updated browser url. {message}")
-                    }
-                }
-            }
-        });
+        // COMMENTED: Browser URL update disabled in local version
+        // // We need to wait for the app to be loaded before we attempt to get the
+        // // shareable links. This is because the links come from CloudModel objects
+        //
+        // let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
+        // ctx.spawn(initial_load_complete, move |me, _, ctx| {
+        //     if let Some(pane) = me.focused_pane_content(ctx) {
+        //         match pane.shareable_link(ctx) {
+        //             Ok(crate::pane_group::pane::ShareableLink::Base) => {
+        //                 update_browser_url(None, false)
+        //             }
+        //             Ok(crate::pane_group::pane::ShareableLink::Pane { url }) => {
+        //                 update_browser_url(Some(url), false)
+        //             }
+        //             Err(crate::pane_group::pane::ShareableLinkError::Expected) => {}
+        //             Err(crate::pane_group::pane::ShareableLinkError::Unexpected(message)) => {
+        //                 log::error!("Failed to updated browser url. {message}")
+        //             }
+        //         }
+        //     }
+        // });
     }
 
     /// Focus the active terminal session, if there is one.
