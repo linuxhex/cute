@@ -445,12 +445,14 @@ impl OneTimeModalModel {
 ///
 /// Users on `Default` already see the chip via `AgentToolbarItemKind::default_right()`.
 fn maybe_ensure_handoff_chip_in_toolbar(ctx: &mut ModelContext<OneTimeModalModel>) {
-    if !FeatureFlag::OzHandoff.is_enabled()
-        || !FeatureFlag::HandoffLocalCloud.is_enabled()
-        || !cfg!(all(feature = "local_fs", not(target_family = "wasm")))
-    {
-        return;
-    }
+    // COMMENTED: 禁用 handoff 功能
+    // if !FeatureFlag::OzHandoff.is_enabled()
+    //     || !FeatureFlag::HandoffLocalCloud.is_enabled()
+    //     || !cfg!(all(feature = "local_fs", not(target_family = "wasm")))
+    // {
+    //     return;
+    // }
+    return;
 
     let session_settings = SessionSettings::as_ref(ctx);
     if *session_settings.did_add_handoff_chip_to_toolbar {

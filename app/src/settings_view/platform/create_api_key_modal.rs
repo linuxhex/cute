@@ -144,8 +144,7 @@ impl CreateApiKeyModal {
     pub fn new(ctx: &mut ViewContext<Self>) -> Self {
         let font_family = Appearance::as_ref(ctx).ui_font_family();
 
-        let has_team = FeatureFlag::TeamApiKeys.is_enabled()
-            && UserWorkspaces::as_ref(ctx).current_team_uid().is_some();
+        let has_team = UserWorkspaces::as_ref(ctx).current_team_uid().is_some();
         let has_named_agents = FeatureFlag::NamedAgents.is_enabled();
 
         let name_editor = ctx.add_typed_action_view(|ctx| {
@@ -435,8 +434,7 @@ impl CreateApiKeyModal {
     }
 
     fn update_has_team(&mut self, ctx: &mut ViewContext<Self>) {
-        let new_has_team = FeatureFlag::TeamApiKeys.is_enabled()
-            && UserWorkspaces::as_ref(ctx).current_team_uid().is_some();
+        let new_has_team = UserWorkspaces::as_ref(ctx).current_team_uid().is_some();
         let new_has_named_agents = FeatureFlag::NamedAgents.is_enabled();
 
         if new_has_team != self.has_team || new_has_named_agents != self.has_named_agents {

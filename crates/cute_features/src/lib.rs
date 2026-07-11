@@ -451,9 +451,6 @@ pub enum FeatureFlag {
     /// Enables inline code review functionality
     InlineCodeReview,
 
-    /// Enables cloud environments management via CLI.
-    CloudEnvironments,
-
     /// Enables the /create-environment slash command for setting up Warp Environments
     CreateEnvironmentSlashCommand,
 
@@ -537,15 +534,6 @@ pub enum FeatureFlag {
     /// Enables the inline repo switcher menu for switching between indexed repos.
     InlineRepoMenu,
 
-    /// Enables cloud mode functionality for ambient agents.
-
-    /// Enables v2 of the cloud mode setup flow.
-
-    /// Enables starting cloud mode from a local session.
-
-    /// Enables host selection in cloud mode.
-    CloudModeHostSelector,
-
     /// Enables Warp Managed Secrets functionality.
     WarpManagedSecrets,
 
@@ -563,9 +551,6 @@ pub enum FeatureFlag {
 
     /// Enables computer use functionality in local clients.
     LocalComputerUse,
-
-    /// Enables team API key creation in the API key management UI.
-    TeamApiKeys,
 
     /// Enables the "New agent" prompt chip in terminal mode when AgentView is enabled.
     ///
@@ -628,8 +613,6 @@ pub enum FeatureFlag {
     /// Enables image upload for ambient agents.
     AmbientAgentsImageUpload,
 
-    /// Enables image attachment support for cloud mode conversations.
-
     /// Enables loading and returning bundled skills in the SkillManager.
     BundledSkills,
 
@@ -639,8 +622,6 @@ pub enum FeatureFlag {
     /// Enables the OpenWarp launch modal announcing Warp going open-source.
     /// When enabled, the HOA onboarding flow is suppressed.
     OpenWarpLaunchModal,
-
-    /// Enables the orchestration launch modal announcing multi-agent orchestration features.
 
     /// Updated tab styling (background colors, border, close button positioning, margins).
     NewTabStyling,
@@ -822,14 +803,6 @@ pub enum FeatureFlag {
     /// `base_model_context_window_limit` is not sent on outbound requests, so
     /// the server falls back to its default.
     ConfigurableContextWindow,
-    /// Enables continuing cloud mode conversations in the cloud after an execution ends.
-    HandoffCloudCloud,
-
-    /// Enables the local-to-cloud Oz handoff entry points (footer chip and
-    /// `/move-to-cloud` slash command) that fork the active local Oz
-    /// conversation into a fresh cloud agent run with the current workspace
-    /// snapshot attached. Requires `OzHandoff` to also be enabled.
-    HandoffLocalCloud,
 
     /// Enables creating API keys scoped to named agents in the API key
     /// management UI. When enabled the "Team" option in the key-type

@@ -23537,7 +23537,9 @@ impl TypedActionView for Workspace {
                 // Open branch selector in a split pane instead of popup
                 self.open_branch_selector_pane(*pane_id, ctx);
             }
-            // OpenOpenWarpLaunchModal and ResetOpenWarpLaunchModalState removed - cloud feature
+            // COMMENTED: 禁用云端启动模态框
+            OpenOpenWarpLaunchModal => {}
+            ResetOpenWarpLaunchModalState => {}
         };
         if action.should_save_app_state_on_action() {
             ctx.dispatch_global_action("workspace:save_app", ());

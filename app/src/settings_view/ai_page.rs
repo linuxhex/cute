@@ -6698,7 +6698,9 @@ impl SettingsWidget for CloudHandoffWidget {
     }
 
     fn should_render(&self, _app: &AppContext) -> bool {
-        FeatureFlag::OzHandoff.is_enabled() && FeatureFlag::HandoffLocalCloud.is_enabled()
+        // COMMENTED: 禁用 handoff 功能
+        // FeatureFlag::OzHandoff.is_enabled() && FeatureFlag::HandoffLocalCloud.is_enabled()
+        false
     }
 
     fn render(

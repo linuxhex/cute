@@ -3653,13 +3653,15 @@ impl Input {
     fn maybe_launch_cloud_handoff_request(&mut self, ctx: &mut ViewContext<Self>) -> bool {
         use crate::cloud_stub_types::CloudObjectLookup as _;
 
-        if !FeatureFlag::OzHandoff.is_enabled()
-            || !FeatureFlag::HandoffLocalCloud.is_enabled()
-            || !cfg!(all(feature = "local_fs", not(target_family = "wasm")))
-            || self.prefix_mode(ctx) != InputPrefixMode::CloudHandoff
-        {
-            return false;
-        }
+        // COMMENTED: 禁用 handoff 功能
+        // if !FeatureFlag::OzHandoff.is_enabled()
+        //     || !FeatureFlag::HandoffLocalCloud.is_enabled()
+        //     || !cfg!(all(feature = "local_fs", not(target_family = "wasm")))
+        //     || self.prefix_mode(ctx) != InputPrefixMode::CloudHandoff
+        // {
+        //     return false;
+        // }
+        return false;
 
         let prompt = self.editor.as_ref(ctx).buffer_text(ctx).trim().to_owned();
         if prompt.is_empty() {

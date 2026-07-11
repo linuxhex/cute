@@ -2501,12 +2501,13 @@ impl TypedActionView for AgentInputFooter {
                 });
             }
             AgentInputFooterAction::OpenHandoffPane => {
-                if FeatureFlag::OzHandoff.is_enabled()
-                    && FeatureFlag::HandoffLocalCloud.is_enabled()
-                    && cfg!(all(feature = "local_fs", not(target_family = "wasm")))
-                {
-                    ctx.emit(AgentInputFooterEvent::OpenHandoffPane);
-                }
+                // COMMENTED: 禁用 handoff 功能
+                // if FeatureFlag::OzHandoff.is_enabled()
+                //     && FeatureFlag::HandoffLocalCloud.is_enabled()
+                //     && cfg!(all(feature = "local_fs", not(target_family = "wasm")))
+                // {
+                //     ctx.emit(AgentInputFooterEvent::OpenHandoffPane);
+                // }
             }
             AgentInputFooterAction::ShowContextMenu { position } => {
                 ctx.emit(AgentInputFooterEvent::ShowContextMenu {
