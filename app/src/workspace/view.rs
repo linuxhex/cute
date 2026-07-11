@@ -22149,18 +22149,19 @@ impl TypedActionView for Workspace {
             //         );
             //     }
             // }
-            CreatePersonalFolder => {
-                self.update_warp_drive_view(ctx, |drive_panel, ctx| {
-                    drive_panel.open_cloud_object_dialog(
-                        DriveObjectType::Folder,
-                        Space::Personal,
-                        None,
-                        ctx,
-                    );
-                });
-                self.current_workspace_state.is_warp_drive_open = true;
-                ctx.notify();
-            }
+            // 注释掉云端个人文件夹功能 - 本地版本不支持
+            // CreatePersonalFolder => {
+            //     self.update_warp_drive_view(ctx, |drive_panel, ctx| {
+            //         drive_panel.open_cloud_object_dialog(
+            //             DriveObjectType::Folder,
+            //             Space::Personal,
+            //             None,
+            //             ctx,
+            //         );
+            //     });
+            //     self.current_workspace_state.is_warp_drive_open = true;
+            //     ctx.notify();
+            // }
             ToggleMouseReporting => self.toggle_mouse_reporting(ctx),
             ToggleScrollReporting => self.toggle_scroll_reporting(ctx),
             ToggleFocusReporting => self.toggle_focus_reporting(ctx),
@@ -23536,6 +23537,7 @@ impl TypedActionView for Workspace {
                 // Open branch selector in a split pane instead of popup
                 self.open_branch_selector_pane(*pane_id, ctx);
             }
+            // OpenOpenWarpLaunchModal and ResetOpenWarpLaunchModalState removed - cloud feature
         };
         if action.should_save_app_state_on_action() {
             ctx.dispatch_global_action("workspace:save_app", ());

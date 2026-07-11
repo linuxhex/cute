@@ -487,5 +487,3 @@ pub fn completion_location(
         }
     }
 }
-
-#[cfg(not(feature = "v2"))]

@@ -567,7 +567,7 @@ async fn suggestions_internal<'a>(
     if options.suggest_file_path_completions_only {
         let path_completion_context = ctx.path_completion_context()?;
         let classified_command = &classified_command?;
-        let path_completions = engine::path::sorted_paths_relative_to(
+        let path_completions: Vec<_> = engine::path::sorted_paths_relative_to(
             &classified_command.command.last_token(),
             options.match_strategy,
             path_completion_context,

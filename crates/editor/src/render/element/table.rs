@@ -82,9 +82,6 @@ fn model_table_layout_report(laid_out_table: &LaidOutTable) -> TableLayoutReport
     }
 }
 
-    (row_tops, row_heights)
-}
-
 impl RenderableTable {
     pub fn new(viewport_item: ViewportItem) -> Self {
         Self {
