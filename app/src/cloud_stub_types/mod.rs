@@ -191,6 +191,12 @@ pub use models::{
     CloudFolder, CloudFolderModel, CloudNotebook, CloudNotebookModel, NotebookId,
 };
 
+// Re-export SharedSessionSource and related types
+pub use crate::terminal::model::terminal_model::{SharedSessionSource, SessionSourceType};
+
+// Define missing type aliases
+pub type OpenWarpDriveObjectSettings = OpenCuteDriveObjectSettings;
+
 use self::breadcrumbs::ContainingObject;
 use self::model::actions::ObjectActions;
 use crate::appearance::Appearance;
@@ -1240,6 +1246,12 @@ impl TeamMetadata {
     pub fn uid(&self) -> &crate::server::ids::ServerId {
         &self.uid
     }
+
+    pub fn has_admin_permissions(&self, email: &str) -> bool {
+        self.members.iter().any(|member| {
+            member.email == email && (member.role == MembershipRole::Admin || member.role == MembershipRole::Owner)
+        })
+    }
 }
 
 /// Minimal stub for NotebookView
@@ -2033,6 +2045,21 @@ impl std::fmt::Debug for WorkflowArgSelectorStyles {
 pub enum AdminEnablementSetting {
     Enabled,
     Disabled,
+    RespectUserSetting,
+}
+
+/// Minimal stub for UgcCollectionEnablementSetting (cloud feature)
+#[derive(Clone, Debug, PartialEq)]
+pub enum UgcCollectionEnablementSetting {
+    Enabled,
+    Disabled,
+    RespectUserSetting,
+}
+
+/// Minimal stub for AiAutonomySettings (cloud feature)
+#[derive(Clone, Debug, Default)]
+pub struct AiAutonomySettings {
+    // Stub fields for compatibility
 }
 
 /// Minimal stub for ContentEditability
@@ -2356,6 +2383,24 @@ pub enum SessionSource {
     Inactive,
 }
 
+/// Minimal stub for SessionSourceType
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum SessionSourceType {
+    AmbientAgent { task_id: Option<String> },
+    CommandPalette { command_id: String },
+    Workflow { workflow_id: String },
+}
+
+impl SessionSourceType {
+    pub fn orchestrator_task_id(&self) -> Option<&str> {
+        match self {
+            SessionSourceType::AmbientAgent { task_id } => task_id.as_deref(),
+            SessionSourceType::CommandPalette { .. } => None,
+            SessionSourceType::Workflow { .. } => None,
+        }
+    }
+}
+
 // ===== Editor Related Types =====
 
 /// Minimal stub for LineCol (line and column position)
@@ -2480,6 +2525,14 @@ impl WorkspaceMetadata {
             teams: _teams,
         }
     }
+
+    pub fn are_overages_toggleable(&self) -> bool {
+        false
+    }
+
+    pub fn are_overages_enabled(&self) -> bool {
+        false
+    }
 }
 
 /// Minimal stub for TeamMember
@@ -2526,6 +2579,143 @@ impl From<FolderId> for crate::server::ids::SyncId {
     fn from(folder_id: FolderId) -> Self {
         crate::server::ids::SyncId::ServerId(folder_id.into())
     }
+}
+
+// ===== Cloud Object Metadata Types =====
+
+// ObjectType and GenericStringObjectFormat are already imported from cute_server_client::cloud_object
+// See line 185 for re-export: pub use cute_server_client::cloud_object::*;
+
+/// Minimal stub for CloudObjectMetadata
+#[derive(Clone, Debug, Default)]
+pub struct CloudObjectMetadata {
+    pub created_ts: Option<i64>,
+    pub updated_ts: Option<i64>,
+    pub trashed_ts: Option<i64>,
+    pub folder_id: Option<crate::server::ids::SyncId>,
+    pub is_welcome_object: bool,
+    pub owner: Owner,
+    pub revision: Option<Revision>,
+    pub creator_uid: Option<String>,
+}
+
+impl CloudObjectMetadata {
+    pub fn has_pending_content_changes(&self) -> bool {
+        false
+    }
+
+    pub fn has_pending_online_only_change(&self) -> bool {
+        false
+    }
+
+    pub fn has_online_only_content(&self) -> bool {
+        false
+    }
+}
+
+/// Minimal stub for CloudObjectStatuses
+#[derive(Clone, Debug, Default)]
+pub struct CloudObjectStatuses {
+    pub has_pending_changes: bool,
+    pub has_uncommitted_changes: bool,
+}
+
+/// Minimal stub for CloudObjectPermissions
+#[derive(Clone, Debug, Default)]
+pub struct CloudObjectPermissions {
+    pub owner: Owner,
+    pub access_level: SharingAccessLevel,
+}
+
+// Owner is already imported from cute_server_client::cloud_object
+// See line 185 for re-export: pub use cute_server_client::cloud_object::*;
+
+// NotebookId and GenericStringObjectId are already imported from models and model::generic_string_model
+// See lines 182 and 191 for re-exports
+
+/// Minimal stub for Revision (version tracking)
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Revision(pub u64);
+
+impl Revision {
+    pub fn from_unix_timestamp_micros(timestamp: i64) -> Result<Self, &'static str> {
+        Ok(Self(timestamp as u64))
+    }
+
+    pub fn unix_timestamp_micros(&self) -> i64 {
+        self.0 as i64
+    }
+
+    pub fn utc(&self) -> chrono::DateTime<chrono::Utc> {
+        chrono::DateTime::from_timestamp_micros(self.0 as i64)
+            .unwrap_or_else(chrono::Utc::now)
+    }
+}
+
+impl Default for Revision {
+    fn default() -> Self {
+        Self(0)
+    }
+}
+
+impl From<Revision> for cute_graphql::scalars::time::ServerTimestamp {
+    fn from(revision: Revision) -> Self {
+        cute_graphql::scalars::time::ServerTimestamp::from_unix_timestamp_micros(revision.unix_timestamp_micros())
+            .unwrap_or_else(|_| cute_graphql::scalars::time::ServerTimestamp::now())
+    }
+}
+
+/// Minimal stub for CloudObjectSyncStatus
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum CloudObjectSyncStatus {
+    InFlight(NumInFlightRequests),
+    Synced,
+    Failed,
+    Pending,
+    NoLocalChanges,
+}
+
+impl Default for CloudObjectSyncStatus {
+    fn default() -> Self {
+        CloudObjectSyncStatus::Synced
+    }
+}
+
+/// Minimal stub for NumInFlightRequests
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct NumInFlightRequests(pub u32);
+
+/// Minimal stub for ObjectAction (object change action)
+#[derive(Clone, Debug)]
+pub enum ObjectAction {
+    Create,
+    Update,
+    Delete,
+    Upsert,
+    Move,
+    Trash,
+    Untrash,
+    Share,
+}
+
+/// Minimal stub for UserProfileWithUID
+#[derive(Clone, Debug)]
+pub struct UserProfileWithUID {
+    pub uid: String,
+    pub name: String,
+    pub email: String,
+}
+
+/// Minimal stub for WorkspacesMetadataWithPricing
+#[derive(Clone, Debug)]
+pub struct WorkspacesMetadataWithPricing {
+    pub workspaces: Vec<WorkspaceMetadata>,
+}
+
+/// Minimal stub for AiOverages
+#[derive(Clone, Debug, Default)]
+pub struct AiOverages {
+    pub enabled: bool,
 }
 
 // ===== BackingView Implementations =====
@@ -3366,7 +3556,6 @@ pub type WarpDriveWorkflow = CuteDriveWorkflow;
 pub type WarpDriveEnvVarCollection = CuteDriveEnvVarCollection;
 pub type WarpDriveAIFact = CuteDriveAIFact;
 pub type WarpDriveMCPServer = CuteDriveMCPServer;
-pub type OpenWarpDriveObjectSettings = OpenCuteDriveObjectSettings;
 pub type OpenWarpDriveObjectArgs = OpenCuteDriveObjectArgs;
 pub type WarpDriveSettings = CuteDriveSettings;
 pub type WarpDriveSettingsChangedEvent = CuteDriveSettingsChangedEvent;
@@ -3484,19 +3673,63 @@ pub struct CloudAgentSettings {
     pub model: String,
 }
 
+impl cuteui::Entity for CloudAgentSettings {
+    type Event = ();
+}
+
+impl cuteui::SingletonEntity for CloudAgentSettings {}
+
+impl CloudAgentSettings {
+    pub fn as_ref(_ctx: &AppContext) -> &Self {
+        static INSTANCE: CloudAgentSettings = CloudAgentSettings::default();
+        &INSTANCE
+    }
+
+    pub fn handle(_ctx: &AppContext) -> cuteui::ModelHandle<Self> {
+        <Self as cuteui::SingletonEntity>::handle(_ctx)
+    }
+}
+
 /// Minimal stub for UpdateManager
 #[derive(Clone, Debug)]
-pub struct UpdateManager;
+pub struct UpdateManager {
+    pub initial_load_complete: bool,
+}
 
 impl UpdateManager {
     pub fn new() -> Self {
-        Self
+        Self { initial_load_complete: false }
+    }
+
+    pub fn initial_load_complete(&self) -> bool {
+        self.initial_load_complete
+    }
+
+    pub fn create_ai_fact(&mut self, _ai_fact: crate::cloud_stub_types::models::ai_fact::AIFact, _client_id: crate::server::ids::ClientId, _owner: crate::cloud_stub_types::Owner, _ctx: &mut cuteui::ModelContext<Self>) {
+        // Stub - no-op
     }
 }
 
 impl Default for UpdateManager {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl cuteui::Entity for UpdateManager {
+    type Event = ();
+}
+
+impl cuteui::SingletonEntity for UpdateManager {}
+
+impl UpdateManager {
+    pub fn as_ref(_ctx: &AppContext) -> &Self {
+        static INSTANCE: UpdateManager = UpdateManager::default();
+        &INSTANCE
+    }
+
+    pub fn handle(_ctx: &AppContext) -> cuteui::ModelHandle<Self> {
+        <Self as cuteui::SingletonEntity>::handle(_ctx)
     }
 }
 
@@ -3786,11 +4019,6 @@ impl UserWorkspaces {
         crate::settings::AiAutonomySettings::default()
     }
 
-    /// Returns whether custom inference is enabled.
-    /// COMMENTED: Cloud feature disabled in local version
-    pub fn is_custom_inference_enabled(&self) -> bool {
-        false
-    }
 
     /// Returns whether next command is enabled.
     /// COMMENTED: Cloud feature disabled in local version
@@ -3808,12 +4036,6 @@ impl UserWorkspaces {
     /// COMMENTED: Cloud feature disabled in local version
     pub fn get_agent_attribution_setting(&self) -> crate::settings::AdminEnablementSetting {
         crate::settings::AdminEnablementSetting::Disabled
-    }
-
-    /// Returns whether BYO API key is enabled.
-    /// COMMENTED: Cloud feature disabled in local version
-    pub fn is_byo_api_key_enabled(&self) -> bool {
-        false
     }
 }
 

@@ -28,6 +28,7 @@ use crate::editor::{
 };
 use crate::modal::{Modal, ModalEvent};
 use crate::network::NetworkStatus;
+use crate::cloud_stub_types::UpdateManager; // Import from cloud_stub_types
 // use crate::server::cloud_objects::update_manager::{
 //     ObjectOperation, OperationSuccessType, UpdateManager, UpdateManagerEvent,
 // };

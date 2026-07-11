@@ -93,13 +93,18 @@ use crate::themes::theme::AnsiColorIdentifier;
 use crate::{report_error, report_if_error, safe_info};
 
 // COMMENTED: Cloud object imports disabled for local version
+use crate::cloud_stub_types::{
+    NotebookId, OpenCuteDriveObjectSettings, GenericStringObjectId, MembershipRole,
+    TeamMetadata, Revision, CloudObjectSyncStatus, NumInFlightRequests,
+    FolderId, Owner,
+};
 // use crate::cloud_stub_types::{
 //     CloudObject, CloudObjectMetadata, CloudObjectPermissions, CloudObjectStatuses,
 //     CloudObjectSyncStatus, GENERIC_STRING_OBJECT_PREFIX,
 //     NumInFlightRequests, ObjectIdType, ObjectType, Owner, Revision, RevisionAndLastEditor,
 //     ServerCreationInfo,
 // };
-// use crate::cloud_stub_types::model::actions::{ObjectAction, ObjectActionSubtype, object_action_from_persisted};
+use crate::cloud_stub_types::model::actions::{ObjectAction, ObjectActionSubtype, object_action_from_persisted};
 // use crate::cloud_stub_types::model::generic_string_model::{CloudStringObject, GenericStringObjectId};
 // use crate::cloud_stub_types::models::{CloudNotebook, CloudWorkflow};
 // use crate::cloud_stub_types::folders::{CloudFolder, FolderId};
