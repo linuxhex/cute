@@ -1706,3 +1706,6 @@ pub mod testing {
     }
 }
 
+#[cfg(test)]
+#[path = "session_tests.rs"]
+mod test;

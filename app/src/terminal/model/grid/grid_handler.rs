@@ -2742,3 +2742,6 @@ impl Dimensions for GridHandler {
     }
 }
 
+#[cfg(test)]
+#[path = "grid_handler_tests.rs"]
+mod tests;

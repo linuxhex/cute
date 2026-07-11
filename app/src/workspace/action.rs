@@ -1011,3 +1011,6 @@ impl WorkspaceAction {
     }
 }
 
+#[cfg(test)]
+#[path = "action_tests.rs"]
+mod tests;

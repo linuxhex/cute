@@ -343,3 +343,6 @@ pub(crate) fn write_to_secure_storage<T: Serialize>(
     }
 }
 
+#[cfg(test)]
+#[path = "oauth_tests.rs"]
+mod tests;

@@ -443,3 +443,6 @@ pub fn is_in_band_command(command: &str) -> bool {
         || trimmed.starts_with("warp_run_generator_command ")
 }
 
+#[cfg(test)]
+#[path = "in_band_command_executor_tests.rs"]
+mod tests;

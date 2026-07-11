@@ -47,13 +47,9 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::Ligatures,
         #[cfg(feature = "selectable_prompt")]
         FeatureFlag::SelectablePrompt,
-        #[cfg(feature = "viewing_shared_sessions")]
-        FeatureFlag::ViewingSharedSessions,
 
         #[cfg(feature = "agent_mode")]
         FeatureFlag::AgentMode,
-        #[cfg(feature = "shared_session_long_running_commands")]
-        FeatureFlag::SharedSessionWriteToLongRunningCommands,
         #[cfg(feature = "resize_fix")]
         FeatureFlag::ResizeFix,
         #[cfg(feature = "richtext_multiselect")]
@@ -84,8 +80,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
 
         #[cfg(all(feature = "simulate_github_unauthed", debug_assertions))]
         FeatureFlag::SimulateGithubUnauthed,
-        #[cfg(feature = "session_sharing_acls")]
-        FeatureFlag::SessionSharingAcls,
         #[cfg(feature = "full_screen_zen_mode")]
         FeatureFlag::FullScreenZenMode,
         #[cfg(feature = "minimalist_ui")]
@@ -132,8 +126,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::AgentModePrePlanXML,
         #[cfg(feature = "agent_onboarding")]
         FeatureFlag::AgentOnboarding,
-        #[cfg(feature = "agent_shared_sessions")]
-        FeatureFlag::AgentSharedSessions,
         #[cfg(feature = "suggested_rules")]
         FeatureFlag::SuggestedRules,
         #[cfg(feature = "suggested_agent_mode_workflows")]
@@ -236,8 +228,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::WelcomeTab,
         #[cfg(feature = "projects")]
         FeatureFlag::Projects,
-        #[cfg(feature = "drive_objects_as_context")]
-        FeatureFlag::DriveObjectsAsContext,
         #[cfg(feature = "pr_comments_slash_command")]
         FeatureFlag::PRCommentsSlashCommand,
         #[cfg(feature = "pr_comments_v2")]
@@ -345,7 +335,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::LocalClaudeCodexChildHarnesses,
         #[cfg(feature = "named_agents")]
         FeatureFlag::NamedAgents,
-        #[cfg(feature = "cloud_conversations")]
         #[cfg(feature = "agent_toolbar_editor")]
         FeatureFlag::AgentToolbarEditor,
         #[cfg(feature = "configurable_toolbar")]

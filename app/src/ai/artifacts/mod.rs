@@ -493,3 +493,6 @@ fn non_empty_trimmed(value: &str) -> Option<&str> {
     (!trimmed.is_empty()).then_some(trimmed)
 }
 
+#[cfg(test)]
+#[path = "mod_tests.rs"]
+mod tests;

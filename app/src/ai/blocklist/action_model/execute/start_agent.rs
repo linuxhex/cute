@@ -558,3 +558,6 @@ pub enum StartAgentExecutorEvent {
     CreateAgent(StartAgentRequest),
 }
 
+#[cfg(test)]
+#[path = "start_agent_tests.rs"]
+mod tests;

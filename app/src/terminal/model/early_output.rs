@@ -15,6 +15,10 @@ use crate::terminal::event::Event as TerminalEvent;
 use crate::terminal::event_listener::ChannelEventListener;
 use crate::terminal::view::CONTROL_MASTER_ERROR_REGEX;
 
+#[cfg(test)]
+#[path = "early_output_tests.rs"]
+mod tests;
+
 /// The approach we're using to detect user typeahead.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum TypeaheadMode {

@@ -700,3 +700,6 @@ pub fn version_string() -> &'static str {
     ChannelState::app_version().unwrap_or("<unknown>")
 }
 
+#[cfg(test)]
+#[path = "lib_tests.rs"]
+mod tests;

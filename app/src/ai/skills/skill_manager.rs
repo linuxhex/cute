@@ -653,3 +653,6 @@ impl Entity for SkillManager {
 
 impl SingletonEntity for SkillManager {}
 
+#[cfg(test)]
+#[path = "skill_manager_tests.rs"]
+mod tests;

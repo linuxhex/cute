@@ -206,3 +206,6 @@ pub fn merge_mcp_servers(
     }
 }
 
+#[cfg(test)]
+#[path = "config_file_tests.rs"]
+mod tests;

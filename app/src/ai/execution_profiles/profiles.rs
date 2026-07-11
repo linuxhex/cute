@@ -1434,3 +1434,6 @@ impl Entity for AIExecutionProfilesModel {
 
 impl SingletonEntity for AIExecutionProfilesModel {}
 
+#[cfg(test)]
+#[path = "profiles_tests.rs"]
+mod tests;

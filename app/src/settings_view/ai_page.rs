@@ -6575,6 +6575,10 @@ impl SettingsWidget for AgentAttributionWidget {
     }
 }
 
+#[cfg(test)]
+#[path = "ai_page_tests.rs"]
+mod tests;
+
 #[derive(Default)]
 struct CloudAgentComputerUseWidget {
     toggle: SwitchStateHandle,

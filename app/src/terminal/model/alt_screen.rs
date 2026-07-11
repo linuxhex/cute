@@ -687,3 +687,6 @@ impl Dimensions for AltScreen {
     }
 }
 
+#[cfg(test)]
+#[path = "alt_screen_tests.rs"]
+mod tests;

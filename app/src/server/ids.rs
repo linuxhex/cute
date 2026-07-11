@@ -70,3 +70,6 @@ macro_rules! server_id_traits {
     };
 }
 
+#[cfg(test)]
+#[path = "ids_tests.rs"]
+mod tests;

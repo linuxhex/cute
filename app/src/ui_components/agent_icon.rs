@@ -197,3 +197,6 @@ pub(crate) fn agent_icon_variant_for_run(
     }
 }
 
+#[cfg(test)]
+#[path = "agent_icon_tests.rs"]
+mod tests;

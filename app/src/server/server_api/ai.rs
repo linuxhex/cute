@@ -11,6 +11,8 @@ use base64::Engine;
 use chrono::{DateTime, Utc};
 use cynic::{MutationBuilder, QueryBuilder};
 use itertools::Itertools;
+#[cfg(test)]
+use mockall::automock;
 use prost::Message;
 use cute_core::channel::ChannelState;
 use cute_core::report_error;
@@ -3145,6 +3147,10 @@ impl ServerApi {
         anyhow::bail!("fetch_transcript_for_task not implemented")
     }
 }
+
+#[cfg(test)]
+#[path = "ai_tests.rs"]
+mod tests;
 
 impl From<GenerateMetadataForCommandSuccess> for GeneratedCommandMetadata {
     fn from(value: GenerateMetadataForCommandSuccess) -> Self {

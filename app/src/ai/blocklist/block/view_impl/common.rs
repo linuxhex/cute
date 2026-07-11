@@ -3620,3 +3620,6 @@ pub(crate) fn render_scrollable_collapsible_content(
     )
 }
 
+#[cfg(test)]
+#[path = "common_tests.rs"]
+mod tests;

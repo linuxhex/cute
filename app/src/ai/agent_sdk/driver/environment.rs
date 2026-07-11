@@ -612,3 +612,6 @@ async fn terminal_directory_exists(
     Ok(output.status == CommandExitStatus::Success)
 }
 
+#[cfg(test)]
+#[path = "environment_tests.rs"]
+mod tests;

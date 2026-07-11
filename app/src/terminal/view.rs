@@ -13,6 +13,9 @@ pub mod load_ai_conversation;
 pub(crate) mod queued_prompts_panel;
 mod ssh_remote_server_choice_view;
 mod ssh_remote_server_failed_banner;
+#[cfg(test)]
+#[path = "view/queued_prompts_tests.rs"]
+mod queued_prompts_tests;
 use ai::agent::action::InsertReviewComment;
 pub use load_ai_conversation::ConversationRestorationInNewPaneType;
 // TODO(advait): if we align on prompt suggestions banner in Input, move code out of inline_banner mod.
@@ -21842,9 +21845,7 @@ impl TerminalView {
 
         // If this is a shared session viewer and the width required to display the entire
         // terminal is larger than the width of the pane, we should make it horizontally scrollable.
-        let should_be_horizontal_scrollable = FeatureFlag::ViewingSharedSessions.is_enabled()
-            && model.shared_session_status().is_active_viewer()
-            && required_terminal_width > pane_width;
+        let should_be_horizontal_scrollable = false; // Cloud shared sessions disabled
 
         let theme = appearance.theme();
         let element = maybe_wrap_terminal_element_in_scrollable(
@@ -22155,16 +22156,7 @@ impl TerminalView {
         // If this is a shared session viewer and the width required to display the entire
         // terminal is larger than the width of the pane, we should make it horizontally scrollable.
         // If there aren't any visible blocks, we should not show a horizontally-scrollable view.
-        let should_be_horizontal_scrollable = FeatureFlag::ViewingSharedSessions.is_enabled()
-            && model.shared_session_status().is_active_viewer()
-            && model
-                .block_list()
-                .blocks()
-                .iter()
-                .filter(|b| b.is_visible(agent_view_state))
-                .count()
-                > 0
-            && required_terminal_width > pane_width;
+        let should_be_horizontal_scrollable = false; // Cloud shared sessions disabled
 
         let block_list = maybe_wrap_terminal_element_in_scrollable(
             should_be_vertical_scrollable,
@@ -26461,3 +26453,6 @@ fn is_rich_input_chip_in_cli_toolbar(app: &AppContext) -> bool {
         .any(|item| matches!(item, AgentToolbarItemKind::RichInput))
 }
 
+#[cfg(test)]
+#[path = "view_tests.rs"]
+mod tests;

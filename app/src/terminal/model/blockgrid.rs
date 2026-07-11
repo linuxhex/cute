@@ -996,3 +996,6 @@ impl ansi::Handler for BlockGrid {
     }
 }
 
+#[cfg(test)]
+#[path = "blockgrid_tests.rs"]
+mod tests;

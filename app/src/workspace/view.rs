@@ -12,6 +12,9 @@ pub(crate) mod onboarding;
 pub(crate) mod orchestration_launch_modal;
 pub(crate) mod right_panel;
 mod startup_directory;
+#[cfg(test)]
+#[path = "view_tests.rs"]
+mod tests;
 mod vertical_tabs;
 #[cfg(target_family = "wasm")]
 mod wasm_view;

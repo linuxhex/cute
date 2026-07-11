@@ -322,3 +322,6 @@ where
     }
 }
 
+#[cfg(test)]
+#[path = "output_tests.rs"]
+mod tests;

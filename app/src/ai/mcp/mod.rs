@@ -564,3 +564,6 @@ pub fn mcp_provider_from_file_path(file_path: &Path) -> Option<MCPProvider> {
     best.map(|(p, _)| p)
 }
 
+#[cfg(test)]
+#[path = "mod_tests.rs"]
+mod tests;

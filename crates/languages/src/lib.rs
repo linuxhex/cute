@@ -358,3 +358,6 @@ fn load_query(path: &str, grammar: &ParserGrammar) -> Option<Query> {
     )
 }
 
+#[cfg(test)]
+#[path = "lib_tests.rs"]
+mod tests;

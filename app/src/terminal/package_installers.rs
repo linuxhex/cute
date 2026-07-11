@@ -81,3 +81,6 @@ fn is_at_context_package_installer_prefix(buffer_text: &str) -> bool {
     PREFIXES.iter().any(|p| s.starts_with(p))
 }
 
+#[cfg(test)]
+#[path = "package_installers_tests.rs"]
+mod tests;

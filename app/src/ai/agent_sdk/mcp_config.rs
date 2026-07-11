@@ -208,3 +208,6 @@ fn validate_string_map_field(
     Ok(())
 }
 
+#[cfg(test)]
+#[path = "mcp_config_tests.rs"]
+mod tests;

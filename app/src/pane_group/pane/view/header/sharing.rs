@@ -78,7 +78,7 @@ impl<P: BackingView> PaneHeader<P> {
     pub fn is_sharing_dialog_enabled<C: cuteui::ViewAsRef>(&self, ctx: &C) -> bool {
         let sharing_enabled = self.has_shareable_object(ctx);
         if self.has_shareable_shared_session(ctx) {
-            sharing_enabled && FeatureFlag::SessionSharingAcls.is_enabled()
+            false  // Cloud session sharing is disabled
         } else {
             sharing_enabled
         }

@@ -15,6 +15,8 @@ use super::artifact_upload::{
     CompletedFileArtifactUpload, FileArtifactUploadRequest, FileArtifactUploader,
 };
 use crate::ai::artifact_download::{download_artifact_bytes, download_destination};
+#[cfg(test)]
+use crate::server::server_api::ai::FileArtifactRecord;
 use crate::server::server_api::ai::{AIClient, ArtifactDownloadResponse};
 use crate::server::server_api::{ServerApi, ServerApiProvider};
 
@@ -399,3 +401,6 @@ fn write_upload_output_to<W: std::io::Write>(
     Ok(())
 }
 
+#[cfg(test)]
+#[path = "artifact_tests.rs"]
+mod tests;

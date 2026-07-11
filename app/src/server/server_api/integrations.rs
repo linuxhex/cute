@@ -1,5 +1,7 @@
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
+#[cfg(test)]
+use mockall::automock;
 use cute_graphql::mutations::create_simple_integration::{
     CreateSimpleIntegrationOutput,
 };

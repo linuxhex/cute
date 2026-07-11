@@ -24,6 +24,10 @@ use crate::terminal::model::session::Session;
 use crate::terminal::view::inline_banner::{OpenInWarpBannerAction, OpenInWarpBannerState};
 use crate::util::openable_file_type::{is_file_openable_in_warp, OpenableFileType};
 
+#[cfg(test)]
+#[path = "open_in_warp_tests.rs"]
+mod tests;
+
 const LEARN_MORE_MARKDOWN_URL: &str =
     "https://docs.warp.dev/terminal/more-features/markdown-viewer";
 const LEARN_MORE_CODE_URL: &str = "https://docs.warp.dev/code/overview#built-in-code-editor";

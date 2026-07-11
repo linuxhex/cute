@@ -2155,3 +2155,6 @@ impl GlobalBufferModel {
     }
 }
 
+#[cfg(test)]
+#[path = "global_buffer_model_tests.rs"]
+mod global_buffer_model_tests;

@@ -411,3 +411,6 @@ fn refresh_aws_credentials_oidc(
     })
 }
 
+#[cfg(test)]
+#[path = "aws_credentials_tests.rs"]
+mod tests;

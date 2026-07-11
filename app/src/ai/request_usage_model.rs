@@ -523,3 +523,6 @@ impl AIRequestUsageModel {
 
 impl SingletonEntity for AIRequestUsageModel {}
 
+#[cfg(test)]
+#[path = "request_usage_model_tests.rs"]
+mod tests;

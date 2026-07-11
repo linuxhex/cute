@@ -3002,3 +3002,6 @@ fn delete_objects(_conn: &mut SqliteConnection, _ids: Vec<String>) -> Result<(),
     Ok(())
 }
 
+#[cfg(test)]
+#[path = "sqlite_tests.rs"]
+mod tests;

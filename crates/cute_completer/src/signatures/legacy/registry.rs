@@ -513,3 +513,6 @@ fn should_complete_on_subcmd(
     }
 }
 
+#[cfg(test)]
+#[path = "registry_tests.rs"]
+mod tests;

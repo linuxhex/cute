@@ -119,3 +119,6 @@ impl TimingDataPoint {
     }
 }
 
+#[cfg(test)]
+#[path = "interval_timer_tests.rs"]
+mod tests;
