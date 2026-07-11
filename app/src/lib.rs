@@ -249,6 +249,7 @@ pub use crate::cloud_stub_types::IsSharedSessionCreator;
 pub use crate::cloud_stub_types::SharedSessionSource;
 pub use crate::cloud_stub_types::UserProfiles;
 pub use crate::cloud_stub_types::UserProfile;
+pub use crate::cloud_stub_types::ObjectIdType;
 use crate::gpu_state::GPUState;
 use crate::network::NetworkStatus;
 use crate::cloud_stub_types::keys::NotebookKeybindings;

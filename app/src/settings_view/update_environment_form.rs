@@ -30,6 +30,7 @@ use super::settings_page::{render_input_list, InputListItem};
 use crate::ai::ambient_agent_types::github_auth_notifier::{GitHubAuthEvent, GitHubAuthNotifier};
 use crate::ai::ambient_agent_types::github_auth_url::{self, AuthSource, GithubAuthRedirectTarget};
 use crate::ai::cloud_environments::{AmbientAgentEnvironment, GithubRepo};
+use crate::UserWorkspaces;
 use crate::appearance::Appearance;
 use crate::editor::{
     EditorOptions, EditorView, PropagateAndNoOpNavigationKeys, SingleLineEditorOptions, TextOptions,
@@ -1030,7 +1031,6 @@ impl UpdateEnvironmentForm {
 
     fn parse_repo_input(input: &str) -> Option<(String, String)> {
         use url::Url;
-use crate::UserWorkspaces;
         let trimmed = input.trim().trim_end_matches('/');
 
         fn parse_owner_repo<'a, I>(mut segments: I) -> Option<(String, String)>

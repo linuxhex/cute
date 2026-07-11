@@ -218,6 +218,7 @@ use crate::ai::agent::api::ServerConversationToken;
 use crate::ai::agent::conversation::{AIConversation, AIConversationId, ConversationStatus};
 use crate::ai::agent::redaction::redact_secrets;
 use crate::ai::agent::todos::popup::{AgentTodosPopupEvent, AgentTodosPopupView};
+use crate::UserWorkspaces;
 #[cfg(any(test, feature = "integration_tests"))]
 use crate::ai::agent::UserQueryMode;
 use crate::ai::agent::{
@@ -25149,7 +25150,6 @@ impl TypedActionView for TerminalView {
                 #[cfg(feature = "local_fs")]
                 {
                     use ai::skills::SkillReference;
-use crate::UserWorkspaces;
 
                     match skill_reference {
                         SkillReference::Path(path) => {

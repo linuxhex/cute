@@ -38,6 +38,7 @@ use crate::appearance::Appearance;
 use crate::editor::{
     EditOrigin, EditorView, Event as EditorEvent, SingleLineEditorOptions, TextOptions,
 };
+use crate::UserWorkspaces;
 use crate::server::block::{Block as ServerBlock, DisplaySetting};
 use crate::server::server_api::block::BlockClient;
 use crate::settings::{
@@ -1054,7 +1055,6 @@ impl TypedActionView for ShareBlockModal {
 
     fn handle_action(&mut self, action: &ShareBlockModalAction, ctx: &mut ViewContext<Self>) {
         use ShareBlockModalAction::*;
-use crate::UserWorkspaces;
 
         match action {
             Close => self.close(ctx),

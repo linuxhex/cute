@@ -77,6 +77,7 @@ use crate::editor::{EditorOptions, InteractionState, SingleLineEditorOptions, Te
 use crate::modal::{Modal, ModalEvent, ModalViewState};
 use crate::settings::{
     AIAutoDetectionEnabled, AICommandDenylist, AISettingsChangedEvent,
+    AdminEnablementSetting,
     AgentModeCodingPermissionsType, AgentModeCommandExecutionDenylist,
     AgentModeCommandExecutionPredicate, AgentModeQuerySuggestionsEnabled, AwsBedrockAutoLogin,
     AwsBedrockCredentialsEnabled, CodeSettings,
@@ -92,6 +93,7 @@ use crate::terminal::session_settings::{SessionSettings, SessionSettingsChangedE
 use crate::terminal::CLIAgent;
 use crate::view_components::action_button::{ActionButton, ButtonSize, SecondaryTheme};
 use crate::view_components::{FilterableDropdown, SubmittableTextInput, SubmittableTextInputEvent};
+use crate::UserWorkspacesEvent;
 
 /// Identifies which subpage of the AI settings the user is viewing.
 /// When `None`, the page shows all widgets (legacy/full view).
@@ -7788,8 +7790,6 @@ mod styles {
     use cute_core::ui::appearance::Appearance;
     use cute_core::ui::theme::Fill;
     use cuteui::{AppContext, SingletonEntity};
-use crate::settings::AdminEnablementSetting;
-use crate::UserWorkspacesEvent;
 
     // Apply a negative margin to the description text so it appears closer to the main
     // settings option text.

@@ -68,7 +68,8 @@ use crate::auth::auth_manager::PersistedCurrentUserInformation;
 use crate::auth::auth_state::AuthStateProvider;
 use crate::auth::UserUid;
 use crate::code::editor_management::CodeSource;
-use crate::cloud_stub_types::OpenCuteDriveObjectSettings;
+// 删除云端功能import
+// use crate::cloud_stub_types::OpenCuteDriveObjectSettings;
 use crate::persistence::agent::read_agent_conversations;
 use crate::persistence::block_list::{get_all_restored_blocks, read_ai_queries};
 use crate::persistence::model::{
@@ -76,7 +77,8 @@ use crate::persistence::model::{
     ProjectRules, UserProfile, CODE_REVIEW_PANE_KIND, GET_STARTED_PANE_KIND,
 };
 use crate::server::ids::{ClientId, HashableId, ServerId, SyncId, ToServerId};
-use crate::cloud_stub_types::NotebookId;
+// 删除云端功能import
+// use crate::cloud_stub_types::NotebookId;
 use crate::workflows::WorkflowId;
 use crate::settings_view::SettingsSection;
 use crate::suggestions::ignored_suggestions_model::SuggestionType;
@@ -328,7 +330,7 @@ pub(super) fn init_db(scope: &PersistenceScope) -> Result<SqliteConnection> {
 }
 
 fn migrate_old_sqlite_into_secure_container_if_needed(db_path: &Path) {
-    let old_db_path = cute_core::paths::state_dir().join(WARP_SQLITE_FILE_NAME);
+    let old_db_path = cute_core::paths::state_dir().join(CUTE_SQLITE_FILE_NAME);
     if old_db_path == db_path || !old_db_path.exists() || db_path.exists() {
         return;
     }
@@ -404,13 +406,13 @@ pub fn database_file_path_for_scope(scope: &PersistenceScope) -> PathBuf {
 fn app_database_file_path() -> PathBuf {
     cute_core::paths::secure_state_dir()
         .unwrap_or_else(cute_core::paths::state_dir)
-        .join(WARP_SQLITE_FILE_NAME)
+        .join(CUTE_SQLITE_FILE_NAME)
 }
 
 fn remote_server_daemon_database_file_path(identity_key: &str) -> PathBuf {
     let data_dir = crate::remote_server::setup::remote_server_daemon_data_dir(identity_key);
     let expanded_data_dir = shellexpand::tilde(&data_dir).into_owned();
-    PathBuf::from(expanded_data_dir).join(WARP_SQLITE_FILE_NAME)
+    PathBuf::from(expanded_data_dir).join(CUTE_SQLITE_FILE_NAME)
 }
 
 #[cfg(unix)]
@@ -608,7 +610,9 @@ fn handle_model_event(event: ModelEvent, connection: &mut SqliteConnection) -> a
             increment_retry_count(connection, id).context("error incrementing retry count")
         }
         ModelEvent::DeleteObjects(ids) => {
-            delete_objects(connection, ids).context("error deleting objects")
+            // 云端对象删除功能已禁用
+            // delete_objects(connection, ids).context("error deleting objects")
+            Ok(())
         }
         ModelEvent::UpdateObjectAfterServerCreation {
             client_id,
@@ -640,8 +644,10 @@ fn handle_model_event(event: ModelEvent, connection: &mut SqliteConnection) -> a
                 .context("error setting current workspace")
         }
         ModelEvent::UpdateObjectMetadata { id, metadata } => {
-            update_object_metadata(connection, id, to_cloud_object_metadata(&metadata))
-                .context("error updating metadata")
+            // 云端对象元数据更新功能已禁用
+            // update_object_metadata(connection, id, to_cloud_object_metadata(&metadata))
+            //     .context("error updating metadata")
+            Ok(())
         }
         ModelEvent::InsertCommand { metadata } => {
             insert_command(connection, metadata).context("error inserting command")
@@ -1149,18 +1155,22 @@ fn save_pane_state(
                 .execute(conn)?;
         }
         LeafContents::Notebook(notebook_snapshot) => {
-            let (notebook_id, local_path) = match notebook_snapshot {
-                NotebookPaneSnapshot::CloudNotebook {
-                    notebook_id,
-                    settings: _,
-                } => (
-                    notebook_id.map(|id| id.sqlite_uid_hash(ObjectIdType::Notebook)),
-                    None,
-                ),
+            // 删除云端笔记本分支，只保留本地笔记本
+            let notebook_id = None; // 云端 notebook_id 已删除
+            let local_path = match notebook_snapshot {
+                NotebookPaneSnapshot::CloudNotebook { .. } => {
+                    // 云端笔记本分支已禁用，不处理
+                    None
+                },
                 NotebookPaneSnapshot::LocalFileNotebook { path } => {
-                    (None, Some(encode_path(path.clone())))
+                    Some(encode_path(path.clone()))
                 }
             };
+
+            // 如果是云端笔记本，跳过不处理
+            if local_path.is_none() {
+                continue;
+            }
 
             let notebook = model::NewNotebookPane {
                 id,
@@ -1216,35 +1226,22 @@ fn save_pane_state(
             }
         }
         LeafContents::EnvVarCollection(env_var_collection_snapshot) => {
-            let env_var_collection_id = match env_var_collection_snapshot {
-                EnvVarCollectionPaneSnapshot::CloudEnvVarCollection {
-                    env_var_collection_id,
-                } => env_var_collection_id
-                    .map(|id| id.sqlite_uid_hash(ObjectIdType::GenericStringObject)),
-            };
-
-            let env_var_collection = model::NewEnvVarCollectionPane {
-                id,
-                env_var_collection_id,
-            };
-
-            diesel::insert_into(schema::env_var_collection_panes::dsl::env_var_collection_panes)
-                .values(env_var_collection)
-                .execute(conn)?;
+            // 删除云端环境变量集合，跳过不处理
+            match env_var_collection_snapshot {
+                EnvVarCollectionPaneSnapshot::CloudEnvVarCollection { .. } => {
+                    // 云端环境变量集合已禁用，跳过不处理
+                    continue;
+                }
+            }
         }
         LeafContents::Workflow(workflow_pane_snapshot) => {
-            let workflow_id = match workflow_pane_snapshot {
-                WorkflowPaneSnapshot::CloudWorkflow {
-                    workflow_id,
-                    settings: _,
-                } => workflow_id.map(|id| id.sqlite_uid_hash(ObjectIdType::Workflow)),
-            };
-
-            let workflow = model::NewWorkflowPane { id, workflow_id };
-
-            diesel::insert_into(schema::workflow_panes::dsl::workflow_panes)
-                .values(workflow)
-                .execute(conn)?;
+            // 删除云端工作流，跳过不处理
+            match workflow_pane_snapshot {
+                WorkflowPaneSnapshot::CloudWorkflow { .. } => {
+                    // 云端工作流已禁用，跳过不处理
+                    continue;
+                }
+            }
         }
         LeafContents::EnvironmentManagement(_) => {
             // Unreachable: filtered by `is_persisted` in `save_app_state`.
@@ -2120,116 +2117,43 @@ fn update_object_after_server_creation(
 
 /// Helper function to delete a cloud object identified by `sync_id`. If a valid object metadata row
 /// for the object is found, `delete_object_fn` is called to delete the actual object.
+// 删除云端对象功能已禁用
+/*
 fn delete_cloud_object(
     conn: &mut SqliteConnection,
     sync_id: SyncId,
     object_id_type: ObjectIdType,
     delete_object_fn: DeleteCloudObjectFn,
 ) -> Result<(), Error> {
-    use schema::object_metadata::dsl::*;
-
-    // Filter to find metadata row.
-    // The diesel types for `filter`s are dependent on the columns being filtered
-    // so while the `hashed_sync_id` will only match one of `client_id` and `server_id`,
-    // we filter on both here for ergonomics.
-    let hashed_sync_id = sync_id.sqlite_uid_hash(object_id_type);
-    let metadata_filter = object_metadata
-        .filter(client_id.eq(Some(hashed_sync_id.as_str())))
-        .or_filter(server_id.eq(Some(hashed_sync_id.as_str())));
-
-    let metadata: ObjectMetadata = metadata_filter.first(conn)?;
-    let object_id = metadata.shareable_object_id;
-    diesel::delete(object_metadata.filter(id.eq(metadata.id))).execute(conn)?;
-    diesel::delete(
-        schema::object_permissions::dsl::object_permissions
-            .filter(schema::object_permissions::object_metadata_id.eq(metadata.id)),
-    )
-    .execute(conn)?;
-    diesel::delete(
-        schema::object_actions::dsl::object_actions
-            .filter(schema::object_actions::hashed_object_id.eq(hashed_sync_id)),
-    )
-    .execute(conn)?;
-    delete_object_fn(conn, object_id)?;
+    // 云端对象删除功能已禁用
     Ok(())
 }
+*/
 
 /// SQLite endpoint for the ObjectMetadataUpdated RTC message that updates the metadata ts and other
 /// metadata like current team_id of the object.
+// 云端对象元数据更新功能已禁用
+/*
 fn update_object_metadata(
     conn: &mut SqliteConnection,
     hashed_id: String,
     metadata: CloudObjectMetadata,
 ) -> Result<(), Error> {
-    use schema::object_metadata::dsl::*;
-    let metadata_last_updated_at = metadata
-        .metadata_last_updated_ts
-        .map(|ts| ts.timestamp_micros());
-
-    let trashed_timestamp = metadata.trashed_ts.map(|ts| ts.timestamp_micros());
-    let folder_id_str = metadata
-        .folder_id
-        .map(|folder_sync_id| folder_sync_id.sqlite_uid_hash(ObjectIdType::Folder));
-
-    conn.transaction::<(), Error, _>(|conn| {
-        diesel::update(object_metadata.filter(server_id.eq(Some(hashed_id.as_str()))))
-            .set((
-                metadata_last_updated_ts.eq(metadata_last_updated_at),
-                trashed_ts.eq(trashed_timestamp),
-                folder_id.eq(folder_id_str),
-                current_editor.eq(metadata.current_editor_uid),
-            ))
-            .execute(conn)?;
-
-        Ok(())
-    })
+    // 云端对象元数据更新功能已禁用
+    Ok(())
 }
+*/
 
+// 云端通用字符串对象插入功能已禁用
+/*
 fn upsert_generic_string_objects(
     conn: &mut SqliteConnection,
     cloud_generic_string_objects: Vec<Box<dyn CloudStringObject>>,
 ) -> Result<(), Error> {
-    use schema::generic_string_objects::dsl::*;
-    conn.transaction::<(), Error, _>(|conn| {
-        for object in cloud_generic_string_objects {
-            let serialized_data = Arc::new(object.serialized().take());
-            let serialized_data_clone = serialized_data.clone();
-            upsert_cloud_object(
-                conn,
-                ObjectType::GenericStringObject(object.generic_string_object_format()),
-                object.id(),
-                object.metadata().clone(),
-                object.permissions().clone(),
-                Box::new(move |conn| {
-                    let new_object = NewGenericStringObject {
-                        data: serialized_data.as_ref(),
-                    };
-                    diesel::insert_into(
-                        schema::generic_string_objects::dsl::generic_string_objects,
-                    )
-                    .values(new_object)
-                    .execute(conn)?;
-                    let object_id: i32 =
-                        schema::generic_string_objects::dsl::generic_string_objects
-                            .select(schema::generic_string_objects::columns::id)
-                            .order(schema::generic_string_objects::columns::id.desc())
-                            .first(conn)?;
-                    Ok(object_id)
-                }),
-                Box::new(move |conn, object_id| {
-                    diesel::update(
-                        generic_string_objects
-                            .filter(schema::generic_string_objects::dsl::id.eq(object_id)),
-                    )
-                    .set((data.eq(serialized_data_clone.as_ref()),))
-                    .execute(conn)?;
-                    Ok(())
-                }),
-            )?
-        }
-        Ok(())
-    })
+    // 云端通用字符串对象插入功能已禁用
+    Ok(())
 }
+*/
 
 fn upsert_workflows(
     conn: &mut SqliteConnection,
@@ -3148,9 +3072,8 @@ impl From<StartedCommandMetadata> for model::NewCommand {
                 id.try_into().ok()
             }),
             git_branch: metadata.git_branch,
-            cloud_workflow_id: metadata
-                .cloud_workflow_id
-                .map(|id| id.sqlite_uid_hash(ObjectIdType::Workflow)),
+            // 删除云端工作流ID处理
+            cloud_workflow_id: None, // metadata.cloud_workflow_id 已删除
             workflow_command: metadata.workflow_command,
             is_agent_executed: Some(metadata.is_agent_executed),
         }
@@ -3387,104 +3310,14 @@ fn sync_object_actions(
     })
 }
 
-fn delete_objects(
-    conn: &mut SqliteConnection,
-    ids: Vec<String>,
-) -> Result<(), Error> {
-    conn.transaction::<(), Error, _>(|conn| {
-        for hashed_id in ids {
-            let object_id_type = if hashed_id.starts_with("Notebook-") {
-                ObjectIdType::Notebook
-            } else if hashed_id.starts_with("Workflow-") {
-                ObjectIdType::Workflow
-            } else if hashed_id.starts_with("Folder-") {
-                ObjectIdType::Folder
-            } else if hashed_id.starts_with("GenericStringObject-") {
-                ObjectIdType::GenericStringObject
-            } else {
-                continue;
-            };
-
-            let sync_id = match object_id_type {
-                ObjectIdType::Notebook => {
-                    crate::cloud_stub_types::models::notebook::NotebookId::from_hash(&hashed_id)
-                        .map(|id| id.into())
-                        .or_else(|| ClientId::from_hash(&hashed_id).map(SyncId::ClientId))
-                }
-                ObjectIdType::Workflow => {
-                    crate::cloud_stub_types::models::workflow::WorkflowId::from_hash(&hashed_id)
-                        .map(|id| id.into())
-                        .or_else(|| ClientId::from_hash(&hashed_id).map(SyncId::ClientId))
-                }
-                ObjectIdType::Folder => {
-                    ClientId::from_hash(&hashed_id).map(SyncId::ClientId)
-                }
-                ObjectIdType::GenericStringObject => {
-                    crate::server::ids::GenericStringObjectId::from_hash(&hashed_id)
-                        .map(|id| SyncId::ServerId(id.into()))
-                        .or_else(|| ClientId::from_hash(&hashed_id).map(SyncId::ClientId))
-                }
-            };
-
-            if let Some(sync_id) = sync_id {
-                match object_id_type {
-                    ObjectIdType::Notebook => delete_cloud_object(
-                        conn,
-                        sync_id,
-                        object_id_type,
-                        Box::new(|conn, notebook_id| {
-                            use schema::notebooks::dsl::*;
-                            diesel::delete(notebooks.filter(id.eq(notebook_id))).execute(conn)?;
-                            Ok(())
-                        }),
-                    )?,
-                    ObjectIdType::Workflow => delete_cloud_object(
-                        conn,
-                        sync_id,
-                        object_id_type,
-                        Box::new(|conn, workflow_id| {
-                            use schema::workflows::dsl::*;
-                            diesel::delete(workflows.filter(id.eq(workflow_id))).execute(conn)?;
-                            Ok(())
-                        }),
-                    )?,
-                    ObjectIdType::Folder => delete_cloud_object(
-                        conn,
-                        sync_id,
-                        object_id_type,
-                        Box::new(|conn, folder_id| {
-                            use schema::folders::dsl::*;
-                            diesel::delete(folders.filter(id.eq(folder_id))).execute(conn)?;
-                            Ok(())
-                        }),
-                    )?,
-                    ObjectIdType::GenericStringObject => delete_cloud_object(
-                        conn,
-                        sync_id,
-                        object_id_type,
-                        Box::new(|conn, gso_id| {
-                            use schema::generic_string_objects::dsl::*;
-use crate::cloud_stub_types::CloudObjectSyncStatus;
-use crate::cloud_stub_types::FolderId;
-use crate::cloud_stub_types::GenericStringObjectId;
-use crate::cloud_stub_types::MembershipRole;
-use crate::cloud_stub_types::ObjectActionSubtype;
-use crate::cloud_stub_types::ObjectIdType;
-use crate::cloud_stub_types::ObjectType;
-use crate::cloud_stub_types::Owner;
-use crate::cloud_stub_types::Revision;
-use crate::cloud_stub_types::TeamMetadata;
-use crate::cloud_stub_types::WorkspaceMetadata;
-                            diesel::delete(generic_string_objects.filter(id.eq(gso_id)))
-                                .execute(conn)?;
-                            Ok(())
-                        }),
-                    )?,
-                }
-            }
-        }
-        Ok(())
-    })
+// 删除云端对象功能已禁用
+// fn delete_objects(conn: &mut SqliteConnection, ids: Vec<String>) -> Result<(), Error> {
+//     // 云端对象删除功能已禁用
+//     Ok(())
+// }
+fn delete_objects(_conn: &mut SqliteConnection, _ids: Vec<String>) -> Result<(), Error> {
+    // 云端对象删除功能已禁用，直接返回成功
+    Ok(())
 }
 
 #[cfg(test)]

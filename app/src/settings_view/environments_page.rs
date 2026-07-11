@@ -43,6 +43,7 @@ use crate::ai::cloud_environments::CloudAmbientAgentEnvironment;
 use crate::appearance::Appearance;
 use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
 use crate::cloud_stub_types::{CloudObjectLookup, Owner};
+use crate::UserWorkspaces;
 
 use crate::editor::{
     EditorView, PropagateAndNoOpNavigationKeys, SingleLineEditorOptions, TextOptions,
@@ -1848,7 +1849,6 @@ impl SettingsPageMeta for EnvironmentsPageView {
 use crate::pane_group::focus_state::PaneFocusHandle;
 use crate::pane_group::pane::view::{HeaderContent, HeaderRenderContext};
 use crate::pane_group::pane::BackingView;
-use crate::UserWorkspaces;
 
 impl BackingView for EnvironmentsPageView {
     type PaneHeaderOverflowMenuAction = EnvironmentsPageAction;

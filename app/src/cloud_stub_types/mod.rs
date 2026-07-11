@@ -3450,3 +3450,17 @@ impl UserWorkspaces {
         }
     }
 }
+
+/// Minimal stub for ObjectIdType - used in sqlite persistence
+/// COMMENTED: Cloud feature disabled in local version
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum ObjectIdType {
+    Notebook,
+    Workflow,
+    EnvVarCollection,
+    AIFact,
+    MCPServer,
+    Folder,
+    AIConversation,
+    Command,
+}

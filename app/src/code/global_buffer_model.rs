@@ -1968,7 +1968,7 @@ impl GlobalBufferModel {
     /// had unsaved edits. Emits `RemoteBufferConflict` so the UI shows
     /// the conflict resolution banner.
     ///
-    /// 注释掉：已禁用远程缓冲区功能
+    // 注释掉：已禁用远程缓冲区功能
     // pub(crate) fn handle_buffer_conflict_detected(
     //     &mut self,
     //     host_id: &HostId,

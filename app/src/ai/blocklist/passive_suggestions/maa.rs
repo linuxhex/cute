@@ -23,6 +23,7 @@ use crate::ai::blocklist::{
 };
 use crate::ai::paths::host_native_absolute_path;
 use crate::auth::auth_state::AuthStateProvider;
+use crate::UserWorkspaces;
 use crate::server::server_api::ServerApiProvider;
 use crate::settings::AISettings;
 use crate::terminal::event::{BlockType, UserBlockCompleted};
@@ -686,7 +687,6 @@ fn coalesce_messages_from_client_actions(
     use field_mask::FieldMaskOperation;
     use cute_multi_agent_api as api;
     use cute_multi_agent_api::client_action::Action;
-use crate::UserWorkspaces;
 
     let mut messages_by_id: HashMap<String, api::Message> = HashMap::new();
     let mut message_order: Vec<String> = Vec::new();

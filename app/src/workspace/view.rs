@@ -19,6 +19,11 @@ mod vertical_tabs;
 #[cfg(target_family = "wasm")]
 mod wasm_view;
 
+// Cute: stub type for disabled cloud feature
+pub enum SharedSessionActionSource {
+    Tab,
+}
+
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 #[cfg(feature = "local_fs")]
@@ -932,7 +937,7 @@ pub struct Workspace {
     suggested_agent_mode_workflow_modal: ViewHandle<SuggestedAgentModeWorkflowModal>,
     suggested_rule_modal: ViewHandle<SuggestedRuleModal>,
     oz_launch_modal: ModalWithTab<LaunchModal<OzLaunchSlide>>,
-    openwarp_launch_modal: ViewHandle<OpenWarpLaunchModal>,
+    // openwarp_launch_modal: ViewHandle<OpenWarpLaunchModal>, // Cute: 类型不存在
     orchestration_launch_modal: ViewHandle<OrchestrationLaunchModal>,
     build_plan_migration_modal: ViewHandle<BuildPlanMigrationModal>,
     codex_modal: ViewHandle<CodexModal>,
@@ -2924,10 +2929,11 @@ impl Workspace {
             me.handle_oz_launch_modal_event(event, ctx);
         });
 
-        let openwarp_launch_view = ctx.add_typed_action_view(OpenWarpLaunchModal::new);
-        ctx.subscribe_to_view(&openwarp_launch_view, |me, _, event, ctx| {
-            me.handle_openwarp_launch_modal_event(event, ctx);
-        });
+        // Cute: OpenWarpLaunchModal 类型不存在
+        // let openwarp_launch_view = ctx.add_typed_action_view(OpenWarpLaunchModal::new);
+        // ctx.subscribe_to_view(&openwarp_launch_view, |me, _, event, ctx| {
+        //     me.handle_openwarp_launch_modal_event(event, ctx);
+        // });
 
         let orchestration_launch_view = ctx.add_typed_action_view(OrchestrationLaunchModal::new);
         ctx.subscribe_to_view(&orchestration_launch_view, |me, _, event, ctx| {
@@ -3213,8 +3219,8 @@ impl Workspace {
                 if model_ref.target_window_id() == Some(ctx.window_id()) {
                     if model_ref.is_oz_launch_modal_open() {
                         me.open_tab_and_focus_oz_launch_modal(ctx);
-                    } else if model_ref.is_openwarp_launch_modal_open() {
-                        me.focus_openwarp_launch_modal(ctx);
+                    // } else if model_ref.is_openwarp_launch_modal_open() { // Cute: 类型不存在
+                    //     me.focus_openwarp_launch_modal(ctx);
                     } else if model_ref.is_orchestration_launch_modal_open() {
                         me.focus_orchestration_launch_modal(ctx);
                     } else if model_ref.is_hoa_onboarding_open() {
@@ -3334,7 +3340,7 @@ impl Workspace {
                 view: oz_launch_view,
                 tab_pane_group_id: None,
             },
-            openwarp_launch_modal: openwarp_launch_view,
+            // openwarp_launch_modal: openwarp_launch_view, // Cute: 类型不存在
             orchestration_launch_modal: orchestration_launch_view,
             agent_management_view,
             notification_mailbox_view,
@@ -18035,21 +18041,22 @@ impl Workspace {
         }
     }
 
-    fn handle_openwarp_launch_modal_event(
-        &mut self,
-        event: &OpenWarpLaunchModalEvent,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        match event {
-            OpenWarpLaunchModalEvent::Close => {
-                OneTimeModalModel::handle(ctx).update(ctx, |model, ctx| {
-                    model.mark_openwarp_launch_modal_dismissed(ctx);
-                });
-                self.focus_active_tab(ctx);
-                ctx.notify();
-            }
-        }
-    }
+    // Cute: OpenWarpLaunchModal 类型不存在
+    // fn handle_openwarp_launch_modal_event(
+    //     &mut self,
+    //     event: &OpenWarpLaunchModalEvent,
+    //     ctx: &mut ViewContext<Self>,
+    // ) {
+    //     match event {
+    //         OpenWarpLaunchModalEvent::Close => {
+    //             OneTimeModalModel::handle(ctx).update(ctx, |model, ctx| {
+    //                 model.mark_openwarp_launch_modal_dismissed(ctx);
+    //             });
+    //             self.focus_active_tab(ctx);
+    //             ctx.notify();
+    //         }
+    //     }
+    // }
 
     fn handle_orchestration_launch_modal_event(
         &mut self,
@@ -21519,9 +21526,10 @@ impl Workspace {
         self.on_window_closed(ctx);
     }
 
-    fn focus_openwarp_launch_modal(&mut self, ctx: &mut ViewContext<Self>) {
-        ctx.focus(&self.openwarp_launch_modal);
-    }
+    // Cute: OpenWarpLaunchModal 类型不存在
+    // fn focus_openwarp_launch_modal(&mut self, ctx: &mut ViewContext<Self>) {
+    //     ctx.focus(&self.openwarp_launch_modal);
+    // }
 
     fn focus_orchestration_launch_modal(&mut self, ctx: &mut ViewContext<Self>) {
         ctx.focus(&self.orchestration_launch_modal);
@@ -23116,38 +23124,39 @@ impl TypedActionView for Workspace {
                     FeatureFlag::OzLaunchModal.is_enabled()
                 );
             }
-            #[cfg(debug_assertions)]
-            OpenOpenWarpLaunchModal => {
-                // Force open the OpenWarp launch modal for debugging
-                OneTimeModalModel::handle(ctx).update(ctx, |model, ctx| {
-                    model.force_open_openwarp_launch_modal(ctx);
-                });
-                ctx.notify();
-            }
-            #[cfg(debug_assertions)]
-            ResetOpenWarpLaunchModalState => {
-                // Reset the OpenWarp launch modal dismissed state for debugging
-                let old_value = *GeneralSettings::as_ref(ctx)
-                    .did_check_to_trigger_openwarp_launch_modal
-                    .value();
-                GeneralSettings::handle(ctx).update(ctx, |settings, ctx| {
-                    if let Err(e) = settings
-                        .did_check_to_trigger_openwarp_launch_modal
-                        .set_value(false, ctx)
-                    {
-                        log::warn!("Failed to reset OpenWarp launch modal dismissed setting: {e}");
-                    }
-                });
-                let new_value = *GeneralSettings::as_ref(ctx)
-                    .did_check_to_trigger_openwarp_launch_modal
-                    .value();
-                log::info!(
-                    "OpenWarp launch modal state: old={}, new={}, feature_flag_enabled={}",
-                    old_value,
-                    new_value,
-                    FeatureFlag::OpenWarpLaunchModal.is_enabled()
-                );
-            }
+            // Cute: OpenWarpLaunchModal 类型不存在
+            // #[cfg(debug_assertions)]
+            // OpenOpenWarpLaunchModal => {
+            //     // Force open the OpenWarp launch modal for debugging
+            //     OneTimeModalModel::handle(ctx).update(ctx, |model, ctx| {
+            //         model.force_open_openwarp_launch_modal(ctx);
+            //     });
+            //     ctx.notify();
+            // }
+            // #[cfg(debug_assertions)]
+            // ResetOpenWarpLaunchModalState => {
+            //     // Reset the OpenWarp launch modal dismissed state for debugging
+            //     let old_value = *GeneralSettings::as_ref(ctx)
+            //         .did_check_to_trigger_openwarp_launch_modal
+            //         .value();
+            //     GeneralSettings::handle(ctx).update(ctx, |settings, ctx| {
+            //         if let Err(e) = settings
+            //             .did_check_to_trigger_openwarp_launch_modal
+            //             .set_value(false, ctx)
+            //         {
+            //             log::warn!("Failed to reset OpenWarp launch modal dismissed setting: {e}");
+            //         }
+            //     });
+            //     let new_value = *GeneralSettings::as_ref(ctx)
+            //         .did_check_to_trigger_openwarp_launch_modal
+            //         .value();
+            //     log::info!(
+            //         "OpenWarp launch modal state: old={}, new={}, feature_flag_enabled={}",
+            //         old_value,
+            //         new_value,
+            //         FeatureFlag::OpenWarpLaunchModal.is_enabled()
+            //     );
+            // }
             #[cfg(debug_assertions)]
             OpenOrchestrationLaunchModal => {
                 OneTimeModalModel::handle(ctx).update(ctx, |model, ctx| {
@@ -24378,9 +24387,10 @@ impl View for Workspace {
             stack.add_child(ChildView::new(&self.oz_launch_modal.view).finish());
         }
 
-        if should_show_modal && one_time_modal_model.is_openwarp_launch_modal_open() {
-            stack.add_child(ChildView::new(&self.openwarp_launch_modal).finish());
-        }
+        // Cute: OpenWarpLaunchModal 类型不存在
+        // if should_show_modal && one_time_modal_model.is_openwarp_launch_modal_open() {
+        //     stack.add_child(ChildView::new(&self.openwarp_launch_modal).finish());
+        // }
 
         if should_show_modal && one_time_modal_model.is_orchestration_launch_modal_open() {
             stack.add_child(ChildView::new(&self.orchestration_launch_modal).finish());
@@ -25630,7 +25640,7 @@ fn render_cross_window_ghost_chip(
     app: &AppContext,
 ) -> Box<dyn Element> {
     use cuteui::elements::DropShadow;
-use crate::cloud_stub_types::SharedSessionActionSource;
+// use crate::cloud_stub_types::SharedSessionActionSource; // Cute: 模块不存在
 
     let theme = appearance.theme();
 

@@ -23,6 +23,7 @@ use crate::ai::agent::AIAgentActionId;
 use crate::ai::ai_document_view::DEFAULT_PLANNING_DOCUMENT_TITLE;
 use crate::ai::blocklist::{BlocklistAIHistoryEvent, BlocklistAIHistoryModel};
 use crate::ai::execution_profiles::profiles::AIExecutionProfilesModel;
+use crate::UserWorkspaces;
 use crate::appearance::Appearance;
 use crate::auth::auth_state::AuthStateProvider;
 use crate::cloud_stub_types::{CloudObject, CloudObjectEventEntrypoint, Owner, Revision};
@@ -1080,7 +1081,6 @@ impl AIDocumentModel {
         ctx: &mut ModelContext<Self>,
     ) {
         use std::collections::HashMap;
-use crate::UserWorkspaces;
         let configs = {
             let history = BlocklistAIHistoryModel::as_ref(ctx);
             let Some(conversation) = history.conversation(&conversation_id) else {
