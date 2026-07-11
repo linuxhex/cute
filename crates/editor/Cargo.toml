@@ -1,9 +1,9 @@
 [package]
 name = "cute_editor"
-authors = ["Warp Team <dev@warp.dev>"]
+authors = ["Cute Team <dev@cute.dev>"]
 version = "0.1.0"
 edition = "2024"
-description = "Text editing for Warp"
+description = "Text editing for Cute"
 publish.workspace = true
 license.workspace = true
 

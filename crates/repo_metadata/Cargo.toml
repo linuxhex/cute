@@ -1,9 +1,9 @@
 [package]
 name = "repo_metadata"
-authors = ["Warp Team <dev@warp.dev>"]
+authors = ["Cute Team <dev@cute.dev>"]
 version = "0.1.0"
 edition = "2021"
-description = "Repository metadata utilities for Warp"
+description = "Repository metadata utilities for Cute"
 publish.workspace = true
 license.workspace = true
 
@@ -42,4 +42,3 @@ watcher.workspace = true
 
 [build-dependencies]
 anyhow.workspace = true
-

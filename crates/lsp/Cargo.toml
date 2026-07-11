@@ -2,10 +2,10 @@
 name = "lsp"
 version = "0.1.0"
 edition = "2021"
-authors = ["Warp Team <dev@warp.dev>"]
+authors = ["Cute Team <dev@cute.dev>"]
 publish.workspace = true
 license.workspace = true
-description = "Language Server Protocol implementation for Warp"
+description = "Language Server Protocol implementation for Cute"
 
 [features]
 local_fs = []
