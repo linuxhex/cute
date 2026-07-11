@@ -247,6 +247,7 @@ pub use crate::cloud_stub_types::UserWorkspacesEvent;
 pub use crate::cloud_stub_types::SharedSessionStatus;
 pub use crate::cloud_stub_types::IsSharedSessionCreator;
 pub use crate::cloud_stub_types::SharedSessionSource;
+pub use session_sharing_protocol::sharer::SessionSourceType;
 pub use crate::cloud_stub_types::UserProfiles;
 pub use crate::cloud_stub_types::UserProfile;
 pub use crate::cloud_stub_types::ObjectIdType;

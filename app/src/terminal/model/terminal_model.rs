@@ -88,6 +88,7 @@ use crate::terminal::{
     color, ssh, BlockPadding, ShellHost, ShellLaunchData, ShellLaunchState, SizeUpdate,
     SizeUpdateReason,
 };
+use crate::SharedSessionSource;
 use crate::util::AsciiDebug;
 
 /// Max size of the window title stack.
@@ -573,13 +574,11 @@ pub struct TerminalModel {
     obfuscate_secrets: ObfuscateSecrets,
 
     // 已注释：清理 shared_session 共享会话功能
-    // shared_session_status: SharedSessionStatus,
-    shared_session_status: bool,  // 简化为 bool 类型
+    shared_session_status: SharedSessionStatus,
 
     /// `SessionSourceType` paired with `source_task_id`, or `None` when
     /// this is not a shared session.
-    // shared_session_source: Option<SharedSessionSource>,
-    shared_session_source: Option<String>,  // 简化为 String 类型
+    shared_session_source: Option<SharedSessionSource>,
 
     /// Whether this terminal model was created as a cloud mode dummy session
     /// (no local shell process, deferred shared-session viewer backing).
@@ -598,14 +597,12 @@ pub struct TerminalModel {
     /// TODO: consider combining this with `shared_session_status` because
     /// the state can technically diverge.
     // 已注释：清理 shared_session 共享会话功能
-    // ordered_terminal_events_for_shared_session_tx: Option<Sender<OrderedTerminalEventType>>,
-    ordered_terminal_events_for_shared_session_tx: Option<String>,  // 简化类型
+    ordered_terminal_events_for_shared_session_tx: Option<Sender<OrderedTerminalEventType>>,
 
     /// A sender for write to pty events for a shared session viewer.
     ///
     /// This field is only [`Some`] if this session is shared.
-    // write_to_pty_events_for_shared_session_tx: Option<Sender<Vec<u8>>>,
-    write_to_pty_events_for_shared_session_tx: Option<String>,  // 简化类型
+    write_to_pty_events_for_shared_session_tx: Option<Sender<Vec<u8>>>,
 
     /// Whether this viewer is currently receiving historical agent conversation replay.
     /// Used to suppress live-conversation-specific actions (e.g. tombstone insertion)
@@ -1118,8 +1115,8 @@ use crate::cloud_stub_types::SharedSessionStatus;
         is_ai_ugc_telemetry_enabled: bool,
         session_startup_path: Option<PathBuf>,
         shell_state: ShellLaunchState,
-        // shared_session_status: SharedSessionStatus,  // 已注释：清理 shared_session 共享会话功能
-        shared_session_status: bool,  // 简化类型
+        // 已注释：清理 shared_session 共享会话功能
+        shared_session_status: SharedSessionStatus,
         is_dummy_cloud_mode_session: bool,
     ) -> Self {
         let alt_screen = AltScreen::new(
@@ -1935,10 +1932,8 @@ use crate::cloud_stub_types::SharedSessionStatus;
         SharedSessionStatus::default() // 返回默认的 NotShared 状态
     }
 
-    // pub fn set_shared_session_status(&mut self, shared_session_status: SharedSessionStatus) {
-    //     self.shared_session_status = shared_session_status;
-    // }
-    pub fn set_shared_session_status(&mut self, shared_session_status: bool) {
+    // 已注释：清理 shared_session 共享会话功能
+    pub fn set_shared_session_status(&mut self, shared_session_status: SharedSessionStatus) {
         self.shared_session_status = shared_session_status;
     }
 

@@ -3391,11 +3391,22 @@ impl Default for IsSharedSessionCreator {
 
 /// Minimal stub for SharedSessionSource - shared session source
 #[derive(Clone, Debug, PartialEq, Eq, Default)]
-pub enum SharedSessionSource {
-    #[default]
-    Terminal,
-    Pane,
-    CommandPalette,
+pub struct SharedSessionSource {
+    pub source_type: SessionSourceType,
+    pub source_task_id: Option<String>,
+}
+
+impl SharedSessionSource {
+    pub fn ambient_agent(task_id: Option<String>) -> Self {
+        Self {
+            source_type: SessionSourceType::AmbientAgent { task_id: task_id.clone() },
+            source_task_id: task_id,
+        }
+    }
+
+    pub fn orchestrator_task_id(&self) -> Option<&str> {
+        self.source_type.orchestrator_task_id()
+    }
 }
 
 // ===== SharedSessionStatus Stub (Session Sharing) =====
@@ -3408,7 +3419,9 @@ pub enum SharedSessionStatus {
     #[default]
     NotShared,
     SharePending,
-    SharePendingPreBootstrap,
+    SharePendingPreBootstrap {
+        source: SharedSessionSource,
+    },
 }
 
 impl SharedSessionStatus {
@@ -3450,6 +3463,16 @@ impl SharedSessionStatus {
 
     /// Returns false in stub - cloud sharing is disabled
     pub fn is_active_viewer(&self) -> bool {
+        false
+    }
+
+    /// Returns false in stub - cloud sharing is disabled
+    pub fn is_view_pending(&self) -> bool {
+        matches!(self, SharedSessionStatus::SharePending | SharedSessionStatus::SharePendingPreBootstrap)
+    }
+
+    /// Returns false in stub - cloud sharing is disabled
+    pub fn is_active_sharer(&self) -> bool {
         false
     }
 }
@@ -3605,6 +3628,13 @@ impl UserWorkspaces {
     /// Returns whether codebase context is enabled.
     /// COMMENTED: Cloud feature disabled in local version
     pub fn is_codebase_context_enabled(&self, _ctx: &AppContext) -> bool {
+        // Cloud feature disabled in local version
+        false
+    }
+
+    /// Returns whether team allows codebase context.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn team_allows_codebase_context(&self) -> bool {
         // Cloud feature disabled in local version
         false
     }

@@ -12568,7 +12568,7 @@ impl Input {
         if let Some(workflow_state) = self.workflows_state.selected_workflow_state.as_ref() {
             if let WorkflowType::Cloud(workflow) = &workflow_state.workflow_type {
 
-                UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
+                UpdateManager::handle(ctx).update(ctx, move |update_manager: ModelHandle<UpdateManager>, ctx| {
                     update_manager.record_object_action(
                         workflow.cloud_object_type_and_id(),
                         ObjectActionType::Execute,

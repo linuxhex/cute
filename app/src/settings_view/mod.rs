@@ -2503,15 +2503,16 @@ impl TypedActionView for SettingsView {
                     }
                 }
             }
-            SettingsAction::WarpDrive(warp_drive_action) => {
-                if let Some(warp_drive_page) = self.settings_page(SettingsSection::WarpDrive) {
-                    if let SettingsPageViewHandle::WarpDrive(view) = &warp_drive_page.view_handle {
-                        view.update(ctx, |view, ctx| {
-                            view.handle_action(warp_drive_action, ctx);
-                        })
-                    }
-                }
-            }
+            // 已注释：清理 WarpDrive 功能
+            // SettingsAction::WarpDrive(warp_drive_action) => {
+            //     if let Some(warp_drive_page) = self.settings_page(SettingsSection::WarpDrive) {
+            //         if let SettingsPageViewHandle::WarpDrive(view) = &warp_drive_page.view_handle {
+            //             view.update(ctx, |view, ctx| {
+            //                 view.handle_action(warp_drive_action, ctx);
+            //             })
+            //         }
+            //     }
+            // }
             SettingsAction::WarpifyPageToggle(warpify_action) => {
                 if let Some(warpify_page) = self.settings_page(SettingsSection::Warpify) {
                     if let SettingsPageViewHandle::Warpify(view) = &warpify_page.view_handle {

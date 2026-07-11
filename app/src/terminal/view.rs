@@ -4500,12 +4500,13 @@ impl TerminalView {
         event: &BlocklistAIControllerEvent,
         ctx: &mut ViewContext<Self>,
     ) {
-        if matches!(
-            event,
-            BlocklistAIControllerEvent::FreeTierLimitCheckTriggered
-        ) {
-            ctx.emit(Event::FreeTierLimitCheckTriggered);
-        }
+        // 已注释：本地版本无配额限制
+        // if matches!(
+        //     event,
+        //     BlocklistAIControllerEvent::FreeTierLimitCheckTriggered
+        // ) {
+        //     ctx.emit(Event::FreeTierLimitCheckTriggered);
+        // }
         if let BlocklistAIControllerEvent::SentRequest { model_id, .. } = event {
             self.maybe_insert_aws_bedrock_login_banner(model_id, ctx);
         }
