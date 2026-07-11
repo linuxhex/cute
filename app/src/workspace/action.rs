@@ -257,12 +257,7 @@ pub enum WorkspaceAction {
     ClickedAIAssistantIcon,
     ToggleKeybindingsPage,
     ShowCommandSearch(CommandSearchOptions),
-    CreatePersonalNotebook,
-    ImportToPersonalDrive,
-    CreatePersonalWorkflow,
-    CreatePersonalFolder,
-    CreatePersonalEnvVarCollection,
-    CreatePersonalAIPrompt,
+    // REMOVED: Cloud personal features - CreatePersonalNotebook, ImportToPersonalDrive, etc.
     ToggleMouseReporting,
     ToggleScrollReporting,
     ToggleFocusReporting,
@@ -856,12 +851,7 @@ impl WorkspaceAction {
             | ToggleMouseReporting
             | ToggleScrollReporting
             | ToggleFocusReporting
-            | ImportToPersonalDrive
-            | CreatePersonalNotebook
-            | CreatePersonalWorkflow
-            | CreatePersonalFolder
-            | CreatePersonalEnvVarCollection
-            | CreatePersonalAIPrompt
+            // REMOVED: Cloud personal features
             | OpenInExplorer { .. }
             | DragTab { .. }
             | StartTabDrag

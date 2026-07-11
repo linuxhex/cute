@@ -199,15 +199,22 @@ pub use models::{
 
 /// Minimal stub for SharedSessionSource
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum SharedSessionSource {
-    AmbientAgent { task_id: Option<String> },
-    CommandPalette { command_id: String },
-    Workflow { workflow_id: String },
+pub struct SharedSessionSource {
+    pub source_type: SessionSourceType,
+    #[allow(dead_code)]
+    pub source_task_id: Option<String>,
 }
 
 impl SharedSessionSource {
     pub fn ambient_agent(task_id: Option<String>) -> Self {
-        Self::AmbientAgent { task_id }
+        Self {
+            source_type: SessionSourceType::AmbientAgent { task_id: task_id.clone() },
+            source_task_id: task_id,
+        }
+    }
+
+    pub fn orchestrator_task_id(&self) -> Option<&str> {
+        self.source_type.orchestrator_task_id()
     }
 }
 
@@ -2475,8 +2482,10 @@ pub enum SessionSource {
 }
 
 /// Minimal stub for SessionSourceType
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub enum SessionSourceType {
+    #[default]
+    User,
     AmbientAgent { task_id: Option<String> },
     CommandPalette { command_id: String },
     Workflow { workflow_id: String },
@@ -2742,10 +2751,24 @@ pub struct CloudLinkSharing {
     pub source: Option<cute_server_client::cloud_object::ServerObjectContainer>,
 }
 
+/// Minimal stub for Subject (cloud object subject)
+#[derive(Clone, Debug, PartialEq)]
+pub enum Subject {
+    User(UserKind),
+    Team(cute_server_client::auth::TeamUid),
+}
+
+/// Minimal stub for UserKind
+#[derive(Clone, Debug, PartialEq)]
+pub enum UserKind {
+    Account(cute_server_client::auth::UserUid),
+    Agent(cute_server_client::auth::UserUid),
+}
+
 /// Minimal stub for CloudObjectGuest
 #[derive(Clone, Debug, PartialEq)]
 pub struct CloudObjectGuest {
-    pub subject: cute_server_client::cloud_object::Subject,
+    pub subject: Subject,
     pub access_level: SharingAccessLevel,
     pub source: Option<cute_server_client::cloud_object::ServerObjectContainer>,
 }
@@ -2753,7 +2776,7 @@ pub struct CloudObjectGuest {
 impl Default for CloudObjectGuest {
     fn default() -> Self {
         Self {
-            subject: cute_server_client::cloud_object::Subject::User(cute_server_client::cloud_object::UserKind::Account(cute_server_client::auth::UserUid::new("default"))),
+            subject: Subject::User(UserKind::Account(cute_server_client::auth::UserUid::new("default"))),
             access_level: SharingAccessLevel::Viewer,
             source: None,
         }
@@ -3697,9 +3720,7 @@ pub type WarpDriveSettingsChangedEvent = CuteDriveSettingsChangedEvent;
 
 // ===== SharedSessionSource Stub (Session Sharing) =====
 
-/// Minimal stub for SharedSessionSource - shared session source
-/// Already defined elsewhere, just re-exporting here
-pub use crate::terminal::model::terminal_model::SharedSessionSource;
+/// SharedSessionSource is defined earlier in this file
 
 /// Minimal stub for IsSharedSessionCreator - shared session creator status
 /// This is a cloud feature that's disabled in the local version.

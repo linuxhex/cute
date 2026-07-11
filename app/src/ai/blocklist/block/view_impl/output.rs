@@ -1643,32 +1643,8 @@ fn render_read_skill(
     renderable_action =
         renderable_action.with_icon(action_icon(id, props.action_model, props.model, app).finish());
 
-    // Renders the 'open skill' button for known, non-bundled skills.
-    if let Some(skill) = skill {
-        if !skill.is_bundled() {
-            let source = CodeSource::Skill {
-                reference: skill_reference.clone(),
-                location: skill.path.clone(),
-                origin: SkillOpenOrigin::ReadSkill,
-            };
 
-            let skill_icon_override = icon_override_for_skill_name(&skill.name);
-            let open_button = render_skill_button(
-                "Open skill",
-                props.state_handles.open_skill_button_handle.clone(),
-                appearance,
-                skill.provider,
-                skill_icon_override,
-                move |ctx| {
-                    ctx.dispatch_typed_action(AIBlockAction::OpenCodeInCute {
-                        source: source.clone(),
-                    });
-                },
-            );
-
-            renderable_action = renderable_action.with_action_button(open_button);
-        }
-    }
+    // Removed: 'open skill' button for known, non-bundled skills (cloud feature)
 
     renderable_action.render(app).finish()
 }
@@ -1747,30 +1723,7 @@ fn render_read_files(
     };
 
     // Renders the 'open skill' button if all files belong to the same skill directory.
-    if let Some(skill) = parsed_skill {
-        let reference = SkillManager::handle(app)
-            .as_ref(app)
-            .reference_for_skill_path(&skill.path);
-        let source = CodeSource::Skill {
-            reference,
-            location: skill.path.clone(),
-            origin: SkillOpenOrigin::ReadFiles,
-        };
-        let skill_icon_override = icon_override_for_skill_name(&skill.name);
-        let open_button = render_skill_button(
-            &format!("/{}", skill.name),
-            props.state_handles.read_from_skill_button_handle.clone(),
-            appearance,
-            skill.provider,
-            skill_icon_override,
-            move |ctx| {
-                ctx.dispatch_typed_action(AIBlockAction::OpenCodeInCute {
-                    source: source.clone(),
-                });
-            },
-        );
-        renderable_action = renderable_action.with_action_button(open_button);
-    }
+    // Removed: skill button (cloud feature)
 
     renderable_action.render(app).finish()
 }

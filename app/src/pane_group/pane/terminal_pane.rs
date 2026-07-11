@@ -49,10 +49,7 @@ use crate::session_management::SessionNavigationData;
 use crate::terminal::cli_agent_sessions::CLIAgentSessionsModel;
 use crate::terminal::general_settings::GeneralSettings;
 use crate::SharedSessionStatus;
-// use crate::terminal::shared_session::{
-//     IsSharedSessionCreator, SharedSessionSource,
-//     SharedSessionStatus,
-// }; // Removed: session sharing feature
+use crate::cloud_stub_types::{IsSharedSessionCreator, SharedSessionSource};
 use crate::terminal::view::ambient_agent::should_disable_snapshot;
 use crate::terminal::view::Event;
 use crate::terminal::{TerminalManager, TerminalView};

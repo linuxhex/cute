@@ -2152,7 +2152,7 @@ impl View for AgentInputFooter {
         for item in &left_items {
             if let Some(element) = self.render_toolbar_item(
                 item,
-                shared_status,
+                &shared_status,
                 is_cloud_context,
                 is_conversation_transcript_context,
                 app,
@@ -2179,7 +2179,7 @@ impl View for AgentInputFooter {
             for item in &right_items {
                 if let Some(element) = self.render_toolbar_item(
                     item,
-                    shared_status,
+                    &shared_status,
                     is_cloud_context,
                     is_conversation_transcript_context,
                     app,

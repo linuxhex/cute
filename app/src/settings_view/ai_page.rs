@@ -1013,7 +1013,6 @@ impl AISettingsPageView {
                 }
                 AISettingsChangedEvent::IsAnyAIEnabled { .. } => {
                     let is_enabled = AISettings::as_ref(ctx).is_any_ai_enabled(ctx);
-                    let ai_autonomy_settings = UserWorkspaces::as_ref(ctx).ai_autonomy_settings();
 
                     Self::update_editor_interaction_state(
                         me.autodetection_denylist_editor.clone(),
@@ -1044,7 +1043,7 @@ impl AISettingsPageView {
 
                     Self::update_editor_interaction_state(
                         me.directory_allowlist_editor.as_ref(ctx).editor().clone(),
-                        is_enabled && !ai_autonomy_settings.has_override_for_read_files_allowlist(),
+                        is_enabled,
                         ctx,
                     );
 
@@ -1056,8 +1055,7 @@ impl AISettingsPageView {
 
                     Self::update_editor_interaction_state(
                         me.command_allowlist_editor.as_ref(ctx).editor().clone(),
-                        is_enabled
-                            && !ai_autonomy_settings.has_override_for_execute_commands_allowlist(),
+                        is_enabled,
                         ctx,
                     );
 
@@ -1422,7 +1420,7 @@ impl AISettingsPageView {
         });
         Self::update_editor_interaction_state(
             command_denylist_editor.as_ref(ctx).editor().clone(),
-            is_any_ai_enabled && !ai_autonomy_settings.has_override_for_execute_commands_denylist(),
+            is_any_ai_enabled,
             ctx,
         );
 
@@ -1460,8 +1458,7 @@ impl AISettingsPageView {
         });
         Self::update_editor_interaction_state(
             command_allowlist_editor.as_ref(ctx).editor().clone(),
-            is_any_ai_enabled
-                && !ai_autonomy_settings.has_override_for_execute_commands_allowlist(),
+            is_any_ai_enabled,
             ctx,
         );
 
