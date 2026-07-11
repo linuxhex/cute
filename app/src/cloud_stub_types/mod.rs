@@ -2751,37 +2751,9 @@ pub struct CloudLinkSharing {
     pub source: Option<cute_server_client::cloud_object::ServerObjectContainer>,
 }
 
-/// Minimal stub for Subject (cloud object subject)
-#[derive(Clone, Debug, PartialEq)]
-pub enum Subject {
-    User(UserKind),
-    Team(cute_server_client::auth::TeamUid),
-}
+// Removed: Subject, UserKind, CloudObjectGuest - cute_server_client types not found
 
-/// Minimal stub for UserKind
-#[derive(Clone, Debug, PartialEq)]
-pub enum UserKind {
-    Account(cute_server_client::auth::UserUid),
-    Agent(cute_server_client::auth::UserUid),
-}
 
-/// Minimal stub for CloudObjectGuest
-#[derive(Clone, Debug, PartialEq)]
-pub struct CloudObjectGuest {
-    pub subject: Subject,
-    pub access_level: SharingAccessLevel,
-    pub source: Option<cute_server_client::cloud_object::ServerObjectContainer>,
-}
-
-impl Default for CloudObjectGuest {
-    fn default() -> Self {
-        Self {
-            subject: Subject::User(UserKind::Account(cute_server_client::auth::UserUid::new("default"))),
-            access_level: SharingAccessLevel::Viewer,
-            source: None,
-        }
-    }
-}
 
 // Owner is already imported from cute_server_client::cloud_object
 // See line 185 for re-export: pub use cute_server_client::cloud_object::*;

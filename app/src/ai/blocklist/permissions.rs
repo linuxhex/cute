@@ -203,8 +203,8 @@ impl BlocklistAIPermissions {
             cli_agent_model: profile_data.cli_agent_model.clone(),
             computer_use_model: profile_data.computer_use_model.clone(),
             context_window_limit: profile_data.context_window_limit,
-            // COMMENTED: Cloud feature disabled - autosync_plans_to_cute_drive removed
-            // autosync_plans_to_cute_drive: profile_data.autosync_plans_to_cute_drive,
+            // Cloud feature disabled - use default value
+            autosync_plans_to_warp_drive: false,
             web_search_enabled: profile_data.web_search_enabled,
         }
     }
@@ -230,20 +230,11 @@ impl BlocklistAIPermissions {
 
     pub fn get_apply_code_diffs_setting_for_profile(
         &self,
-        ctx: &AppContext,
-        profile_id: ClientProfileId,
+        _ctx: &AppContext,
+        _profile_id: ClientProfileId,
     ) -> ActionPermission {
-        let autonomy_settings = Self::workspace_autonomy_settings(ctx);
-        let apply_code_diffs_workspace_setting = autonomy_settings.apply_code_diffs_setting;
-
-        apply_code_diffs_workspace_setting.unwrap_or_else(|| {
-            let profiles_model = AIExecutionProfilesModel::as_ref(ctx);
-            profiles_model
-                .get_profile_by_id(profile_id, ctx)
-                .unwrap_or_else(|| profiles_model.default_profile(ctx))
-                .data()
-                .apply_code_diffs
-        })
+        // Cloud feature disabled - return default
+        ActionPermission::AgentDecides
     }
 
     /// Returns what the current setting is for applying code diffs,
@@ -261,20 +252,11 @@ impl BlocklistAIPermissions {
 
     pub fn get_read_files_setting_for_profile(
         &self,
-        ctx: &AppContext,
-        profile_id: ClientProfileId,
+        _ctx: &AppContext,
+        _profile_id: ClientProfileId,
     ) -> ActionPermission {
-        let autonomy_settings = Self::workspace_autonomy_settings(ctx);
-        let read_files_workspace_setting = autonomy_settings.read_files_setting;
-
-        read_files_workspace_setting.unwrap_or_else(|| {
-            let profiles_model = AIExecutionProfilesModel::as_ref(ctx);
-            profiles_model
-                .get_profile_by_id(profile_id, ctx)
-                .unwrap_or_else(|| profiles_model.default_profile(ctx))
-                .data()
-                .read_files
-        })
+        // Cloud feature disabled - return default
+        ActionPermission::AgentDecides
     }
 
     /// Returns what the current setting is for reading files,
@@ -291,21 +273,11 @@ impl BlocklistAIPermissions {
 
     pub fn get_read_files_allowlist_for_profile(
         &self,
-        ctx: &AppContext,
-        profile_id: ClientProfileId,
+        _ctx: &AppContext,
+        _profile_id: ClientProfileId,
     ) -> Vec<PathBuf> {
-        let autonomy_settings = Self::workspace_autonomy_settings(ctx);
-        let read_files_workspace_allowlist = autonomy_settings.read_files_allowlist;
-
-        read_files_workspace_allowlist.unwrap_or_else(|| {
-            let profiles_model = AIExecutionProfilesModel::as_ref(ctx);
-            profiles_model
-                .get_profile_by_id(profile_id, ctx)
-                .unwrap_or_else(|| profiles_model.default_profile(ctx))
-                .data()
-                .directory_allowlist
-                .clone()
-        })
+        // Cloud feature disabled - return default
+        Vec::new()
     }
 
     /// Returns an allowlist of paths that AM should be able to auto-read.
@@ -323,20 +295,11 @@ impl BlocklistAIPermissions {
 
     pub fn get_execute_commands_setting_for_profile(
         &self,
-        ctx: &AppContext,
-        profile_id: ClientProfileId,
+        _ctx: &AppContext,
+        _profile_id: ClientProfileId,
     ) -> ActionPermission {
-        let autonomy_settings = Self::workspace_autonomy_settings(ctx);
-        let execute_commands_workspace_setting = autonomy_settings.execute_commands_setting;
-
-        execute_commands_workspace_setting.unwrap_or_else(|| {
-            let profiles_model = AIExecutionProfilesModel::as_ref(ctx);
-            profiles_model
-                .get_profile_by_id(profile_id, ctx)
-                .unwrap_or_else(|| profiles_model.default_profile(ctx))
-                .data()
-                .execute_commands
-        })
+        // Cloud feature disabled - return default
+        ActionPermission::AlwaysAsk
     }
 
     /// Returns what the current setting is for executing commands,
@@ -353,21 +316,11 @@ impl BlocklistAIPermissions {
 
     pub fn get_execute_commands_allowlist_for_profile(
         &self,
-        ctx: &AppContext,
-        profile_id: ClientProfileId,
+        _ctx: &AppContext,
+        _profile_id: ClientProfileId,
     ) -> Vec<AgentModeCommandExecutionPredicate> {
-        let autonomy_settings = Self::workspace_autonomy_settings(ctx);
-        let execute_commands_workspace_allowlist = autonomy_settings.execute_commands_allowlist;
-
-        execute_commands_workspace_allowlist.unwrap_or_else(|| {
-            let profiles_model = AIExecutionProfilesModel::as_ref(ctx);
-            profiles_model
-                .get_profile_by_id(profile_id, ctx)
-                .unwrap_or_else(|| profiles_model.default_profile(ctx))
-                .data()
-                .command_allowlist
-                .clone()
-        })
+        // Cloud feature disabled - return default
+        Vec::new()
     }
 
     /// Returns an allowlist of command regexes that AM should be able to auto-execute.
@@ -385,30 +338,11 @@ impl BlocklistAIPermissions {
 
     pub fn get_execute_commands_denylist_for_profile(
         &self,
-        ctx: &AppContext,
-        profile_id: ClientProfileId,
+        _ctx: &AppContext,
+        _profile_id: ClientProfileId,
     ) -> Vec<AgentModeCommandExecutionPredicate> {
-        let autonomy_settings = Self::workspace_autonomy_settings(ctx);
-        let profiles_model = AIExecutionProfilesModel::as_ref(ctx);
-        let user_denylist = profiles_model
-            .get_profile_by_id(profile_id, ctx)
-            .unwrap_or_else(|| profiles_model.default_profile(ctx))
-            .data()
-            .command_denylist
-            .clone();
-
-        match autonomy_settings.execute_commands_denylist {
-            Some(org_denylist) => {
-                let mut merged = org_denylist;
-                for item in user_denylist {
-                    if !merged.contains(&item) {
-                        merged.push(item);
-                    }
-                }
-                merged
-            }
-            None => user_denylist,
-        }
+        // Cloud feature disabled - return default
+        Vec::new()
     }
 
     pub fn get_org_execute_commands_denylist(

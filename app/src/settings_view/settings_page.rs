@@ -107,7 +107,7 @@ pub enum SettingsPageViewHandle {
     AI(ViewHandle<AISettingsPageView>),
     CloudEnvironments(ViewHandle<EnvironmentsPageView>),
     MCPServers(ViewHandle<MCPServersSettingsPageView>),
-    WarpDrive(ViewHandle<WarpDriveSettingsPageView>),
+    // WarpDrive removed - cloud feature not available in local version
 }
 
 impl SettingsPageViewHandle {
@@ -126,7 +126,7 @@ impl SettingsPageViewHandle {
             AI(view_handle) => ChildView::new(view_handle).finish(),
             CloudEnvironments(view_handle) => ChildView::new(view_handle).finish(),
             MCPServers(view_handle) => ChildView::new(view_handle).finish(),
-            WarpDrive(view_handle) => ChildView::new(view_handle).finish(),
+            // WarpDrive removed - cloud feature not available in local version
         }
     }
 }

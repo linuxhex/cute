@@ -41,11 +41,11 @@ use crate::appearance::Appearance;
 use crate::auth::auth_manager::{AuthManager, AuthManagerEvent};
 use crate::auth::AuthStateProvider;
 use crate::changelog_model::ChangelogRequestType;
-// COMMENTED: Cloud model and drive object imports disabled for local version
-// use crate::cloud_stub_types::model::persistence::CloudModel;
-// use crate::cloud_stub_types::{GenericStringObjectFormat, JsonObjectType, ObjectType};
-// use crate::cloud_stub_types::items::WarpDriveItemId;
-// use crate::cloud_stub_types::{CloudObjectTypeAndId, OpenWarpDriveObjectArgs, OpenWarpDriveObjectSettings};
+// Cloud model and drive object imports enabled for local version
+use crate::cloud_stub_types::model::persistence::CloudModel;
+use crate::cloud_stub_types::{GenericStringObjectFormat, JsonObjectType, ObjectType};
+use crate::cloud_stub_types::items::WarpDriveItemId;
+use crate::cloud_stub_types::{CloudObjectTypeAndId, OpenWarpDriveObjectArgs, OpenWarpDriveObjectSettings};
 use crate::features::FeatureFlag;
 use crate::interval_timer::IntervalTimer;
 use crate::launch_configs::launch_config;
