@@ -32,7 +32,7 @@ use crate::terminal::input::{
 use crate::terminal::view::ambient_agent::AmbientAgentViewModelEvent;
 use crate::ui_components::icons::Icon;
 use crate::view_components::action_button::{ActionButton, ActionButtonTheme, ButtonSize};
-use crate::ai::cloud_agent_settings::CloudAgentSettings;
+// use crate::ai::cloud_agent_settings::CloudAgentSettings; // Cute: 已注释，清理云端 Agent 设置
 
 /// Normalizes ambient-agent and handoff environment selection state behind one API.
 #[derive(Clone)]

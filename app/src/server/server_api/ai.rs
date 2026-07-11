@@ -153,7 +153,7 @@ use crate::terminal::model::block::SerializedBlock;
 use crate::{
     ai::request_usage_model::BonusGrantScope,
     server::ids::ServerId,
-    workspaces::{gql_convert::PLACEHOLDER_WORKSPACE_UID, workspace::WorkspaceUid},
+    // workspaces::{gql_convert::PLACEHOLDER_WORKSPACE_UID, workspace::WorkspaceUid}, // Cute: 已注释，清理 workspaces 模块
 };
 
 const AI_ASSISTANT_REQUEST_TIMEOUT_SECONDS: u64 = 30;
