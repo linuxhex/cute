@@ -48,6 +48,7 @@ use crate::ai::harness_availability::HarnessAvailabilityModel;
 use crate::ai::harness_display;
 use crate::appearance::Appearance;
 use crate::auth::UserUid;
+use crate::UserProfiles;
 use crate::cloud_stub_types::CloudObjectLookup as _;
 use crate::cloud_stub_types::NotebookId;
 use crate::server::ids::{ServerId, SyncId};

@@ -4,9 +4,8 @@ pub mod datetime_ext;
 pub mod graphql;
 // IAP items are only referenced from native code paths; on wasm the
 // module compiles but every function is dead code.
-// COMMENTED: IAP disabled in local version
-// #[cfg_attr(target_family = "wasm", allow(dead_code))]
-// pub(crate) mod iap;
+#[cfg_attr(target_family = "wasm", allow(dead_code))]
+pub(crate) mod iap;
 pub mod ids;
 pub mod retry_strategies;
 pub mod server_api;

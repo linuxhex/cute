@@ -2,7 +2,7 @@ pub(crate) mod conversation;
 pub(crate) mod conversation_yaml;
 pub(crate) mod todos;
 
-pub(crate) mod api;
+pub mod api;
 pub(crate) mod comment;
 pub(crate) mod icons;
 pub(crate) mod linearization;

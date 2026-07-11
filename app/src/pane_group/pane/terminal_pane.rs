@@ -48,6 +48,7 @@ use crate::server::server_api::ServerApiProvider;
 use crate::session_management::SessionNavigationData;
 use crate::terminal::cli_agent_sessions::CLIAgentSessionsModel;
 use crate::terminal::general_settings::GeneralSettings;
+use crate::SharedSessionStatus;
 // use crate::terminal::shared_session::{
 //     IsSharedSessionCreator, SharedSessionSource,
 //     SharedSessionStatus,

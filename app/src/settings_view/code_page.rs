@@ -57,8 +57,7 @@ use crate::code::buffer_location::LocalOrRemotePath;
 use crate::remote_server::codebase_index_model::{
     RemoteCodebaseIndexModel, RemoteCodebaseIndexModelEvent, RemoteCodebaseIndexSettingsEntry,
 };
-use crate::settings::{AISettings, CodeSettings};
-use crate::AdminEnablementSetting;
+use crate::settings::{AISettings, CodeSettings, AdminEnablementSetting};
 use crate::UserWorkspaces;
 use crate::terminal::general_settings::GeneralSettings;
 use crate::ui_components::avatar::{Avatar, AvatarContent, StatusElementTypes};

@@ -1477,6 +1477,13 @@ pub enum WorkflowModalEvent {
     UpdatedWorkflow(String),
 }
 
+/// Minimal stub for EmbeddingSearchItemAction (used in search data source)
+#[derive(Clone, Debug)]
+pub enum EmbeddingSearchItemAction {
+    Open(String),
+    Copy(String),
+}
+
 /// Minimal stub for NotebookDataSource
 #[derive(Clone, Debug)]
 pub struct NotebookDataSource {}
@@ -1539,7 +1546,7 @@ impl Entity for CloudNotebooksDataSource {
 }
 
 impl SyncDataSource for CloudNotebooksDataSource {
-    type Action = crate::search::notebook_embedding::searcher::EmbeddingSearchItemAction;
+    type Action = EmbeddingSearchItemAction;
 
     fn run_query(
         &self,
@@ -2826,7 +2833,7 @@ pub trait CloudObject: Debug {
     fn create_object_queue_item(
         &self,
         _entrypoint: CloudObjectEventEntrypoint,
-        _initiated_by: crate::server::cloud_objects::update_manager::InitiatedBy,
+        _initiated_by: crate::server::sync_queue::InitiatedBy,
     ) -> Option<crate::server::sync_queue::QueueItem> {
         None
     }
@@ -3434,6 +3441,39 @@ impl SharedSessionStatus {
     /// Returns false in stub - cloud sharing is disabled
     pub fn is_sharer_or_viewer(&self) -> bool {
         false
+    }
+
+    /// Returns false in stub - cloud sharing is disabled
+    pub fn is_reader(&self) -> bool {
+        false
+    }
+
+    /// Returns false in stub - cloud sharing is disabled
+    pub fn is_active_viewer(&self) -> bool {
+        false
+    }
+}
+
+/// Minimal stub for CloudAgentSettings
+#[derive(Clone, Debug, Default)]
+pub struct CloudAgentSettings {
+    pub enabled: bool,
+    pub model: String,
+}
+
+/// Minimal stub for UpdateManager
+#[derive(Clone, Debug)]
+pub struct UpdateManager;
+
+impl UpdateManager {
+    pub fn new() -> Self {
+        Self
+    }
+}
+
+impl Default for UpdateManager {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

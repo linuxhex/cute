@@ -24,6 +24,7 @@ use cute_terminal::model::{KeyboardModes, KeyboardModesApplyBehavior};
 use cuteui::assets::asset_cache::Asset;
 use cuteui::image_cache::ImageType;
 use cuteui::r#async::executor::Background;
+use crate::SharedSessionStatus;
 #[cfg(not(target_family = "wasm"))]
 use cuteui::util::save_as_file;
 use cuteui::AppContext;
