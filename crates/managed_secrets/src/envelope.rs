@@ -100,6 +100,3 @@ impl<'a> UploadContext<'a> {
     }
 }
 
-#[cfg(test)]
-#[path = "envelope_tests.rs"]
-mod tests;

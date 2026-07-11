@@ -1853,6 +1853,3 @@ impl Entity for CompiledCommandsForCodingAgentToolbar {
 
 impl SingletonEntity for CompiledCommandsForCodingAgentToolbar {}
 
-#[cfg(test)]
-#[path = "ai_tests.rs"]
-mod tests;

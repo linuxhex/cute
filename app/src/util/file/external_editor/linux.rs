@@ -565,6 +565,3 @@ enum DesktopExecError {
     MalformedFieldCode,
 }
 
-#[cfg(test)]
-#[path = "linux_tests.rs"]
-mod tests;

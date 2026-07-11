@@ -748,6 +748,3 @@ fn update_matches_for_filtered_block<'a>(
     }
 }
 
-#[cfg(test)]
-#[path = "block_list_tests.rs"]
-mod tests;

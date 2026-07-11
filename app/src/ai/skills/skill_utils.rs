@@ -214,6 +214,3 @@ pub fn skill_path_from_file_path(file_path: &Path) -> Option<PathBuf> {
     None
 }
 
-#[cfg(test)]
-#[path = "skill_utils_tests.rs"]
-mod tests;

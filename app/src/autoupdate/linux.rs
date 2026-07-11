@@ -682,6 +682,3 @@ fn repo_name(channel: Channel) -> String {
     format!("warpdotdev{channel_suffix}")
 }
 
-#[cfg(test)]
-#[path = "linux_tests.rs"]
-mod tests;

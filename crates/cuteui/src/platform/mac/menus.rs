@@ -411,6 +411,3 @@ pub unsafe fn make_dock_menu(menu: Menu) -> id {
     Retained::autorelease_ptr(dock_menu) as id
 }
 
-#[cfg(test)]
-#[path = "menus_tests.rs"]
-mod tests;

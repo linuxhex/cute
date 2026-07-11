@@ -4,9 +4,6 @@ use anyhow::{anyhow, Result};
 use async_channel::Sender;
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-#[cfg(test)]
-use mockall::automock;
-
 use cute_server_client::cloud_object::{SerializedModel, ServerMetadata};
 use cute_server_client::ids::{GenericStringObjectId, HashedSqliteId, ObjectUid, ServerId, SyncId};
 

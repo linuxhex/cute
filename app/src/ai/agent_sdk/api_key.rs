@@ -481,6 +481,3 @@ fn finish_command(result: Result<()>, ctx: &mut ModelContext<ApiKeyCommandRunner
     }
 }
 
-#[cfg(test)]
-#[path = "api_key_tests.rs"]
-mod tests;

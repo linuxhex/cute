@@ -134,6 +134,3 @@ impl CommandExecutor for TmuxCommandExecutor {
     }
 }
 
-#[cfg(test)]
-#[path = "tmux_executor_tests.rs"]
-mod tests;

@@ -370,6 +370,4 @@ impl Entity for ObjectActions {
 
 impl SingletonEntity for ObjectActions {}
 
-#[cfg(test)]
-#[path = "actions_tests.rs"]
-pub mod tests;
+

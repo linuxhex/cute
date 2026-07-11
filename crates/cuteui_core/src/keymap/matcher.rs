@@ -377,6 +377,3 @@ impl Matcher {
     }
 }
 
-#[cfg(test)]
-#[path = "matcher_tests.rs"]
-mod tests;

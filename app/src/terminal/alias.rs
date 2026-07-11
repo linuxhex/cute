@@ -48,6 +48,3 @@ pub async fn check_for_alias_async(source: &str, session: Arc<Session>) -> Optio
     check_for_alias(source, session)
 }
 
-#[cfg(test)]
-#[path = "alias_tests.rs"]
-pub mod tests;

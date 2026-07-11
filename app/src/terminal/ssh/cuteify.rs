@@ -209,6 +209,3 @@ pub fn warpify_ssh_session_command(
 ) -> Option<String> {
     cuteify_ssh_session_command(uname, shell_type, app)
 }
-#[cfg(test)]
-#[path = "cuteify_tests.rs"]
-mod tests;

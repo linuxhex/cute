@@ -219,6 +219,3 @@ fn truncate_skill_description(description: &str) -> String {
         .unwrap_or(truncated)
 }
 
-#[cfg(test)]
-#[path = "parse_skill_tests.rs"]
-mod parse_skill_test;

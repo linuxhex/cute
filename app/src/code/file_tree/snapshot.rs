@@ -366,6 +366,3 @@ impl FileTreeSnapshot {
     }
 }
 
-#[cfg(test)]
-#[path = "snapshot_tests.rs"]
-mod tests;

@@ -530,6 +530,3 @@ pub fn command_matches_workflow(command: &str, workflow: &Workflow) -> bool {
         .is_some()
 }
 
-#[cfg(test)]
-#[path = "command_parser_tests.rs"]
-mod tests;

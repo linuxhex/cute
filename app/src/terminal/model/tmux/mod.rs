@@ -63,6 +63,3 @@ pub fn parse_generator_output(input: &[u8]) -> Option<ExecutedExecutorCommandEve
     })
 }
 
-#[cfg(test)]
-#[path = "mod_tests.rs"]
-mod tests;

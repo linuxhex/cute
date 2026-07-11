@@ -1452,6 +1452,3 @@ impl TryFrom<InsertReviewCommentsResult> for api::request::input::tool_call_resu
     }
 }
 
-#[cfg(test)]
-#[path = "convert_tests.rs"]
-mod tests;

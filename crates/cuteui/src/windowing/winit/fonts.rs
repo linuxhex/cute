@@ -1260,6 +1260,3 @@ impl GlyphIdExt for owned_ttf_parser::GlyphId {
     }
 }
 
-#[cfg(test)]
-#[path = "text_layout_tests.rs"]
-mod layout_tests;

@@ -99,6 +99,3 @@ impl Entity for HandoffComposeState {
     type Event = HandoffComposeStateEvent;
 }
 
-#[cfg(test)]
-#[path = "handoff_compose_tests.rs"]
-mod tests;

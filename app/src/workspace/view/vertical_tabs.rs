@@ -6692,6 +6692,3 @@ impl Workspace {
     }
 }
 
-#[cfg(test)]
-#[path = "vertical_tabs_tests.rs"]
-mod tests;

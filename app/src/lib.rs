@@ -2265,8 +2265,3 @@ fn launch(ctx: &mut cuteui::AppContext, app_state: Option<AppState>, launch_mode
 /// can interfere with test harnesses collecting the set of tests to run. (This
 /// is why we're not simply calling the init() function above.)
 #[ctor::ctor]
-#[cfg(test)]
-fn init_logging_for_unit_tests_glue() {
-    // Initialize terminal-friendly logging for tests from the shared logger crate.
-    cute_logging::init_logging_for_unit_tests();
-}

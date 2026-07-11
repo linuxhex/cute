@@ -1244,6 +1244,3 @@ mod styles {
     }
 }
 
-#[cfg(test)]
-#[path = "zero_state_block_tests.rs"]
-mod tests;

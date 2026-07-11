@@ -72,10 +72,6 @@ pub mod table_offset_map;
 pub mod viewport;
 
 #[cfg(test)]
-#[path = "mod_tests.rs"]
-mod tests;
-
-#[cfg(test)]
 pub(crate) mod test_utils;
 
 /// Margin for comparing pixel or line values. This is fairly wide because

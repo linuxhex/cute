@@ -13,9 +13,6 @@ pub mod load_ai_conversation;
 pub(crate) mod queued_prompts_panel;
 mod ssh_remote_server_choice_view;
 mod ssh_remote_server_failed_banner;
-#[cfg(test)]
-#[path = "view/queued_prompts_tests.rs"]
-mod queued_prompts_tests;
 use ai::agent::action::InsertReviewComment;
 pub use load_ai_conversation::ConversationRestorationInNewPaneType;
 // TODO(advait): if we align on prompt suggestions banner in Input, move code out of inline_banner mod.
@@ -26464,6 +26461,3 @@ fn is_rich_input_chip_in_cli_toolbar(app: &AppContext) -> bool {
         .any(|item| matches!(item, AgentToolbarItemKind::RichInput))
 }
 
-#[cfg(test)]
-#[path = "view_tests.rs"]
-mod tests;

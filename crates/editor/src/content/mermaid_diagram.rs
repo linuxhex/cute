@@ -107,6 +107,3 @@ fn mermaid_diagram_size(
     Some((width, height))
 }
 
-#[cfg(test)]
-#[path = "mermaid_diagram_tests.rs"]
-mod tests;

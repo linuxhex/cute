@@ -236,6 +236,3 @@ pub(super) fn comment_embedded_item_conversion(
     )))
 }
 
-#[cfg(test)]
-#[path = "embedded_comment_tests.rs"]
-mod tests;

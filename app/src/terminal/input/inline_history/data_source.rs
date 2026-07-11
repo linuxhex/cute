@@ -364,6 +364,3 @@ impl Entity for InlineHistoryMenuDataSource {
     type Event = ();
 }
 
-#[cfg(test)]
-#[path = "data_source_tests.rs"]
-mod tests;

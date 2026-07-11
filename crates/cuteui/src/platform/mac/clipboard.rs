@@ -191,6 +191,3 @@ impl Clipboard {
     }
 }
 
-#[cfg(test)]
-#[path = "clipboard_tests.rs"]
-mod tests;

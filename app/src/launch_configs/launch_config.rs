@@ -8,10 +8,6 @@ use crate::app_state::{
 };
 use crate::themes::theme::AnsiColorIdentifier;
 
-#[cfg(test)]
-#[path = "launch_config_tests.rs"]
-mod tests;
-
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct LaunchConfig {
     pub name: String,

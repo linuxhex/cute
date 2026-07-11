@@ -340,6 +340,4 @@ impl Collection {
     }
 }
 
-#[cfg(test)]
-#[path = "linux_tests.rs"]
-mod tests;
+

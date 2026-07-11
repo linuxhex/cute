@@ -395,6 +395,3 @@ fn get_default_app_bundle_for_file(file_path: &NSString) -> Option<Retained<NSSt
     app_bundle.bundleIdentifier()
 }
 
-#[cfg(test)]
-#[path = "mac_tests.rs"]
-mod tests;

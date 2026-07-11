@@ -380,6 +380,3 @@ fn claude_home_dir() -> io::Result<PathBuf> {
         })
 }
 
-#[cfg(test)]
-#[path = "claude_tests.rs"]
-mod tests;

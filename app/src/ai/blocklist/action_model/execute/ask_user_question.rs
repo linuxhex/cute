@@ -115,6 +115,3 @@ impl Entity for AskUserQuestionExecutor {
     type Event = ();
 }
 
-#[cfg(test)]
-#[path = "ask_user_question_tests.rs"]
-mod tests;

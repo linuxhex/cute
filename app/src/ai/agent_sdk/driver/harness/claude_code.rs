@@ -50,12 +50,6 @@ use parent_bridge::{
     MESSAGE_BRIDGE_CONTEXT_PREAMBLE,
 };
 use parent_bridge::{MessageBridge, MessageBridgeCleanupDisposition};
-#[cfg(test)]
-use shell_words::quote as shell_quote;
-
-#[cfg(test)]
-use super::super::OZ_MESSAGE_LISTENER_STATE_ROOT_ENV;
-
 pub(crate) struct ClaudeHarness;
 #[cfg_attr(not(target_family = "wasm"), async_trait)]
 #[cfg_attr(target_family = "wasm", async_trait(?Send))]
@@ -818,6 +812,3 @@ pub(crate) fn serialize_claude_mcp_config(
     serde_json::to_string_pretty(&config).context("Failed to serialize Claude MCP config")
 }
 
-#[cfg(test)]
-#[path = "claude_code_tests.rs"]
-mod tests;

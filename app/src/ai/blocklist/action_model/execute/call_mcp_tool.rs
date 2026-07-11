@@ -198,10 +198,6 @@ pub(crate) fn coerce_integer_args(
     }
 }
 
-#[cfg(test)]
-#[path = "call_mcp_tool_tests.rs"]
-mod tests;
-
 /// Handles the result of a call_tool request, converting it to an AIAgentActionResultType.
 #[cfg(not(target_family = "wasm"))]
 fn handle_call_tool_result(

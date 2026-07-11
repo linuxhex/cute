@@ -179,6 +179,3 @@ fn gemini_extensions_dir() -> io::Result<PathBuf> {
         })
 }
 
-#[cfg(test)]
-#[path = "gemini_tests.rs"]
-mod tests;

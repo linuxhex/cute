@@ -3,12 +3,8 @@
 use std::ops::Range;
 use std::sync::Arc;
 
-#[cfg(test)]
-use markdown_parser::FormattedTextInline;
 use cuteui::color::ColorU;
 use cuteui::fonts::TextLayoutSystem;
-#[cfg(test)]
-use cuteui::fonts::{Style, Weight};
 use cuteui::text_layout::{
     ClipConfig, LayoutCache, Line, StyleAndFont, TextAlignment, TextBorder, TextFrame, TextStyle,
 };
@@ -242,22 +238,6 @@ pub(crate) fn add_link_to_style_and_font(mut style: StyleAndFont) -> StyleAndFon
         .with_foreground_color(hyperlink_color);
     style
 }
-
-#[cfg(test)]
-pub(crate) fn markdown_inline_to_text_and_style_runs(
-    inline: &FormattedTextInline,
-    paragraph_style: &ParagraphStyles,
-    link_color: Option<ColorU>,
-    inline_code_background: Option<ColorU>,
-) -> InlineTextLayoutInput {
-    let mut text = String::new();
-    let mut style_runs = Vec::new();
-    let mut start = 0usize;
-
-    for fragment in inline {
-        if fragment.text.is_empty() {
-            continue;
-        }
 
         text.push_str(&fragment.text);
         let len = fragment.text.chars().count();

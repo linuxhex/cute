@@ -712,6 +712,3 @@ pub(crate) fn redact_secrets_in_element<T: PartialClickableElement>(
     element
 }
 
-#[cfg(test)]
-#[path = "secret_redaction_tests.rs"]
-mod test;

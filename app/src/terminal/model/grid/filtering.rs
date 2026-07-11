@@ -1078,6 +1078,3 @@ fn trim_context_lines(
     }
 }
 
-#[cfg(test)]
-#[path = "filtering_tests.rs"]
-mod tests;

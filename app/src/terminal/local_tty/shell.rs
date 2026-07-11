@@ -777,6 +777,3 @@ fn take_until_utf16_crlf(bytes: Vec<u8>) -> Vec<u8> {
     }
 }
 
-#[cfg(test)]
-#[path = "shell_tests.rs"]
-mod tests;

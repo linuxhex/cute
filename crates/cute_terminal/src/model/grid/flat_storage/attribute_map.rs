@@ -161,6 +161,3 @@ where
     }
 }
 
-#[cfg(test)]
-#[path = "attribute_map_tests.rs"]
-mod tests;

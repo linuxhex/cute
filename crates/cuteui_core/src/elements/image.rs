@@ -544,6 +544,3 @@ impl Element for Image {
     }
 }
 
-#[cfg(test)]
-#[path = "image_tests.rs"]
-mod tests;

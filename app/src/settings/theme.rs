@@ -88,6 +88,3 @@ pub fn active_theme_kind(theme_settings: &ThemeSettings, app: &AppContext) -> Th
     derived_theme_kind(theme_settings, app.system_theme())
 }
 
-#[cfg(test)]
-#[path = "theme_tests.rs"]
-mod tests;

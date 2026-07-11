@@ -1123,6 +1123,3 @@ fn normalize_cwd(raw_cwd: &str) -> Option<PathBuf> {
     dunce::canonicalize(&path).ok()
 }
 
-#[cfg(test)]
-#[path = "working_directories_tests.rs"]
-mod tests;

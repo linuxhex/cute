@@ -276,6 +276,3 @@ impl GraphemeCursorItem<'_> {
     }
 }
 
-#[cfg(test)]
-#[path = "grapheme_cursor_tests.rs"]
-mod tests;

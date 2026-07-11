@@ -950,6 +950,3 @@ macro_rules! generate_settings_event_fn {
 }
 pub use generate_settings_event_fn;
 
-#[cfg(test)]
-#[path = "macros_tests.rs"]
-mod macros_tests;

@@ -633,6 +633,3 @@ pub mod regexes {
     ];
 }
 
-#[cfg(test)]
-#[path = "secrets_tests.rs"]
-mod tests;

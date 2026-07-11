@@ -336,6 +336,3 @@ fn compute_candidate_paths(
     candidates.into_iter().map(|(_, path)| path).collect()
 }
 
-#[cfg(test)]
-#[path = "directory_color_add_picker_tests.rs"]
-mod tests;

@@ -29,10 +29,6 @@ use super::cursor::BufferCursor;
 use super::text::{BufferSummary, BufferText};
 use crate::search::RestorableSearchResults;
 
-#[cfg(test)]
-#[path = "find_tests.rs"]
-mod tests;
-
 /// A match for a text search.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Match {

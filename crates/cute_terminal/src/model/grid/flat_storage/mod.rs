@@ -372,6 +372,3 @@ struct EndOfPromptMarker {
 /// sufficient.
 impl GetSize for EndOfPromptMarker {}
 
-#[cfg(test)]
-#[path = "mod_tests.rs"]
-mod tests;

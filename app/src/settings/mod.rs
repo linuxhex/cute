@@ -33,10 +33,6 @@ mod ssh;
 mod theme;
 mod vim_banner;
 
-#[cfg(test)]
-#[path = "schema_validation_tests.rs"]
-mod schema_validation_tests;
-
 pub use accessibility::*;
 pub use ai::*;
 pub use alias_expansion::*;

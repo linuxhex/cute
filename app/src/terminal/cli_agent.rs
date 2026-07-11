@@ -610,6 +610,3 @@ impl From<CLIAgent> for CLIAgentType {
     }
 }
 
-#[cfg(test)]
-#[path = "cli_agent_tests.rs"]
-mod tests;

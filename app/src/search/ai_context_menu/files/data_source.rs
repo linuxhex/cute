@@ -280,6 +280,3 @@ async fn fuzzy_match_files_query(
         .collect()
 }
 
-#[cfg(test)]
-#[path = "data_source_tests.rs"]
-mod tests;

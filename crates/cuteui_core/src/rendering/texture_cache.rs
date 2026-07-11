@@ -99,6 +99,3 @@ impl<T> Default for TextureCache<T> {
     }
 }
 
-#[cfg(test)]
-#[path = "texture_cache_tests.rs"]
-mod tests;

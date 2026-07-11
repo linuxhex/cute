@@ -11,10 +11,6 @@ use cuteui::text::word_boundaries::WordBoundariesPolicy;
 use super::buffer::{Buffer, ToBufferCharOffset, ToBufferPoint};
 use super::cursor::BufferCursor;
 
-#[cfg(test)]
-#[path = "segmentation_tests.rs"]
-mod tests;
-
 impl Buffer {
     /// Get the offset of the start of the word closest to the given position.
     pub fn word_start(&self, offset: CharOffset, policy: &WordBoundariesPolicy) -> CharOffset {

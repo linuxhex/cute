@@ -142,10 +142,6 @@ fn read_custom_keybindings() -> Option<CustomKeybindings> {
 //
 // Unit tests are run with #[cfg(test)] enabled, so we can define custom no-op implementations
 #[cfg(test)]
-pub fn load_custom_keybindings(_: &mut AppContext) {}
-#[cfg(test)]
-pub fn write_custom_keybinding(_: String, _: UserDefinedKeybinding) {}
-#[cfg(test)]
 pub fn remove_custom_keybinding<N>(_: N)
 where
     N: AsRef<str>,
@@ -212,6 +208,3 @@ impl TryFrom<PersistedTrigger> for UserDefinedKeybinding {
     }
 }
 
-#[cfg(test)]
-#[path = "keyboard_tests.rs"]
-mod tests;

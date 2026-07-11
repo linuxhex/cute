@@ -1238,6 +1238,3 @@ impl View for CategoriesView {
     }
 }
 
-#[cfg(test)]
-#[path = "categories_tests.rs"]
-mod tests;

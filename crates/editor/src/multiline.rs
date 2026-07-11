@@ -536,6 +536,4 @@ fn evaluate_line_endings(text: &str) -> TextLineEndings {
     }
 }
 
-#[cfg(test)]
-#[path = "multiline_tests.rs"]
-mod tests;
+

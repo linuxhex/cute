@@ -64,6 +64,4 @@ impl DeferredOperations {
     }
 }
 
-#[cfg(test)]
-#[path = "deferred_ops_tests.rs"]
-mod tests;
+

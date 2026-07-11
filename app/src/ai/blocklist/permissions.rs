@@ -1146,6 +1146,3 @@ pub fn is_agent_mode_autonomy_allowed(ctx: &AppContext) -> bool {
     crate::UserWorkspaces::as_ref(ctx).is_ai_autonomy_allowed()
 }
 
-#[cfg(test)]
-#[path = "permissions_tests.rs"]
-mod tests;

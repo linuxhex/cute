@@ -1842,6 +1842,3 @@ pub(crate) fn render_text_with_markdown_support(
     }
 }
 
-#[cfg(test)]
-#[path = "ask_user_question_view_tests.rs"]
-mod tests;

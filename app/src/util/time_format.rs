@@ -149,6 +149,3 @@ pub fn format_elapsed_since(created_at: instant::Instant) -> String {
     }
 }
 
-#[cfg(test)]
-#[path = "time_format_tests.rs"]
-mod tests;

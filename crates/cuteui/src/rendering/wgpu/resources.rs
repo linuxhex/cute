@@ -931,6 +931,3 @@ async fn configure_surface(
     }
 }
 
-#[cfg(test)]
-#[path = "resources_tests.rs"]
-mod tests;

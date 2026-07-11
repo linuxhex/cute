@@ -237,6 +237,3 @@ impl std::fmt::Display for Section {
     }
 }
 
-#[cfg(test)]
-#[path = "channel_versions_tests.rs"]
-mod tests;

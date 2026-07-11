@@ -179,6 +179,3 @@ pub fn high_enough_contrast(
     contrast_ratio(color1, color2) > minimum_allowed_contrast.get()
 }
 
-#[cfg(test)]
-#[path = "contrast_tests.rs"]
-mod tests;

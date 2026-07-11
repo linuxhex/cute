@@ -753,6 +753,3 @@ pub(crate) fn detect_links(
     }
 }
 
-#[cfg(test)]
-#[path = "link_detection_tests.rs"]
-mod tests;

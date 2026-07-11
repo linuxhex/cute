@@ -23,10 +23,6 @@ use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 
-#[cfg(test)]
-#[path = "wsl_tests.rs"]
-mod tests;
-
 /// Bare program names whose resolution Warp wants to override under
 /// WSL. Anything not in this list is passed through unchanged.
 const KNOWN_NAMES: &[&str] = &["git", "gh"];

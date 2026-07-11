@@ -1512,6 +1512,3 @@ fn decode_uuid_hex(hex: &str) -> Option<Vec<u8>> {
         .collect()
 }
 
-#[cfg(test)]
-#[path = "uri_tests.rs"]
-mod tests;

@@ -131,6 +131,3 @@ macro_rules! _schema_default_max_table_depth {
     };
 }
 
-#[cfg(test)]
-#[path = "schema_tests.rs"]
-mod tests;

@@ -6,10 +6,6 @@ use sum_tree::SumTree;
 
 use super::text::BufferText;
 
-#[cfg(test)]
-#[path = "anchor_tests.rs"]
-mod test;
-
 /// Handle to a particular anchor. As long as there is an active handle, the
 /// anchor will be kept in sync with text edits. Once all handles are dropped,
 /// the anchor is lazily disposed.

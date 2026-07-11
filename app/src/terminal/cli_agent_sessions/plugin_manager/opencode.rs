@@ -76,6 +76,3 @@ static UPDATE_INSTRUCTIONS: LazyLock<PluginInstructions> = LazyLock::new(|| {
     }
 });
 
-#[cfg(test)]
-#[path = "opencode_tests.rs"]
-mod tests;

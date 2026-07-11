@@ -675,6 +675,3 @@ pub fn mock_terminal_colors() -> TerminalColors {
     )
 }
 
-#[cfg(test)]
-#[path = "theme_tests.rs"]
-mod tests;

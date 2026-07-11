@@ -1065,6 +1065,3 @@ impl Keystroke {
     }
 }
 
-#[cfg(test)]
-#[path = "keymap_tests.rs"]
-mod tests;

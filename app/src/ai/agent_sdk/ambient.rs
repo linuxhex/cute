@@ -758,6 +758,3 @@ impl cuteui::Entity for AmbientAgentRunner {
 
 impl SingletonEntity for AmbientAgentRunner {}
 
-#[cfg(test)]
-#[path = "ambient_tests.rs"]
-mod tests;

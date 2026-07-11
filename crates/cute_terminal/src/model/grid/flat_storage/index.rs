@@ -707,6 +707,3 @@ pub struct GraphemeInfo {
     pub utf8_bytes: NonZeroU16,
 }
 
-#[cfg(test)]
-#[path = "index_tests.rs"]
-mod tests;

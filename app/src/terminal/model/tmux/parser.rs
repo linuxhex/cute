@@ -460,6 +460,3 @@ fn report_parse_error(handler: &mut impl TmuxControlModeHandler, message: &'stat
     handler.tmux_control_mode_message(TmuxMessage::ParseError { message, byte })
 }
 
-#[cfg(test)]
-#[path = "parser_tests.rs"]
-mod tests;

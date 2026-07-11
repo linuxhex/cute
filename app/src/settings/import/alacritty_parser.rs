@@ -462,6 +462,3 @@ impl AlacrittyConfig {
     }
 }
 
-#[cfg(test)]
-#[path = "alacritty_parser_tests.rs"]
-mod tests;

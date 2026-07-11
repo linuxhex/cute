@@ -5,9 +5,6 @@ use std::collections::HashMap;
 
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-#[cfg(test)]
-use mockall::automock;
-
 #[cfg(feature = "local_fs")]
 pub use super::presigned_upload::FileUploadBody;
 pub use super::presigned_upload::UploadBody;

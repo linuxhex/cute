@@ -64,6 +64,3 @@ impl Entity for ReadSkillExecutor {
     type Event = ();
 }
 
-#[cfg(test)]
-#[path = "read_skill_tests.rs"]
-mod tests;

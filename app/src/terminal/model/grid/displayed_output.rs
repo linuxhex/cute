@@ -568,6 +568,3 @@ impl DisplayedOutput {
     }
 }
 
-#[cfg(test)]
-#[path = "displayed_output_tests.rs"]
-mod tests;

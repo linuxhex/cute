@@ -469,6 +469,3 @@ impl SlashCommandDataSource {
     }
 }
 
-#[cfg(test)]
-#[path = "slash_command_model_tests.rs"]
-mod tests;

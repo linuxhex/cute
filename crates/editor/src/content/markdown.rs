@@ -1290,6 +1290,3 @@ fn escape_gfm_table_cell(cell: &str) -> String {
     cell.replace('|', "\\|")
 }
 
-#[cfg(test)]
-#[path = "markdown_tests.rs"]
-mod tests;

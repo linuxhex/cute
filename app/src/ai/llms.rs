@@ -1388,6 +1388,3 @@ fn get_cached_models(app: &mut AppContext) -> Option<ModelsByFeature> {
     }
 }
 
-#[cfg(test)]
-#[path = "llms_tests.rs"]
-mod tests;

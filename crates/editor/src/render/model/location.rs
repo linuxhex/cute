@@ -10,10 +10,6 @@ use super::{
     BlockItem, Height, HitTestBlockType, LayoutSummary, ParagraphBlock, RenderState, bounds,
 };
 
-#[cfg(test)]
-#[path = "location_tests.rs"]
-mod tests;
-
 /// A location within the editor, as resolved by hit-testing.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Location {

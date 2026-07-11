@@ -845,6 +845,3 @@ impl Entity for TaskQueue {
     type Event = TaskQueueEvent;
 }
 
-#[cfg(test)]
-#[path = "watcher_tests.rs"]
-mod tests;

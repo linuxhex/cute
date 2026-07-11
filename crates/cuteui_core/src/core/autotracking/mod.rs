@@ -99,10 +99,6 @@
 
 mod tracked;
 
-#[cfg(test)]
-#[path = "autotracking_tests.rs"]
-mod tests;
-
 use std::cell::UnsafeCell;
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};

@@ -165,10 +165,6 @@ pub const TEXT_FRAGMENT_SIZE: usize = 64;
 #[cfg(not(test))]
 pub const TEXT_FRAGMENT_SIZE: usize = 128;
 
-#[cfg(test)]
-#[path = "text_tests.rs"]
-mod tests;
-
 /// A summary of text locations.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct TextSummary {

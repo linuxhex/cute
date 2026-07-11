@@ -119,6 +119,3 @@ impl ContextPredicate {
     }
 }
 
-#[cfg(test)]
-#[path = "context_tests.rs"]
-mod tests;

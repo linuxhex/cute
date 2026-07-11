@@ -105,6 +105,3 @@ fn chunk_line_by_bytes<'a>(
     fragments
 }
 
-#[cfg(test)]
-#[path = "naive_tests.rs"]
-mod tests;

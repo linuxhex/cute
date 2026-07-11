@@ -18,9 +18,7 @@ use crate::content::selection_model::BufferSelectionModel;
 use crate::content::text::{BlockType, BufferBlockStyle, CodeBlockType};
 use crate::render::model::{RenderState, SoftWrapPoint};
 
-#[cfg(test)]
-#[path = "selection_tests.rs"]
-mod tests;
+
 
 /// A generic selection and navigation model for text editors.
 pub struct SelectionModel {

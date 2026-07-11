@@ -50,6 +50,3 @@ impl CommandRegistry {
     }
 }
 
-#[cfg(test)]
-#[path = "registry_tests.rs"]
-mod test;

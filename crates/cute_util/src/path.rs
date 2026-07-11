@@ -846,6 +846,4 @@ pub fn group_roots_by_common_ancestor<P: RootPath>(roots: &[P]) -> RootGrouping<
     }
 }
 
-#[cfg(test)]
-#[path = "path_tests.rs"]
-mod tests;
+

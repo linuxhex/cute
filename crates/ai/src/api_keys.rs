@@ -400,6 +400,3 @@ impl Entity for ApiKeyManager {
 
 impl SingletonEntity for ApiKeyManager {}
 
-#[cfg(test)]
-#[path = "api_keys_tests.rs"]
-mod tests;

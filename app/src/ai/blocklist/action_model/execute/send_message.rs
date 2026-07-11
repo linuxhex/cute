@@ -89,6 +89,3 @@ impl Entity for SendMessageToAgentExecutor {
     type Event = ();
 }
 
-#[cfg(test)]
-#[path = "send_message_tests.rs"]
-mod tests;

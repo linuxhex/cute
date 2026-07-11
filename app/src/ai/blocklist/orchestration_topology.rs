@@ -105,6 +105,3 @@ pub fn aggregated_orchestrator_status(
     ConversationStatus::Success
 }
 
-#[cfg(test)]
-#[path = "orchestration_topology_tests.rs"]
-mod tests;

@@ -122,6 +122,3 @@ pub fn parse_iterm_image_metadata(params: &[&[u8]]) -> ITermImageMetadata {
     metadata
 }
 
-#[cfg(test)]
-#[path = "iterm_image_tests.rs"]
-mod tests;

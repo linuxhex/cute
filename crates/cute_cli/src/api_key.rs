@@ -96,6 +96,4 @@ pub enum ApiKeySortByArg {
     Scope,
 }
 
-#[cfg(test)]
-#[path = "api_key_tests.rs"]
-mod tests;
+

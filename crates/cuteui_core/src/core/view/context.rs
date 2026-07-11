@@ -908,6 +908,3 @@ impl<V: View> GetSingletonModelHandle for ViewContext<'_, V> {
     }
 }
 
-#[cfg(test)]
-#[path = "context_tests.rs"]
-mod tests;

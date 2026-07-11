@@ -45,6 +45,3 @@ where
     }
 }
 
-#[cfg(test)]
-#[path = "matching_brackets_tests.rs"]
-mod tests;

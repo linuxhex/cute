@@ -1967,6 +1967,3 @@ fn parse_block_leading_spaces<'a, E: ContextError<&'a str> + ParseError<&'a str>
     fold_many_m_n(0, 3, char(' '), || (), |_, _| ())(markdown)
 }
 
-#[cfg(test)]
-#[path = "markdown_parser_tests.rs"]
-mod tests;

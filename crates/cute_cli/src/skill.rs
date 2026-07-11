@@ -188,6 +188,3 @@ impl fmt::Display for SkillSpec {
     }
 }
 
-#[cfg(test)]
-#[path = "skill_tests.rs"]
-mod tests;

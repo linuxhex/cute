@@ -19,14 +19,6 @@ pub(crate) struct HistorySnapshot {
 }
 
 /// Creates an async data source for shell history commands.
-#[cfg(test)]
-pub fn history_data_source(
-    commands: Vec<HistoryEntry>,
-) -> AsyncSnapshotDataSource<HistorySnapshot, CommandSearchItemAction> {
-    let commands: Arc<[Arc<HistoryEntry>]> = commands.into_iter().map(Arc::new).collect();
-    history_data_source_from_shared(commands)
-}
-
 fn history_data_source_from_shared(
     commands: Arc<[Arc<HistoryEntry>]>,
 ) -> AsyncSnapshotDataSource<HistorySnapshot, CommandSearchItemAction> {

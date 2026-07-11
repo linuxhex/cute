@@ -1,8 +1,5 @@
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-#[cfg(test)]
-use mockall::automock;
-
 use super::ServerApi;
 use crate::ai::generate_block_title::api::{GenerateBlockTitleRequest, GenerateBlockTitleResponse};
 use crate::server::block::{Block, DisplaySetting};

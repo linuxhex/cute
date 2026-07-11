@@ -98,6 +98,3 @@ impl BlockContext {
     }
 }
 
-#[cfg(test)]
-#[path = "block_context_tests.rs"]
-mod tests;

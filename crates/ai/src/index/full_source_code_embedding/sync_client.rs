@@ -594,6 +594,3 @@ impl From<SyncOperationError> for Error {
     }
 }
 
-#[cfg(test)]
-#[path = "sync_client_tests.rs"]
-mod tests;

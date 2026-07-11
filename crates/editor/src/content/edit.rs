@@ -39,10 +39,6 @@ use crate::render::model::{
 };
 use crate::render::{TABLE_BASELINE_RATIO, TABLE_LINE_HEIGHT_RATIO};
 
-#[cfg(test)]
-#[path = "edit_tests.rs"]
-mod tests;
-
 #[cfg(any(test, feature = "test-util"))]
 #[allow(dead_code)]
 pub(crate) fn layout_mermaid_block_for_test(

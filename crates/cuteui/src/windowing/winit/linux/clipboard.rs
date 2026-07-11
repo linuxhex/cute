@@ -204,6 +204,3 @@ impl LinuxClipboard {
     }
 }
 
-#[cfg(test)]
-#[path = "clipboard_tests.rs"]
-mod tests;

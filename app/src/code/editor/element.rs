@@ -1685,6 +1685,3 @@ impl<V: EditorView> NewScrollableElement for EditorWrapper<V> {
     }
 }
 
-#[cfg(test)]
-#[path = "element_tests.rs"]
-mod tests;

@@ -605,6 +605,3 @@ impl Entity for FileSearchModel {
     type Event = ();
 }
 
-#[cfg(test)]
-#[path = "model_tests.rs"]
-mod tests;

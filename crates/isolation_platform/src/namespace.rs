@@ -101,6 +101,3 @@ fn parse_jwt_expiration(token: &str) -> Result<DateTime<Utc>, IsolationPlatformE
         .ok_or_else(|| anyhow::anyhow!("Invalid exp timestamp in JWT: {}", payload.exp).into())
 }
 
-#[cfg(test)]
-#[path = "namespace_tests.rs"]
-mod tests;

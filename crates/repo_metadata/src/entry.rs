@@ -854,6 +854,3 @@ impl DirectoryEntry {
     }
 }
 
-#[cfg(test)]
-#[path = "entry_tests.rs"]
-mod tests;

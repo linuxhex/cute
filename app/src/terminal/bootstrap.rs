@@ -338,6 +338,3 @@ fn load_script(file_path: &str, assets: &dyn AssetProvider) -> String {
         .join(";")
 }
 
-#[cfg(test)]
-#[path = "bootstrap_tests.rs"]
-mod tests;

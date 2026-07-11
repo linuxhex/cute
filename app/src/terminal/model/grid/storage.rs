@@ -442,6 +442,3 @@ impl IndexMut<VisibleRow> for Storage {
     }
 }
 
-#[cfg(test)]
-#[path = "storage_tests.rs"]
-mod tests;

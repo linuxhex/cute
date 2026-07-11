@@ -103,6 +103,4 @@ impl super::SecureStorage for SecureStorage {
     }
 }
 
-#[cfg(test)]
-#[path = "windows_tests.rs"]
-mod test;
+

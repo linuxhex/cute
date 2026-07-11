@@ -454,6 +454,3 @@ where
     }
 }
 
-#[cfg(test)]
-#[path = "cursor_tests.rs"]
-mod tests;

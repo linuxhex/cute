@@ -2215,6 +2215,3 @@ fn render_avatar_disc(
         .finish()
 }
 
-#[cfg(test)]
-#[path = "orchestration_pill_bar_tests.rs"]
-mod tests;

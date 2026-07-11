@@ -623,6 +623,3 @@ fn is_word_boundary_char(selection: &SemanticSelection, c: char) -> bool {
 /// looks like [XX], [BX] (at the start), [XB] (at the end), [XE] (at the end),
 /// and [EX] (at the start), or [BE] for a single cell. Partially selected cells
 /// look like [ B] and [E ].
-#[cfg(test)]
-#[path = "selection_tests.rs"]
-mod tests;

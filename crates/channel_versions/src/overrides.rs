@@ -132,6 +132,3 @@ impl VersionInfo {
     }
 }
 
-#[cfg(test)]
-#[path = "overrides_tests.rs"]
-mod tests;

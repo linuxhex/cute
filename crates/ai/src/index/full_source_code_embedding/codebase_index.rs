@@ -2337,6 +2337,3 @@ pub(super) async fn build_fragments_from_metadata(
     ReadFragmentResult::default()
 }
 
-#[cfg(test)]
-#[path = "codebase_index_tests.rs"]
-mod tests;

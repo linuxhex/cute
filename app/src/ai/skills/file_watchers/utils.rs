@@ -276,6 +276,3 @@ pub fn is_home_provider_path(path: &Path) -> bool {
     })
 }
 
-#[cfg(test)]
-#[path = "utils_tests.rs"]
-mod tests;

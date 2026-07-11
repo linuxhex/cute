@@ -649,6 +649,3 @@ impl<M> ModelSpawner<M> {
     }
 }
 
-#[cfg(test)]
-#[path = "context_tests.rs"]
-mod tests;

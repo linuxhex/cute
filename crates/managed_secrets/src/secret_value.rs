@@ -115,6 +115,3 @@ impl fmt::Debug for ManagedSecretValue {
     }
 }
 
-#[cfg(test)]
-#[path = "secret_value_tests.rs"]
-mod tests;

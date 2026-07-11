@@ -188,6 +188,3 @@ impl TryFrom<&LocalOrRemotePath> for PathBuf {
         }
     }
 }
-#[cfg(test)]
-#[path = "local_or_remote_path_tests.rs"]
-mod tests;

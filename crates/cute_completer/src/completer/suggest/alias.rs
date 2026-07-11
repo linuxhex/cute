@@ -275,6 +275,3 @@ fn expand_root_command_alias<'a>(
     })
 }
 
-#[cfg(test)]
-#[path = "alias_tests.rs"]
-mod test;

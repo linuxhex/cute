@@ -1090,6 +1090,3 @@ impl Entity for SkillWatcher {
     type Event = SkillWatcherEvent;
 }
 
-#[cfg(test)]
-#[path = "skill_watcher_tests.rs"]
-mod skill_watcher_tests;

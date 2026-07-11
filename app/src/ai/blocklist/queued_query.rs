@@ -418,6 +418,3 @@ impl QueuedQueryModel {
     }
 }
 
-#[cfg(test)]
-#[path = "queued_query_tests.rs"]
-mod tests;

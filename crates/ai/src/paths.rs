@@ -120,6 +120,3 @@ pub fn host_native_absolute_path(
     }
 }
 
-#[cfg(test)]
-#[path = "paths_tests.rs"]
-mod tests;

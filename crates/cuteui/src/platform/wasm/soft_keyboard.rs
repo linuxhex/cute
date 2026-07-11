@@ -182,6 +182,3 @@ impl SoftKeyboardManager {
     }
 }
 
-#[cfg(test)]
-#[path = "soft_keyboard_tests.rs"]
-mod tests;

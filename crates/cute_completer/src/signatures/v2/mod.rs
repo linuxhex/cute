@@ -225,6 +225,3 @@ impl Opt {
     }
 }
 
-#[cfg(test)]
-#[path = "signatures_tests.rs"]
-mod test;

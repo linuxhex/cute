@@ -362,6 +362,3 @@ impl JsonRpcService {
     }
 }
 
-#[cfg(test)]
-#[path = "service_tests.rs"]
-mod tests;

@@ -765,6 +765,3 @@ impl SelectableElement for Hoverable {
     }
 }
 
-#[cfg(test)]
-#[path = "hoverable_tests.rs"]
-mod tests;

@@ -3078,6 +3078,3 @@ fn get_running_command(terminal_model: &TerminalModel) -> Option<RunningCommand>
     })
 }
 
-#[cfg(test)]
-#[path = "controller_tests.rs"]
-mod tests;

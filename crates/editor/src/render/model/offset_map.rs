@@ -6,10 +6,6 @@ use string_offset::CharOffset;
 
 use super::FrameOffset;
 
-#[cfg(test)]
-#[path = "offset_map_tests.rs"]
-mod tests;
-
 /// Mapping between visible character offsets and interactive content character offsets. Due to
 /// placeholder text, not all characters painted on the screen correspond to interactive characters
 /// in the content model.

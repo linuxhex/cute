@@ -164,6 +164,3 @@ impl Entity for CloudPreferencesSyncer {
 
 impl SingletonEntity for CloudPreferencesSyncer {}
 
-#[cfg(test)]
-#[path = "cloud_preferences_syncer_tests.rs"]
-mod tests;

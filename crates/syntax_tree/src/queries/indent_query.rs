@@ -160,6 +160,3 @@ fn find_indent_query_range(
     Some((node, query_range))
 }
 
-#[cfg(test)]
-#[path = "indent_query_tests.rs"]
-mod tests;

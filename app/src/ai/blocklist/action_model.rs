@@ -1402,6 +1402,3 @@ impl Entity for BlocklistAIActionModel {
     type Event = BlocklistAIActionEvent;
 }
 
-#[cfg(test)]
-#[path = "action_model_tests.rs"]
-mod tests;

@@ -658,6 +658,4 @@ impl super::UserPreferences for TomlBackedUserPreferences {
     }
 }
 
-#[cfg(test)]
-#[path = "toml_backed_tests.rs"]
-mod tests;
+

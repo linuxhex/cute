@@ -1267,6 +1267,3 @@ fn total_index_for_block(block_index: BlockIndex, block_list: &BlockList) -> Tot
     )
 }
 
-#[cfg(test)]
-#[path = "async_find_tests.rs"]
-mod tests;

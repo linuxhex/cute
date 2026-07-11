@@ -623,6 +623,3 @@ impl View for TipsView {
     }
 }
 
-#[cfg(test)]
-#[path = "tip_view_tests.rs"]
-mod tests;

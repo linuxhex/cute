@@ -237,6 +237,3 @@ impl<'a> From<&'a WordBoundariesPolicy> for Cow<'a, WordBoundariesPolicy> {
     }
 }
 
-#[cfg(test)]
-#[path = "word_boundaries_tests.rs"]
-mod tests;

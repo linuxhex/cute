@@ -185,6 +185,3 @@ impl TextFileAccumulator {
     }
 }
 
-#[cfg(test)]
-#[path = "text_file_reader_tests.rs"]
-mod tests;

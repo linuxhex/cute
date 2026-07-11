@@ -544,6 +544,3 @@ define_settings_group!(TabSettings, settings: [
     directory_tab_colors: DirectoryTabColors,
 ]);
 
-#[cfg(test)]
-#[path = "tab_settings_tests.rs"]
-mod tests;

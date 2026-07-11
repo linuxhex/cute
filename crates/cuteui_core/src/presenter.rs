@@ -881,6 +881,3 @@ impl<T> Element for ChildView<T> {
     }
 }
 
-#[cfg(test)]
-#[path = "presenter_tests.rs"]
-mod tests;

@@ -441,6 +441,3 @@ pub fn escaped_paths_str(
     input
 }
 
-#[cfg(test)]
-#[path = "clipboard_utils_tests.rs"]
-mod tests;

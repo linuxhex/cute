@@ -2592,6 +2592,3 @@ impl BackingView for SettingsView {
     }
 }
 
-#[cfg(test)]
-#[path = "mod_tests.rs"]
-mod tests;

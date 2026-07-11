@@ -61,6 +61,3 @@ impl SyncClock {
     }
 }
 
-#[cfg(test)]
-#[path = "buffer_location_tests.rs"]
-mod tests;

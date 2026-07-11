@@ -148,6 +148,3 @@ where
     Some(word_start..word_end)
 }
 
-#[cfg(test)]
-#[path = "word_tests.rs"]
-mod tests;

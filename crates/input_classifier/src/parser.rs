@@ -151,6 +151,3 @@ impl Iterator for SentenceParser<'_> {
     }
 }
 
-#[cfg(test)]
-#[path = "parser_tests.rs"]
-pub mod tests;

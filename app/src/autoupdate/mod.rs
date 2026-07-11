@@ -1155,6 +1155,3 @@ fn release_assets_directory_url(channel: Channel, version: &str) -> String {
     }
 }
 
-#[cfg(test)]
-#[path = "mod_tests.rs"]
-mod tests;

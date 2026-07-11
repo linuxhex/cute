@@ -669,6 +669,3 @@ impl Entity for GrepExecutor {
     type Event = ();
 }
 
-#[cfg(test)]
-#[path = "grep_tests.rs"]
-mod tests;

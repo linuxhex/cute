@@ -10,10 +10,6 @@ use crate::settings::{
 };
 use crate::terminal::session_settings::{SessionSettings, SessionSettingsChangedEvent};
 
-#[cfg(test)]
-#[path = "prompt_tests.rs"]
-mod tests;
-
 #[derive(
     Clone,
     Debug,

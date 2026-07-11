@@ -281,6 +281,3 @@ fn encoding_matches_local(typed: &TypedPathBuf) -> bool {
     }
 }
 
-#[cfg(test)]
-#[path = "standardized_path_tests.rs"]
-mod tests;

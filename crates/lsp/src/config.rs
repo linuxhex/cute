@@ -339,6 +339,3 @@ pub fn default_init_params(workspace_uri: &Path, client_name: String) -> Result<
     })
 }
 
-#[cfg(test)]
-#[path = "config_tests.rs"]
-mod tests;

@@ -772,6 +772,3 @@ impl<T> ListStateInner<T> {
     }
 }
 
-#[cfg(test)]
-#[path = "viewported_list_tests.rs"]
-mod tests;

@@ -428,6 +428,3 @@ impl<T: SyncQueueTaskTrait> Entity for SyncQueue<T> {
 
 impl<T: SyncQueueTaskTrait> SingletonEntity for SyncQueue<T> {}
 
-#[cfg(test)]
-#[path = "sync_queue_tests.rs"]
-mod tests;

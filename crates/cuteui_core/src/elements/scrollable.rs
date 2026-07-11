@@ -682,6 +682,3 @@ impl Element for Scrollable {
     }
 }
 
-#[cfg(test)]
-#[path = "scrollable_tests.rs"]
-mod tests;

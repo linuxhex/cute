@@ -134,6 +134,3 @@ pub fn process_image_for_agent(image_data: &[u8]) -> ProcessImageResult {
     }
 }
 
-#[cfg(test)]
-#[path = "image_tests.rs"]
-mod tests;

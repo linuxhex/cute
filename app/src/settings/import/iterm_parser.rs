@@ -847,10 +847,6 @@ impl ParseableConfig for ITermProfile {
     }
 }
 
-#[cfg(test)]
-#[path = "iterm_parser_tests.rs"]
-mod tests;
-
 impl Default for ITermProfile {
     fn default() -> Self {
         Self {

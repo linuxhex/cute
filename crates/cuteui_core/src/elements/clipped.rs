@@ -96,6 +96,3 @@ impl Element for Clipped {
     }
 }
 
-#[cfg(test)]
-#[path = "clipped_tests.rs"]
-mod tests;

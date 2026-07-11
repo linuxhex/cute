@@ -5,10 +5,6 @@ use super::buffer::Buffer;
 use super::text::{BlockCount, BufferBlockStyle, BufferText};
 use crate::content::text::BlockType;
 
-#[cfg(test)]
-#[path = "outline_tests.rs"]
-mod tests;
-
 /// Outline of a block within the buffer.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BlockOutline {

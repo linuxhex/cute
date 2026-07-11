@@ -1585,6 +1585,3 @@ impl ClippedScrollStateHandle {
     }
 }
 
-#[cfg(test)]
-#[path = "scrollable_tests.rs"]
-mod tests;

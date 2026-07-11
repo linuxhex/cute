@@ -1,8 +1,3 @@
-#[cfg(test)]
-use std::sync::atomic::{AtomicI64, Ordering};
-
-#[cfg(test)]
-use chrono::TimeZone;
 use chrono::{DateTime, Utc};
 
 #[cfg(not(test))]

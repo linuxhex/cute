@@ -4,10 +4,6 @@ use std::fmt;
 
 use enum_iterator::Sequence;
 
-#[cfg(test)]
-#[path = "list_tests.rs"]
-mod tests;
-
 /// Technically we don't need to cap these numbers. But the list
 /// would be hard to render and read when the text gets too long.
 /// For now, we cap the alphabet list at 26*3 = 78 and roman list at

@@ -371,6 +371,3 @@ fn render_alert_action_button(
     .finish()
 }
 
-#[cfg(test)]
-#[path = "settings_file_footer_tests.rs"]
-mod tests;

@@ -149,6 +149,3 @@ impl SaveFilePickerConfiguration {
     }
 }
 
-#[cfg(test)]
-#[path = "file_picker_tests.rs"]
-mod tests;

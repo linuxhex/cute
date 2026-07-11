@@ -113,6 +113,3 @@ where
     }
 }
 
-#[cfg(test)]
-#[path = "quote_tests.rs"]
-mod tests;

@@ -292,6 +292,3 @@ impl Entity for DataSourceStore {
     type Event = ();
 }
 
-#[cfg(test)]
-#[path = "data_sources_tests.rs"]
-mod tests;

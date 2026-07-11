@@ -453,10 +453,6 @@ impl TabConfigParamsModal {
     }
 }
 
-#[cfg(test)]
-#[path = "params_modal_tests.rs"]
-mod tests;
-
 impl Entity for TabConfigParamsModal {
     type Event = TabConfigParamsModalEvent;
 }

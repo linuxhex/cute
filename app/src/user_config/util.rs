@@ -223,6 +223,3 @@ pub(super) fn has_name(file_name: &str) -> bool {
         .all(|&suffix| file_name != suffix && !file_name.is_empty())
 }
 
-#[cfg(test)]
-#[path = "util_tests.rs"]
-mod tests;

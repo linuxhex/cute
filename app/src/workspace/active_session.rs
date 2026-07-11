@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 use std::path::Path;
-#[cfg(test)]
-use std::path::PathBuf;
 use std::sync::{Arc, Weak};
 
 use cute_util::local_or_remote_path::LocalOrRemotePath;

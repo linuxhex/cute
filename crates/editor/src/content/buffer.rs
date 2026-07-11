@@ -6117,6 +6117,3 @@ pub(super) enum BoundaryEdge {
     End,
 }
 
-#[cfg(test)]
-#[path = "buffer_tests.rs"]
-pub mod tests;

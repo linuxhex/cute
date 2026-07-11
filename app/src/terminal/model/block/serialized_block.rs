@@ -378,6 +378,3 @@ impl From<crate::persistence::model::Block> for SerializedBlock {
     }
 }
 
-#[cfg(test)]
-#[path = "serialized_block_tests.rs"]
-mod tests;

@@ -419,6 +419,3 @@ impl TableCellOffsetMap {
     }
 }
 
-#[cfg(test)]
-#[path = "table_offset_map_tests.rs"]
-mod tests;

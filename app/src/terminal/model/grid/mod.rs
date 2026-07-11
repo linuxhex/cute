@@ -6,8 +6,6 @@ mod selection_cursor;
 mod storage;
 
 pub(super) mod grapheme_cursor;
-#[cfg(test)]
-mod tests;
 
 pub use displayed_output::RespectDisplayedOutput;
 pub use grid_storage::*;

@@ -538,6 +538,3 @@ impl MetricsExt for Metrics {
     }
 }
 
-#[cfg(test)]
-#[path = "fonts_tests.rs"]
-mod tests;

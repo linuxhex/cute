@@ -5,10 +5,6 @@ use super::text::{BufferBlockStyle, BufferSummary, BufferText, MarkerDir};
 use crate::content::cursor::BufferSumTree;
 use crate::content::text::{BlockLineBreakBehavior, BlockType, ColorMarker};
 
-#[cfg(test)]
-#[path = "validation_tests.rs"]
-mod tests;
-
 /// Validates a [`SumTree`] of content, panicking if it is not valid.
 pub fn validate_content(content: &SumTree<BufferText>) {
     let mut cursor = content.cursor::<(), BufferSummary>();

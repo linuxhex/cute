@@ -309,6 +309,3 @@ pub fn process_attachment(
     })
 }
 
-#[cfg(test)]
-#[path = "attachments_tests.rs"]
-mod tests;

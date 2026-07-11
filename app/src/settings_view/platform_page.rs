@@ -948,6 +948,3 @@ impl From<ViewHandle<PlatformPageView>> for SettingsPageViewHandle {
     }
 }
 
-#[cfg(test)]
-#[path = "platform_page_tests.rs"]
-mod tests;

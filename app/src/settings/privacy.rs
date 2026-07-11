@@ -18,8 +18,6 @@ use crate::auth::AuthStateProvider;
 // use crate::cloud_stub_types::model::persistence::CloudModel;
 use crate::report_error;
 
-#[cfg(test)]
-use crate::server::server_api::auth::MockAuthClient;
 use crate::server::server_api::auth::{AuthClient, SyncedUserSettings};
 // use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::server_api::ServerApiProvider;
@@ -203,16 +201,6 @@ impl PrivacySettingsSnapshot {
         self.should_collect_ai_ugc_telemetry
     }
 
-    #[cfg(test)]
-    pub fn mock() -> Self {
-        Self {
-            cloud_conversation_storage_enabled: None,
-            is_telemetry_enabled: true,
-            is_crash_reporting_enabled: true,
-            is_telemetry_force_enabled: true,
-            should_collect_ai_ugc_telemetry: true,
-        }
-    }
 }
 
 impl PrivacySettings {
@@ -442,24 +430,6 @@ impl PrivacySettings {
                 fetched_settings.is_cloud_conversation_storage_enabled,
                 ctx,
             );
-        }
-    }
-
-    /// Constructor for tests only.
-    #[cfg(test)]
-    pub fn mock(_ctx: &mut ModelContext<Self>) -> Self {
-        Self {
-            auth_state: Arc::new(AuthState::new_for_test()),
-            auth_client: Arc::new(MockAuthClient::new()),
-            is_crash_reporting_enabled: true,
-            is_telemetry_enabled: true,
-            is_cloud_conversation_storage_enabled: true,
-            user_secret_regex_list: CustomSecretRegexList::new(None),
-            has_initialized_default_secret_regexes: HasInitializedDefaultSecretRegexes::new(None),
-            is_telemetry_force_enabled: false,
-            // Simplified: local version has no enterprise secret redaction
-            // is_enterprise_secret_redaction_enabled: false,
-            // enterprise_secret_regex_list: Vec::new(),
         }
     }
 

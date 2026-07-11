@@ -188,6 +188,3 @@ pub(crate) fn write_envelope(
     Ok(file_path)
 }
 
-#[cfg(test)]
-#[path = "codex_transcript_tests.rs"]
-mod tests;

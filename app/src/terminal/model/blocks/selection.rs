@@ -1549,6 +1549,3 @@ fn read_selected_text_from_pending_user_query_block(
     pending_user_query_block_view.selected_text(app)
 }
 
-#[cfg(test)]
-#[path = "selection_tests.rs"]
-mod tests;

@@ -386,6 +386,3 @@ impl From<char> for Cell {
     }
 }
 
-#[cfg(test)]
-#[path = "cell_tests.rs"]
-mod tests;

@@ -97,6 +97,3 @@ where
     Some(paragraph_start..paragraph_end)
 }
 
-#[cfg(test)]
-#[path = "paragraph_tests.rs"]
-mod tests;

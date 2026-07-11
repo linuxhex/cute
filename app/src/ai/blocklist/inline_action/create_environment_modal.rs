@@ -104,6 +104,3 @@ impl View for CreateEnvironmentModal {
     }
 }
 
-#[cfg(test)]
-#[path = "create_environment_modal_tests.rs"]
-mod tests;

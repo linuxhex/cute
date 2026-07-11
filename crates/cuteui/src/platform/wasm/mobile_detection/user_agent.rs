@@ -27,6 +27,3 @@ pub fn is_mobile_user_agent(user_agent: &str) -> bool {
     false
 }
 
-#[cfg(test)]
-#[path = "user_agent_tests.rs"]
-mod user_agent_tests;

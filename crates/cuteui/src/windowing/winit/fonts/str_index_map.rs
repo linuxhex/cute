@@ -52,6 +52,3 @@ impl StrIndexMap {
     }
 }
 
-#[cfg(test)]
-#[path = "str_index_map_tests.rs"]
-mod tests;

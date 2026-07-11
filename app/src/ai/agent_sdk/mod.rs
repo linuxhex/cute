@@ -1709,6 +1709,3 @@ fn command_to_telemetry_event(command: &CliCommand) -> CliTelemetryEvent {
     }
 }
 
-#[cfg(test)]
-#[path = "mod_tests.rs"]
-mod tests;

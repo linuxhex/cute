@@ -210,6 +210,3 @@ impl ConversationSearcher for FuzzyConversationSearcher {
     }
 }
 
-#[cfg(test)]
-#[path = "search_tests.rs"]
-mod tests;

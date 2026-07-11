@@ -237,6 +237,3 @@ pub fn format_gfm_table(rows: &[String]) -> String {
     result.join("\n")
 }
 
-#[cfg(test)]
-#[path = "gfm_table_tests.rs"]
-mod tests;

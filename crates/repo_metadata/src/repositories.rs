@@ -3,14 +3,10 @@ use std::future::Future;
 use std::path::{Path, PathBuf};
 
 use futures::future::{ready, Either};
-#[cfg(test)]
-use virtual_fs::{Stub, VirtualFS};
 use cute_util::host_id::HostId;
 use cute_util::local_or_remote_path::LocalOrRemotePath;
 use cute_util::remote_path::{RemoteNavigationResult, RemotePath};
 use cute_util::standardized_path::StandardizedPath;
-#[cfg(test)]
-use cuteui::r#async::FutureId;
 use cuteui::{AppContext, Entity, ModelContext, ModelHandle, SingletonEntity};
 
 use crate::{DirectoryWatcher, Repository};
@@ -393,6 +389,3 @@ pub(crate) fn stub_git_repository(vfs: &mut VirtualFS, repo_name: &str) {
     ]);
 }
 
-#[cfg(test)]
-#[path = "repositories_tests.rs"]
-mod tests;

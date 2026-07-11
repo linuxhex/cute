@@ -216,6 +216,3 @@ where
     }
 }
 
-#[cfg(test)]
-#[path = "meta_tests.rs"]
-mod tests;

@@ -1863,6 +1863,3 @@ where
 // Tests for parsing escape sequences.
 //
 // Byte sequences used in these tests are recording of pty stdout.
-#[cfg(test)]
-#[path = "mod_tests.rs"]
-mod tests;

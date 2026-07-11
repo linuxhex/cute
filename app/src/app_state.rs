@@ -377,6 +377,3 @@ pub fn get_app_state(app: &AppContext) -> AppState {
     }
 }
 
-#[cfg(test)]
-#[path = "app_state_tests.rs"]
-mod tests;

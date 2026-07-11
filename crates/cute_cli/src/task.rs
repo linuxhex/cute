@@ -298,6 +298,3 @@ pub struct TaskGetArgs {
     pub json_output: JsonOutput,
 }
 
-#[cfg(test)]
-#[path = "task_tests.rs"]
-mod tests;

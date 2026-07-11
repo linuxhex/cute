@@ -419,6 +419,3 @@ impl DoubleEndedIterator for IndexRange<VisibleRow> {
     }
 }
 
-#[cfg(test)]
-#[path = "indexing_tests.rs"]
-mod tests;

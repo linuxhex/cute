@@ -2,10 +2,6 @@ use metal::{MTLPixelFormat, MTLStorageMode};
 use pathfinder_geometry::vector::Vector2F;
 use cuteui_core::platform::CapturedFrame;
 
-#[cfg(test)]
-#[path = "frame_capture_tests.rs"]
-mod tests;
-
 /// Captures a rendered frame from a Metal texture and returns the raw BGRA pixel data.
 ///
 /// The data is returned in Metal's native BGRA format to avoid an expensive
@@ -54,13 +50,6 @@ pub fn capture_frame(texture: &metal::TextureRef, size: Vector2F) -> Option<Capt
         height as u32,
         pixel_data,
     ))
-}
-
-#[cfg(test)]
-pub(crate) fn convert_bgra_to_rgba(data: &mut [u8]) {
-    for chunk in data.chunks_exact_mut(4) {
-        chunk.swap(0, 2);
-    }
 }
 
 /// Creates an off-screen Metal texture

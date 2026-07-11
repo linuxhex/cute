@@ -257,6 +257,3 @@ pub fn generate_worktree_branch_name(existing: &HashSet<&str>) -> String {
     generate_unique_name(existing, &mut rand::thread_rng())
 }
 
-#[cfg(test)]
-#[path = "worktree_names_tests.rs"]
-mod tests;

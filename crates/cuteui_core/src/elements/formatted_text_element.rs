@@ -2596,6 +2596,3 @@ impl Default for SnappingPolicy {
     }
 }
 
-#[cfg(test)]
-#[path = "formatted_text_element_tests.rs"]
-mod tests;

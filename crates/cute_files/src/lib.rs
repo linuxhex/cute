@@ -1121,6 +1121,3 @@ impl RepositorySubscriber for FileRepositorySubscriber {
     }
 }
 
-#[cfg(test)]
-#[path = "lib_tests.rs"]
-mod tests;

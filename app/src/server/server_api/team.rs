@@ -1,8 +1,5 @@
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-#[cfg(test)]
-use mockall::{automock, predicate::*};
-
 use super::ServerApi;
 use crate::cloud_stub_types::{CloudObjectEventEntrypoint, WorkspacesMetadataWithPricing};
 use crate::server::ids::ServerId;

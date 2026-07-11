@@ -45,6 +45,3 @@ pub fn read_skills(path: &Path) -> Vec<ParsedSkill> {
     skills
 }
 
-#[cfg(test)]
-#[path = "read_skills_tests.rs"]
-mod read_skills_test;

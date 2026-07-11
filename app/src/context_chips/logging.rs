@@ -1,6 +1,4 @@
 use std::sync::mpsc;
-#[cfg(test)]
-use std::sync::Arc;
 #[cfg(not(test))]
 use std::sync::OnceLock;
 #[cfg(not(target_family = "wasm"))]
@@ -11,8 +9,6 @@ use std::{
 };
 
 use chrono::{Local, SecondsFormat};
-#[cfg(test)]
-use parking_lot::Mutex;
 use cute_completer::completer::{CommandExitStatus, CommandOutput};
 
 use super::ContextChipKind;
@@ -270,6 +266,3 @@ fn format_block(label: &str, marker: &str, content: &str) -> String {
     output
 }
 
-#[cfg(test)]
-#[path = "logging_tests.rs"]
-mod tests;

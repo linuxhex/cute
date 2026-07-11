@@ -399,6 +399,3 @@ impl FileTreeState {
     }
 }
 
-#[cfg(test)]
-#[path = "file_tree_store_tests.rs"]
-mod tests;

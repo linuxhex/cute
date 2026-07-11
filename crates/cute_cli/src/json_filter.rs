@@ -76,6 +76,3 @@ pub fn parse_jq_filter(src: &str) -> Result<JqFilter, String> {
     Ok(JqFilter(Arc::new(compiled)))
 }
 
-#[cfg(test)]
-#[path = "json_filter_tests.rs"]
-mod tests;

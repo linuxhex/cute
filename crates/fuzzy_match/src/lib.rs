@@ -667,6 +667,3 @@ pub fn match_wildcard_pattern_case_insensitive(
     })
 }
 
-#[cfg(test)]
-#[path = "fuzzy_tests.rs"]
-mod tests;

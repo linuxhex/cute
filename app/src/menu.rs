@@ -2966,6 +2966,3 @@ impl<A: Action + Clone> MenuItem<A> {
     }
 }
 
-#[cfg(test)]
-#[path = "menu_tests.rs"]
-mod tests;

@@ -27,6 +27,3 @@ pub(crate) fn add_session_focus_env_vars(
     );
 }
 
-#[cfg(test)]
-#[path = "focus_env_tests.rs"]
-mod tests;

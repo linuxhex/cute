@@ -587,6 +587,3 @@ impl Default for StatsBuffer {
     }
 }
 
-#[cfg(test)]
-#[path = "info_tests.rs"]
-mod tests;

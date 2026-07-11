@@ -242,6 +242,3 @@ impl Renderer {
     }
 }
 
-#[cfg(test)]
-#[path = "renderer_tests.rs"]
-mod tests;

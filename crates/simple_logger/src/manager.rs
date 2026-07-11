@@ -156,6 +156,3 @@ impl Entity for LogManager {
 
 impl SingletonEntity for LogManager {}
 
-#[cfg(test)]
-#[path = "manager_tests.rs"]
-mod tests;

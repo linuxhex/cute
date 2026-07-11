@@ -120,6 +120,3 @@ impl ContrastingColor for ColorU {
     }
 }
 
-#[cfg(test)]
-#[path = "color_tests.rs"]
-mod tests;

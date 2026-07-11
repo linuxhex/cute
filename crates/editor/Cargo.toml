@@ -4,14 +4,10 @@ authors = ["Warp Team <dev@warp.dev>"]
 version = "0.1.0"
 edition = "2024"
 description = "Text editing for Warp"
-exclude = ["test_data/*",]
 publish.workspace = true
 license.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[features]
-test-util = []
 
 [dependencies]
 anyhow.workspace = true

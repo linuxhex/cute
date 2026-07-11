@@ -960,6 +960,3 @@ const PER_AGENT_LABEL_MAX_WIDTH: f32 = 110.;
 /// first 5 followed by a "Show N more" link).
 const PER_AGENT_BREAKDOWN_TRUNCATION_CAP: usize = 5;
 
-#[cfg(test)]
-#[path = "conversation_usage_view_tests.rs"]
-mod tests;

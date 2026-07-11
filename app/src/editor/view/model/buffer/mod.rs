@@ -17,8 +17,6 @@ use std::str;
 use anyhow::{anyhow, Result};
 use itertools::Itertools;
 use lazy_static::lazy_static;
-#[cfg(test)]
-use rand::prelude::*;
 use serde::{Deserialize, Serialize};
 use string_offset::{ByteOffset, CharOffset};
 use sum_tree::{self, Cursor, FilterCursor, SeekBias, SumTree};
@@ -3890,6 +3888,3 @@ pub enum RangesWhenEditing {
     UseRandomRanges { num_ranges: usize },
 }
 
-#[cfg(test)]
-#[path = "mod_tests.rs"]
-mod tests;

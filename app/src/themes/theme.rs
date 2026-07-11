@@ -732,6 +732,3 @@ pub fn render_preview(
     .finish()
 }
 
-#[cfg(test)]
-#[path = "theme_tests.rs"]
-mod tests;

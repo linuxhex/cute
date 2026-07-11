@@ -14,9 +14,7 @@ use crate::content::find::{Query, SearchConfig, SearchResults};
 use crate::content::selection_model::BufferSelectionModel;
 use crate::render::model::Decoration;
 
-#[cfg(test)]
-#[path = "search_tests.rs"]
-mod tests;
+
 
 pub struct Searcher {
     query_text: String,

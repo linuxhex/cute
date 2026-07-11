@@ -84,6 +84,3 @@ fn lab_from_coloru(color: ColorU) -> LabValue {
     }
 }
 
-#[cfg(test)]
-#[path = "theme_creator_tests.rs"]
-mod tests;

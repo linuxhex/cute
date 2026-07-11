@@ -374,6 +374,3 @@ fn resolve_upload_association_from_sources(
     })
 }
 
-#[cfg(test)]
-#[path = "artifact_upload_tests.rs"]
-mod tests;

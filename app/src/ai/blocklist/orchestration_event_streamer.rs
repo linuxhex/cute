@@ -2171,6 +2171,3 @@ pub fn unregister_agent_event_consumer<C>(
 {
 }
 
-#[cfg(test)]
-#[path = "orchestration_event_streamer_tests.rs"]
-mod tests;

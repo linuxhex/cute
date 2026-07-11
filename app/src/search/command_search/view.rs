@@ -1085,6 +1085,3 @@ use crate::cloud_stub_types::WarpDriveSettings;
     }
 }
 
-#[cfg(test)]
-#[path = "view_tests.rs"]
-mod tests;

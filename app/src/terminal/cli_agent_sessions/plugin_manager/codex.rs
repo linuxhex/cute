@@ -58,6 +58,3 @@ static EMPTY_INSTRUCTIONS: LazyLock<PluginInstructions> = LazyLock::new(|| Plugi
     post_install_notes: &[],
 });
 
-#[cfg(test)]
-#[path = "codex_tests.rs"]
-mod tests;

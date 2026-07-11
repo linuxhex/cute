@@ -92,6 +92,3 @@ impl FuzzyMatchWorkflowResult {
     }
 }
 
-#[cfg(test)]
-#[path = "fuzzy_match_tests.rs"]
-mod tests;

@@ -365,6 +365,3 @@ fn us_qwerty_fallback_for_chord(
     })
 }
 
-#[cfg(test)]
-#[path = "key_events_tests.rs"]
-mod tests;

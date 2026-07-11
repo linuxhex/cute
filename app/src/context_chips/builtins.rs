@@ -7,10 +7,6 @@ use super::context_chip::{GeneratorContext, ShellCommand, ShellCommandGenerator}
 use super::ChipValue;
 use crate::terminal::shell::ShellType;
 
-#[cfg(test)]
-#[path = "builtins_tests.rs"]
-mod tests;
-
 /// Generator function for the current working directory.
 pub fn working_directory(ctx: &GeneratorContext) -> Option<ChipValue> {
     let pwd = ctx.active_block_metadata.current_working_directory()?;

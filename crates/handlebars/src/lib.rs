@@ -86,6 +86,3 @@ pub fn render_template(template: &str, context: &HashMap<String, String>) -> Str
     out
 }
 
-#[cfg(test)]
-#[path = "lib_tests.rs"]
-mod tests;

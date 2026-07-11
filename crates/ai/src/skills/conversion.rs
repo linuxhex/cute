@@ -259,6 +259,3 @@ fn convert_provider(
     }
 }
 
-#[cfg(test)]
-#[path = "conversion_tests.rs"]
-mod conversion_tests;

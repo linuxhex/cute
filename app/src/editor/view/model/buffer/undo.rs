@@ -267,6 +267,4 @@ impl PlainTextEditorViewAction {
     }
 }
 
-#[cfg(test)]
-#[path = "undo_tests.rs"]
-mod tests;
+

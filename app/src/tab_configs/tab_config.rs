@@ -473,6 +473,3 @@ pub(crate) fn build_worktree_config_toml(
     toml::to_string_pretty(&Value::Table(doc)).expect("generated TOML should always serialize")
 }
 
-#[cfg(test)]
-#[path = "tab_config_tests.rs"]
-mod tests;

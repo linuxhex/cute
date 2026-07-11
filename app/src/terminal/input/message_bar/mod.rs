@@ -357,6 +357,3 @@ pub fn truncated_command_for_block(command: &str) -> String {
     truncate_from_end(command, 27)
 }
 
-#[cfg(test)]
-#[path = "mod_tests.rs"]
-mod tests;

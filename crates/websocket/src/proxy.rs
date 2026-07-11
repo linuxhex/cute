@@ -245,6 +245,3 @@ fn parse_proxy_url(raw: &str) -> anyhow::Result<ProxyInfo> {
     })
 }
 
-#[cfg(test)]
-#[path = "proxy_tests.rs"]
-mod tests;

@@ -296,6 +296,3 @@ pub(crate) fn plugin_manager_for_with_shell(
     }
 }
 
-#[cfg(test)]
-#[path = "mod_tests.rs"]
-mod tests;

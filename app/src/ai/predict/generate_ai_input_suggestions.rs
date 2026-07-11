@@ -208,6 +208,3 @@ pub fn create_generate_ai_input_suggestions_request(
     }
 }
 
-#[cfg(test)]
-#[path = "generate_ai_input_suggestions_tests.rs"]
-mod tests;

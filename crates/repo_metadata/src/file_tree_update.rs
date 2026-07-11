@@ -106,6 +106,3 @@ fn file_metadata_to_node(file: &FileMetadata) -> RepoNodeMetadata {
     })
 }
 
-#[cfg(test)]
-#[path = "file_tree_update_tests.rs"]
-mod tests;

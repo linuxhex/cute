@@ -591,6 +591,3 @@ impl ActiveAgentViewsModel {
     }
 }
 
-#[cfg(test)]
-#[path = "active_agent_views_model_tests.rs"]
-mod tests;

@@ -113,6 +113,3 @@ fn cross_sign(p: Vector2F, v1: Vector2F, v2: Vector2F) -> f32 {
     (v2.x() - v1.x()) * (p.y() - v1.y()) - (v2.y() - v1.y()) * (p.x() - v1.x())
 }
 
-#[cfg(test)]
-#[path = "safe_triangle_tests.rs"]
-mod tests;

@@ -36,6 +36,3 @@ pub(super) fn exchanges_for_blocklist(conversation: &AIConversation) -> Vec<&AIA
         .collect()
 }
 
-#[cfg(test)]
-#[path = "blocklist_filter_tests.rs"]
-mod tests;

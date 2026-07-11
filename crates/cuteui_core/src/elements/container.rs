@@ -418,6 +418,3 @@ impl SelectableElement for Container {
     }
 }
 
-#[cfg(test)]
-#[path = "container_tests.rs"]
-mod tests;

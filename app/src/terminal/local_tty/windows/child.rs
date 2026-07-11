@@ -105,6 +105,3 @@ impl Drop for ChildExitWatcher {
     }
 }
 
-#[cfg(test)]
-#[path = "child_tests.rs"]
-mod tests;

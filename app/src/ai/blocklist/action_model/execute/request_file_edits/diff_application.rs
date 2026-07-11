@@ -789,6 +789,3 @@ async fn apply_v4a_update<F, Fut>(
     }
 }
 
-#[cfg(test)]
-#[path = "diff_application_tests.rs"]
-mod tests;

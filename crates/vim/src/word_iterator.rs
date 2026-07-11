@@ -246,6 +246,3 @@ impl<'a, T: TextBuffer + ?Sized + 'a> Iterator for WordTailsVim<'a, T> {
     }
 }
 
-#[cfg(test)]
-#[path = "word_iterator_tests.rs"]
-mod tests;

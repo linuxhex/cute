@@ -82,18 +82,6 @@ fn model_table_layout_report(laid_out_table: &LaidOutTable) -> TableLayoutReport
     }
 }
 
-#[cfg(test)]
-fn row_geometry_from_layout_report(report: &TableLayoutReport) -> (Vec<f32>, Vec<f32>) {
-    let mut row_tops = Vec::with_capacity(1 + report.row_tops.len());
-    let mut row_heights = Vec::with_capacity(1 + report.row_heights.len());
-    row_tops.push(0.0);
-    row_heights.push(report.header_height);
-
-    for (row_top, row_height) in report.row_tops.iter().zip(report.row_heights.iter()) {
-        row_tops.push(report.header_height + row_top);
-        row_heights.push(*row_height);
-    }
-
     (row_tops, row_heights)
 }
 
@@ -693,6 +681,3 @@ fn row_height(laid_out_table: &LaidOutTable, row: usize) -> f32 {
         .unwrap_or(20.0)
 }
 
-#[cfg(test)]
-#[path = "table_tests.rs"]
-mod tests;

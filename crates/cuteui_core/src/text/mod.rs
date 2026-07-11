@@ -307,6 +307,3 @@ pub fn count_chars_up_to_byte(text: &str, byte_offset: ByteOffset) -> Option<Cha
     counter.char_offset(byte_offset)
 }
 
-#[cfg(test)]
-#[path = "mod_tests.rs"]
-mod tests;

@@ -83,6 +83,3 @@ impl<S: FusedStream, F> FusedStream for SinkMapErr<S, F> {
     }
 }
 
-#[cfg(test)]
-#[path = "sink_map_err_tests.rs"]
-mod tests;

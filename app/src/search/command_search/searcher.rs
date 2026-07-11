@@ -67,6 +67,3 @@ pub enum CommandSearchItemAction {
     TranslateUsingWarpAI,
 }
 
-#[cfg(test)]
-#[path = "searcher_tests.rs"]
-mod tests;

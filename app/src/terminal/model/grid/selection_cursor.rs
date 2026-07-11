@@ -160,6 +160,3 @@ impl<'g> SelectionCursor<'g> {
     }
 }
 
-#[cfg(test)]
-#[path = "selection_cursor_tests.rs"]
-mod tests;

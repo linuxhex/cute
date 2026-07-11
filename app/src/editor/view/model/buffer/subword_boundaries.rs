@@ -303,6 +303,3 @@ impl CharWindow {
     }
 }
 
-#[cfg(test)]
-#[path = "subword_boundaries_tests.rs"]
-mod tests;

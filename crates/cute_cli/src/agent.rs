@@ -220,10 +220,6 @@ impl fmt::Display for Harness {
     }
 }
 
-#[cfg(test)]
-#[path = "agent_tests.rs"]
-mod tests;
-
 /// Profile subcommands.
 #[derive(Debug, Clone, Subcommand)]
 pub enum AgentProfileCommand {

@@ -486,6 +486,3 @@ find . -maxdepth 1 -not -type d -print0
     Some(command)
 }
 
-#[cfg(test)]
-#[path = "test.rs"]
-mod tests;

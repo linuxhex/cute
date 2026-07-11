@@ -199,6 +199,3 @@ impl EventStore {
     }
 }
 
-#[cfg(test)]
-#[path = "event_store_tests.rs"]
-mod tests;

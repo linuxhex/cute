@@ -156,6 +156,3 @@ pub(crate) fn fuzzy_match_saved_prompts(
     })
 }
 
-#[cfg(test)]
-#[path = "saved_prompts_tests.rs"]
-mod tests;

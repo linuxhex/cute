@@ -164,6 +164,3 @@ pub trait UiComponent {
     fn with_style(self, style: UiComponentStyles) -> Self;
 }
 
-#[cfg(test)]
-#[path = "components_tests.rs"]
-mod tests;

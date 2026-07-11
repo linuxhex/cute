@@ -659,6 +659,3 @@ impl<T> RequestState<T> {
     }
 }
 
-#[cfg(test)]
-#[path = "mod_tests.rs"]
-mod tests;

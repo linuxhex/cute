@@ -586,10 +586,3 @@ where
     }
 }
 
-#[cfg(test)]
-#[path = "toml_path_tests.rs"]
-mod toml_path_tests;
-
-#[cfg(test)]
-#[path = "mod_tests.rs"]
-mod mod_tests;

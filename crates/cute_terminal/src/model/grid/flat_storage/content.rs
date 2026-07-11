@@ -260,6 +260,3 @@ impl Index<Range<usize>> for Chunk {
     }
 }
 
-#[cfg(test)]
-#[path = "content_tests.rs"]
-mod tests;

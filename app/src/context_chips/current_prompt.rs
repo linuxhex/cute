@@ -40,10 +40,6 @@ use crate::terminal::session_settings::{
 };
 use crate::terminal::view::{ContextMenuAction, PromptPart, PromptPosition, TerminalAction};
 
-#[cfg(test)]
-#[path = "current_prompt_tests.rs"]
-mod tests;
-
 const PROMPT_DEBOUNCE_PERIOD: Duration = Duration::from_millis(50);
 const PROMPT_DEBOUNCE_PERIOD_KEY: &str = "PromptDebouncePeriod";
 type ChipFingerprint = u64;

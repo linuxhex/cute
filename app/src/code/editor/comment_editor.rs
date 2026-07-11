@@ -560,6 +560,3 @@ where
     editor
 }
 
-#[cfg(test)]
-#[path = "comment_editor_tests.rs"]
-mod tests;

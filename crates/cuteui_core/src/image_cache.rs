@@ -972,10 +972,6 @@ impl Entity for ImageCache {
 impl SingletonEntity for ImageCache {}
 
 #[cfg(test)]
-#[path = "image_cache_tests.rs"]
-mod tests;
-
-#[cfg(test)]
 pub(crate) mod test_utils {
     use super::*;
 

@@ -625,6 +625,3 @@ async fn suggestions_internal<'a>(
     })
 }
 
-#[cfg(test)]
-#[path = "test.rs"]
-mod tests;

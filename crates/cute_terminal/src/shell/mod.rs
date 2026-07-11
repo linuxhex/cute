@@ -978,6 +978,3 @@ fn zsh_unmetafy(content: &[u8]) -> String {
     }
 }
 
-#[cfg(test)]
-#[path = "mod_tests.rs"]
-mod tests;

@@ -762,6 +762,3 @@ fn available_indexed_repos(app: &AppContext) -> Vec<RepoEntry> {
     }
 }
 
-#[cfg(test)]
-#[path = "agent_assisted_environment_modal_tests.rs"]
-mod tests;

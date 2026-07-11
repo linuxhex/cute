@@ -163,6 +163,3 @@ impl CursorThemeCrawler {
     }
 }
 
-#[cfg(test)]
-#[path = "cursor_theme_tests.rs"]
-mod tests;

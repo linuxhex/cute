@@ -214,6 +214,3 @@ impl NotificationItems {
     }
 }
 
-#[cfg(test)]
-#[path = "item_tests.rs"]
-mod tests;

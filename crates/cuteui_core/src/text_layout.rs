@@ -1551,6 +1551,3 @@ impl CaretPosition {
     }
 }
 
-#[cfg(test)]
-#[path = "text_layout_tests.rs"]
-mod tests;

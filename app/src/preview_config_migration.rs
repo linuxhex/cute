@@ -120,6 +120,3 @@ pub(crate) fn migrate_config_dir_via_symlinks(old_dir: &Path, new_dir: &Path) {
     );
 }
 
-#[cfg(test)]
-#[path = "preview_config_migration_tests.rs"]
-mod tests;

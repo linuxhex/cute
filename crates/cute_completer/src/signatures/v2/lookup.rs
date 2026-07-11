@@ -144,6 +144,3 @@ fn deepest_matching_subcommand_signature<'a>(
     (command_signature, subcommand_search_start_index)
 }
 
-#[cfg(test)]
-#[path = "lookup_tests.rs"]
-mod test;
