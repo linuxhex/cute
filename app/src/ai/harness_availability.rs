@@ -22,8 +22,8 @@ use crate::server::retry_strategies::{
     is_transient_graphql_or_http_error, OUT_OF_BAND_REQUEST_RETRY_STRATEGY,
 };
 use crate::server::server_api::ServerApiProvider;
-use crate::cloud_stub_types::AuthManager;
-use crate::cloud_stub_types::AuthManagerEvent;
+// use crate::cloud_stub_types::AuthManager; // Cute: 已禁用认证管理器
+// use crate::cloud_stub_types::AuthManagerEvent; // Cute: 已禁用认证管理器事件
 
 const CACHE_KEY: &str = "AvailableHarnesses";
 const AUTH_SECRET_FETCH_FAILURE_COOLDOWN: Duration = Duration::from_secs(60);
@@ -153,15 +153,16 @@ impl HarnessAvailabilityModel {
             }
         });
 
-        ctx.subscribe_to_model(&AuthManager::handle(ctx), |me, event, ctx| {
-            if let AuthManagerEvent::AuthComplete = event {
-                let cached_harnesses: Vec<Harness> = me.auth_secrets.keys().copied().collect();
-                for harness in cached_harnesses {
-                    me.invalidate_auth_secrets(harness);
-                }
-                me.refresh(ctx);
-            }
-        });
+        // Cute: 已禁用认证管理器订阅
+        // ctx.subscribe_to_model(&AuthManager::handle(ctx), |me, event, ctx| {
+        //     if let AuthManagerEvent::AuthComplete = event {
+        //         let cached_harnesses: Vec<Harness> = me.auth_secrets.keys().copied().collect();
+        //         for harness in cached_harnesses {
+        //             me.invalidate_auth_secrets(harness);
+        //         }
+        //         me.refresh(ctx);
+        //     }
+        // });
 
         // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
         // ctx.subscribe_to_model(&UserWorkspaces::handle(ctx), |me, event, ctx| {

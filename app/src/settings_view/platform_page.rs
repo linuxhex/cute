@@ -39,7 +39,7 @@ use crate::server::ids::ApiKeyUid;
 use crate::server::server_api::auth::AuthClient;
 use crate::ui_components::icons::Icon;
 use crate::util::time_format::format_approx_duration_from_now_utc;
-use crate::cloud_stub_types::AuthStateProvider;
+// use crate::cloud_stub_types::AuthStateProvider; // Cute: 已禁用认证提供者
 
 const MODAL_WIDTH: f32 = 460.;
 const MODAL_HEIGHT: f32 = 320.;
@@ -915,11 +915,13 @@ impl SettingsPageMeta for PlatformPageView {
         if cfg!(feature = "skip_login") {
             return false;
         }
-        let is_anonymous = AuthStateProvider::as_ref(ctx)
-            .get()
-            .is_anonymous_or_logged_out();
+        // Cute: 已禁用认证检查
+        // let is_anonymous = AuthStateProvider::as_ref(ctx)
+        //     .get()
+        //     .is_anonymous_or_logged_out();
 
-        !is_anonymous && FeatureFlag::APIKeyManagement.is_enabled()
+        // !is_anonymous && FeatureFlag::APIKeyManagement.is_enabled()
+        FeatureFlag::APIKeyManagement.is_enabled()
     }
 
     fn on_page_selected(&mut self, _allow_steal_focus: bool, ctx: &mut ViewContext<Self>) {

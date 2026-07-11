@@ -245,10 +245,11 @@ impl SuggestionChipView {
     }
 
     fn listen_for_cute_drive_events(ctx: &mut ViewContext<Self>) {
-        let update_manager = UpdateManager::handle(ctx);
-        ctx.subscribe_to_model(&update_manager, |me, _, event, ctx| {
-            me.handle_update_manager_event(event, ctx);
-        });
+        // Cute: 已禁用云端更新管理器
+        // let update_manager = UpdateManager::handle(ctx);
+        // ctx.subscribe_to_model(&update_manager, |me, _, event, ctx| {
+        //     me.handle_update_manager_event(event, ctx);
+        // });
 
         let cloud_model = CloudModel::handle(ctx);
         ctx.subscribe_to_model(&cloud_model, |me, _, event, ctx| {
@@ -256,36 +257,37 @@ impl SuggestionChipView {
         });
     }
 
-    fn handle_update_manager_event(
-        &mut self,
-        event: &UpdateManagerEvent,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        let UpdateManagerEvent::ObjectOperationComplete { result } = event else {
-            return;
-        };
-
-        if let (ObjectOperation::Create { .. }, OperationSuccessType::Success) =
-            (&result.operation, &result.success_type)
-        {
-            if self.sync_id.into_client() == result.client_id {
-                if let Some(server_id) = result.server_id {
-                    self.sync_id = SyncId::ServerId(server_id);
-                    // Reload the rule from the cloud model.
-                    match &mut self.suggestion {
-                        Suggestion::Rule { .. } => {
-                            self.load_suggestion(ctx);
-                        }
-                        Suggestion::AgentModeWorkflow { .. } => {
-                            // Loading agent mode workflows is not supported
-                            // as there is no editing flow for them.
-                        }
-                    }
-                    self.on_add_suggestion(ctx);
-                }
-            }
-        }
-    }
+    // Cute: 已禁用云端更新管理器事件处理
+    // fn handle_update_manager_event(
+    //     &mut self,
+    //     event: &UpdateManagerEvent,
+    //     ctx: &mut ViewContext<Self>,
+    // ) {
+    //     let UpdateManagerEvent::ObjectOperationComplete { result } = event else {
+    //         return;
+    //     };
+    //
+    //     if let (ObjectOperation::Create { .. }, OperationSuccessType::Success) =
+    //         (&result.operation, &result.success_type)
+    //     {
+    //         if self.sync_id.into_client() == result.client_id {
+    //             if let Some(server_id) = result.server_id {
+    //                 self.sync_id = SyncId::ServerId(server_id);
+    //                 // Reload the rule from the cloud model.
+    //                 match &mut self.suggestion {
+    //                     Suggestion::Rule { .. } => {
+    //                         self.load_suggestion(ctx);
+    //                     }
+    //                     Suggestion::AgentModeWorkflow { .. } => {
+    //                         // Loading agent mode workflows is not supported
+    //                         // as there is no editing flow for them.
+    //                     }
+    //                 }
+    //                 self.on_add_suggestion(ctx);
+    //             }
+    //         }
+    //     }
+    // }
 
     fn handle_cloud_model_event(&mut self, event: &CloudModelEvent, ctx: &mut ViewContext<Self>) {
         match event {

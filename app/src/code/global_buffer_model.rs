@@ -1962,12 +1962,12 @@ impl GlobalBufferModel {
     //     });
     // }
 
-    /// Handle an incoming `BufferConflictDetected` push from the remote server.
-    ///
-    /// The server detected that the file changed on disk while the client
-    /// had unsaved edits. Emits `RemoteBufferConflict` so the UI shows
-    /// the conflict resolution banner.
-    ///
+    // Handle an incoming `BufferConflictDetected` push from the remote server.
+    //
+    // The server detected that the file changed on disk while the client
+    // had unsaved edits. Emits `RemoteBufferConflict` so the UI shows
+    // the conflict resolution banner.
+    //
     // 注释掉：已禁用远程缓冲区功能
     // pub(crate) fn handle_buffer_conflict_detected(
     //     &mut self,

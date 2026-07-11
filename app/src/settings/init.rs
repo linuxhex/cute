@@ -31,7 +31,7 @@ use crate::terminal::ligature_settings::LigatureSettings;
 use crate::terminal::safe_mode_settings::SafeModeSettings;
 use crate::terminal::session_settings::{SessionSettings, SessionSettingsChangedEvent};
 use crate::terminal::settings::TerminalSettings;
-use crate::terminal::shared_session::settings::SharedSessionSettings;
+// use crate::terminal::shared_session::settings::SharedSessionSettings; // Cute: 已禁用共享会话设置
 use crate::terminal::warpify::settings::WarpifySettings;
 use crate::terminal::BlockListSettings;
 use crate::undo_close::UndoCloseSettings;

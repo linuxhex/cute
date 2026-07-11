@@ -211,7 +211,7 @@ use crate::banner::BannerState;
 use crate::changelog_model::{ChangelogModel, ChangelogRequestType, Event as ChangelogEvent};
 use crate::channel::{Channel, ChannelState};
 use crate::cloud_stub_types::model::persistence::CloudModel;
-use crate::cloud_stub_types::toast_message::CloudObjectToastMessage;
+// use crate::cloud_stub_types::toast_message::CloudObjectToastMessage; // Cute: 已禁用云端对象Toast消息
 use crate::cloud_stub_types::{
     CloudObject, GenericStringObjectFormat, JsonObjectType, ObjectType, Owner, Space,
 };
