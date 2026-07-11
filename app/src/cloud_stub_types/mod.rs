@@ -45,6 +45,9 @@ pub mod model;
 pub mod models;
 pub mod toast_message;
 
+/// Prefix for generic string objects in cloud storage
+pub const GENERIC_STRING_OBJECT_PREFIX: &str = "GENERIC_STRING_";
+
 // ===== Re-export submodules for drive/cloud_object compatibility =====
 
 /// Re-export items module (was crate::drive::items)
@@ -2043,6 +2046,8 @@ impl std::fmt::Debug for WorkflowArgSelectorStyles {
 /// Minimal stub for AdminEnablementSetting (cloud feature)
 #[derive(Clone, Debug, PartialEq)]
 pub enum AdminEnablementSetting {
+    Enable,
+    Disable,
     Enabled,
     Disabled,
     RespectUserSetting,
@@ -2051,15 +2056,87 @@ pub enum AdminEnablementSetting {
 /// Minimal stub for UgcCollectionEnablementSetting (cloud feature)
 #[derive(Clone, Debug, PartialEq)]
 pub enum UgcCollectionEnablementSetting {
+    Enable,
+    Disable,
     Enabled,
     Disabled,
     RespectUserSetting,
 }
 
 /// Minimal stub for AiAutonomySettings (cloud feature)
+/// Re-exported from crates/graphql/src/api/workspace.rs
 #[derive(Clone, Debug, Default)]
 pub struct AiAutonomySettings {
-    // Stub fields for compatibility
+    pub apply_code_diffs_setting: Option<AiAutonomyValue>,
+    pub read_files_setting: Option<AiAutonomyValue>,
+    pub read_files_allowlist: Option<Vec<String>>,
+    pub create_plans_setting: Option<AiAutonomyValue>,
+    pub execute_commands_setting: Option<AiAutonomyValue>,
+    pub execute_commands_allowlist: Option<Vec<String>>,
+    pub execute_commands_denylist: Option<Vec<String>>,
+    pub write_to_pty_setting: Option<WriteToPtyAutonomyValue>,
+    pub computer_use_setting: Option<ComputerUseAutonomyValue>,
+}
+
+/// Minimal stub for AiAutonomyValue (cloud feature)
+#[derive(Clone, Debug, PartialEq)]
+pub enum AiAutonomyValue {
+    AgentDecides,
+    AlwaysAllow,
+    AlwaysAsk,
+    RespectUserSetting,
+    Other(String),
+}
+
+/// Minimal stub for WriteToPtyAutonomyValue (cloud feature)
+#[derive(Clone, Debug, PartialEq)]
+pub enum WriteToPtyAutonomyValue {
+    AlwaysAllow,
+    AlwaysAsk,
+    AskOnFirstWrite,
+    RespectUserSetting,
+    Other(String),
+}
+
+/// Minimal stub for ComputerUseAutonomyValue (cloud feature)
+#[derive(Clone, Debug, PartialEq)]
+pub enum ComputerUseAutonomyValue {
+    Never,
+    AlwaysAsk,
+    AlwaysAllow,
+    RespectUserSetting,
+    Other(String),
+}
+
+// Local version: No workspace overrides, so all has_override methods return false
+impl AiAutonomySettings {
+    pub fn has_override_for_code_diffs(&self) -> bool {
+        false
+    }
+
+    pub fn has_override_for_read_files(&self) -> bool {
+        false
+    }
+
+    pub fn has_override_for_execute_commands(&self) -> bool {
+        false
+    }
+
+    pub fn has_override_for_write_to_pty(&self) -> bool {
+        false
+    }
+
+    pub fn has_override_for_execute_commands_allowlist(&self) -> bool {
+        false
+    }
+
+    pub fn has_override_for_read_files_allowlist(&self) -> bool {
+        false
+    }
+
+    pub fn has_override_for_computer_use(&self) -> bool {
+        false
+    }
 }
 
 /// Minimal stub for ContentEditability
@@ -2589,19 +2666,31 @@ impl From<FolderId> for crate::server::ids::SyncId {
 /// Minimal stub for CloudObjectMetadata
 #[derive(Clone, Debug, Default)]
 pub struct CloudObjectMetadata {
-    pub created_ts: Option<i64>,
-    pub updated_ts: Option<i64>,
-    pub trashed_ts: Option<i64>,
+    pub revision: Option<Revision>,
+    pub metadata_last_updated_ts: Option<cute_graphql::scalars::time::ServerTimestamp>,
+    pub current_editor_uid: Option<String>,
+    pub pending_changes_statuses: CloudObjectStatuses,
+    pub trashed_ts: Option<cute_graphql::scalars::time::ServerTimestamp>,
     pub folder_id: Option<crate::server::ids::SyncId>,
     pub is_welcome_object: bool,
-    pub owner: Owner,
-    pub revision: Option<Revision>,
+    pub last_editor_uid: Option<String>,
     pub creator_uid: Option<String>,
+    pub last_task_run_ts: Option<cute_graphql::scalars::time::ServerTimestamp>,
 }
 
 impl CloudObjectMetadata {
     pub fn has_pending_content_changes(&self) -> bool {
-        false
+        !matches!(
+            self.pending_changes_statuses.content_sync_status,
+            CloudObjectSyncStatus::NoLocalChanges | CloudObjectSyncStatus::InConflict
+        )
+    }
+
+    pub fn is_errored(&self) -> bool {
+        matches!(
+            self.pending_changes_statuses.content_sync_status,
+            CloudObjectSyncStatus::Errored
+        )
     }
 
     pub fn has_pending_online_only_change(&self) -> bool {
@@ -2616,15 +2705,45 @@ impl CloudObjectMetadata {
 /// Minimal stub for CloudObjectStatuses
 #[derive(Clone, Debug, Default)]
 pub struct CloudObjectStatuses {
-    pub has_pending_changes: bool,
-    pub has_uncommitted_changes: bool,
+    pub content_sync_status: CloudObjectSyncStatus,
+    pub has_pending_permissions_change: bool,
+    pub has_pending_metadata_change: bool,
+    pub pending_untrash: bool,
+    pub pending_delete: bool,
 }
 
 /// Minimal stub for CloudObjectPermissions
 #[derive(Clone, Debug, Default)]
 pub struct CloudObjectPermissions {
     pub owner: Owner,
+    pub permissions_last_updated_ts: Option<cute_graphql::scalars::time::ServerTimestamp>,
+    pub anyone_with_link: Option<CloudLinkSharing>,
+    pub guests: Vec<CloudObjectGuest>,
+}
+
+/// Minimal stub for CloudLinkSharing
+#[derive(Clone, Debug, PartialEq, Default)]
+pub struct CloudLinkSharing {
     pub access_level: SharingAccessLevel,
+    pub source: Option<cute_server_client::cloud_object::ServerObjectContainer>,
+}
+
+/// Minimal stub for CloudObjectGuest
+#[derive(Clone, Debug, PartialEq)]
+pub struct CloudObjectGuest {
+    pub subject: cute_server_client::cloud_object::Subject,
+    pub access_level: SharingAccessLevel,
+    pub source: Option<cute_server_client::cloud_object::ServerObjectContainer>,
+}
+
+impl Default for CloudObjectGuest {
+    fn default() -> Self {
+        Self {
+            subject: cute_server_client::cloud_object::Subject::User(cute_server_client::cloud_object::UserKind::Account(crate::auth::UserUid::new("default"))),
+            access_level: SharingAccessLevel::Viewer,
+            source: None,
+        }
+    }
 }
 
 // Owner is already imported from cute_server_client::cloud_object
@@ -2673,6 +2792,8 @@ pub enum CloudObjectSyncStatus {
     Failed,
     Pending,
     NoLocalChanges,
+    Errored,
+    InConflict,
 }
 
 impl Default for CloudObjectSyncStatus {
