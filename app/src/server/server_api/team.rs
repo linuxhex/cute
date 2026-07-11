@@ -51,12 +51,7 @@ impl TeamClient for ServerApi {
     async fn workspaces_metadata(&self) -> Result<WorkspacesMetadataWithPricing> {
         // Return empty metadata for local version
         Ok(WorkspacesMetadataWithPricing {
-            metadata: crate::workspaces::user_workspaces::WorkspacesMetadataResponse {
-                workspaces: vec![],
-                joinable_teams: vec![],
-                feature_model_choices: None,
-            },
-            pricing_info: None,
+            workspaces: vec![],
         })
     }
 }

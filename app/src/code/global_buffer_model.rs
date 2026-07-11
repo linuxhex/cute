@@ -1948,7 +1948,6 @@ impl GlobalBufferModel {
     // buffer state so the user can retry).
     //
     // 注释掉：已禁用远程缓冲区功能
-    #[cfg_attr(not(feature = "local_tty"), allow(dead_code))]
     // pub fn reopen_remote_buffer(&mut self, file_id: FileId, ctx: &mut ModelContext<Self>) {
     //     let Some(state) = self.buffers.get(&file_id) else {
     //         return;

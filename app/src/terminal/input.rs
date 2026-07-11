@@ -193,7 +193,7 @@ use crate::cloud_stub_types::model::actions::ObjectActionType;
 use crate::cloud_stub_types::model::generic_string_model::StringModel;
 use crate::cloud_stub_types::model::persistence::CloudModel;
 use crate::cloud_stub_types::model::view::CloudViewModel;
-use crate::cloud_stub_types::{CloudObject, CloudObjectLookup as _};
+use crate::cloud_stub_types::{CloudObject, CloudObjectLookup as _, UpdateManager, UserWorkspaces};
 #[cfg(feature = "local_fs")]
 use crate::code::editor_management::CodeSource;
 use crate::code_review::diff_state::DiffMode;

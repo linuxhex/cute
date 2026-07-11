@@ -333,7 +333,7 @@ impl RequestParams {
             should_redact_secrets,
             api_keys,
             custom_model_providers,
-            allow_use_of_cute_credits,
+            allow_use_of_warp_credits: allow_use_of_cute_credits,
             autonomy_level,
             isolation_level,
             web_search_enabled,

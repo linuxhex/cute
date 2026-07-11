@@ -194,14 +194,15 @@ impl Entity for TelemetryBanner {
 /// _does_ need to check this.
 pub fn should_collect_ai_ugc_telemetry(app: &AppContext, is_telemetry_enabled: bool) -> bool {
     match UserWorkspaces::as_ref(app).get_ugc_collection_enablement_setting() {
-        UgcCollectionEnablementSetting::Disable => false,
-        UgcCollectionEnablementSetting::Enable => true,
-        UgcCollectionEnablementSetting::RespectUserSetting => {
+        crate::settings::AdminEnablementSetting::Disabled => false,
+        crate::settings::AdminEnablementSetting::Enabled => true,
+        crate::settings::AdminEnablementSetting::RespectUserSetting => {
             (FeatureFlag::GlobalAIAnalyticsCollection.is_enabled()
                 // Do NOT remove this check. Unlike the send telemetry macro,
                 // UploadBlock endpoint does not automatically check user's telemetry setting.
                 && is_telemetry_enabled)
                 || FeatureFlag::AgentModeAnalytics.is_enabled()
         }
+        _ => false, // Handle other variants
     }
 }

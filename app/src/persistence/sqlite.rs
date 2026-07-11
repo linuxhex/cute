@@ -592,7 +592,7 @@ fn handle_model_event(event: ModelEvent, connection: &mut SqliteConnection) -> a
             Ok(()) // No-op in local version
         }
         // REMOVED: Cloud feature - UpsertGenericStringObjects disabled in local version
-        ModelEvent::UpsertGenericStringObjects(objects: _) => {
+        ModelEvent::UpsertGenericStringObjects(_) => {
             Ok(()) // No-op in local version
         }
         ModelEvent::UpsertNotebook { notebook } => {
@@ -642,18 +642,8 @@ fn handle_model_event(event: ModelEvent, connection: &mut SqliteConnection) -> a
         ModelEvent::DeleteProject { path } => {
             delete_project(connection, &path).context("error deleting project")
         }
-        // REMOVED: Cloud feature - UpsertWorkspace disabled in local version
-        ModelEvent::UpsertWorkspace { workspace: _ } => {
-            Ok(()) // No-op in local version
-        }
-        // REMOVED: Cloud feature - UpsertWorkspaces disabled in local version
-        ModelEvent::UpsertWorkspaces { workspaces: _ } => {
-            Ok(()) // No-op in local version
-        }
-        // REMOVED: Cloud feature - SetCurrentWorkspace disabled in local version
-        ModelEvent::SetCurrentWorkspace { workspace_uid: _ } => {
-            Ok(()) // No-op in local version
-        }
+        // REMOVED: Cloud features disabled in local version
+        // UpsertWorkspace, UpsertWorkspaces, SetCurrentWorkspace variants do not exist
         ModelEvent::UpdateObjectMetadata { id, metadata } => {
             // 云端对象元数据更新功能已禁用
             // update_object_metadata(connection, id, to_cloud_object_metadata(&metadata))
@@ -666,14 +656,8 @@ fn handle_model_event(event: ModelEvent, connection: &mut SqliteConnection) -> a
         ModelEvent::UpdateFinishedCommand { metadata } => {
             update_finished_command(connection, metadata).context("error updating finished command")
         }
-        // REMOVED: Cloud feature - UpsertUserProfiles disabled in local version
-        ModelEvent::UpsertUserProfiles { profiles: _ } => {
-            Ok(()) // No-op in local version
-        }
-        // REMOVED: Cloud feature - ClearUserProfiles disabled in local version
-        ModelEvent::ClearUserProfiles => {
-            Ok(()) // No-op in local version
-        }
+        // REMOVED: Cloud features disabled in local version
+        // UpsertUserProfiles, ClearUserProfiles variants do not exist
         ModelEvent::RecordTimeOfNextRefresh { timestamp } => {
             record_time_of_next_refresh(connection, timestamp)
                 .context("error marking object refresh as completed")
@@ -2722,10 +2706,8 @@ fn read_sqlite_data(
     Ok(PersistedData {
         app_state,
         cloud_objects,
-        workspaces,
-        current_workspace_uid,
+        // Removed fields: workspaces, current_workspace_uid, user_profiles (not in local version)
         command_history: commands,
-        user_profiles,
         time_of_next_force_object_refresh,
         object_actions,
         ai_queries,

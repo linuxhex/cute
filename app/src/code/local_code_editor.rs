@@ -2284,7 +2284,8 @@ impl TypedActionView for LocalCodeEditorView {
                     // the banner remains visible so the user can retry.
                     if let Some(file_id) = self.file_id() {
                         GlobalBufferModel::handle(ctx).update(ctx, |model, ctx| {
-                            model.reopen_remote_buffer(file_id, ctx);
+                            // COMMENTED: reopen_remote_buffer disabled in local version
+                            // model.reopen_remote_buffer(file_id, ctx);
                         });
                     }
                 }

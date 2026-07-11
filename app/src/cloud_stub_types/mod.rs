@@ -2789,7 +2789,7 @@ impl Default for Revision {
 impl From<Revision> for cute_graphql::scalars::time::ServerTimestamp {
     fn from(revision: Revision) -> Self {
         cute_graphql::scalars::time::ServerTimestamp::from_unix_timestamp_micros(revision.unix_timestamp_micros())
-            .unwrap_or_else(|_| cute_graphql::scalars::time::ServerTimestamp::now())
+            .unwrap_or_else(|_| cute_graphql::scalars::time::ServerTimestamp::new(chrono::Utc::now()))
     }
 }
 
@@ -3767,7 +3767,7 @@ impl SharedSessionStatus {
 
     /// Returns false in stub - cloud sharing is disabled
     pub fn is_view_pending(&self) -> bool {
-        matches!(self, SharedSessionStatus::SharePending | SharedSessionStatus::SharePendingPreBootstrap)
+        matches!(self, SharedSessionStatus::SharePending | SharedSessionStatus::SharePendingPreBootstrap { source: _ })
     }
 
     /// Returns false in stub - cloud sharing is disabled
@@ -3791,7 +3791,7 @@ impl cuteui::SingletonEntity for CloudAgentSettings {}
 
 impl CloudAgentSettings {
     pub fn as_ref(_ctx: &AppContext) -> &Self {
-        static INSTANCE: CloudAgentSettings = CloudAgentSettings::default();
+        static INSTANCE: std::sync::LazyLock<CloudAgentSettings> = std::sync::LazyLock::new(CloudAgentSettings::default);
         &INSTANCE
     }
 
@@ -3834,7 +3834,7 @@ impl cuteui::SingletonEntity for UpdateManager {}
 
 impl UpdateManager {
     pub fn as_ref(_ctx: &AppContext) -> &Self {
-        static INSTANCE: UpdateManager = UpdateManager::default();
+        static INSTANCE: std::sync::LazyLock<UpdateManager> = std::sync::LazyLock::new(UpdateManager::default);
         &INSTANCE
     }
 
@@ -3866,7 +3866,7 @@ impl IapManager {
     }
 
     pub fn as_ref(_ctx: &AppContext) -> &Self {
-        static INSTANCE: IapManager = IapManager::default();
+        static INSTANCE: std::sync::LazyLock<IapManager> = std::sync::LazyLock::new(IapManager::default);
         &INSTANCE
     }
 
