@@ -2739,7 +2739,7 @@ pub struct CloudObjectGuest {
 impl Default for CloudObjectGuest {
     fn default() -> Self {
         Self {
-            subject: cute_server_client::cloud_object::Subject::User(cute_server_client::cloud_object::UserKind::Account(crate::auth::UserUid::new("default"))),
+            subject: cute_server_client::cloud_object::Subject::User(cute_server_client::cloud_object::UserKind::Account(cute_server_client::auth::UserUid::new("default"))),
             access_level: SharingAccessLevel::Viewer,
             source: None,
         }
@@ -3681,7 +3681,11 @@ pub type OpenWarpDriveObjectArgs = OpenCuteDriveObjectArgs;
 pub type WarpDriveSettings = CuteDriveSettings;
 pub type WarpDriveSettingsChangedEvent = CuteDriveSettingsChangedEvent;
 
-// ===== IsSharedSessionCreator Stub =====
+// ===== SharedSessionSource Stub (Session Sharing) =====
+
+/// Minimal stub for SharedSessionSource - shared session source
+/// Already defined elsewhere, just re-exporting here
+pub use crate::terminal::model::terminal_model::SharedSessionSource;
 
 /// Minimal stub for IsSharedSessionCreator - shared session creator status
 /// This is a cloud feature that's disabled in the local version.
@@ -3694,28 +3698,6 @@ pub enum IsSharedSessionCreator {
 impl Default for IsSharedSessionCreator {
     fn default() -> Self {
         IsSharedSessionCreator::No
-    }
-}
-
-// ===== SharedSessionSource Stub =====
-
-/// Minimal stub for SharedSessionSource - shared session source
-#[derive(Clone, Debug, PartialEq, Eq, Default)]
-pub struct SharedSessionSource {
-    pub source_type: SessionSourceType,
-    pub source_task_id: Option<String>,
-}
-
-impl SharedSessionSource {
-    pub fn ambient_agent(task_id: Option<String>) -> Self {
-        Self {
-            source_type: SessionSourceType::AmbientAgent { task_id: task_id.clone() },
-            source_task_id: task_id,
-        }
-    }
-
-    pub fn orchestrator_task_id(&self) -> Option<&str> {
-        self.source_type.orchestrator_task_id()
     }
 }
 
@@ -3851,6 +3833,103 @@ impl UpdateManager {
 
     pub fn handle(_ctx: &AppContext) -> cuteui::ModelHandle<Self> {
         <Self as cuteui::SingletonEntity>::handle(_ctx)
+    }
+}
+
+// ===== IapManager Stub (IAP Authentication) =====
+
+/// Minimal stub for IapManager - IAP authentication manager
+/// This is a cloud feature that's disabled in the local version.
+#[derive(Clone, Debug, Default)]
+pub struct IapManager {}
+
+impl cuteui::Entity for IapManager {
+    type Event = ();
+}
+
+impl cuteui::SingletonEntity for IapManager {}
+
+impl IapManager {
+    pub fn new(_ctx: &mut cuteui::ModelContext<Self>) -> Self {
+        Self::default()
+    }
+
+    pub fn handle(_ctx: &AppContext) -> cuteui::ModelHandle<Self> {
+        <Self as cuteui::SingletonEntity>::handle(_ctx)
+    }
+
+    pub fn as_ref(_ctx: &AppContext) -> &Self {
+        static INSTANCE: IapManager = IapManager::default();
+        &INSTANCE
+    }
+
+    /// Stub: handle IAP challenge (no-op)
+    pub fn handle_challenge(&mut self, _ctx: &mut cuteui::ModelContext<Self>) {
+        // No-op in local version
+    }
+}
+
+// ===== IapState Stub (IAP State) =====
+
+/// Minimal stub for IapState - IAP authentication state
+/// This is a cloud feature that's disabled in the local version.
+#[derive(Clone, Debug, Default)]
+pub struct IapState {}
+
+// ===== OAuth2Client Stub =====
+
+/// Minimal stub for OAuth2Client - OAuth2 client
+/// This is a cloud feature that's disabled in the local version.
+#[derive(Clone, Debug)]
+pub struct OAuth2Client {}
+
+impl OAuth2Client {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl Default for OAuth2Client {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+// ===== Dropdown Stubs (UI Component) =====
+
+/// Minimal stub for Dropdown - dropdown UI component
+#[derive(Clone, Debug)]
+pub struct Dropdown<T> {
+    pub items: Vec<DropdownItem<T>>,
+    pub selected_index: Option<usize>,
+}
+
+/// Minimal stub for DropdownItem - dropdown item
+#[derive(Clone, Debug)]
+pub struct DropdownItem<T> {
+    pub label: String,
+    pub value: T,
+}
+
+impl<T: Clone + std::fmt::Debug> Dropdown<T> {
+    pub fn new(items: Vec<DropdownItem<T>>) -> Self {
+        Self {
+            items,
+            selected_index: None,
+        }
+    }
+
+    pub fn selected(&self) -> Option<&T> {
+        self.selected_index.and_then(|idx| self.items.get(idx).map(|item| &item.value))
+    }
+}
+
+impl<T: Clone + std::fmt::Debug> DropdownItem<T> {
+    pub fn new(label: impl Into<String>, value: T) -> Self {
+        Self {
+            label: label.into(),
+            value,
+        }
     }
 }
 

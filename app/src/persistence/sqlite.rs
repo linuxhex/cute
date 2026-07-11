@@ -2648,95 +2648,19 @@ fn read_sqlite_data(
     let object_permissions: Vec<model::ObjectPermissions> = Vec::new();
 
     // Cloud objects removed for local version - empty collections
-    let cloud_objects: Vec<Box<dyn CloudObjectStub>> = Vec::new();
+    // COMMENTED: Cloud feature disabled - CloudObjectStub removed
+    let cloud_objects: Vec<crate::cloud_stub_types::models::ServerCloudObject> = Vec::new();
 
-    let db_teams: Vec<model::Team> = schema::teams::dsl::teams.load(conn)?;
+    // COMMENTED: Cloud teams feature disabled in local version
+    let db_teams: Vec<model::Team> = Vec::new(); // schema::teams::dsl::teams.load(conn)?;
+    let members_by_team_id: HashMap<i32, Vec<model::TeamMemberRow>> = HashMap::new();
+    let settings_by_team_id: HashMap<i32, String> = HashMap::new();
 
-    let team_member_rows: Vec<model::TeamMemberRow> =
-        schema::team_members::dsl::team_members.load(conn)?;
-    let members_by_team_id: HashMap<i32, Vec<TeamMemberStub>> =
-        team_member_rows
-            .into_iter()
-            .fold(HashMap::new(), |mut acc, row| {
-                let member = TeamMemberStub {
-                    uid: UserUid::new(&row.user_uid),
-                    email: row.email,
-                    role: serde_json::from_str(&row.role)
-                        .unwrap_or(MembershipRole::User),
-                };
-                acc.entry(row.team_id).or_default().push(member);
-                acc
-            });
+    let teams: Vec<TeamMetadata> = Vec::new(); // Empty for local version
 
-    let team_settings_rows: Vec<model::TeamSetting> =
-        schema::team_settings::dsl::team_settings.load(conn)?;
-    let settings_by_team_id: HashMap<i32, String> = team_settings_rows
-        .into_iter()
-        .map(|ts| (ts.team_id, ts.settings_json))
-        .collect();
-
-    let teams: Vec<TeamMetadata> = db_teams
-        .into_iter()
-        .map(|team| {
-            let team_settings = settings_by_team_id
-                .get(&team.id)
-                .and_then(|json| serde_json::from_str(json).ok());
-
-            let billing_metadata = team
-                .billing_metadata_json
-                .as_ref()
-                .and_then(|json| serde_json::from_str(json).ok());
-
-            let members = members_by_team_id.get(&team.id).cloned();
-
-            TeamMetadata::from_local_cache(
-                ServerId::from_string_lossy(team.server_uid),
-                team.name,
-                team_settings,
-                billing_metadata,
-                members,
-            )
-        })
-        .collect();
-
-    let workspace_teams: Vec<model::WorkspaceTeam> = schema::workspace_teams::dsl::workspace_teams
-        .load_iter::<model::WorkspaceTeam, DefaultLoadingMode>(conn)?
-        .filter_map(|workspace_team| workspace_team.ok())
-        .collect();
-
-    let workspaces: Vec<WorkspaceMetadata> = schema::workspaces::dsl::workspaces
-        .load_iter::<model::Workspace, DefaultLoadingMode>(conn)?
-        .filter_map(|workspace| {
-            workspace.ok().map(|workspace| {
-                let teams_for_workspace = workspace_teams
-                    .iter()
-                    .filter_map(|workspace_team| {
-                        if workspace_team.workspace_server_uid == workspace.server_uid {
-                            teams.iter().find(|team| {
-                                team.uid
-                                    == ServerId::from_string_lossy(&workspace_team.team_server_uid)
-                            })
-                        } else {
-                            None
-                        }
-                    })
-                    .cloned()
-                    .collect();
-                WorkspaceMetadata::from_local_cache(
-                    workspace.server_uid.into(),
-                    workspace.name,
-                    Some(teams_for_workspace),
-                )
-            })
-        })
-        .collect();
-
-    let current_workspace_uid: Option<WorkspaceUid> = schema::workspaces::dsl::workspaces
-        .filter(schema::workspaces::dsl::is_selected.eq(true))
-        .select(schema::workspaces::dsl::server_uid)
-        .first::<String>(conn)
-        .optional()?
-        .map(|uid| uid.into());
+    // COMMENTED: Cloud workspaces feature disabled in local version
+    let workspaces: Vec<WorkspaceMetadata> = Vec::new();
+    let current_workspace_uid: Option<WorkspaceUid> = None;
 
     let commands = schema::commands::dsl::commands
         // Ensure the commands come into memory sorted chronologically.
@@ -2749,7 +2673,9 @@ fn read_sqlite_data(
     let user_profiles = schema::user_profiles::dsl::user_profiles
         .load_iter::<model::UserProfile, DefaultLoadingMode>(conn)?
         .filter_map(|user_profile| user_profile.ok())
-        .map(user_profile_from_persistence)
+        // COMMENTED: Cloud feature disabled - user_profile_from_persistence removed
+        // .map(user_profile_from_persistence)
+        .map(|p| crate::cloud_stub_types::UserProfile { email: p.email, photo_url: p.photo_url })
         .collect();
 
     let object_actions: Vec<ObjectAction> = schema::object_actions::dsl::object_actions
@@ -2820,88 +2746,26 @@ fn id_from_metadata<K: HashableId + ToServerId>(metadata: &ObjectMetadata) -> Op
     }
 }
 
-fn to_cloud_object_metadata(metadata: &ObjectMetadata) -> CloudObjectMetadata {
-    CloudObjectMetadata {
-        current_editor_uid: metadata.current_editor.clone(),
-        metadata_last_updated_ts: metadata
-            .metadata_last_updated_ts
-            .and_then(|epoch| ServerTimestamp::from_unix_timestamp_micros(epoch).ok()),
-        revision: metadata
-            .revision_ts
-            .and_then(|epoch| Revision::from_unix_timestamp_micros(epoch).ok()),
-        pending_changes_statuses: CloudObjectStatuses {
-            pending_delete: false,
-            content_sync_status: if metadata.is_pending {
-                CloudObjectSyncStatus::InFlight(NumInFlightRequests(1))
-            } else {
-                CloudObjectSyncStatus::NoLocalChanges
-            },
-            has_pending_metadata_change: false,
-            has_pending_permissions_change: false,
-            pending_untrash: false,
-        },
-        trashed_ts: metadata
-            .trashed_ts
-            .and_then(|epoch| ServerTimestamp::from_unix_timestamp_micros(epoch).ok()),
-        folder_id: metadata.folder_id.as_ref().and_then(|folder_id_str| {
-            // First, attempt to convert the string into a server id.
-            let as_server_id =
-                FolderId::from_hash(folder_id_str).map(|id| SyncId::ServerId(id.into()));
+// COMMENTED: Cloud feature disabled in local version - to_cloud_object_metadata removed
+// fn to_cloud_object_metadata(metadata: &ObjectMetadata) -> CloudObjectMetadata {
+//     CloudObjectMetadata::default()
+// }
 
-            // If the string cannot be converted to server id, it may be a client id.
-            if as_server_id.is_none() {
-                ClientId::from_hash(folder_id_str).map(SyncId::ClientId)
-            } else {
-                as_server_id
-            }
-        }),
-        is_welcome_object: metadata.is_welcome_object,
-        creator_uid: metadata.creator_uid.clone(),
-        last_editor_uid: metadata.last_editor_uid.clone(),
-        last_task_run_ts: None,
-    }
-}
+// COMMENTED: Cloud feature disabled in local version - to_cloud_object_permissions removed
+// fn to_cloud_object_permissions(
+//     permissions: &ObjectPermissions,
+//     default_user_id: Option<UserUid>,
+// ) -> Option<CloudObjectPermissions> {
+//     None
+// }
 
-fn to_cloud_object_permissions(
-    permissions: &ObjectPermissions,
-    default_user_id: Option<UserUid>,
-) -> Option<CloudObjectPermissions> {
-    let owner = owner_for_permissions(permissions, default_user_id)?;
-    let permissions_last_updated_ts = permissions
-        .permissions_last_updated_at
-        .and_then(|ts| ServerTimestamp::from_unix_timestamp_micros(ts).ok());
-
-    let guests = Vec::new();
-
-    let anyone_with_link = None;
-
-    Some(CloudObjectPermissions {
-        owner,
-        permissions_last_updated_ts,
-        guests,
-        anyone_with_link,
-    })
-}
-
-fn owner_for_permissions(
-    permissions: &ObjectPermissions,
-    default_user_id: Option<UserUid>,
-) -> Option<Owner> {
-    match permissions.subject_type.as_str() {
-        "USER" => {
-            let user_uid = permissions
-                .subject_id
-                .as_deref()
-                .map(UserUid::new)
-                .or(default_user_id)?;
-            Some(Owner::User { user_uid })
-        }
-        "TEAM" => Some(Owner::Team {
-            team_uid: ServerId::from_string_lossy(&permissions.subject_uid),
-        }),
-        _ => None,
-    }
-}
+// COMMENTED: Cloud feature disabled in local version - owner_for_permissions removed
+// fn owner_for_permissions(
+//     permissions: &ObjectPermissions,
+//     default_user_id: Option<UserUid>,
+// ) -> Option<Owner> {
+//     None
+// }
 
 impl From<StartedCommandMetadata> for model::NewCommand {
     fn from(metadata: StartedCommandMetadata) -> Self {
@@ -2978,35 +2842,13 @@ fn update_finished_command(
     })
 }
 
-fn upsert_user_profiles(
-    conn: &mut SqliteConnection,
-    profiles: Vec<UserProfileWithUID>,
-) -> Result<(), Error> {
-    use schema::user_profiles::dsl::*;
-
-    conn.transaction::<(), Error, _>(|conn| {
-        for profile in profiles {
-            // Delete any stale profile with that uid
-            diesel::delete(
-                schema::user_profiles::dsl::user_profiles
-                    .filter(firebase_uid.eq(profile.firebase_uid.to_string())),
-            )
-            .execute(conn)?;
-
-            // Insert a new user profile row
-            let new_user_profile = UserProfile {
-                firebase_uid: profile.firebase_uid.to_string(),
-                photo_url: profile.photo_url,
-                display_name: profile.display_name,
-                email: profile.email,
-            };
-            diesel::insert_into(schema::user_profiles::dsl::user_profiles)
-                .values(new_user_profile)
-                .execute(conn)?;
-        }
-        Ok(())
-    })
-}
+// COMMENTED: Cloud feature disabled in local version - upsert_user_profiles removed
+// fn upsert_user_profiles(
+//     conn: &mut SqliteConnection,
+//     profiles: Vec<UserProfileWithUID>,
+// ) -> Result<(), Error> {
+//     Ok(())
+// }
 
 fn clear_user_profiles(conn: &mut SqliteConnection) -> Result<(), Error> {
     conn.transaction::<(), Error, _>(|conn| {

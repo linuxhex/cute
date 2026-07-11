@@ -1148,6 +1148,11 @@ impl SettingsView {
 
         // COMMENTED: Warp Drive page removed
         // let warp_drive_page_handle =
+        //     ctx.add_view(|ctx| SettingsPageView::new(WarpDriveSettingsPageView::new(ctx)));
+        // ctx.subscribe_to_view(&warp_drive_page_handle, |me, _, event, ctx| {
+        //     me.handle_settings_page_event(event, ctx);
+        // });
+        // let warp_drive_page_handle = None; // Placeholder for disabled cloud drive
         //     ctx.add_typed_action_view(cute_drive_page::WarpDriveSettingsPageView::new);
         // ctx.subscribe_to_view(&warp_drive_page_handle, |me, _, event, ctx| {
         //     me.handle_warp_drive_page_event(event, ctx);
@@ -1202,7 +1207,7 @@ impl SettingsView {
             SettingsPage::new(warpify_page_handle),
             // SettingsPage::new(referrals_page_handle), // Removed: referral feature
             SettingsPage::new(show_blocks_view_handle),
-            SettingsPage::new(warp_drive_page_handle),
+            // SettingsPage::new(warp_drive_page_handle), // Removed: cloud drive disabled
         ];
 
         settings_pages.extend(vec![

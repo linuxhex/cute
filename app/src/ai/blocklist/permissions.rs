@@ -203,7 +203,8 @@ impl BlocklistAIPermissions {
             cli_agent_model: profile_data.cli_agent_model.clone(),
             computer_use_model: profile_data.computer_use_model.clone(),
             context_window_limit: profile_data.context_window_limit,
-            autosync_plans_to_cute_drive: profile_data.autosync_plans_to_cute_drive,
+            // COMMENTED: Cloud feature disabled - autosync_plans_to_cute_drive removed
+            // autosync_plans_to_cute_drive: profile_data.autosync_plans_to_cute_drive,
             web_search_enabled: profile_data.web_search_enabled,
         }
     }
@@ -221,17 +222,10 @@ impl BlocklistAIPermissions {
     /// Returns the applicable workspace autonomy settings based on execution mode.
     /// In sandboxed mode, returns settings derived from the sandboxed agent config.
     /// In unsandboxed mode, returns the standard AI autonomy settings.
-    fn workspace_autonomy_settings(ctx: &AppContext) -> AiAutonomySettings {
-        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
-        if AppExecutionMode::as_ref(ctx).is_sandboxed() {
-            let sandboxed = None; // UserWorkspaces::as_ref(ctx).sandboxed_agent_settings();
-            AiAutonomySettings {
-                execute_commands_denylist: sandboxed.and_then(|s| s.execute_commands_denylist),
-                ..Default::default()
-            }
-        } else {
-            Default::default() // UserWorkspaces::as_ref(ctx).ai_autonomy_settings()
-        }
+    /// COMMENTED: Cloud feature disabled in local version - always returns default settings
+    fn workspace_autonomy_settings(_ctx: &AppContext) -> AiAutonomySettings {
+        // Cloud workspaces disabled - always return default settings
+        AiAutonomySettings::default()
     }
 
     pub fn get_apply_code_diffs_setting_for_profile(

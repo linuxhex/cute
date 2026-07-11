@@ -53,7 +53,8 @@ use crate::auth::auth_manager::AuthManager;
 use crate::auth::auth_state::AuthState;
 use crate::auth::UserUid;
 use crate::server::graphql::default_request_options;
-// use crate::server::iap::{IapManager, IapState}; // Cute: 已注释，清理 IAP 模块
+// COMMENTED: Cloud IAP module disabled - use stub types from cloud_stub_types
+use crate::cloud_stub_types::{IapManager, IapState, OAuth2Client};
 use crate::server::server_api::presigned_upload::HttpStatusError;
 use crate::settings::PrivacySettingsSnapshot;
 use crate::ChannelState;
@@ -420,7 +421,8 @@ pub struct ServerApi {
     event_sender: async_channel::Sender<ServerApiEvent>,
     last_server_time: Arc<Mutex<Option<ServerTime>>>,
     // We technically use OAuth2 for headless device authentication.
-    oauth_client: self::auth::OAuth2Client,
+    // COMMENTED: Cloud OAuth2 disabled - use stub type
+    oauth_client: OAuth2Client,
     /// Cached ambient workload token for requests from ambient agents.
     ambient_workload_token: Arc<Mutex<Option<cute_isolation_platform::WorkloadToken>>>,
     /// The ambient agent task ID for requests from cloud agents.
@@ -711,26 +713,9 @@ impl ServerApi {
         }
     }
 
-    fn create_oauth_client() -> self::auth::OAuth2Client {
-        let server_root =
-            Url::parse(&ChannelState::server_root_url()).expect("Server root URL must be valid");
-
-        let auth_url = server_root
-            .join("/api/v1/oauth/device/auth")
-            .expect("Invalid auth URL");
-
-        let token_url = server_root
-            .join("/api/v1/oauth/token")
-            .expect("Invalid token URL");
-
-        let device_url = server_root
-            .join("/api/v1/oauth/device/auth")
-            .expect("Invalid device URL");
-
-        oauth2::basic::BasicClient::new(oauth2::ClientId::new("warp-cli".to_string()))
-            .set_auth_uri(oauth2::AuthUrl::from_url(auth_url))
-            .set_token_uri(oauth2::TokenUrl::from_url(token_url))
-            .set_device_authorization_url(oauth2::DeviceAuthorizationUrl::from_url(device_url))
+    // COMMENTED: Cloud OAuth2 disabled - return stub client
+    fn create_oauth_client() -> OAuth2Client {
+        OAuth2Client::new()
     }
 
     pub fn send_graphql_request<'a, QF, O: cute_graphql::client::Operation<QF> + Send + 'a>(

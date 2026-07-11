@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use mockall::{automock, predicate::*};
 
 use super::ServerApi;
-use crate::cloud_stub_types::CloudObjectEventEntrypoint;
+use crate::cloud_stub_types::{CloudObjectEventEntrypoint, WorkspacesMetadataWithPricing};
 use crate::server::ids::ServerId;
 
 /// Minimal TeamClient trait for local version.
