@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 // use alias_bar::{AliasBar, AliasBarEvent}; // Removed: unused cloud feature
-use crate::cloud_stub_types::{AliasBar, AliasBarEvent}; // Added: stub types for alias bar
+use crate::cloud_stub_types::{AliasBar, AliasBarEvent, SyntaxHighlightable}; // Added: stub types for alias bar and syntax highlightable
 use argument_editor::{ArgumentEditorRow, DEFAULT_ARGUMENT_PREFIX};
 use env_var_selector::{EnvVarSelector, EnvVarSelectorEvent};
 use itertools::Itertools;
@@ -409,14 +409,10 @@ impl WorkflowView {
         });
 
         let content_editor_highlight_model =
-            // COMMENTED: SyntaxHighlightable module removed
-            // ctx.add_model(|ctx| SyntaxHighlightable::new(content_editor.clone(), ctx));
-            ctx.add_model(|_| Default::default());
+            ctx.add_model(|ctx| SyntaxHighlightable::new(content_editor.clone(), ctx));
 
         let view_only_content_editor_highlight_model =
-            // COMMENTED: SyntaxHighlightable module removed
-            // ctx.add_model(|ctx| SyntaxHighlightable::new(view_only_content_editor.clone(), ctx));
-            ctx.add_model(|_| Default::default());
+            ctx.add_model(|ctx| SyntaxHighlightable::new(view_only_content_editor.clone(), ctx));
 
         let workflow_id = SyncId::ClientId(ClientId::default());
         // COMMENTED: alias_bar module removed

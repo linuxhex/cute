@@ -1345,18 +1345,9 @@ use crate::cloud_stub_types::SharedSessionStatus;
         self.write_to_pty_events_for_shared_session_tx = Some(tx);
     }
 
-    pub fn send_write_to_pty_events_for_shared_session(&mut self, bytes: Vec<u8>) {
-        if !FeatureFlag::SharedSessionWriteToLongRunningCommands.is_enabled()
-            || !self.shared_session_status().is_executor()
-        {
-            return;
-        }
-
-        if let Some(tx) = &self.write_to_pty_events_for_shared_session_tx {
-            if let Err(e) = tx.try_send(bytes) {
-                log::warn!("Failed to send write to pty events: {e}");
-            }
-        }
+    pub fn send_write_to_pty_events_for_shared_session(&mut self, _bytes: Vec<u8>) {
+        // 删除：云端功能已禁用 - shared session
+        return;
     }
 
     pub fn clear_write_to_pty_events_for_shared_session_tx(&mut self) {
@@ -1382,36 +1373,13 @@ use crate::cloud_stub_types::SharedSessionStatus;
             ));
         }
 
-        if self.shared_session_status().is_sharer() {
-            if let Some(tx) = &self.ordered_terminal_events_for_shared_session_tx {
-                let encoded = encode_agent_response_event(response);
-                // Use a default ParticipantId if response_initiator is None
-                let initiator = response_initiator.unwrap_or_else(|| ParticipantId::default());
-                if let Err(e) = tx.try_send(OrderedTerminalEventType::AgentResponseEvent {
-                    response_initiator: initiator,
-                    response_event: encoded,
-                    forked_from_conversation_token,
-                }) {
-                    log::warn!("Failed to send OrderedTerminalEventType::AgentResponseEvent: {e}");
-                }
-            }
-        } else {
-            log::debug!("Not sharing this session; ignoring agent response event");
-        }
+        // 删除：云端功能已禁用 - shared session sharer check
+        return;
     }
 
     pub fn send_agent_conversation_replay_started_for_shared_session(&mut self) {
-        if self.shared_session_status().is_sharer() {
-            if let Some(tx) = &self.ordered_terminal_events_for_shared_session_tx {
-                if let Err(e) =
-                    tx.try_send(OrderedTerminalEventType::AgentConversationReplayStarted)
-                {
-                    log::warn!(
-                        "Failed to send OrderedTerminalEventType::AgentConversationReplayStarted: {e}"
-                    );
-                }
-            }
-        }
+        // 删除：云端功能已禁用 - shared session replay
+        return;
     }
 
     pub fn send_agent_conversation_replay_ended_for_shared_session(&mut self) {

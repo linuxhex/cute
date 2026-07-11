@@ -852,7 +852,7 @@ impl LLMPreferences {
 
     fn custom_inference_enabled(app: &AppContext) -> bool {
         FeatureFlag::CustomInferenceEndpoints.is_enabled()
-            && UserWorkspaces::as_ref(app).is_custom_inference_enabled(app)
+            && UserWorkspaces::as_ref(app).is_custom_inference_enabled() // 删除：云端功能已禁用 - 删除参数
     }
 
     /// Reads the user's current `ApiKeyManager.custom_endpoints` and replaces `custom_llms`

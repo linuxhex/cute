@@ -197,7 +197,7 @@ impl WorkflowView {
                             });
 
                             let alias_argument_selector =
-                                ctx.add_typed_action_view(AliasArgumentSelector::new);
+                                ctx.add_typed_action_view(|_ctx| AliasArgumentSelector::new());
 
                             ctx.subscribe_to_view(
                                 &alias_argument_selector,

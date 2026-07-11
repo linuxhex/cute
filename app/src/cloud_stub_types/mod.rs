@@ -1784,6 +1784,10 @@ pub enum AliasArgumentSelectorEvent {
     Navigate(cute_editor::editor::NavigationKey),
 }
 
+/// Minimal stub for AliasArgumentSelectorAction (cloud feature)
+#[derive(Clone, Debug)]
+pub enum AliasArgumentSelectorAction {}
+
 /// Implement Entity trait for AliasArgumentSelector
 impl cuteui::Entity for AliasArgumentSelector {
     type Event = AliasArgumentSelectorEvent;
@@ -1798,6 +1802,11 @@ impl cuteui::View for AliasArgumentSelector {
     fn render(&self, _ctx: &AppContext) -> Box<dyn cuteui::Element> {
         Box::new(cuteui::elements::Empty::new())
     }
+}
+
+/// Implement TypedActionView trait for AliasArgumentSelector
+impl cuteui::TypedActionView for AliasArgumentSelector {
+    type Action = AliasArgumentSelectorAction;
 }
 
 /// Implement new method for AliasArgumentSelector
@@ -1818,6 +1827,10 @@ pub enum AliasBarEvent {
     AliasesUpdated,
 }
 
+/// Minimal stub for AliasBarAction (cloud feature)
+#[derive(Clone, Debug)]
+pub enum AliasBarAction {}
+
 /// Implement Entity trait for AliasBar
 impl cuteui::Entity for AliasBar {
     type Event = AliasBarEvent;
@@ -1832,6 +1845,11 @@ impl cuteui::View for AliasBar {
     fn render(&self, _ctx: &AppContext) -> Box<dyn cuteui::Element> {
         Box::new(cuteui::elements::Empty::new())
     }
+}
+
+/// Implement TypedActionView trait for AliasBar
+impl cuteui::TypedActionView for AliasBar {
+    type Action = AliasBarAction;
 }
 
 /// Implement methods for AliasBar
@@ -1858,6 +1876,46 @@ impl AliasBar {
 
     pub fn get_all_argument_values(&self) -> Vec<String> {
         Vec::new()
+    }
+
+    // 删除：云端功能已禁用
+    pub fn has_selected_alias(&self) -> bool {
+        false
+    }
+
+    // 删除：云端功能已禁用
+    pub fn has_unsaved_changes(&self) -> bool {
+        false
+    }
+}
+
+/// Minimal stub for SyntaxHighlightable (cloud feature)
+#[derive(Clone, Debug)]
+pub struct SyntaxHighlightable {}
+
+/// Minimal stub for SyntaxHighlightableEvent (cloud feature)
+#[derive(Clone, Debug)]
+pub enum SyntaxHighlightableEvent {}
+
+/// Implement Entity trait for SyntaxHighlightable
+impl cuteui::Entity for SyntaxHighlightable {
+    type Event = SyntaxHighlightableEvent;
+}
+
+/// Implement methods for SyntaxHighlightable
+impl SyntaxHighlightable {
+    pub fn new(_editor: crate::editor::EditorView, _ctx: &mut cuteui::ModelContext<Self>) -> Self {
+        Self {}
+    }
+
+    // 删除：云端功能已禁用
+    pub fn highlight_syntax(&mut self, _ctx: &mut cuteui::ModelContext<Self>) {
+        // Stub implementation
+    }
+
+    // 删除：云端功能已禁用
+    pub fn debounce_highlight(&mut self) {
+        // Stub implementation
     }
 }
 
@@ -1959,8 +2017,15 @@ impl std::fmt::Debug for WorkflowArgSelectorStyles {
             .field("height", &self.height)
             .field("width", &self.width)
             .field("border_radius", &self.border_radius)
-            .finish_non_exhaustive()
+            .finish()
     }
+}
+
+/// Minimal stub for AdminEnablementSetting (cloud feature)
+#[derive(Clone, Debug, PartialEq)]
+pub enum AdminEnablementSetting {
+    Enabled,
+    Disabled,
 }
 
 /// Minimal stub for ContentEditability
@@ -3572,6 +3637,52 @@ impl UserWorkspaces {
     }
 
     /// Returns whether AI autonomy is allowed.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn is_custom_inference_enabled(&self) -> bool {
+        false
+    }
+
+    /// Returns whether BYO API key is enabled.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn is_byo_api_key_enabled(&self) -> bool {
+        false
+    }
+
+    /// Returns whether AWS Bedrock credentials are enabled.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn is_aws_bedrock_credentials_enabled(&self) -> bool {
+        false
+    }
+
+    /// Returns whether AWS Bedrock is available from workspace.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn is_aws_bedrock_available_from_workspace(&self) -> bool {
+        false
+    }
+
+    /// Returns whether AWS Bedrock credentials are toggleable.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn is_aws_bedrock_credentials_toggleable(&self) -> bool {
+        false
+    }
+
+    /// Returns whether user has teams.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn has_teams(&self) -> bool {
+        false
+    }
+
+    /// Returns AWS Bedrock host enablement setting.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn aws_bedrock_host_enablement_setting(&self) -> AdminEnablementSetting {
+        AdminEnablementSetting::Disabled
+    }
+
+    /// Returns upgrade link.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn upgrade_link(&self) -> Option<String> {
+        None
+    }
     /// COMMENTED: Cloud feature disabled in local version
     pub fn is_ai_autonomy_allowed(&self) -> bool {
         false

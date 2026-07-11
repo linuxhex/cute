@@ -250,6 +250,15 @@ pub use crate::cloud_stub_types::SharedSessionSource;
 pub use crate::cloud_stub_types::UserProfiles;
 pub use crate::cloud_stub_types::UserProfile;
 pub use crate::cloud_stub_types::ObjectIdType;
+pub use crate::cloud_stub_types::WorkspaceUid;
+pub use crate::cloud_stub_types::WarpDriveItemId;
+pub use crate::cloud_stub_types::WorkspaceMetadata;
+pub use crate::cloud_stub_types::TeamMember;
+pub use crate::cloud_stub_types::OpenCuteDriveObjectSettings;
+pub use crate::cloud_stub_types::GenericStringObjectId;
+pub use crate::cloud_stub_types::GENERIC_STRING_OBJECT_PREFIX;
+pub use crate::cloud_stub_types::models::CloudWorkflow;
+pub use crate::cloud_stub_types::models::CloudNotebook;
 use crate::gpu_state::GPUState;
 use crate::network::NetworkStatus;
 use crate::cloud_stub_types::keys::NotebookKeybindings;
@@ -1096,14 +1105,14 @@ pub(crate) fn initialize_app(
     });
 
     let (
-        cloud_objects,
-        cached_workspaces,
-        current_workspace_uid,
+        // 删除：云端功能已禁用 - cloud_objects
+        // 删除：云端功能已禁用 - cached_workspaces
+        // 删除：云端功能已禁用 - current_workspace_uid
         app_state,
         command_history,
-        restored_user_profiles,
-        time_of_next_force_object_refresh,
-        object_actions,
+        // 删除：云端功能已禁用 - restored_user_profiles
+        // 删除：云端功能已禁用 - time_of_next_force_object_refresh
+        // 删除：云端功能已禁用 - object_actions
         ai_queries,
         persisted_workspaces,
         workspace_language_servers,
@@ -1116,14 +1125,14 @@ pub(crate) fn initialize_app(
     ) = sqlite_data
         .map(|sqlite_data| {
             (
-                sqlite_data.cloud_objects,
-                sqlite_data.workspaces,
-                sqlite_data.current_workspace_uid,
+                // 删除：云端功能已禁用 - cloud_objects
+                // 删除：云端功能已禁用 - workspaces
+                // 删除：云端功能已禁用 - current_workspace_uid
                 Some(sqlite_data.app_state),
                 sqlite_data.command_history,
-                sqlite_data.user_profiles,
-                sqlite_data.time_of_next_force_object_refresh,
-                sqlite_data.object_actions,
+                // 删除：云端功能已禁用 - user_profiles
+                // 删除：云端功能已禁用 - time_of_next_force_object_refresh
+                // 删除：云端功能已禁用 - object_actions
                 sqlite_data.ai_queries,
                 sqlite_data.codebase_indices,
                 sqlite_data.workspace_language_servers,
@@ -1137,13 +1146,14 @@ pub(crate) fn initialize_app(
         })
         .unwrap_or_else(|| {
             (
+                // 删除：云端功能已禁用 - cloud_objects 默认值
+                // 删除：云端功能已禁用 - workspaces 默认值
+                // 删除：云端功能已禁用 - current_workspace_uid 默认值
                 Default::default(),
                 Default::default(),
-                Default::default(),
-                Default::default(),
-                Default::default(),
-                Default::default(),
-                Default::default(),
+                // 删除：云端功能已禁用 - user_profiles 默认值
+                // 删除：云端功能已禁用 - time_of_next_force_object_refresh 默认值
+                // 删除：云端功能已禁用 - object_actions 默认值
                 Default::default(),
                 Default::default(),
                 Default::default(),
@@ -1454,33 +1464,9 @@ pub(crate) fn initialize_app(
         VoiceTranscriber::new(Arc::new(ServerVoiceTranscriber::new(server_api.clone())))
     });
 
-    let notebooks = cloud_objects
-        .iter()
-        .filter_map(|object| {
-            let notebook: Option<&CloudNotebook> = object.into();
-            notebook
-        })
-        .cloned()
-        .collect::<Vec<_>>();
-
-    let cloud_model = ctx.add_singleton_model(|_ctx| {
-        CloudModel::new(
-            persistence_writer.sender(),
-            cloud_objects,
-            time_of_next_force_object_refresh,
-        )
-    });
-
-    let _unsynced_actions: Vec<(String, ObjectAction)> = object_actions
-        .iter()
-        .filter(|action| action.is_pending())
-        .filter_map(|action| {
-            cloud_model.read(ctx, |model, _| {
-                let object = model.get_by_uid(&action.uid);
-                object.map(|o| (o.uid().to_string(), action.clone()))
-            })
-        })
-        .collect::<Vec<_>>();
+    // 删除：云端功能已禁用 - notebooks extraction
+    // 删除：云端功能已禁用 - CloudModel creation
+    // 删除：云端功能已禁用 - unsynced_actions
 
     ctx.add_singleton_model(|ctx| {
         SyncQueue::new(
@@ -1546,7 +1532,8 @@ pub(crate) fn initialize_app(
     // COMMENTED: UserProfiles disabled in local version
     // ctx.add_singleton_model(|_| UserProfiles::new(restored_user_profiles));
 
-    ctx.add_singleton_model(|_| ObjectActions::new(object_actions));
+    // 删除：云端功能已禁用 - ObjectActions::new(object_actions)
+    ctx.add_singleton_model(|_| ObjectActions::new(Default::default()));
 
     ctx.add_singleton_model(|_| AudibleBell::new());
 

@@ -1933,18 +1933,18 @@ impl GlobalBufferModel {
         Ok(())
     }
 
-    /// Re-open an existing remote buffer by sending `OpenBuffer` with
-    /// `force_reload = true` to the server.
-    ///
-    /// The server re-reads the file from disk into the existing buffer and
-    /// broadcasts a `BufferUpdatedPush` to all other connections. The
-    /// requesting connection receives the fresh content via
-    /// `OpenBufferResponse`, which is applied by `apply_open_buffer_response`.
-    ///
-    /// On failure, emits `FailedToLoad` (the caller should keep the current
-    /// buffer state so the user can retry).
-    ///
-    /// 注释掉：已禁用远程缓冲区功能
+    // Re-open an existing remote buffer by sending `OpenBuffer` with
+    // `force_reload = true` to the server.
+    //
+    // The server re-reads the file from disk into the existing buffer and
+    // broadcasts a `BufferUpdatedPush` to all other connections. The
+    // requesting connection receives the fresh content via
+    // `OpenBufferResponse`, which is applied by `apply_open_buffer_response`.
+    //
+    // On failure, emits `FailedToLoad` (the caller should keep the current
+    // buffer state so the user can retry).
+    //
+    // 注释掉：已禁用远程缓冲区功能
     #[cfg_attr(not(feature = "local_tty"), allow(dead_code))]
     // pub fn reopen_remote_buffer(&mut self, file_id: FileId, ctx: &mut ModelContext<Self>) {
     //     let Some(state) = self.buffers.get(&file_id) else {
