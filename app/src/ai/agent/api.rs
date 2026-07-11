@@ -163,7 +163,7 @@ impl RequestParams {
     ) -> Self {
         let ai_settings = AISettings::as_ref(app);
         let is_memory_enabled = ai_settings.is_memory_enabled(app);
-        let cute_drive_context_enabled = ai_settings.is_cute_drive_context_enabled(app);
+        let cute_drive_context_enabled = ai_settings.is_warp_drive_context_enabled(app);
 
         // Build MCP context - either grouped by server or flat lists based on feature flag
         let mcp_context = if FeatureFlag::MCPGroupedServerContext.is_enabled() {

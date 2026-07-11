@@ -706,9 +706,10 @@ impl AgentInputFooter {
         ctx.subscribe_to_model(&NetworkStatus::handle(ctx), |_, _, _, ctx| {
             ctx.notify();
         });
-        ctx.subscribe_to_model(&UserWorkspaces::handle(ctx), |_, _, _, ctx| {
-            ctx.notify();
-        });
+        // 删除：UserWorkspaces 订阅已禁用，云端功能已移除
+        // ctx.subscribe_to_model(&UserWorkspaces::handle(ctx), |_, _, _, ctx| {
+        //     ctx.notify();
+        // });
         ctx.subscribe_to_model(&AIRequestUsageModel::handle(ctx), |_, _, _, ctx| {
             ctx.notify()
         });
@@ -1701,9 +1702,10 @@ impl AgentInputFooter {
         source: &voice_input::VoiceInputToggledFrom,
         ctx: &mut ViewContext<Self>,
     ) {
-        if !UserWorkspaces::as_ref(ctx).is_voice_enabled() {
-            return;
-        }
+        // 删除：UserWorkspaces 语音检查已禁用，云端功能已移除
+        // if !UserWorkspaces::as_ref(ctx).is_voice_enabled() {
+        //     return;
+        // }
 
         if !AISettings::as_ref(ctx).is_voice_input_enabled(ctx) {
             return;
@@ -1776,7 +1778,8 @@ impl AgentInputFooter {
         ctx: &mut ViewContext<Self>,
     ) {
         use crate::editor::VoiceTranscriber;
-use crate::UserWorkspaces;
+        // 删除：UserWorkspaces 导入已禁用，云端功能已移除
+        // use crate::UserWorkspaces;
 
         match result {
             VoiceSessionResult::Audio {

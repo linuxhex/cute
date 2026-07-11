@@ -273,7 +273,7 @@ pub(super) fn render(props: Props, app: &AppContext) -> Box<dyn Element> {
                 let mut action_index = 0;
 
                 fn open_code_block_action(source: CodeSource) -> AIBlockAction {
-                    AIBlockAction::OpenCodeInWarp { source }
+                    AIBlockAction::OpenCodeInCute { source }
                 }
 
                 fn copy_code_action(snippet: String) -> AIBlockAction {
@@ -1659,7 +1659,7 @@ fn render_read_skill(
                 skill.provider,
                 skill_icon_override,
                 move |ctx| {
-                    ctx.dispatch_typed_action(AIBlockAction::OpenCodeInWarp {
+                    ctx.dispatch_typed_action(AIBlockAction::OpenCodeInCute {
                         source: source.clone(),
                     });
                 },
@@ -1763,7 +1763,7 @@ fn render_read_files(
             skill.provider,
             skill_icon_override,
             move |ctx| {
-                ctx.dispatch_typed_action(AIBlockAction::OpenCodeInWarp {
+                ctx.dispatch_typed_action(AIBlockAction::OpenCodeInCute {
                     source: source.clone(),
                 });
             },

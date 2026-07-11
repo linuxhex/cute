@@ -598,3 +598,4 @@ pub fn user_preferences_toml_file_path() -> PathBuf {
 // Re-export types from graphql for settings compatibility
 pub use cute_graphql::api::workspace::AdminEnablementSetting;
 pub use cute_graphql::api::workspace::UgcCollectionEnablementSetting;
+pub use cute_graphql::api::workspace::AiAutonomySettings;

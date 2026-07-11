@@ -258,7 +258,8 @@ impl BlocklistAIContextModel {
         // Clear auto-attached blocks when exiting agent view or switching conversations
         ctx.subscribe_to_model(&agent_view_controller, |me, event, _ctx| {
             use super::agent_view::AgentViewControllerEvent;
-use crate::UserWorkspaces;
+            // 删除：UserWorkspaces 导入已禁用，云端功能已移除
+            // use crate::UserWorkspaces;
             match event {
                 AgentViewControllerEvent::ExitedAgentView { .. }
                 | AgentViewControllerEvent::EnteredAgentView { .. } => {
@@ -400,10 +401,15 @@ use crate::UserWorkspaces;
             // source code embedding based context is still available.
             false
         } else {
-            UserWorkspaces::as_ref(app).is_codebase_context_enabled(app)
-                && pwd.as_ref().is_some_and(|pwd| {
-                    RepoOutlines::as_ref(app).is_directory_indexed(Path::new(&pwd))
-                })
+            // 删除：UserWorkspaces 检查已禁用，云端功能已移除
+            // UserWorkspaces::as_ref(app).is_codebase_context_enabled(app)
+            //     && pwd.as_ref().is_some_and(|pwd| {
+            //         RepoOutlines::as_ref(app).is_directory_indexed(Path::new(&pwd))
+            //     })
+            // 改为只检查本地目录索引状态
+            pwd.as_ref().is_some_and(|pwd| {
+                RepoOutlines::as_ref(app).is_directory_indexed(Path::new(&pwd))
+            })
         };
 
         let project_rules = if let Some(pwd) = pwd.clone().and_then(|path| {

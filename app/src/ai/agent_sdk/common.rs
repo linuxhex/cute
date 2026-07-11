@@ -80,11 +80,16 @@ pub(super) fn set_ambient_task_context_from_run_id(
 /// If `user_flag` is true, gets the current user's UID.
 /// Otherwise, defaults to team if available, falling back to user.
 pub fn resolve_owner(team_flag: bool, user_flag: bool, ctx: &AppContext) -> anyhow::Result<Owner> {
+    // 删除：UserWorkspaces team_uid 获取已禁用，云端功能已移除
+    // if team_flag {
+    //     let team_id = UserWorkspaces::as_ref(ctx)
+    //         .current_team_uid()
+    //         .ok_or_else(|| anyhow::anyhow!("User is not on a team"))?;
+    //     return Ok(Owner::Team { team_uid: team_id });
+    // }
+    // 改为：team_flag 不支持，返回错误
     if team_flag {
-        let team_id = UserWorkspaces::as_ref(ctx)
-            .current_team_uid()
-            .ok_or_else(|| anyhow::anyhow!("User is not on a team"))?;
-        return Ok(Owner::Team { team_uid: team_id });
+        return Err(anyhow::anyhow!("Team objects not supported in local version"));
     }
 
     if user_flag {
@@ -98,17 +103,19 @@ pub fn resolve_owner(team_flag: bool, user_flag: bool, ctx: &AppContext) -> anyh
         return Ok(Owner::User { user_uid: uuid::Uuid::new_v4() });
     }
 
+    // 删除：UserWorkspaces team_uid 获取已禁用，云端功能已移除
     // Default: try team first, fall back to user
-    if let Some(team_uid) = UserWorkspaces::as_ref(ctx).current_team_uid() {
-        return Ok(Owner::Team { team_uid });
-    }
-
-    log::warn!("Tried to default to creating team object, team could not be found.");
-    let user_id = AuthStateProvider::as_ref(ctx)
-        .get()
-        .user_id()
-        .ok_or_else(|| anyhow::anyhow!("User should be logged in"))?;
-    Ok(Owner::User { user_uid: user_id })
+    // if let Some(team_uid) = UserWorkspaces::as_ref(ctx).current_team_uid() {
+    //     return Ok(Owner::Team { team_uid });
+    // }
+    // 改为：默认返回用户所有者
+    // log::warn!("Tried to default to creating team object, team could not be found.");
+    // let user_id = AuthStateProvider::as_ref(ctx)
+    //     .get()
+    //     .user_id()
+    //     .ok_or_else(|| anyhow::anyhow!("User should be logged in"))?;
+    // Ok(Owner::User { user_uid: user_id })
+    Ok(Owner::User { user_uid: uuid::Uuid::new_v4() })
 }
 
 /// Refresh workspace metadata before executing an operation.
@@ -352,7 +359,8 @@ impl fmt::Display for EnvironmentChoice {
 #[cfg(test)]
 mod tests {
     use super::parse_ambient_task_id;
-use crate::UserWorkspaces;
+    // 删除：UserWorkspaces 导入已禁用，云端功能已移除
+    // use crate::UserWorkspaces;
 
     #[test]
     fn parse_ambient_task_id_accepts_valid_ids() {

@@ -2,6 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 // use alias_bar::{AliasBar, AliasBarEvent}; // Removed: unused cloud feature
+use crate::cloud_stub_types::{AliasBar, AliasBarEvent}; // Added: stub types for alias bar
 use argument_editor::{ArgumentEditorRow, DEFAULT_ARGUMENT_PREFIX};
 use env_var_selector::{EnvVarSelector, EnvVarSelectorEvent};
 use itertools::Itertools;
@@ -443,8 +444,7 @@ impl WorkflowView {
             view_only_content_editor_highlight_model,
             arguments_state: Default::default(),
             arguments_rows: Vec::new(),
-            // COMMENTED: alias_bar module removed
-            // alias_bar,
+            alias_bar: ctx.add_typed_action_view(|ctx| AliasBar::new(workflow_id, ctx)),
             env_vars_selector,
             env_vars_state: Default::default(),
             breadcrumbs: Vec::new(),

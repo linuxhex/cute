@@ -23,6 +23,7 @@ use crate::ai::mcp::TemplatableMCPServerManager;
 use crate::report_if_error;
 use crate::settings::{
     AISettings, AgentModeCodingPermissionsType, AgentModeCommandExecutionPredicate,
+    AiAutonomySettings,
 };
 
 /// Whether or not a command can be auto-executed, along with a detailed reason.

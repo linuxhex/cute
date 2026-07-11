@@ -25,9 +25,11 @@ pub(crate) fn should_use_codebase_indexing(
     surface: CodebaseAutoIndexingSurface,
     ctx: &AppContext,
 ) -> bool {
+    // 删除：UserWorkspaces is_codebase_context_enabled 检查已禁用，云端功能已移除
+    // 改为启用本地代码库上下文
     codebase_indexing_enabled(
         surface,
-        UserWorkspaces::as_ref(ctx).is_codebase_context_enabled(ctx),
+        true, // UserWorkspaces::as_ref(ctx).is_codebase_context_enabled(ctx)
     )
 }
 
@@ -35,9 +37,11 @@ pub(crate) fn should_auto_index_codebase(
     surface: CodebaseAutoIndexingSurface,
     ctx: &AppContext,
 ) -> bool {
+    // 删除：UserWorkspaces is_codebase_context_enabled 检查已禁用，云端功能已移除
+    // 改为启用本地代码库上下文
     codebase_auto_indexing_enabled(
         surface,
-        UserWorkspaces::as_ref(ctx).is_codebase_context_enabled(ctx),
+        true, // UserWorkspaces::as_ref(ctx).is_codebase_context_enabled(ctx)
         *CodeSettings::as_ref(ctx).auto_indexing_enabled,
     )
 }
@@ -79,7 +83,8 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-use crate::UserWorkspaces;
+    // 删除：UserWorkspaces 导入已禁用，云端功能已移除
+    // use crate::UserWorkspaces;
 
     #[test]
     fn local_auto_indexing_requires_full_source_code_embedding_codebase_context_and_auto_indexing()

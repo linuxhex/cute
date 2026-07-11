@@ -101,7 +101,7 @@ pub mod settings {
 
 /// Re-export workflows module (was crate::drive::workflows)
 pub mod workflows {
-    pub use crate::cloud_stub_types::{ArgumentsState, WorkflowModal, WorkflowModalEvent, WorkflowArgSelector, WorkflowArgSelectorEvent, WorkflowArgSelectorStyles, EnumCreationDialog, EnumCreationDialogEvent, EnumData, WorkflowEnumData, GeneratedCommandMetadata, GeneratedCommandMetadataError, ArgumentEditorRowIndex, ArgumentTypeEditor};
+    pub use crate::cloud_stub_types::{ArgumentsState, WorkflowModal, WorkflowModalEvent, WorkflowArgSelector, WorkflowArgSelectorEvent, WorkflowArgSelectorStyles, EnumCreationDialog, EnumCreationDialogEvent, EnumData, WorkflowEnumData, GeneratedCommandMetadata, GeneratedCommandMetadataError, ArgumentEditorRowIndex, ArgumentTypeEditor, AliasArgumentSelector, AliasArgumentSelectorEvent};
 
     /// Re-export arguments submodule
     pub mod arguments {
@@ -1773,6 +1773,94 @@ pub enum SharingDialogEvent {
 #[derive(Clone, Debug)]
 pub struct WorkflowArgSelector {}
 
+/// Minimal stub for AliasArgumentSelector (cloud feature)
+#[derive(Clone, Debug)]
+pub struct AliasArgumentSelector {}
+
+/// Minimal stub for AliasArgumentSelectorEvent (cloud feature)
+#[derive(Clone, Debug)]
+pub enum AliasArgumentSelectorEvent {
+    ValueSet(String),
+    Navigate(cute_editor::editor::NavigationKey),
+}
+
+/// Implement Entity trait for AliasArgumentSelector
+impl cuteui::Entity for AliasArgumentSelector {
+    type Event = AliasArgumentSelectorEvent;
+}
+
+/// Implement View trait for AliasArgumentSelector
+impl cuteui::View for AliasArgumentSelector {
+    fn ui_name() -> &'static str {
+        "AliasArgumentSelector"
+    }
+
+    fn render(&self, _ctx: &AppContext) -> Box<dyn cuteui::Element> {
+        Box::new(cuteui::elements::Empty::new())
+    }
+}
+
+/// Implement new method for AliasArgumentSelector
+impl AliasArgumentSelector {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+/// Minimal stub for AliasBar (cloud feature)
+#[derive(Clone, Debug)]
+pub struct AliasBar {}
+
+/// Minimal stub for AliasBarEvent (cloud feature)
+#[derive(Clone, Debug)]
+pub enum AliasBarEvent {
+    SelectedAliasChanged,
+    AliasesUpdated,
+}
+
+/// Implement Entity trait for AliasBar
+impl cuteui::Entity for AliasBar {
+    type Event = AliasBarEvent;
+}
+
+/// Implement View trait for AliasBar
+impl cuteui::View for AliasBar {
+    fn ui_name() -> &'static str {
+        "AliasBar"
+    }
+
+    fn render(&self, _ctx: &AppContext) -> Box<dyn cuteui::Element> {
+        Box::new(cuteui::elements::Empty::new())
+    }
+}
+
+/// Implement methods for AliasBar
+impl AliasBar {
+    pub fn new(_workflow_id: crate::server::ids::SyncId, _ctx: &mut cuteui::ViewContext<Self>) -> Self {
+        Self {}
+    }
+
+    pub fn set_workflow_id(&mut self, _id: crate::server::ids::SyncId, _ctx: &mut cuteui::ViewContext<Self>) {
+        // Stub implementation
+    }
+
+    pub fn set_current_argument_value(&mut self, _name: &str, _value: String, _ctx: &mut cuteui::ViewContext<Self>) {
+        // Stub implementation
+    }
+
+    pub fn set_current_env_vars(&mut self, _id: crate::server::ids::SyncId, _ctx: &mut cuteui::ViewContext<Self>) {
+        // Stub implementation
+    }
+
+    pub fn save(&mut self, _ctx: &mut cuteui::ViewContext<Self>) -> Result<(), String> {
+        Ok(())
+    }
+
+    pub fn get_all_argument_values(&self) -> Vec<String> {
+        Vec::new()
+    }
+}
+
 /// Implement Entity trait for WorkflowArgSelector
 impl cuteui::Entity for WorkflowArgSelector {
     type Event = WorkflowArgSelectorEvent;
@@ -3257,6 +3345,21 @@ impl SharedSessionStatus {
     pub fn as_keymap_context(&self) -> &'static str {
         "NotShared"
     }
+
+    /// Returns false in stub - cloud sharing is disabled
+    pub fn is_viewer(&self) -> bool {
+        false
+    }
+
+    /// Returns false in stub - cloud sharing is disabled
+    pub fn is_executor(&self) -> bool {
+        false
+    }
+
+    /// Returns false in stub - cloud sharing is disabled
+    pub fn is_finished_viewer(&self) -> bool {
+        false
+    }
 }
 
 // ===== UserProfiles Stub (User Profile Management) =====
@@ -3448,6 +3551,78 @@ impl UserWorkspaces {
             Owner::User { .. } => Space::Personal,
             Owner::Team { team_uid } => Space::Team { team_uid },
         }
+    }
+
+    /// Returns whether voice is enabled.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn is_voice_enabled(&self) -> bool {
+        false
+    }
+
+    /// Returns whether prompt suggestions are toggleable.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn is_prompt_suggestions_toggleable(&self) -> bool {
+        false
+    }
+
+    /// Returns whether code suggestions are toggleable.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn is_code_suggestions_toggleable(&self) -> bool {
+        false
+    }
+
+    /// Returns whether AI autonomy is allowed.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn is_ai_autonomy_allowed(&self) -> bool {
+        false
+    }
+
+    /// Returns the current workspace.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn current_workspace(&self) -> Option<&WorkspaceMetadata> {
+        None
+    }
+
+    /// Returns UGC collection enablement setting.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn get_ugc_collection_enablement_setting(&self) -> crate::settings::AdminEnablementSetting {
+        crate::settings::AdminEnablementSetting::Disabled
+    }
+
+    /// Returns AI autonomy settings.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn ai_autonomy_settings(&self) -> crate::settings::AiAutonomySettings {
+        crate::settings::AiAutonomySettings::default()
+    }
+
+    /// Returns whether custom inference is enabled.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn is_custom_inference_enabled(&self) -> bool {
+        false
+    }
+
+    /// Returns whether next command is enabled.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn is_next_command_enabled(&self) -> bool {
+        false
+    }
+
+    /// Returns whether git operations AI is enabled.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn is_git_operations_ai_enabled(&self) -> bool {
+        false
+    }
+
+    /// Returns agent attribution setting.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn get_agent_attribution_setting(&self) -> crate::settings::AdminEnablementSetting {
+        crate::settings::AdminEnablementSetting::Disabled
+    }
+
+    /// Returns whether BYO API key is enabled.
+    /// COMMENTED: Cloud feature disabled in local version
+    pub fn is_byo_api_key_enabled(&self) -> bool {
+        false
     }
 }
 

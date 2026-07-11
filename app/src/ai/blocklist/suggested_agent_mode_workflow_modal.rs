@@ -64,7 +64,8 @@ pub enum SuggestedAgentModeWorkflowModalEvent {
 
 pub fn init(app: &mut AppContext) {
     use cuteui::keymap::macros::*;
-use crate::UserWorkspaces;
+    // 删除：UserWorkspaces 导入已禁用，云端功能已移除
+    // use crate::UserWorkspaces;
 
     app.register_fixed_bindings([FixedBinding::new(
         "escape",
@@ -85,19 +86,20 @@ impl SuggestedAgentModeWorkflowModal {
     ) {
         let workflow_view = ctx.add_typed_action_view(|ctx| {
             let mut workflow_view = WorkflowView::new_in_suggestion_dialog(ctx);
-            if let Some(owner) = UserWorkspaces::as_ref(ctx)
-                .space_to_owner(crate::cloud_stub_types::Space::Personal, ctx)
-            {
-                workflow_view.open_new_workflow(
-                    Some(workflow_and_id.workflow.name.clone()),
-                    Some(workflow_and_id.workflow.prompt.clone()),
-                    owner,
-                    None,
-                    true,
-                    workflow_and_id.sync_id,
-                    ctx,
-                );
-            }
+            // 删除：UserWorkspaces 的 owner 获取已禁用，云端功能已移除
+            // if let Some(owner) = UserWorkspaces::as_ref(ctx)
+            //     .space_to_owner(crate::cloud_stub_types::Space::Personal, ctx)
+            // {
+            //     workflow_view.open_new_workflow(
+            //         Some(workflow_and_id.workflow.name.clone()),
+            //         Some(workflow_and_id.workflow.prompt.clone()),
+            //         owner,
+            //         None,
+            //         true,
+            //         workflow_and_id.sync_id,
+            //         ctx,
+            //     );
+            // }
             workflow_view
         });
 

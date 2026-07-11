@@ -207,7 +207,8 @@ pub const RICH_CONTENT_SECRET_FIRST_CHAR_POSITION_ID: &str =
 
 pub fn init(app: &mut AppContext) {
     use cuteui::keymap::macros::*;
-use crate::UserWorkspaces;
+    // 删除：UserWorkspaces 导入已禁用，云端功能已移除
+    // use crate::UserWorkspaces;
 
     app.register_fixed_bindings([
         FixedBinding::new(
@@ -2771,9 +2772,10 @@ impl AIBlock {
         };
 
         // Only show the speedbump once, update the setting afterwards.
+        // 删除：UserWorkspaces 检查已禁用，云端功能已移除
         let should_show_code_suggestion_speedbump =
             self.model.request_type(ctx).is_passive_code_diff()
-                && UserWorkspaces::as_ref(ctx).is_code_suggestions_toggleable()
+                // && UserWorkspaces::as_ref(ctx).is_code_suggestions_toggleable()
                 && AISettings::as_ref(ctx).show_code_suggestion_speedbump(ctx);
         if should_show_code_suggestion_speedbump {
             AISettings::handle(ctx).update(ctx, |settings, ctx| {
@@ -2926,7 +2928,7 @@ impl AIBlock {
                 CodeDiffViewEvent::OpenSkill { reference, path } => {
                     #[cfg(feature = "local_fs")]
                     {
-                        ctx.emit(AIBlockEvent::OpenCodeInCute {
+                        ctx.emit(AIBlockEvent::OpenCodeInWarp {
                             source: CodeSource::Skill {
                                 reference: reference.clone(),
                                 location: path.clone(),
@@ -2944,7 +2946,7 @@ impl AIBlock {
                 CodeDiffViewEvent::OpenMCPConfig { path, .. } => {
                     #[cfg(feature = "local_fs")]
                     {
-                        ctx.emit(AIBlockEvent::OpenCodeInCute {
+                        ctx.emit(AIBlockEvent::OpenCodeInWarp {
                             source: CodeSource::Link {
                                 path: path.clone(),
                                 range_start: None,

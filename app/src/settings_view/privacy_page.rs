@@ -1684,17 +1684,21 @@ impl SettingsWidget for CloudConversationStorageWidget {
     ) -> Box<dyn Element> {
         let ui_builder = appearance.ui_builder();
         let privacy_settings = PrivacySettings::as_ref(app);
-        let org_setting =
-            UserWorkspaces::as_ref(app).get_cloud_conversation_storage_enablement_setting();
+        // 删除：UserWorkspaces 云端设置获取已禁用，云端功能已移除
+        // let org_setting =
+        //     UserWorkspaces::as_ref(app).get_cloud_conversation_storage_enablement_setting();
 
-        let (toggle_state, is_checked) = match org_setting {
-            AdminEnablementSetting::Enable => (ToggleState::Disabled, true),
-            AdminEnablementSetting::Disable => (ToggleState::Disabled, false),
-            AdminEnablementSetting::RespectUserSetting => (
-                ToggleState::Enabled,
-                privacy_settings.is_cloud_conversation_storage_enabled,
-            ),
-        };
+        // 删除：AdminEnablementSetting match 已禁用，云端功能已移除
+        // 直接设置为禁用状态
+        let (toggle_state, is_checked) = (ToggleState::Disabled, false);
+        // let (toggle_state, is_checked) = match org_setting {
+        //     AdminEnablementSetting::Enable => (ToggleState::Disabled, true),
+        //     AdminEnablementSetting::Disable => (ToggleState::Disabled, false),
+        //     AdminEnablementSetting::RespectUserSetting => (
+        //         ToggleState::Enabled,
+        //         privacy_settings.is_cloud_conversation_storage_enabled,
+        //     ),
+        // };
 
         let switch = ui_builder
             .switch(self.switch_state.clone())

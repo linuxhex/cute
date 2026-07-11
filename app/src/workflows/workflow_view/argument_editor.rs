@@ -25,6 +25,7 @@ use crate::cloud_stub_types::workflows::workflow_arg_selector::{
     WorkflowArgSelector, WorkflowArgSelectorStyles,
 };
 use crate::cloud_stub_types::workflows::workflow_arg_type_helpers::{self, ArgumentTypeEditor};
+use crate::cloud_stub_types::{AliasArgumentSelector, AliasArgumentSelectorEvent}; // Added: stub types for alias argument selector
 use crate::editor::{
     EditOrigin, EditorView, Event as EditorEvent, InteractionState,
     PlainTextEditorViewAction as EditorAction,

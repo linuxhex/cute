@@ -2159,150 +2159,24 @@ fn upsert_workflows(
     conn: &mut SqliteConnection,
     cloud_workflows: Vec<CloudWorkflow>,
 ) -> Result<(), Error> {
-    use schema::workflows::dsl::*;
-    conn.transaction::<(), Error, _>(|conn| {
-        // todo: wrap in an arc to avoid unnecessary cloning.
-        for cloud_workflow in cloud_workflows {
-            let workflow_id = cloud_workflow.id;
-            if let Ok(serialized_workflow) = serde_json::to_string(&cloud_workflow.model().data) {
-                let serialized_workflow_clone = serialized_workflow.clone();
-                upsert_cloud_object(
-                    conn,
-                    ObjectType::Workflow,
-                    workflow_id,
-                    cloud_workflow.metadata,
-                    cloud_workflow.permissions,
-                    Box::new(move |conn| {
-                        let workflow = model::NewWorkflow {
-                            data: serialized_workflow.clone(),
-                        };
-                        diesel::insert_into(schema::workflows::dsl::workflows)
-                            .values(workflow)
-                            .execute(conn)?;
-                        let workflow_id: i32 = schema::workflows::dsl::workflows
-                            .select(schema::workflows::columns::id)
-                            .order(schema::workflows::columns::id.desc())
-                            .first(conn)?;
-                        Ok(workflow_id)
-                    }),
-                    Box::new(move |conn, workflow_id| {
-                        diesel::update(
-                            workflows.filter(schema::workflows::dsl::id.eq(workflow_id)),
-                        )
-                        .set((data.eq(serialized_workflow_clone),))
-                        .execute(conn)?;
-                        Ok(())
-                    }),
-                )?
-            }
-        }
-        Ok(())
-    })
+    // 删除：云端功能已禁用
+    Ok(())
 }
 
 fn upsert_notebooks(
     conn: &mut SqliteConnection,
     cloud_notebooks: Vec<CloudNotebook>,
 ) -> Result<(), Error> {
-    use schema::notebooks::dsl::*;
-    conn.transaction::<(), Error, _>(|conn| {
-        for cloud_notebook in cloud_notebooks {
-            // todo: wrap in an arc to avoid unnecessary cloning.
-            let notebook_clone = cloud_notebook.clone();
-            let title_clone = cloud_notebook.model().title.clone();
-            let data_clone = cloud_notebook.model().data.clone();
-            let ai_document_id_clone = cloud_notebook
-                .model()
-                .ai_document_id
-                .as_ref()
-                .map(|doc_id| doc_id.to_string());
-            upsert_cloud_object(
-                conn,
-                ObjectType::Notebook,
-                cloud_notebook.id,
-                cloud_notebook.metadata,
-                cloud_notebook.permissions,
-                Box::new(move |conn| {
-                    let new_notebook = NewNotebook {
-                        title: Some(title_clone),
-                        data: Some(data_clone),
-                        ai_document_id: ai_document_id_clone,
-                    };
-                    diesel::insert_into(schema::notebooks::dsl::notebooks)
-                        .values(new_notebook)
-                        .execute(conn)?;
-                    let notebook_id: i32 = schema::notebooks::dsl::notebooks
-                        .select(schema::notebooks::columns::id)
-                        .order(schema::notebooks::columns::id.desc())
-                        .first(conn)?;
-                    Ok(notebook_id)
-                }),
-                Box::new(move |conn, notebook_id| {
-                    diesel::update(notebooks.filter(schema::notebooks::dsl::id.eq(notebook_id)))
-                        .set((
-                            title.eq(notebook_clone.model().title.clone()),
-                            data.eq(notebook_clone.model().data.clone()),
-                            ai_document_id.eq(notebook_clone
-                                .model()
-                                .ai_document_id
-                                .as_ref()
-                                .map(|doc_id| doc_id.to_string())),
-                        ))
-                        .execute(conn)?;
-                    Ok(())
-                }),
-            )?
-        }
-        Ok(())
-    })
+    // 删除：云端功能已禁用
+    Ok(())
 }
 
 fn upsert_folders(
     conn: &mut SqliteConnection,
     cloud_folders: Vec<CloudFolder>,
 ) -> Result<(), Error> {
-    use schema::folders::dsl::*;
-    conn.transaction::<(), Error, _>(|conn| {
-        for cloud_folder in cloud_folders {
-            let folder_clone = cloud_folder.clone();
-            let folder_name = cloud_folder.model().name.clone();
-            let folder_is_open = cloud_folder.model().is_open;
-            let folder_is_cute_pack = cloud_folder.model().is_cute_pack;
-            upsert_cloud_object(
-                conn,
-                ObjectType::Folder,
-                cloud_folder.id,
-                cloud_folder.metadata,
-                cloud_folder.permissions,
-                Box::new(move |conn| {
-                    let new_folder = NewFolder {
-                        name: folder_name,
-                        is_open: folder_is_open,
-                        is_cute_pack: folder_is_cute_pack,
-                    };
-                    diesel::insert_into(schema::folders::dsl::folders)
-                        .values(new_folder)
-                        .execute(conn)?;
-                    let folder_id: i32 = schema::folders::dsl::folders
-                        .select(schema::folders::columns::id)
-                        .order(schema::folders::columns::id.desc())
-                        .first(conn)?;
-                    Ok(folder_id)
-                }),
-                Box::new(move |conn, folder_id| {
-                    diesel::update(folders.filter(schema::folders::dsl::id.eq(folder_id)))
-                        .set((
-                            name.eq(folder_clone.model().name.clone()),
-                            is_open.eq(folder_clone.model().is_open),
-                            is_warp_pack.eq(folder_clone.model().is_cute_pack),
-                        ))
-                        .execute(conn)?;
-                    Ok(())
-                }),
-            )?
-        }
-        Ok(())
-    })
+    // 删除：云端功能已禁用
+    Ok(())
 }
 
 /// Parse conversation IDs from JSON string.
