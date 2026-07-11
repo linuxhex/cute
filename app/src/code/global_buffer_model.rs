@@ -996,7 +996,10 @@ impl GlobalBufferModel {
             LocalOrRemotePath::Local(_) => {
                 unimplemented!("Local buffers require the local_fs feature")
             }
-            LocalOrRemotePath::Remote(remote_path) => self.open_remote_buffer(remote_path, ctx),
+            // REMOVED: Cloud feature - remote buffers disabled in local version
+            LocalOrRemotePath::Remote(_) => {
+                None // Return None for remote buffers in local version
+            }
         }
     }
 

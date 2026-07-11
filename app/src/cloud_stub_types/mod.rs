@@ -194,8 +194,22 @@ pub use models::{
     CloudFolder, CloudFolderModel, CloudNotebook, CloudNotebookModel, NotebookId,
 };
 
-// Re-export SharedSessionSource and related types
-pub use crate::terminal::model::terminal_model::{SharedSessionSource, SessionSourceType};
+// REMOVED: SharedSessionSource and related types - cloud feature disabled in local version
+// pub use crate::terminal::model::terminal_model::{SharedSessionSource, SessionSourceType};
+
+/// Minimal stub for SharedSessionSource
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum SharedSessionSource {
+    AmbientAgent { task_id: Option<String> },
+    CommandPalette { command_id: String },
+    Workflow { workflow_id: String },
+}
+
+impl SharedSessionSource {
+    pub fn ambient_agent(task_id: Option<String>) -> Self {
+        Self::AmbientAgent { task_id }
+    }
+}
 
 // Define missing type aliases
 pub type OpenWarpDriveObjectSettings = OpenCuteDriveObjectSettings;

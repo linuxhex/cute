@@ -444,9 +444,10 @@ impl ServerApi {
         iap_state: Option<Arc<IapState>>,
     ) -> Self {
         let mut client = http_client::Client::new();
-        if let Some(state) = iap_state.as_ref() {
-            client.set_iap_token_provider(state.clone());
-        }
+        // REMOVED: Cloud feature - IAP token provider disabled in local version
+        // if let Some(state) = iap_state.as_ref() {
+        //     client.set_iap_token_provider(state.clone());
+        // }
         Self::new_with_parts(
             Arc::new(client),
             auth_state,

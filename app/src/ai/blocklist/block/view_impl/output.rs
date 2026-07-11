@@ -272,8 +272,9 @@ pub(super) fn render(props: Props, app: &AppContext) -> Box<dyn Element> {
                 let mut image_section_index = 0;
                 let mut action_index = 0;
 
+                // REMOVED: Cloud feature - OpenCodeInCute disabled in local version
                 fn open_code_block_action(source: CodeSource) -> AIBlockAction {
-                    AIBlockAction::OpenCodeInCute { source }
+                    AIBlockAction::OpenCodeInLocalEditor { source }
                 }
 
                 fn copy_code_action(snippet: String) -> AIBlockAction {

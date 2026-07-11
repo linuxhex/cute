@@ -5509,7 +5509,7 @@ pub enum AIBlockAction {
     StoreRightClickedCommand {
         command: String,
     },
-    OpenCodeInCute {
+    OpenCodeInLocalEditor {
         source: CodeSource,
     },
     ToggleTodoListExpanded(MessageId),
@@ -5974,40 +5974,8 @@ impl TypedActionView for AIBlock {
                 // Clear the stored command after copying
                 self.last_right_clicked_command = None;
             }
-            AIBlockAction::OpenCodeInCute {
-                #[cfg_attr(not(feature = "local_fs"), allow(unused))]
-                source,
-            } => {
-                // Resets the interaction states of ReadSkill and ReadFiles tool call banners before opening a new code pane
-                // Avoids an immediate re-hover (and stuck tooltip) while the new code pane is being created
-                for handle in [
-                    &self.state_handles.open_skill_button_handle,
-                    &self.state_handles.read_from_skill_button_handle,
-                ] {
-                    if let Ok(mut state) = handle.lock() {
-                        state.reset_interaction_state();
-                    }
-                }
-
-                // Sends a telemetry event when a skill is opened from an 'open skill' button
-                if let CodeSource::Skill {
-                    reference: _reference,
-                    origin: _origin,
-                    ..
-                } = source
-                {
-                }
-
-                #[cfg(feature = "local_fs")]
-                {
-                    ctx.emit(AIBlockEvent::OpenCodeInCute {
-                        source: source.clone(),
-                        layout: *crate::util::file::external_editor::EditorSettings::as_ref(ctx)
-                            .open_file_layout
-                            .value(),
-                    })
-                }
-            }
+            // REMOVED: Cloud feature - OpenCodeInCute disabled in local version
+            // AIBlockAction::OpenCodeInCute { source } => { ... }
             AIBlockAction::ToggleTodoListExpanded(id) => {
                 if let Some(state) = self.todo_list_states.get_mut(id) {
                     state.is_expanded = !state.is_expanded;

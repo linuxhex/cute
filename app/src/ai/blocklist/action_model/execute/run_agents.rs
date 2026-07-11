@@ -588,12 +588,8 @@ fn default_auth_secret_name_for_harness(
     if harness == Harness::Oz {
         return None;
     }
-    CloudAgentSettings::as_ref(ctx)
-        .last_selected_auth_secret
-        .value()
-        .get(harness.config_name())
-        .cloned()
-        .filter(|name| !name.trim().is_empty())
+    // REMOVED: Cloud feature - last_selected_auth_secret field access disabled in local version
+    None
 }
 
 fn populate_default_auth_secret_for_execution(

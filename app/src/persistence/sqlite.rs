@@ -587,13 +587,13 @@ fn handle_model_event(event: ModelEvent, connection: &mut SqliteConnection) -> a
         ModelEvent::UpsertFolders(folders) => {
             upsert_folders(connection, folders).context("error saving folders")
         }
-        ModelEvent::UpsertGenericStringObject { object } => {
-            upsert_generic_string_objects(connection, vec![object])
-                .context("error upserting generic object")
+        // REMOVED: Cloud feature - UpsertGenericStringObject disabled in local version
+        ModelEvent::UpsertGenericStringObject { object: _ } => {
+            Ok(()) // No-op in local version
         }
-        ModelEvent::UpsertGenericStringObjects(objects) => {
-            upsert_generic_string_objects(connection, objects)
-                .context("error upserting generic objects")
+        // REMOVED: Cloud feature - UpsertGenericStringObjects disabled in local version
+        ModelEvent::UpsertGenericStringObjects(objects: _) => {
+            Ok(()) // No-op in local version
         }
         ModelEvent::UpsertNotebook { notebook } => {
             upsert_notebooks(connection, vec![notebook]).context("error upserting notebook")
@@ -642,15 +642,17 @@ fn handle_model_event(event: ModelEvent, connection: &mut SqliteConnection) -> a
         ModelEvent::DeleteProject { path } => {
             delete_project(connection, &path).context("error deleting project")
         }
-        ModelEvent::UpsertWorkspace { workspace } => {
-            save_workspace(connection, *workspace).context("error upserting workspace")
+        // REMOVED: Cloud feature - UpsertWorkspace disabled in local version
+        ModelEvent::UpsertWorkspace { workspace: _ } => {
+            Ok(()) // No-op in local version
         }
-        ModelEvent::UpsertWorkspaces { workspaces } => {
-            save_workspaces(connection, workspaces).context("error upserting workspaces")
+        // REMOVED: Cloud feature - UpsertWorkspaces disabled in local version
+        ModelEvent::UpsertWorkspaces { workspaces: _ } => {
+            Ok(()) // No-op in local version
         }
-        ModelEvent::SetCurrentWorkspace { workspace_uid } => {
-            set_current_workspace(connection, workspace_uid)
-                .context("error setting current workspace")
+        // REMOVED: Cloud feature - SetCurrentWorkspace disabled in local version
+        ModelEvent::SetCurrentWorkspace { workspace_uid: _ } => {
+            Ok(()) // No-op in local version
         }
         ModelEvent::UpdateObjectMetadata { id, metadata } => {
             // 云端对象元数据更新功能已禁用
@@ -664,11 +666,13 @@ fn handle_model_event(event: ModelEvent, connection: &mut SqliteConnection) -> a
         ModelEvent::UpdateFinishedCommand { metadata } => {
             update_finished_command(connection, metadata).context("error updating finished command")
         }
-        ModelEvent::UpsertUserProfiles { profiles } => {
-            upsert_user_profiles(connection, profiles).context("error updating user profiles")
+        // REMOVED: Cloud feature - UpsertUserProfiles disabled in local version
+        ModelEvent::UpsertUserProfiles { profiles: _ } => {
+            Ok(()) // No-op in local version
         }
+        // REMOVED: Cloud feature - ClearUserProfiles disabled in local version
         ModelEvent::ClearUserProfiles => {
-            clear_user_profiles(connection).context("error clearing user profiles")
+            Ok(()) // No-op in local version
         }
         ModelEvent::RecordTimeOfNextRefresh { timestamp } => {
             record_time_of_next_refresh(connection, timestamp)

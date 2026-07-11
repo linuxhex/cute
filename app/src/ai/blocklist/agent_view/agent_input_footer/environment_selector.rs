@@ -382,19 +382,15 @@ impl EnvironmentSelector {
     }
 
     /// Retrieves the last selected environment ID from settings.
-    fn get_saved_environment_from_settings(&self, ctx: &ViewContext<Self>) -> Option<SyncId> {
-        *CloudAgentSettings::as_ref(ctx)
-            .last_selected_environment_id
-            .value()
+    /// REMOVED: Cloud feature - last_selected_environment_id disabled in local version
+    fn get_saved_environment_from_settings(&self, _ctx: &ViewContext<Self>) -> Option<SyncId> {
+        None
     }
 
     /// Saves the selected environment ID to settings.
-    fn save_selected_environment_to_settings(&self, env_id: SyncId, ctx: &mut ViewContext<Self>) {
-        CloudAgentSettings::handle(ctx).update(ctx, |settings, ctx| {
-            report_if_error!(settings
-                .last_selected_environment_id
-                .set_value(Some(env_id), ctx));
-        });
+    /// REMOVED: Cloud feature - last_selected_environment_id disabled in local version
+    fn save_selected_environment_to_settings(&self, _env_id: SyncId, _ctx: &mut ViewContext<Self>) {
+        // No-op in local version
     }
 
     fn refresh_menu(&mut self, ctx: &mut ViewContext<Self>) {
