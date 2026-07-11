@@ -988,10 +988,10 @@ impl GlobalBufferModel {
         &mut self,
         location: LocalOrRemotePath,
         ctx: &mut ModelContext<Self>,
-    ) -> BufferState {
+    ) -> Option<BufferState> {
         match location {
             #[cfg(feature = "local_fs")]
-            LocalOrRemotePath::Local(path) => self.open_local(path, false, ctx),
+            LocalOrRemotePath::Local(path) => Some(self.open_local(path, false, ctx)),
             #[cfg(not(feature = "local_fs"))]
             LocalOrRemotePath::Local(_) => {
                 unimplemented!("Local buffers require the local_fs feature")

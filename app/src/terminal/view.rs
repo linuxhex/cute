@@ -10023,7 +10023,7 @@ impl TerminalView {
         }
 
         // COMMENTED: UserWorkspaces disabled in local version - no remote session regex list
-        let remote_session_regex_list = Vec::new(); // UserWorkspaces::as_ref(app).get_remote_session_regex_list();
+        let remote_session_regex_list: Vec<regex::Regex> = Vec::new(); // UserWorkspaces::as_ref(app).get_remote_session_regex_list();
 
         // First check if the command matches any of the regexes in the list.
         if remote_session_regex_list

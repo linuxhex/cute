@@ -1789,11 +1789,14 @@ fn save_workspace(conn: &mut SqliteConnection, workspace: WorkspaceMetadata) -> 
         .set(is_selected.eq(false))
         .execute(conn)?;
 
+    // Clone uid to avoid move errors later
+    let workspace_uid = workspace.uid.clone();
+
     // Save new workspace and set it as current workspace
     use schema::workspaces::dsl::*;
     let new_workspace = NewWorkspace {
         name: workspace.name,
-        server_uid: workspace.uid.into(),
+        server_uid: workspace_uid.clone().into(),
         is_selected: true,
     };
 
@@ -1811,7 +1814,7 @@ fn save_workspace(conn: &mut SqliteConnection, workspace: WorkspaceMetadata) -> 
         use schema::workspace_teams::dsl::*;
         let new_team = NewTeam {
             name: team.name,
-            server_uid: team.uid.into(),
+            server_uid: team.uid.clone().into(),
             billing_metadata_json: serde_json::to_string(&team.billing_metadata).ok(),
         };
         diesel::insert_into(teams)
@@ -1823,7 +1826,7 @@ fn save_workspace(conn: &mut SqliteConnection, workspace: WorkspaceMetadata) -> 
             .execute(conn)?;
 
         let team_db_id: i32 = schema::teams::dsl::teams
-            .filter(schema::teams::dsl::server_uid.eq::<String>(team.uid.into()))
+            .filter(schema::teams::dsl::server_uid.eq::<String>(team.uid.clone().into()))
             .select(schema::teams::dsl::id)
             .first(conn)?;
 
@@ -1846,8 +1849,8 @@ fn save_workspace(conn: &mut SqliteConnection, workspace: WorkspaceMetadata) -> 
         }
 
         let new_workspace_team = NewWorkspaceTeam {
-            workspace_server_uid: workspace.uid.into(),
-            team_server_uid: team.uid.into(),
+            workspace_server_uid: workspace_uid.clone().into(),
+            team_server_uid: team.uid.clone().into(),
         };
         diesel::insert_into(workspace_teams)
             .values(&new_workspace_team)
@@ -1889,12 +1892,15 @@ fn save_workspaces(
     let new_workspace_values: Vec<NewWorkspace> = workspaces_to_insert
         .clone()
         .into_iter()
-        .map(|workspace| NewWorkspace {
-            server_uid: workspace.uid.into(),
-            name: workspace.name,
-            is_selected: current_workspace_uid
-                .map(|current_uid| workspace.uid == current_uid)
-                .unwrap_or(false),
+        .map(|workspace| {
+            let workspace_uid = workspace.uid.clone();
+            NewWorkspace {
+                server_uid: workspace_uid.clone().into(),
+                name: workspace.name,
+                is_selected: current_workspace_uid.clone()
+                    .map(|current_uid| workspace_uid == current_uid)
+                    .unwrap_or(false),
+            }
         })
         .collect();
     diesel::insert_or_ignore_into(workspaces)
@@ -1937,11 +1943,12 @@ fn save_workspaces(
         .clone()
         .into_iter()
         .flat_map(|workspace| {
+            let workspace_uid = workspace.uid.clone();
             workspace
                 .teams
                 .into_iter()
                 .map(|team| NewWorkspaceTeam {
-                    workspace_server_uid: workspace.uid.into(),
+                    workspace_server_uid: workspace_uid.clone().into(),
                     team_server_uid: team.uid.into(),
                 })
                 .collect::<Vec<NewWorkspaceTeam>>()
@@ -2004,7 +2011,7 @@ fn save_workspaces(
             // the first workspace as the current workspace.
             if let Some(first_workspace) = workspaces_to_insert.first() {
                 diesel::update(workspaces.filter(
-                    schema::workspaces::dsl::server_uid.eq::<String>(first_workspace.uid.into()),
+                    schema::workspaces::dsl::server_uid.eq::<String>(first_workspace.uid.clone().into()),
                 ))
                 .set(is_selected.eq(true))
                 .execute(conn)?;
@@ -2637,7 +2644,7 @@ fn read_sqlite_data(
 
     // Cloud objects removed for local version - empty collections
     // COMMENTED: Cloud feature disabled - CloudObjectStub removed
-    let cloud_objects: Vec<crate::cloud_stub_types::models::ServerCloudObject> = Vec::new();
+    let cloud_objects: Vec<Box<dyn crate::cloud_stub_types::CloudObject>> = Vec::new();
 
     // COMMENTED: Cloud teams feature disabled in local version
     let db_teams: Vec<model::Team> = Vec::new(); // schema::teams::dsl::teams.load(conn)?;
@@ -2658,7 +2665,7 @@ fn read_sqlite_data(
         .map(PersistedCommand::from)
         .collect();
 
-    let user_profiles = schema::user_profiles::dsl::user_profiles
+    let user_profiles: Vec<crate::cloud_stub_types::UserProfile> = schema::user_profiles::dsl::user_profiles
         .load_iter::<model::UserProfile, DefaultLoadingMode>(conn)?
         .filter_map(|user_profile| user_profile.ok())
         // COMMENTED: Cloud feature disabled - user_profile_from_persistence removed

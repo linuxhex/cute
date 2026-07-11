@@ -441,9 +441,10 @@ impl AIRequestUsageModel {
 
     pub fn total_workspace_bonus_credits_remaining(&self, uid: WorkspaceUid) -> i32 {
         let now = Utc::now();
+        let uid_ref = &uid;  // Use reference instead of moving uid
         self.bonus_grants
             .iter()
-            .filter(|grant| grant.scope == BonusGrantScope::Workspace(uid))
+            .filter(|grant| grant.scope == BonusGrantScope::Workspace(uid_ref.clone()))
             .filter(|grant| grant.expiration.is_none_or(|exp| now < exp))
             .map(|grant| grant.request_credits_remaining)
             .sum()

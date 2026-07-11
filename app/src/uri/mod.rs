@@ -111,28 +111,10 @@ impl UriHost {
         // Handle host
         match self {
             // COMMENTED: Team URI handling disabled for local version
-            // UriHost::Team => {
-            //     match url.path_segments().into_iter().flatten().last() {
-            //         // If the last segment of the URL is "settings", open the team settings page.
-            //         Some("settings") => {
-            //             open_window_with_action(
-            //                 primary_window_id,
-            //                 "root_view:open_team_settings_page",
-            //                 ctx,
-            //             );
-            //         }
-            //         // Otherwise default to previous behavior.
-            //         _ => {
-            //             // TODO: Parse URL to ensure the user is logged into the right account
-            //             // Shows the user the settings view of their newly joined team within the app.
-            //             open_window_with_action(
-            //                 primary_window_id,
-            //                 "root_view:handle_team_intent_link_action",
-            //                 ctx,
-            //             );
-            //         }
-            //     };
-            // }
+            UriHost::Team => {
+                // Team features disabled in local version
+                log::warn!("Team URI handling not available in local version: {}", url);
+            }
             UriHost::Action => {
                 match Action::parse(url) {
                     Ok(action) => action.handle(primary_window_id, url, ctx),
@@ -203,76 +185,10 @@ impl UriHost {
                 }
             }
             // COMMENTED: Drive URI handling disabled for local version
-            // UriHost::Drive => {
-            //     // We expect the uri to have the ID of the object we are trying to open and the object_type.
-            //     // e.g. warp://drive/{object_type}?id={UID}
-            //     // For folder links, we expect an additional query parameter primary_object_id which refers to the id object
-            //     // that should be opened
-            //     // When the user is directed here via the request access flow, we expect an additional query parameter invitee_email
-            //     // If this parameter is present, we will open the sharing dialog with the email filled in.
-            //     let object_type = url
-            //         .path_segments()
-            //         .into_iter()
-            //         .flatten()
-            //         .last()
-            //         .and_then(|object_type| ObjectType::from_str(object_type).ok());
-            //
-            //     let query_string: HashMap<_, _> = url.query_pairs().collect();
-            //     let object_server_id: Option<ServerId> =
-            //         query_string.get("id").map(ServerId::from_string_lossy);
-            //
-            //     let focused_folder_id: Option<ServerId> = query_string
-            //         .get("focused_folder_id")
-            //         .map(ServerId::from_string_lossy);
-            //
-            //     // COMMENTED: Team invitation - invitee_email query param
-            //     // let invitee_email: Option<String> =
-            //     //     query_string.get("invitee_email").map(|s| s.to_string());
-            //
-            //     if let Some((object_type, server_id)) = object_type.zip(object_server_id) {
-            //         let primary_window_and_view = primary_window_id.and_then(|window_id| {
-            //             ctx.root_view_id(window_id)
-            //                 .map(|view_id| (window_id, view_id))
-            //         });
-            //         let args = OpenWarpDriveObjectArgs {
-            //             object_type,
-            //             server_id,
-            //             settings: OpenWarpDriveObjectSettings {
-            //                 open_mode: Default::default(),
-            //                 focus_pane: false,
-            //                 focused_folder_id,
-            //                 // COMMENTED: Team invitation - invitee_email in settings
-            //                 // invitee_email,
-            //                 invitee_email: None, // Simplified: always None for local version
-            //             },
-            //         };
-            //         // If there's an existing window, open the object in that window, otherwise open a new window
-            //         if let Some((primary_window_id, root_view_id)) = primary_window_and_view {
-            //             // `args` may contain user-identifiable fields
-            //             // (e.g. `invitee_email`), so avoid writing the full
-            //             // debug representation to `warp.log` on non-dogfood
-            //             // release channels.
-            //             safe_info!(
-            //                 safe: (
-            //                     "Opening drive object in existing window: object_type={:?} server_id={}",
-            //                     args.object_type, args.server_id,
-            //                 ),
-            //                 full: ("Opening drive object in existing window: {args:?}")
-            //             );
-            //             ctx.dispatch_action(
-            //                 primary_window_id,
-            //                 &[root_view_id],
-            //                 "root_view:open_drive_object_existing_window",
-            //                 &args,
-            //                 log::Level::Info,
-            //             );
-            //         } else {
-            //             ctx.dispatch_global_action("root_view:open_drive_object_new_window", &args)
-            //         }
-            //     } else {
-            //         log::warn!("Failed to open drive object with uri={url}");
-            //     }
-            // }
+            UriHost::Drive => {
+                // Drive features disabled in local version
+                log::warn!("Drive URI handling not available in local version: {}", url);
+            }
             UriHost::Settings => {
                 // We support opening different settings pages through URI:
                 // - warp://settings/teams?invite={email} - opens team settings with invite modal

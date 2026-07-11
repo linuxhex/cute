@@ -123,6 +123,8 @@ impl SessionContext {
         match &self.session_type {
             // CutefiedRemote removed - cloud sessions disabled
             Some(SessionType::Local) | None => SkillPathOrigin::Local,
+            // WarpifiedRemote disabled in local version
+            Some(SessionType::WarpifiedRemote { .. }) => SkillPathOrigin::Local,
         }
     }
 
@@ -2810,6 +2812,23 @@ impl BlocklistAIController {
             }
             // Simplified: Local version has no quota limits, skip QuotaLimit handling
             // QuotaLimit case removed - local version has unlimited usage
+            Some(cute_multi_agent_api::response_event::stream_finished::Reason::QuotaLimit(_)) => {
+                // Local version has unlimited usage, QuotaLimit should not occur
+                log::warn!("QuotaLimit received in local version (unexpected)");
+                history_model.update(ctx, |history_model, ctx| {
+                    history_model.mark_response_stream_completed_with_error(
+                        RenderableAIError::Other {
+                            error_message: "Usage limit reached (unexpected in local version)".to_string(),
+                            will_attempt_resume: false,
+                            waiting_for_network: false,
+                        },
+                        stream_id,
+                        conversation_id,
+                        self.terminal_view_id,
+                        ctx,
+                    );
+                });
+            }
             Some(cute_multi_agent_api::response_event::stream_finished::Reason::LlmUnavailable(_)) => {
                 let error_message = "The LLM is currently unavailable.";
                 history_model.update(ctx, |history_model, ctx| {

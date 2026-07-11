@@ -600,10 +600,8 @@ impl WorkflowsMoreInfoView {
                         .build()
                         .on_click(|ctx, _, _| {
                             // Create envvars in personal drive for max extensibility (can be moved
-                            // to any team/workspace)
-                            ctx.dispatch_typed_action(
-                                WorkspaceAction::CreatePersonalEnvVarCollection,
-                            )
+                            // REMOVED: CreatePersonalEnvVarCollection - cloud feature disabled
+                        // ctx.dispatch_typed_action(WorkspaceAction::CreatePersonalEnvVarCollection)
                         })
                         .finish(),
                 )

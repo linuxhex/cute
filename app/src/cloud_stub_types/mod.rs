@@ -2499,6 +2499,7 @@ impl SessionSourceType {
             SessionSourceType::AmbientAgent { task_id } => task_id.as_deref(),
             SessionSourceType::CommandPalette { .. } => None,
             SessionSourceType::Workflow { .. } => None,
+            SessionSourceType::User => None, // User-initiated session has no task ID
         }
     }
 }
@@ -2688,134 +2689,9 @@ impl From<FolderId> for crate::server::ids::SyncId {
 // ObjectType and GenericStringObjectFormat are already imported from cute_server_client::cloud_object
 // See line 185 for re-export: pub use cute_server_client::cloud_object::*;
 
-/// Minimal stub for CloudObjectMetadata
-#[derive(Clone, Debug, Default)]
-pub struct CloudObjectMetadata {
-    pub revision: Option<Revision>,
-    pub metadata_last_updated_ts: Option<cute_graphql::scalars::time::ServerTimestamp>,
-    pub current_editor_uid: Option<String>,
-    pub pending_changes_statuses: CloudObjectStatuses,
-    pub trashed_ts: Option<cute_graphql::scalars::time::ServerTimestamp>,
-    pub folder_id: Option<crate::server::ids::SyncId>,
-    pub is_welcome_object: bool,
-    pub last_editor_uid: Option<String>,
-    pub creator_uid: Option<String>,
-    pub last_task_run_ts: Option<cute_graphql::scalars::time::ServerTimestamp>,
-}
-
-impl CloudObjectMetadata {
-    pub fn has_pending_content_changes(&self) -> bool {
-        !matches!(
-            self.pending_changes_statuses.content_sync_status,
-            CloudObjectSyncStatus::NoLocalChanges | CloudObjectSyncStatus::InConflict
-        )
-    }
-
-    pub fn is_errored(&self) -> bool {
-        matches!(
-            self.pending_changes_statuses.content_sync_status,
-            CloudObjectSyncStatus::Errored
-        )
-    }
-
-    pub fn has_pending_online_only_change(&self) -> bool {
-        false
-    }
-
-    pub fn has_online_only_content(&self) -> bool {
-        false
-    }
-}
-
-/// Minimal stub for CloudObjectStatuses
-#[derive(Clone, Debug, Default)]
-pub struct CloudObjectStatuses {
-    pub content_sync_status: CloudObjectSyncStatus,
-    pub has_pending_permissions_change: bool,
-    pub has_pending_metadata_change: bool,
-    pub pending_untrash: bool,
-    pub pending_delete: bool,
-}
-
-/// Minimal stub for CloudObjectPermissions
-#[derive(Clone, Debug, Default)]
-pub struct CloudObjectPermissions {
-    pub owner: Owner,
-    pub permissions_last_updated_ts: Option<cute_graphql::scalars::time::ServerTimestamp>,
-    pub anyone_with_link: Option<CloudLinkSharing>,
-    pub guests: Vec<CloudObjectGuest>,
-}
-
-/// Minimal stub for CloudLinkSharing
-#[derive(Clone, Debug, PartialEq, Default)]
-pub struct CloudLinkSharing {
-    pub access_level: SharingAccessLevel,
-    pub source: Option<cute_server_client::cloud_object::ServerObjectContainer>,
-}
-
-// Removed: Subject, UserKind, CloudObjectGuest - cute_server_client types not found
-
-
-
-// Owner is already imported from cute_server_client::cloud_object
-// See line 185 for re-export: pub use cute_server_client::cloud_object::*;
-
-// NotebookId and GenericStringObjectId are already imported from models and model::generic_string_model
-// See lines 182 and 191 for re-exports
-
-/// Minimal stub for Revision (version tracking)
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Revision(pub u64);
-
-impl Revision {
-    pub fn from_unix_timestamp_micros(timestamp: i64) -> Result<Self, &'static str> {
-        Ok(Self(timestamp as u64))
-    }
-
-    pub fn unix_timestamp_micros(&self) -> i64 {
-        self.0 as i64
-    }
-
-    pub fn utc(&self) -> chrono::DateTime<chrono::Utc> {
-        chrono::DateTime::from_timestamp_micros(self.0 as i64)
-            .unwrap_or_else(chrono::Utc::now)
-    }
-}
-
-impl Default for Revision {
-    fn default() -> Self {
-        Self(0)
-    }
-}
-
-impl From<Revision> for cute_graphql::scalars::time::ServerTimestamp {
-    fn from(revision: Revision) -> Self {
-        cute_graphql::scalars::time::ServerTimestamp::from_unix_timestamp_micros(revision.unix_timestamp_micros())
-            .unwrap_or_else(|_| cute_graphql::scalars::time::ServerTimestamp::new(chrono::Utc::now()))
-    }
-}
-
-/// Minimal stub for CloudObjectSyncStatus
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum CloudObjectSyncStatus {
-    InFlight(NumInFlightRequests),
-    Synced,
-    Failed,
-    Pending,
-    NoLocalChanges,
-    Errored,
-    InConflict,
-}
-
-impl Default for CloudObjectSyncStatus {
-    fn default() -> Self {
-        CloudObjectSyncStatus::Synced
-    }
-}
-
-/// Minimal stub for NumInFlightRequests
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct NumInFlightRequests(pub u32);
+// REMOVED: Local definitions of CloudObjectMetadata, CloudObjectPermissions, Revision, CloudObjectStatuses, CloudObjectSyncStatus, NumInFlightRequests
+// These types are now imported from cute_server_client::cloud_object::* (see line 188)
+// This resolves type mismatch errors with GenericCloudObject fields
 
 /// Minimal stub for ObjectAction (object change action)
 #[derive(Clone, Debug)]

@@ -430,7 +430,7 @@ pub struct ServerApi {
     /// The source of agent runs (e.g. CLI, GitHub Action). Set once at startup and immutable.
     agent_source: Option<ai::AgentSource>,
     /// IAP credential cache for staging server access. [`None`] on production builds.
-    iap_state: Option<Arc<super::iap::IapState>>,
+    iap_state: Option<Arc<IapState>>,
 
     #[cfg(feature = "agent_mode_evals")]
     eval_user_id: Option<i32>,
@@ -1688,7 +1688,7 @@ impl ServerApiProvider {
     pub fn new(
         auth_state: Arc<AuthState>,
         agent_source: Option<ai::AgentSource>,
-        iap_state: Option<Arc<super::iap::IapState>>,
+        iap_state: Option<Arc<IapState>>,
         ctx: &mut ModelContext<Self>,
     ) -> Self {
         let (event_sender, event_receiver) = async_channel::bounded(10);

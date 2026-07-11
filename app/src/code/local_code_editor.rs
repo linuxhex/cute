@@ -1172,7 +1172,8 @@ impl LocalCodeEditorView {
         T: FnOnce(BufferState, &mut ViewContext<Self>) -> ViewHandle<CodeEditorView>,
     {
         let buffer_state = GlobalBufferModel::handle(ctx)
-            .update(ctx, |model, ctx| model.open(location.clone(), ctx));
+            .update(ctx, |model, ctx| model.open(location.clone(), ctx))
+            .expect("Failed to open buffer for local file");
         let file_id = buffer_state.file_id;
         let editor = editor_constructor(buffer_state, ctx);
 

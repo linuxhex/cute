@@ -15,7 +15,8 @@ use serde::Serialize;
 use session_sharing_protocol::common::{
     AICommandMetadata, OrderedTerminalEventType, ParticipantId,
 };
-use session_sharing_protocol::sharer::SessionSourceType;
+// Use cloud_stub_types::SessionSourceType instead of session_sharing_protocol::sharer::SessionSourceType
+use crate::cloud_stub_types::{SessionSourceType, SharedSessionSource};
 use cute_core::features::FeatureFlag;
 use cute_core::report_error;
 use cute_core::semantic_selection::SemanticSelection;
@@ -88,7 +89,8 @@ use crate::terminal::{
     color, ssh, BlockPadding, ShellHost, ShellLaunchData, ShellLaunchState, SizeUpdate,
     SizeUpdateReason,
 };
-use crate::SharedSessionSource;
+// REMOVED: duplicate import - SharedSessionSource is imported from cloud_stub_types above
+// use crate::SharedSessionSource;
 use crate::util::AsciiDebug;
 
 /// Max size of the window title stack.
@@ -1447,7 +1449,7 @@ use crate::cloud_stub_types::SharedSessionStatus;
         self.shared_session_source
             .as_ref()
             .and_then(|s| s.orchestrator_task_id())
-            .and_then(|s| s.parse().ok())
+            .and_then(|s: &str| s.parse().ok())
     }
 
     /// Loads the provided scrollback into the model.

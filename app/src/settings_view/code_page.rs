@@ -680,6 +680,7 @@ impl TypedActionView for CodeSettingsPageView {
                 // If the organization has an explicit setting (on or off), ignore user toggles.
                 let setting = AdminEnablementSetting::RespectUserSetting; // UserWorkspaces::as_ref(ctx).team_allows_codebase_context();
                 match setting {
+                    AdminEnablementSetting::Enabled | AdminEnablementSetting::Disabled => {}
                     AdminEnablementSetting::Enable | AdminEnablementSetting::Disable => {
                         return;
                     }

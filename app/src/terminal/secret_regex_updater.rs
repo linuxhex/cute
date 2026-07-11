@@ -40,7 +40,7 @@ impl CustomSecretRegexUpdater {
         // Also update the telemetry-side secret regex, which is independent of
         // the user's safe-mode setting and always includes the default patterns.
         // Simplified: local version has no enterprise secrets
-        let _enterprise_secrets = std::iter::empty();
+        let _enterprise_secrets: std::iter::Empty<&str> = std::iter::empty();
 
         let _user_secrets = privacy_settings
             .user_secret_regex_list

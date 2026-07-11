@@ -118,6 +118,31 @@ impl ComputerUsePermission {
     }
 }
 
+// Implement From trait to convert from AutonomyValue types
+impl From<crate::cloud_stub_types::WriteToPtyAutonomyValue> for WriteToPtyPermission {
+    fn from(value: crate::cloud_stub_types::WriteToPtyAutonomyValue) -> Self {
+        match value {
+            crate::cloud_stub_types::WriteToPtyAutonomyValue::AlwaysAllow => WriteToPtyPermission::AlwaysAllow,
+            crate::cloud_stub_types::WriteToPtyAutonomyValue::AlwaysAsk => WriteToPtyPermission::AlwaysAsk,
+            crate::cloud_stub_types::WriteToPtyAutonomyValue::AskOnFirstWrite => WriteToPtyPermission::AskOnFirstWrite,
+            crate::cloud_stub_types::WriteToPtyAutonomyValue::RespectUserSetting |
+            crate::cloud_stub_types::WriteToPtyAutonomyValue::Other(_) => WriteToPtyPermission::Unknown,
+        }
+    }
+}
+
+impl From<crate::cloud_stub_types::ComputerUseAutonomyValue> for ComputerUsePermission {
+    fn from(value: crate::cloud_stub_types::ComputerUseAutonomyValue) -> Self {
+        match value {
+            crate::cloud_stub_types::ComputerUseAutonomyValue::Never => ComputerUsePermission::Never,
+            crate::cloud_stub_types::ComputerUseAutonomyValue::AlwaysAsk => ComputerUsePermission::AlwaysAsk,
+            crate::cloud_stub_types::ComputerUseAutonomyValue::AlwaysAllow => ComputerUsePermission::AlwaysAllow,
+            crate::cloud_stub_types::ComputerUseAutonomyValue::RespectUserSetting |
+            crate::cloud_stub_types::ComputerUseAutonomyValue::Other(_) => ComputerUsePermission::Unknown,
+        }
+    }
+}
+
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum RunAgentsPermission {
     NeverAllow,

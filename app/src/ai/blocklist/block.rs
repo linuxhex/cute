@@ -5976,6 +5976,11 @@ impl TypedActionView for AIBlock {
             }
             // REMOVED: Cloud feature - OpenCodeInCute disabled in local version
             // AIBlockAction::OpenCodeInCute { source } => { ... }
+            AIBlockAction::OpenCodeInLocalEditor { source } => {
+                // Local editor action - open in local code editor
+                let _ = source; // Unused in stub implementation
+                log::warn!("OpenCodeInLocalEditor action not fully implemented in local version");
+            }
             AIBlockAction::ToggleTodoListExpanded(id) => {
                 if let Some(state) = self.todo_list_states.get_mut(id) {
                     state.is_expanded = !state.is_expanded;

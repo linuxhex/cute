@@ -6467,10 +6467,13 @@ pub(crate) fn derive_agent_attribution_toggle_state(
     is_any_ai_enabled: bool,
 ) -> AgentAttributionToggleState {
     let is_forced_by_org = match org_setting {
+        AdminEnablementSetting::Enabled | AdminEnablementSetting::Disabled => false,
         AdminEnablementSetting::Enable | AdminEnablementSetting::Disable => true,
         AdminEnablementSetting::RespectUserSetting => false,
     };
     let is_enabled = match org_setting {
+        AdminEnablementSetting::Enabled => true,
+        AdminEnablementSetting::Disabled => false,
         AdminEnablementSetting::Enable => true,
         AdminEnablementSetting::Disable => false,
         AdminEnablementSetting::RespectUserSetting => user_pref,

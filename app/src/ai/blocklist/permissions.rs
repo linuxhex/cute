@@ -373,10 +373,10 @@ impl BlocklistAIPermissions {
         let autonomy_settings = Self::workspace_autonomy_settings(ctx);
         let write_to_pty_workspace_setting = autonomy_settings.write_to_pty_setting;
 
-        write_to_pty_workspace_setting.unwrap_or_else(|| {
-            // Modified: Return default value to fix type mismatch
-            WriteToPtyPermission::default()
-        })
+        // Convert WriteToPtyAutonomyValue to WriteToPtyPermission using From trait
+        write_to_pty_workspace_setting
+            .map(|v| WriteToPtyPermission::from(v))
+            .unwrap_or_else(|| WriteToPtyPermission::default())
     }
 
     pub fn get_write_to_pty_setting(
@@ -512,10 +512,10 @@ impl BlocklistAIPermissions {
         let autonomy_settings = Self::workspace_autonomy_settings(ctx);
         let computer_use_workspace_setting = autonomy_settings.computer_use_setting;
 
-        computer_use_workspace_setting.unwrap_or_else(|| {
-            // Modified: Return default value to fix type mismatch
-            crate::ai::execution_profiles::ComputerUsePermission::default()
-        })
+        // Convert ComputerUseAutonomyValue to ComputerUsePermission using From trait
+        computer_use_workspace_setting
+            .map(|v| crate::ai::execution_profiles::ComputerUsePermission::from(v))
+            .unwrap_or_else(|| crate::ai::execution_profiles::ComputerUsePermission::default())
     }
 
     pub fn get_computer_use_setting(

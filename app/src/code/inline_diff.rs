@@ -145,15 +145,14 @@ impl InlineDiffView {
                 })
             }
             // 注释掉远程文件编辑逻辑 - 已禁用云端文件同步
-            // DiffSessionType::Remote(host_id) => {
-            //     let remote_path = RemotePath::new(host_id.clone(), file_path.clone());
-            //     file_model.update(ctx, |file_model, _ctx| {
-            //         // register_remote_file returns Result<(), Error> in stub mode
-            //         // We just use a placeholder FileId since this is stub
-            //         let _ = file_model.register_remote_file(remote_path);
-            //         FileId::new()
-            //     })
-            // }
+            DiffSessionType::Remote(_) => {
+                // Remote file editing disabled in local version
+                crate::safe_error!(
+                    safe: ("Remote file editing not available in local version"),
+                    full: ("Remote file editing not available in local version: {file_path}")
+                );
+                return;
+            }
         };
 
         self.finish_file_registration(file_id, ctx);

@@ -161,7 +161,8 @@ impl EnvironmentCommandRunner {
                 WARP_DEV_ENVIRONMENTS_REPO
             );
         }
-        output::print_list(vec![], global_options.output_format);
+        // Empty list - no cloud environments in local version
+        println!("No environments available in local version.");
         ctx.terminate_app(cuteui::platform::TerminationMode::ForceTerminate, None);
     }
 
