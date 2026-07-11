@@ -10,7 +10,8 @@ use super::llms::{LLMContextWindow, LLMPreferences};
 use crate::cloud_stub_types::model::generic_string_model::StringModel;
 use crate::cloud_stub_types::model::json_model::JsonModel;
 use crate::cloud_stub_types::{
-    GenericStringObjectFormat, GenericStringObjectUniqueKey, JsonObjectType, Revision, UniquePer,
+    ComputerUseAutonomyValue, GenericStringObjectFormat, GenericStringObjectUniqueKey,
+    JsonObjectType, Revision, UniquePer,
 };
 use crate::settings::AISettings;
 use crate::UserWorkspaces;
@@ -43,24 +44,22 @@ pub fn resolve_cloud_agent_computer_use_state(ctx: &AppContext) -> CloudAgentCom
         .computer_use_setting;
     let user_preference = *AISettings::as_ref(ctx).cloud_agent_computer_use_enabled;
 
+    // Modified: Use ComputerUseAutonomyValue variants instead of ComputerUsePermission
     match autonomy_setting {
-        Some(ComputerUsePermission::Never) => CloudAgentComputerUseState {
+        Some(ComputerUseAutonomyValue::Never) => CloudAgentComputerUseState {
             enabled: false,
             is_forced_by_org: true,
         },
-        Some(ComputerUsePermission::AlwaysAllow) => CloudAgentComputerUseState {
+        Some(ComputerUseAutonomyValue::AlwaysAllow) => CloudAgentComputerUseState {
             enabled: true,
             is_forced_by_org: true,
         },
-        // TODO(QUALITY-297): Currently this case should never be hit because the
-        // AlwaysAsk variant isn't accessible in the admin console. We need to figure
-        // out how to handle it when it eventually becomes available. For now, I'm
-        // treating this conservatively and marking computer use as disabled.
-        Some(ComputerUsePermission::AlwaysAsk) => CloudAgentComputerUseState {
+        Some(ComputerUseAutonomyValue::AlwaysAsk) => CloudAgentComputerUseState {
             enabled: false,
             is_forced_by_org: true,
         },
-        Some(ComputerUsePermission::Unknown) | None => CloudAgentComputerUseState {
+        Some(ComputerUseAutonomyValue::RespectUserSetting) |
+        Some(ComputerUseAutonomyValue::Other(_)) | None => CloudAgentComputerUseState {
             enabled: user_preference,
             is_forced_by_org: false,
         },
