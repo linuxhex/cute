@@ -1383,16 +1383,7 @@ use crate::cloud_stub_types::SharedSessionStatus;
     }
 
     pub fn send_agent_conversation_replay_ended_for_shared_session(&mut self) {
-        if self.shared_session_status().is_sharer() {
-            if let Some(tx) = &self.ordered_terminal_events_for_shared_session_tx {
-                if let Err(e) = tx.try_send(OrderedTerminalEventType::AgentConversationReplayEnded)
-                {
-                    log::warn!(
-                        "Failed to send OrderedTerminalEventType::AgentConversationReplayEnded: {e}"
-                    );
-                }
-            }
-        }
+        // Cloud functionality removed for local version
     }
 
     /// Sends an agent cancellation notification to viewers if this session is shared.
@@ -1720,16 +1711,8 @@ use crate::cloud_stub_types::SharedSessionStatus;
 
         // TODO (suraj): add participant ID to active block metadata.
 
-        // If this is a sharer, send an event to indicate the start of the command execution
-        // along with the identity of the participant that ran the command.
-        if let Some(tx) = &self.ordered_terminal_events_for_shared_session_tx {
-            let command = self.block_list.active_block().command_with_secrets_unobfuscated(false);
-            if let Err(e) = tx.try_send(OrderedTerminalEventType::CommandExecutionStarted {
-                command,
-            }) {
-                log::warn!("Failed to send OrderedTerminalEventType::CommandExecutionStarted: {e}");
-            }
-        }
+        // Cloud functionality removed for local version
+        // Command execution sync disabled
     }
 
     /// Starts the command execution (per `Self::start_command_execution`) and additionally sets
@@ -1999,14 +1982,7 @@ use crate::cloud_stub_types::SharedSessionStatus;
         if size_update.rows_or_columns_changed() {
             let num_rows = size_update.new_size.rows();
             let num_cols = size_update.new_size.columns();
-            if let Some(tx) = &self.ordered_terminal_events_for_shared_session_tx {
-                if let Err(e) = tx.try_send(OrderedTerminalEventType::Resize {
-                    width: num_cols as u16,
-                    height: num_rows as u16,
-                }) {
-                    log::warn!("Failed to send OrderedTerminalEventType::Resize: {e}");
-                }
-            }
+            // Cloud functionality removed - resize sync disabled
 
             if self.tmux_control_mode_context.is_some() {
                 self.emit_handler_event(HandlerEvent::RunTmuxCommand(
@@ -2110,7 +2086,7 @@ use crate::cloud_stub_types::SharedSessionStatus;
     pub fn set_obfuscate_secrets(&mut self, obfuscate_secrets: ObfuscateSecrets) {
         // Secret obfuscation is forced off in shared sessions so changing
         // the setting during a shared session should be a no-op (for this session).
-        if self.shared_session_status.is_sharer_or_viewer() {
+        if self.shared_session_status().is_sharer_or_viewer() {
             return;
         }
 
@@ -2127,7 +2103,7 @@ use crate::cloud_stub_types::SharedSessionStatus;
         &mut self,
         first_scrollback_block_index: BlockIndex,
     ) {
-        if !self.shared_session_status.is_sharer() {
+        if !self.shared_session_status().is_sharer() {
             log::warn!(
                 "Tried to disable secret obfuscation without being a shared session creator."
             );
@@ -2810,14 +2786,7 @@ impl ansi::Handler for TerminalModel {
         let exit_code = data.exit_code.value();
         delegate!(self.command_finished(data));
 
-        if let Some(tx) = &self.ordered_terminal_events_for_shared_session_tx {
-            if let Err(e) = tx.try_send(OrderedTerminalEventType::CommandExecutionFinished {
-                command,
-                exit_code,
-            }) {
-                log::warn!("Failed to send OrderedTerminalEventType::CommandFinished: {e}");
-            }
-        }
+        // Cloud functionality removed - command finished sync disabled
 
         self.emit_handler_event(HandlerEvent::CommandFinished {
             command_type: if is_for_in_band_command {
@@ -3163,16 +3132,8 @@ impl ansi::Handler for TerminalModel {
         // When processing a synchronized output frame, `on_finish_byte_processing` is called
         // both when the frame is flushed and when we initially process the raw bytes (the ordering of the two
         // depends on whether we receive the start and end markers in the same batch of bytes). We only want to send
-        // the raw bytes to viewers, not the flushed frame - they'll handle the synchronized output framing themselves.
-        if !input.is_synchronized_output_frame() && self.shared_session_status().is_sharer() {
-            if let Some(tx) = &self.ordered_terminal_events_for_shared_session_tx {
-                if let Err(e) = tx.try_send(OrderedTerminalEventType::PtyBytesRead {
-                    data: bytes.to_owned(),
-                }) {
-                    log::warn!("Failed to send OrderedTerminalEventType::PtyBytesRead: {e}");
-                }
-            }
-        }
+        // Cloud functionality removed - pty bytes sync disabled
+        // Viewers will handle their own output framing
 
         delegate!(self.on_finish_byte_processing(input))
     }

@@ -15906,18 +15906,7 @@ impl Workspace {
             pane_group::Event::AnonymousUserSignup => {
                 self.initiate_user_signup(AnonymousUserSignupEntrypoint::RENOTIFICATION_BLOCK, ctx);
             }
-            pane_group::Event::OpenDriveObjectShareDialog {
-                cloud_object_type_and_id,
-                invitee_email,
-                source,
-            } => {
-                self.open_object_sharing_settings(
-                    cloud_object_type_and_id.clone(),
-                    invitee_email.clone(),
-                    source.clone(),
-                    ctx,
-                );
-            }
+            // OpenDriveObjectShareDialog removed - cloud functionality disabled
             pane_group::Event::OpenPalette {
                 mode,
                 source,

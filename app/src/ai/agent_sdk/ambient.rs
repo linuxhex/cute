@@ -354,11 +354,8 @@ impl AmbientAgentRunner {
 
             let ai_client = ServerApiProvider::as_ref(ctx).get_ai_client();
 
-            // Compute the upgrade link in case we hit capacity.
-            let upgrade_link = AuthStateProvider::as_ref(ctx)
-                .get()
-                .user_id()
-                .map(UserWorkspaces::upgrade_link);
+            // Cloud functionality disabled - no upgrade link
+            let upgrade_link: Option<String> = None;
 
             let cli_mcp_servers =
                 match super::mcp_config::build_mcp_servers_from_specs(&args.mcp_specs) {

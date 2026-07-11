@@ -251,6 +251,7 @@ pub use crate::cloud_stub_types::UserProfiles;
 pub use crate::cloud_stub_types::UserProfile;
 pub use crate::cloud_stub_types::ObjectIdType;
 pub use crate::cloud_stub_types::WorkspaceUid;
+pub use crate::settings::AdminEnablementSetting;
 pub use crate::cloud_stub_types::WarpDriveItemId;
 pub use crate::cloud_stub_types::WorkspaceMetadata;
 pub use crate::cloud_stub_types::TeamMember;
@@ -1149,7 +1150,6 @@ pub(crate) fn initialize_app(
                 // 删除：云端功能已禁用 - cloud_objects 默认值
                 // 删除：云端功能已禁用 - workspaces 默认值
                 // 删除：云端功能已禁用 - current_workspace_uid 默认值
-                Default::default(),
                 Default::default(),
                 // 删除：云端功能已禁用 - user_profiles 默认值
                 // 删除：云端功能已禁用 - time_of_next_force_object_refresh 默认值

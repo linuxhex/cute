@@ -114,18 +114,14 @@ impl SessionContext {
 
     /// Returns `true` if this is a remote session (regardless of whether
     /// the remote server client is connected).
+    /// Returns false in stub - cloud remote sessions are disabled
     pub fn is_remote(&self) -> bool {
-        matches!(self.session_type, Some(SessionType::CutefiedRemote { .. }))
+        false
     }
 
     pub fn skill_path_origin(&self) -> SkillPathOrigin {
         match &self.session_type {
-            Some(SessionType::CutefiedRemote {
-                host_id: Some(host_id),
-            }) => SkillPathOrigin::Remote {
-                host_id: host_id.clone(),
-            },
-            Some(SessionType::CutefiedRemote { host_id: None }) => SkillPathOrigin::Unavailable,
+            // CutefiedRemote removed - cloud sessions disabled
             Some(SessionType::Local) | None => SkillPathOrigin::Local,
         }
     }

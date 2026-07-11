@@ -22,8 +22,7 @@ use crate::ai::blocklist::block::secret_redaction::find_secrets_in_text_with_lev
 use crate::cloud_stub_types::breadcrumbs::ContainingObject;
 use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
 use crate::cloud_stub_types::{CloudObjectEventEntrypoint, Owner};
-// COMMENTED: Warp Drive import disabled for local version
-// use crate::cloud_stub_types::items::WarpDriveItemId;
+use crate::WarpDriveItemId;
 use crate::cloud_stub_types::sharing::{ContentEditability, ShareableObject};
 use crate::editor::EditorView;
 use crate::env_vars::active_env_var_collection_data::{

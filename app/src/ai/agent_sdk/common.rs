@@ -100,7 +100,7 @@ pub fn resolve_owner(team_flag: bool, user_flag: bool, ctx: &AppContext) -> anyh
         //     .ok_or_else(|| anyhow::anyhow!("User should be logged in"))?;
         // return Ok(Owner::User { user_uid: user_id });
         // Simplified: return default user owner for local mode
-        return Ok(Owner::User { user_uid: uuid::Uuid::new_v4() });
+        return Ok(Owner::User { user_uid: cute_server_client::UserUid::new(&uuid::Uuid::new_v4().to_string()) });
     }
 
     // 删除：UserWorkspaces team_uid 获取已禁用，云端功能已移除
@@ -115,7 +115,7 @@ pub fn resolve_owner(team_flag: bool, user_flag: bool, ctx: &AppContext) -> anyh
     //     .user_id()
     //     .ok_or_else(|| anyhow::anyhow!("User should be logged in"))?;
     // Ok(Owner::User { user_uid: user_id })
-    Ok(Owner::User { user_uid: uuid::Uuid::new_v4() })
+    Ok(Owner::User { user_uid: cute_server_client::UserUid::new(&uuid::Uuid::new_v4().to_string()) })
 }
 
 /// Refresh workspace metadata before executing an operation.

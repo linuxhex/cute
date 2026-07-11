@@ -1866,7 +1866,7 @@ impl AliasBar {
         // Stub implementation
     }
 
-    pub fn set_current_env_vars(&mut self, _id: crate::server::ids::SyncId, _ctx: &mut cuteui::ViewContext<Self>) {
+    pub fn set_current_env_vars(&mut self, _id: Option<crate::server::ids::SyncId>, _ctx: &mut cuteui::ViewContext<Self>) {
         // Stub implementation
     }
 
@@ -1904,7 +1904,7 @@ impl cuteui::Entity for SyntaxHighlightable {
 
 /// Implement methods for SyntaxHighlightable
 impl SyntaxHighlightable {
-    pub fn new(_editor: crate::editor::EditorView, _ctx: &mut cuteui::ModelContext<Self>) -> Self {
+    pub fn new(_editor: ViewHandle<crate::editor::EditorView>, _ctx: &mut cuteui::ModelContext<Self>) -> Self {
         Self {}
     }
 
@@ -3423,6 +3423,16 @@ impl SharedSessionStatus {
 
     /// Returns false in stub - cloud sharing is disabled
     pub fn is_finished_viewer(&self) -> bool {
+        false
+    }
+
+    /// Returns false in stub - cloud sharing is disabled
+    pub fn is_sharer(&self) -> bool {
+        false
+    }
+
+    /// Returns false in stub - cloud sharing is disabled
+    pub fn is_sharer_or_viewer(&self) -> bool {
         false
     }
 }
