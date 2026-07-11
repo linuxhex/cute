@@ -1714,11 +1714,13 @@ impl DrivePanel {
 
 /// Minimal stub for SharingAccessLevel
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Default)]
 pub enum SharingAccessLevel {
+    #[default]
+    Viewer,
     Owner,
     Editor,
     Edit,  // Added for compatibility
-    Viewer,
     View,  // Added for compatibility
     Full,
 }
@@ -4258,4 +4260,16 @@ pub enum ObjectIdType {
     Folder,
     AIConversation,
     Command,
+}
+
+impl From<cute_server_client::cloud_object::ObjectType> for ObjectIdType {
+    fn from(obj_type: cute_server_client::cloud_object::ObjectType) -> Self {
+        match obj_type {
+            cute_server_client::cloud_object::ObjectType::Notebook => ObjectIdType::Notebook,
+            cute_server_client::cloud_object::ObjectType::Workflow => ObjectIdType::Workflow,
+            cute_server_client::cloud_object::ObjectType::Folder => ObjectIdType::Folder,
+            cute_server_client::cloud_object::ObjectType::EnvVarCollection => ObjectIdType::EnvVarCollection,
+            cute_server_client::cloud_object::ObjectType::GenericStringObject(_) => ObjectIdType::Command, // Default mapping
+        }
+    }
 }

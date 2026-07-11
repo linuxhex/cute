@@ -323,8 +323,10 @@ impl From<DateTime<Utc>> for Revision {
 /// The owner for a given object.
 #[derive(Copy, Clone, Debug, Eq, Serialize, Deserialize, Derivative)]
 #[derivative(PartialEq)]
+#[derive(Default)]
 pub enum Owner {
     /// The owner of the object is a user (the object is in their personal drive).
+    #[default]
     User { user_uid: UserUid },
     /// The owner of the object is a team (the object is in a team drive).
     Team { team_uid: ServerId },
