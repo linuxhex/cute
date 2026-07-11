@@ -25149,6 +25149,7 @@ impl TypedActionView for TerminalView {
                 #[cfg(feature = "local_fs")]
                 {
                     use ai::skills::SkillReference;
+use crate::UserWorkspaces;
 
                     match skill_reference {
                         SkillReference::Path(path) => {

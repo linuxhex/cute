@@ -1776,6 +1776,7 @@ impl AgentInputFooter {
         ctx: &mut ViewContext<Self>,
     ) {
         use crate::editor::VoiceTranscriber;
+use crate::UserWorkspaces;
 
         match result {
             VoiceSessionResult::Audio {

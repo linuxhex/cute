@@ -35,6 +35,7 @@ use crate::server::server_api::ai::{
 };
 use crate::util::time_format::format_approx_duration_from_now_utc;
 use crate::ServerApiProvider;
+use crate::UserWorkspaces;
 
 const MAX_LINE_WIDTH: usize = 90;
 

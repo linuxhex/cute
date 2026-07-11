@@ -3,6 +3,7 @@ use settings::{RespectUserSyncSetting, Setting, SupportedPlatforms, SyncToCloud}
 use cuteui::{AppContext, SingletonEntity};
 
 use crate::terminal::model::ObfuscateSecrets;
+use crate::UserWorkspaces;
 
 /// How secrets should be displayed in the block list
 #[derive(

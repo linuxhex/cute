@@ -599,6 +599,7 @@ pub enum ConversationDetailsPanelAction {
 
 pub fn init(app: &mut AppContext) {
     use cuteui::keymap::macros::*;
+use crate::UserProfiles;
 
     app.register_fixed_bindings([FixedBinding::custom(
         CustomAction::Copy,

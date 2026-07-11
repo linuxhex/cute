@@ -63,6 +63,7 @@ use crate::view_components::action_button::{
     ActionButton, ActionButtonTheme, ButtonSize, NakedTheme, TooltipAlignment,
 };
 use crate::BlocklistAIHistoryModel;
+use crate::UserWorkspaces;
 
 pub enum AtContextMenuDisabledReason {
     #[cfg(target_family = "wasm")]

@@ -34,6 +34,8 @@ use crate::ui_components::buttons::icon_button;
 use crate::ui_components::icons::Icon;
 use crate::workflows::workflow::Workflow;
 use crate::workspace::WorkspaceAction;
+use crate::workflows::workflow_view::argument_editor::AliasArgumentSelector;
+use crate::workflows::workflow_view::argument_editor::AliasArgumentSelectorEvent;
 
 const ARGUMENT_INPUT_HEIGHT: f32 = 30.;
 const ARGUMENT_LABEL_TEXT: &str = "Arguments";

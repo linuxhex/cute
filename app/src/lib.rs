@@ -163,6 +163,7 @@ use crate::ai::aws_credentials::AwsCredentialRefresher as _;
 use crate::ai::mcp::{FileBasedMCPManager, FileMCPWatcher};
 use crate::uri::web_intent_parser::maybe_rewrite_web_url_to_intent;
 pub mod workflows;
+pub mod workspaces;
 pub mod workspace;
 
 use std::borrow::Cow;

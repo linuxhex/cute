@@ -129,6 +129,8 @@ mod tests {
     };
 
     use super::remote_codebase_index_limit_reached;
+use crate::settings::AdminEnablementSetting;
+use crate::UserWorkspaces;
 
     fn remote_status_with_failure(failure_message: Option<&str>) -> RemoteCodebaseIndexStatus {
         RemoteCodebaseIndexStatus {

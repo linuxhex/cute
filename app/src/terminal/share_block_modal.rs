@@ -1054,6 +1054,7 @@ impl TypedActionView for ShareBlockModal {
 
     fn handle_action(&mut self, action: &ShareBlockModalAction, ctx: &mut ViewContext<Self>) {
         use ShareBlockModalAction::*;
+use crate::UserWorkspaces;
 
         match action {
             Close => self.close(ctx),

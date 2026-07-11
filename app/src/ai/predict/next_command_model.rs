@@ -42,6 +42,7 @@ cfg_if::cfg_if! {
         use diesel::SqliteConnection;
         use std::path::PathBuf;
         use cute_completer::parsers::hir::ArgType;
+use crate::UserWorkspaces;
     }
 }
 

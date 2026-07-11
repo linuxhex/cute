@@ -13,6 +13,7 @@ use crate::env_vars::view::env_var_collection::{EnvVarCollectionEvent, EnvVarCol
 use crate::env_vars::EnvVarCollectionType;
 use crate::pane_group::focus_state::PaneFocusHandle;
 use crate::server::ids::SyncId;
+use crate::UserWorkspaces;
 
 pub struct EnvVarCollectionPane {
     view: ViewHandle<PaneView<EnvVarCollectionView>>,

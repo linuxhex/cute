@@ -1904,6 +1904,7 @@ async fn send_initialize_request(
     auth_client: Option<&rmcp::transport::auth::AuthClient<reqwest::Client>>,
 ) -> Result<reqwest::StatusCode, rmcp::RmcpError> {
     use rmcp::transport::common::http_header::{EVENT_STREAM_MIME_TYPE, JSON_MIME_TYPE};
+use crate::UserWorkspaces;
 
     let request = rmcp::model::InitializeRequest::new(make_client_info());
     let request = rmcp::model::ClientJsonRpcMessage::request(

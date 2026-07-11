@@ -37,6 +37,7 @@ use crate::cloud_stub_types::{NotebookId, NotebookLocation};
 use crate::persistence::ModelEvent;
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::server_api::object::ObjectClient;
+use crate::cloud_stub_types::WarpDriveWorkflow;
 
 pub fn init(app: &mut AppContext) {
     categories::init(app);

@@ -31,6 +31,7 @@ use crate::ai::blocklist::inline_action::orchestration_controls::OrchestrationEd
 use crate::ai::blocklist::{BlocklistAIHistoryModel, BlocklistAIPermissions};
 // use crate::ai::cloud_agent_settings::CloudAgentSettings; // Cute: 已注释，清理云端 Agent 设置
 use crate::ai::local_harness_setup::local_harness_product_disabled_message;
+use crate::ai::cloud_agent_settings::CloudAgentSettings;
 
 /// Per-child spawn timeout. If a child agent doesn't report back within
 /// this window (e.g. binary not found, server error), the slot is failed

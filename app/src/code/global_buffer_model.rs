@@ -1969,7 +1969,6 @@ impl GlobalBufferModel {
     /// the conflict resolution banner.
     ///
     /// 注释掉：已禁用远程缓冲区功能
-    #[cfg_attr(not(feature = "local_tty"), allow(dead_code))]
     // pub(crate) fn handle_buffer_conflict_detected(
     //     &mut self,
     //     host_id: &HostId,
@@ -1989,7 +1988,7 @@ impl GlobalBufferModel {
     //     ctx.emit(GlobalBufferModelEvent::RemoteBufferConflict { file_id });
     // }
 
-    /// Handle an incoming `BufferUpdatedPush` from the remote server.
+    // Handle an incoming `BufferUpdatedPush` from the remote server.
     // Accepts incremental edits (1-indexed char offsets matching `CharOffset`)
     // and applies them to the local buffer via `insert_at_char_offset_ranges`.
     // If the expected client version doesn't match, a conflict event is emitted.

@@ -352,6 +352,7 @@ impl fmt::Display for EnvironmentChoice {
 #[cfg(test)]
 mod tests {
     use super::parse_ambient_task_id;
+use crate::UserWorkspaces;
 
     #[test]
     fn parse_ambient_task_id_accepts_valid_ids() {

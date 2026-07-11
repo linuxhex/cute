@@ -2019,6 +2019,8 @@ fn handle_ai_history_event(
     use crate::ai::blocklist::{
         AIQueryHistoryOutputStatus, PersistedAIInput, PersistedAIInputType,
     };
+    use crate::IsSharedSessionCreator;
+    use crate::cloud_stub_types::SharedSessionStatus;
 
     if event
         .terminal_view_id()

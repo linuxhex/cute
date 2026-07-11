@@ -25630,6 +25630,7 @@ fn render_cross_window_ghost_chip(
     app: &AppContext,
 ) -> Box<dyn Element> {
     use cuteui::elements::DropShadow;
+use crate::cloud_stub_types::SharedSessionActionSource;
 
     let theme = appearance.theme();
 

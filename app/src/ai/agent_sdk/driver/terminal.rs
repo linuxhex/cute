@@ -34,6 +34,8 @@ use crate::terminal::model::RespectObfuscatedSecrets;
 use crate::terminal::shell::ShellType;
 use crate::terminal::view::ConversationRestorationInNewPaneType;
 use crate::terminal::TerminalView;
+use crate::IsSharedSessionCreator;
+use crate::cloud_stub_types::SharedSessionSource;
 
 /// Describes why an agent's session-sharing request failed.
 #[derive(Debug, thiserror::Error)]

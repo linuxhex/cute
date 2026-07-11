@@ -52,6 +52,7 @@ use crate::view_components::dropdown::{
 };
 use crate::view_components::FilterableDropdown;
 use crate::{report_if_error, LLMPreferences};
+use crate::UserWorkspaces;
 
 /// Env var override for the workspace default host (developer testing).
 /// Mirrors the single-agent ambient flow.

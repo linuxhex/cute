@@ -258,6 +258,7 @@ impl BlocklistAIContextModel {
         // Clear auto-attached blocks when exiting agent view or switching conversations
         ctx.subscribe_to_model(&agent_view_controller, |me, event, _ctx| {
             use super::agent_view::AgentViewControllerEvent;
+use crate::UserWorkspaces;
             match event {
                 AgentViewControllerEvent::ExitedAgentView { .. }
                 | AgentViewControllerEvent::EnteredAgentView { .. } => {

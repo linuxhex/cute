@@ -1825,6 +1825,7 @@ mod tests {
     use futures::executor::block_on;
 
     use super::*;
+use crate::cloud_stub_types::IapManager;
 
     struct FakeGraphqlOperation {
         expected_auth_token: Option<String>,

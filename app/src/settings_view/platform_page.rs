@@ -39,6 +39,7 @@ use crate::server::ids::ApiKeyUid;
 use crate::server::server_api::auth::AuthClient;
 use crate::ui_components::icons::Icon;
 use crate::util::time_format::format_approx_duration_from_now_utc;
+use crate::cloud_stub_types::AuthStateProvider;
 
 const MODAL_WIDTH: f32 = 460.;
 const MODAL_HEIGHT: f32 = 320.;

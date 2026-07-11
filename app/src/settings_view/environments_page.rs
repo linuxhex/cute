@@ -1848,6 +1848,7 @@ impl SettingsPageMeta for EnvironmentsPageView {
 use crate::pane_group::focus_state::PaneFocusHandle;
 use crate::pane_group::pane::view::{HeaderContent, HeaderRenderContext};
 use crate::pane_group::pane::BackingView;
+use crate::UserWorkspaces;
 
 impl BackingView for EnvironmentsPageView {
     type PaneHeaderOverflowMenuAction = EnvironmentsPageAction;

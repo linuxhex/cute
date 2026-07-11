@@ -24,6 +24,7 @@ use cute_server_client::cloud_object::{GenericStringObjectFormat, JsonObjectType
 use crate::server::ids::{ClientId, SyncId};
 use crate::settings::AgentModeCommandExecutionPredicate;
 use crate::{CloudModel, LaunchMode};
+use crate::UserWorkspaces;
 
 /// ExecutionProfileId is the identifier that users of the AIExecutionProfilesModel use
 /// to refer back to a specific profile. These are unique across the lifespan of the app.

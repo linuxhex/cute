@@ -7,6 +7,7 @@ use crate::cloud_stub_types::CloudModelType;
 use crate::search::ai_context_menu::mixer::AIContextMenuSearchableAction;
 use crate::search::data_source::{Query, QueryResult};
 use crate::search::mixer::{DataSourceRunErrorWrapper, SyncDataSource};
+use crate::UserWorkspaces;
 
 const MAX_RESULTS: usize = 50;
 /// Base score for zero-state results. Each item gets an additional bonus based on

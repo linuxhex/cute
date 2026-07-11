@@ -88,6 +88,8 @@ use crate::code_review::diff_state::DiffMode;
 // COMMENTED: Warp Drive imports disabled for local version
 // use crate::cloud_stub_types::items::WarpDriveItemId;
 // use crate::cloud_stub_types::{CloudObjectTypeAndId, OpenWarpDriveObjectArgs};
+use crate::cloud_stub_types::items::WarpDriveItemId;
+use crate::CloudObjectTypeAndId;
 use crate::env_vars::EnvVarCollectionType;
 use crate::features::FeatureFlag;
 use crate::launch_configs::launch_config::{self, PaneMode, PaneTemplateType};
@@ -145,6 +147,7 @@ use crate::terminal::{
     TerminalManager, TerminalModel, TerminalView,
 };
 // use crate::terminal::shared_session::IsSharedSessionCreator; // Removed: session sharing feature
+use crate::IsSharedSessionCreator;
 use crate::undo_close::{UndoCloseStack, UndoCloseStackEvent};
 #[cfg(target_family = "wasm")]
 use crate::uri::browser_url_handler::update_browser_url;
@@ -223,8 +226,7 @@ impl<'a> AmbientAgentViewModelHandleExt<'a> for Option<&'a AmbientAgentViewModel
 }
 
 fn get_minimum_pane_size(app: &AppContext) -> f32 {
-    use crate::settings::InputSettings;
-    if InputSettings::as_ref(app).is_universal_developer_input_enabled(app) {
+    if crate::settings::InputSettings::as_ref(app).is_universal_developer_input_enabled(app) {
         MINIMUM_PANE_SIZE_UDI
     } else {
         MINIMUM_PANE_SIZE

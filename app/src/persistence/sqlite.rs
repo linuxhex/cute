@@ -3464,6 +3464,17 @@ fn delete_objects(
                         object_id_type,
                         Box::new(|conn, gso_id| {
                             use schema::generic_string_objects::dsl::*;
+use crate::cloud_stub_types::CloudObjectSyncStatus;
+use crate::cloud_stub_types::FolderId;
+use crate::cloud_stub_types::GenericStringObjectId;
+use crate::cloud_stub_types::MembershipRole;
+use crate::cloud_stub_types::ObjectActionSubtype;
+use crate::cloud_stub_types::ObjectIdType;
+use crate::cloud_stub_types::ObjectType;
+use crate::cloud_stub_types::Owner;
+use crate::cloud_stub_types::Revision;
+use crate::cloud_stub_types::TeamMetadata;
+use crate::cloud_stub_types::WorkspaceMetadata;
                             diesel::delete(generic_string_objects.filter(id.eq(gso_id)))
                                 .execute(conn)?;
                             Ok(())

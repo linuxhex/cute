@@ -111,6 +111,8 @@ const CREATOR_AVATAR_FONT_SIZE: f32 = 10.;
 
 const SESSION_EXPIRED_TEXT: &str = "Sessions expire after one week and cannot be opened.";
 
+use crate::UserWorkspaces;
+
 pub fn init(app: &mut AppContext) {
     use crate::util::bindings::cmd_or_ctrl_shift;
 

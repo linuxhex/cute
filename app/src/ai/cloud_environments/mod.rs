@@ -4,6 +4,7 @@ use cuteui::{AppContext, SingletonEntity as _};
 
 use crate::auth::AuthStateProvider;
 use crate::cloud_stub_types::Owner;
+use crate::UserWorkspaces;
 
 // Re-export types from cloud_object::models::cloud_environment
 pub use crate::cloud_stub_types::models::cloud_environment::{

@@ -633,6 +633,7 @@ impl AITipModel<crate::terminal::view::ambient_agent::CloudModeTip> {
         }
 
         use rand::seq::SliceRandom;
+use crate::UserWorkspaces;
 
         // Select a random tip
         let mut rng = rand::thread_rng();

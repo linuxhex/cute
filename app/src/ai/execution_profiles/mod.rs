@@ -13,6 +13,7 @@ use crate::cloud_stub_types::{
     GenericStringObjectFormat, GenericStringObjectUniqueKey, JsonObjectType, Revision, UniquePer,
 };
 use crate::settings::AISettings;
+use crate::UserWorkspaces;
 
 pub mod editor;
 pub mod model_menu_items;

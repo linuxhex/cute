@@ -1080,6 +1080,7 @@ impl AIDocumentModel {
         ctx: &mut ModelContext<Self>,
     ) {
         use std::collections::HashMap;
+use crate::UserWorkspaces;
         let configs = {
             let history = BlocklistAIHistoryModel::as_ref(ctx);
             let Some(conversation) = history.conversation(&conversation_id) else {

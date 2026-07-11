@@ -79,6 +79,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+use crate::UserWorkspaces;
 
     #[test]
     fn local_auto_indexing_requires_full_source_code_embedding_codebase_context_and_auto_indexing()

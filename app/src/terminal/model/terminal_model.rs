@@ -1058,6 +1058,7 @@ impl TerminalModel {
         session_startup_path: Option<PathBuf>,
     ) -> Self {
         use super::session::get_local_hostname;
+use crate::cloud_stub_types::SharedSessionStatus;
 
         let mut terminal_model = Self::new(
             restored_blocks,

@@ -15,6 +15,7 @@ use crate::settings::PrivacySettings;
 use crate::settings_view::SettingsSection;
 use crate::ui_components::icons::Icon;
 use crate::workspace::WorkspaceAction;
+use crate::UserWorkspaces;
 
 const ANONYMOUS_USER_REQUEST_LIMIT_SOFT_GATE_PERCENTAGE: f32 = 0.5;
 

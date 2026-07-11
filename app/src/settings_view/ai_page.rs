@@ -7788,6 +7788,8 @@ mod styles {
     use cute_core::ui::appearance::Appearance;
     use cute_core::ui::theme::Fill;
     use cuteui::{AppContext, SingletonEntity};
+use crate::settings::AdminEnablementSetting;
+use crate::UserWorkspacesEvent;
 
     // Apply a negative margin to the description text so it appears closer to the main
     // settings option text.

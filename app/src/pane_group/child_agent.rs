@@ -13,6 +13,7 @@ use crate::ai::blocklist::{BlocklistAIHistoryModel, StartAgentRequestId};
 use crate::ai::llms::LLMPreferences;
 use crate::pane_group::{PaneGroup, PaneId};
 // use crate::terminal::shared_session::IsSharedSessionCreator; // Removed: session sharing feature
+use crate::IsSharedSessionCreator;
 use crate::terminal::TerminalView;
 use crate::AIExecutionProfilesModel;
 

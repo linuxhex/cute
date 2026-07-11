@@ -19,6 +19,7 @@ use crate::safe_info;
 //     ObjectOperation, OperationSuccessType, UpdateManager, UpdateManagerEvent,
 // };
 use crate::server::ids::{ObjectUid, SyncId};
+use crate::UserProfiles;
 
 pub const EDITOR_TIMEOUT_DURATION_MINUTES: i64 = 15;
 

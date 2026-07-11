@@ -40,6 +40,8 @@ use crate::terminal::cli_agent_sessions::{
 use crate::terminal::model::session::active_session::{ActiveSession, ActiveSessionEvent};
 use crate::terminal::model::session::SessionType;
 use crate::terminal::view::ambient_agent::AmbientAgentViewModel;
+use crate::UserWorkspaces;
+use crate::UserWorkspacesEvent;
 
 pub struct DataSourceArgs {
     pub active_session: ModelHandle<ActiveSession>,

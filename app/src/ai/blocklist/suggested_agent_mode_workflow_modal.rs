@@ -64,6 +64,7 @@ pub enum SuggestedAgentModeWorkflowModalEvent {
 
 pub fn init(app: &mut AppContext) {
     use cuteui::keymap::macros::*;
+use crate::UserWorkspaces;
 
     app.register_fixed_bindings([FixedBinding::new(
         "escape",

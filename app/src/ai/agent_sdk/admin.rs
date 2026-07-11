@@ -9,6 +9,7 @@ use cuteui::{AppContext, SingletonEntity};
 use crate::auth::auth_manager::{AuthManager, AuthManagerEvent};
 use crate::auth::user::PrincipalType;
 use crate::auth::AuthStateProvider;
+use crate::UserWorkspaces;
 
 /// Kick off a device authorization login flow and handle auth events.
 pub fn login(ctx: &mut AppContext) -> Result<()> {

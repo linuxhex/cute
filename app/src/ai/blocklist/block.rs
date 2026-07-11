@@ -207,6 +207,7 @@ pub const RICH_CONTENT_SECRET_FIRST_CHAR_POSITION_ID: &str =
 
 pub fn init(app: &mut AppContext) {
     use cuteui::keymap::macros::*;
+use crate::UserWorkspaces;
 
     app.register_fixed_bindings([
         FixedBinding::new(

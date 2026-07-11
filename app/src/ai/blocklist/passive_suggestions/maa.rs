@@ -686,6 +686,7 @@ fn coalesce_messages_from_client_actions(
     use field_mask::FieldMaskOperation;
     use cute_multi_agent_api as api;
     use cute_multi_agent_api::client_action::Action;
+use crate::UserWorkspaces;
 
     let mut messages_by_id: HashMap<String, api::Message> = HashMap::new();
     let mut message_order: Vec<String> = Vec::new();

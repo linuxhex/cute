@@ -34,6 +34,7 @@ use crate::network::NetworkStatus;
 use crate::server::ids::SyncId;
 use crate::ui_components::blended_colors;
 use crate::view_components::action_button::{ActionButton, PrimaryTheme};
+use crate::UserWorkspaces;
 
 const HEADER_TEXT: &str = "Suggested rule";
 const MAX_EDITOR_HEIGHT: f32 = 240.;

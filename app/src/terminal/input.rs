@@ -9717,6 +9717,7 @@ impl Input {
                                         // Find git repo and construct absolute path
                                         use repo_metadata::repositories::DetectedRepositories;
                                         use cute_util::local_or_remote_path::LocalOrRemotePath;
+
                                         let git_repo_path = DetectedRepositories::as_ref(ctx)
                                             .get_root_for_path(&LocalOrRemotePath::Local(
                                                 Path::new(pwd).to_path_buf(),
