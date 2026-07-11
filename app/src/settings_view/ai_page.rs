@@ -4784,20 +4784,7 @@ impl AgentsWidget {
 
         let mut widget_children = vec![permissions_subheader];
 
-        if UserWorkspaces::as_ref(app)
-            .ai_autonomy_settings()
-            .has_any_overrides()
-        {
-            widget_children.push(
-                Container::new(render_settings_info_banner(
-                    "Some of your permissions are managed by your workspace.",
-                    None,
-                    appearance,
-                ))
-                .with_margin_bottom(12.0)
-                .finish(),
-            );
-        }
+        // Cloud workspace overrides removed for local version - no override banner
 
         widget_children.extend([code_diffs, read_files, execute_commands]);
 
@@ -7362,8 +7349,8 @@ impl AwsBedrockWidget {
 
         let aws_auth_refresh_command = ai_settings.aws_bedrock_auth_refresh_command.value().clone();
         let aws_auth_refresh_profile = ai_settings.aws_bedrock_profile.value().clone();
-        let is_usage_enabled = is_any_ai_enabled
-            && UserWorkspaces::as_ref(ctx).is_aws_bedrock_credentials_enabled(ctx);
+        // Cloud credentials removed for local version - always disabled
+        let is_usage_enabled = false;
 
         let aws_auth_refresh_command_editor = ctx.add_typed_action_view(move |ctx| {
             let appearance = Appearance::as_ref(ctx);
@@ -7482,8 +7469,8 @@ impl AwsBedrockWidget {
                     | AISettingsChangedEvent::AwsBedrockCredentialsEnabled { .. }
             ) {
                 let is_any_ai_enabled = AISettings::as_ref(ctx).is_any_ai_enabled(ctx);
-                let is_usage_enabled = is_any_ai_enabled
-                    && UserWorkspaces::as_ref(ctx).is_aws_bedrock_credentials_enabled(ctx);
+                // Cloud credentials removed for local version - always disabled
+                let is_usage_enabled = false;
 
                 AISettingsPageView::update_editor_interaction_state(
                     aws_auth_refresh_command_editor_clone.clone(),
@@ -7511,10 +7498,8 @@ impl AwsBedrockWidget {
             move |_, workspace, event, ctx| {
                 if let UserWorkspacesEvent::TeamsChanged = event {
                     let is_any_ai_enabled = AISettings::as_ref(ctx).is_any_ai_enabled(ctx);
-                    let is_usage_enabled = is_any_ai_enabled
-                        && workspace
-                            .as_ref(ctx)
-                            .is_aws_bedrock_credentials_enabled(ctx);
+                    // Cloud credentials removed for local version - always disabled
+                    let is_usage_enabled = false;
 
                     AISettingsPageView::update_editor_interaction_state(
                         aws_auth_refresh_command_editor_clone.clone(),
@@ -7560,8 +7545,9 @@ impl AwsBedrockWidget {
         );
         let is_toggleable =
             is_section_enabled && user_workspaces.is_aws_bedrock_credentials_toggleable();
-        let are_credentials_enabled = user_workspaces.is_aws_bedrock_credentials_enabled(app);
-        let is_usage_enabled = is_section_enabled && are_credentials_enabled;
+        // Cloud credentials removed for local version - always disabled
+        let are_credentials_enabled = false;
+        let is_usage_enabled = false;
         let toggle_description = if is_admin_enforced {
             "Warp loads and sends local AWS CLI credentials for Bedrock-supported models. This setting is managed by your organization.".to_string()
         } else {

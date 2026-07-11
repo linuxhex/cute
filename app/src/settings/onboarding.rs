@@ -119,8 +119,7 @@ fn apply_agent_settings(agent_settings: &AgentDevelopmentSettings, app: &mut App
     });
 
     // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
-    // let workspace_autonomy_settings = UserWorkspaces::as_ref(app).ai_autonomy_settings();
-    let workspace_autonomy_settings = Default::default(); // Default autonomy settings for local version
+    // Cloud workspace autonomy settings removed for local version
 
     AISettings::handle(app).update(app, |settings, ctx| {
         report_if_error!(settings
@@ -166,21 +165,12 @@ fn apply_agent_settings(agent_settings: &AgentDevelopmentSettings, app: &mut App
 
         let permissions = action_permissions_for_onboarding_autonomy(autonomy);
 
-        // Only set permissions that are not enforced by the workspace
-        if !workspace_autonomy_settings.has_override_for_code_diffs() {
-            profiles.set_apply_code_diffs(default_profile_id, &permissions.apply_code_diffs, ctx);
-        }
-        if !workspace_autonomy_settings.has_override_for_read_files() {
-            profiles.set_read_files(default_profile_id, &permissions.read_files, ctx);
-        }
-        if !workspace_autonomy_settings.has_override_for_execute_commands() {
-            profiles.set_execute_commands(default_profile_id, &permissions.execute_commands, ctx);
-        }
-        // Note: MCP permissions don't have a workspace-level override, so always set them
+        // Cloud workspace override checks removed for local version - set all permissions directly
+        profiles.set_apply_code_diffs(default_profile_id, &permissions.apply_code_diffs, ctx);
+        profiles.set_read_files(default_profile_id, &permissions.read_files, ctx);
+        profiles.set_execute_commands(default_profile_id, &permissions.execute_commands, ctx);
         profiles.set_mcp_permissions(default_profile_id, &permissions.mcp_permissions, ctx);
-        if !workspace_autonomy_settings.has_override_for_write_to_pty() {
-            profiles.set_write_to_pty(default_profile_id, &permissions.write_to_pty, ctx);
-        }
+        profiles.set_write_to_pty(default_profile_id, &permissions.write_to_pty, ctx);
     });
 }
 

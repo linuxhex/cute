@@ -1419,8 +1419,8 @@ impl AppAnalyticsWidget {
     }
 
     fn should_show_zdr_badge(&self, app: &AppContext) -> bool {
-        let setting = UserWorkspaces::as_ref(app).get_ugc_collection_enablement_setting();
-        matches!(setting, UgcCollectionEnablementSetting::Disable)
+        // Cloud UGC collection setting removed for local version - never show ZDR badge
+        false
     }
 }
 
@@ -1460,17 +1460,8 @@ impl SettingsWidget for AppAnalyticsWidget {
             TELEMETRY_DESCRIPTION
         };
 
-        let org_setting = UserWorkspaces::handle(app)
-            .as_ref(app)
-            .get_ugc_collection_enablement_setting();
-
-        let (is_toggleable, is_checked) = match org_setting {
-            UgcCollectionEnablementSetting::Enable => (false, true),
-            UgcCollectionEnablementSetting::Disable => (false, false),
-            UgcCollectionEnablementSetting::RespectUserSetting => {
-                (true, privacy_settings.is_telemetry_enabled)
-            }
-        };
+        // Cloud UGC collection setting removed for local version
+        let (is_toggleable, is_checked) = (true, privacy_settings.is_telemetry_enabled);
 
         let zdr_label_component = if self.should_show_zdr_badge(app) {
             Flex::row()

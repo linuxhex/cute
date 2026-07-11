@@ -901,8 +901,8 @@ fn save_app_state(conn: &mut SqliteConnection, app_state: &AppState) -> Result<(
                 origin_y,
                 quake_mode: window.quake_mode,
                 universal_search_width: window.universal_search_width,
-                cute_ai_width: window.cute_ai_width,
-                cute_drive_index_width: window.cute_drive_index_width,
+                warp_ai_width: window.warp_ai_width,
+                warp_drive_index_width: window.warp_drive_index_width,
                 left_panel_open: Some(window.left_panel_open),
                 vertical_tabs_panel_open: Some(window.vertical_tabs_panel_open),
                 fullscreen_state: window.fullscreen_state as i32,
@@ -1164,22 +1164,17 @@ fn save_pane_state(
                 .execute(conn)?;
         }
         LeafContents::Notebook(notebook_snapshot) => {
-            // 删除云端笔记本分支，只保留本地笔记本
-            let notebook_id = None; // 云端 notebook_id 已删除
+            // Cloud notebooks removed for local version - only process local notebooks
+            let notebook_id = None; // Cloud notebook_id removed
             let local_path = match notebook_snapshot {
                 NotebookPaneSnapshot::CloudNotebook { .. } => {
-                    // 云端笔记本分支已禁用，不处理
-                    None
+                    // Cloud notebooks disabled, skip processing
+                    return Ok(()); // Skip this pane entirely
                 },
                 NotebookPaneSnapshot::LocalFileNotebook { path } => {
                     Some(encode_path(path.clone()))
                 }
             };
-
-            // 如果是云端笔记本，跳过不处理
-            if local_path.is_none() {
-                continue;
-            }
 
             let notebook = model::NewNotebookPane {
                 id,
@@ -1235,20 +1230,20 @@ fn save_pane_state(
             }
         }
         LeafContents::EnvVarCollection(env_var_collection_snapshot) => {
-            // 删除云端环境变量集合，跳过不处理
+            // Cloud environment variable collections removed for local version - skip processing
             match env_var_collection_snapshot {
                 EnvVarCollectionPaneSnapshot::CloudEnvVarCollection { .. } => {
-                    // 云端环境变量集合已禁用，跳过不处理
-                    continue;
+                    // Cloud environment variable collections disabled, skip processing
+                    return Ok(()); // Skip this pane entirely
                 }
             }
         }
         LeafContents::Workflow(workflow_pane_snapshot) => {
-            // 删除云端工作流，跳过不处理
+            // Cloud workflows removed for local version - skip processing
             match workflow_pane_snapshot {
                 WorkflowPaneSnapshot::CloudWorkflow { .. } => {
-                    // 云端工作流已禁用，跳过不处理
-                    continue;
+                    // Cloud workflows disabled, skip processing
+                    return Ok(()); // Skip this pane entirely
                 }
             }
         }
@@ -1853,7 +1848,7 @@ fn save_workspace(conn: &mut SqliteConnection, workspace: WorkspaceMetadata) -> 
         for member in &team.members {
             let new_member = model::NewTeamMember {
                 team_id: team_db_id,
-                user_uid: member.uid.as_string(),
+                user_uid: member.uid.clone(),
                 email: member.email.clone(),
                 role: serde_json::to_string(&member.role).unwrap_or_default(),
             };
@@ -1998,7 +1993,7 @@ fn save_workspaces(
                 team.members.into_iter().filter_map(move |member| {
                     Some(model::NewTeamMember {
                         team_id: team_id_match?,
-                        user_uid: member.uid.as_string(),
+                        user_uid: member.uid.clone(),
                         email: member.email,
                         role: serde_json::to_string(&member.role).unwrap_or_default(),
                     })
@@ -2634,8 +2629,8 @@ fn read_sqlite_data(
                 quake_mode: window.quake_mode,
                 bounds,
                 universal_search_width: window.universal_search_width,
-                cute_ai_width: window.cute_ai_width,
-                cute_drive_index_width: window.cute_drive_index_width,
+                warp_ai_width: window.warp_ai_width,
+                warp_drive_index_width: window.warp_drive_index_width,
                 left_panel_open: window_left_panel_open,
                 vertical_tabs_panel_open: window.vertical_tabs_panel_open.unwrap_or(false),
                 fullscreen_state: fullscreen_state_val,
@@ -2648,46 +2643,22 @@ fn read_sqlite_data(
         })
         .collect();
 
-    let object_metadata =
-        schema::object_metadata::dsl::object_metadata.load::<model::ObjectMetadata>(conn)?;
-    let object_permissions = schema::object_permissions::dsl::object_permissions
-        .load::<model::ObjectPermissions>(conn)?;
+    // Cloud object metadata and permissions loading removed for local version
+    let object_metadata: Vec<model::ObjectMetadata> = Vec::new();
+    let object_permissions: Vec<model::ObjectPermissions> = Vec::new();
 
-    // Cache metadata and permissions by id so that we aren't doing an n^2 lookups for each object type.
-    let _metadata_by_id = object_metadata
-        .into_iter()
-        .map(|metadata| {
-            let object_type = if metadata
-                .object_type
-                .starts_with(GENERIC_STRING_OBJECT_PREFIX)
-            {
-                GENERIC_STRING_OBJECT_PREFIX.to_owned()
-            } else {
-                metadata.object_type.to_owned()
-            };
-            // Shareable object ids aren't unique across object types, so the object type needs to be
-            // part of the hashmap key.  For generic objects, they are all in the same table,
-            // so it's safe to use the generic prefix as part of the key.
-            ((metadata.shareable_object_id, object_type), metadata)
-        })
-        .collect::<HashMap<_, _>>();
-    let _permissions_by_id = object_permissions
-        .into_iter()
-        .map(|permissions| (permissions.object_metadata_id, permissions))
-        .collect::<HashMap<_, _>>();
-
-    let cloud_objects: Vec<Box<dyn CloudObject>> = Vec::new();
-    // Cloud objects loading removed with cloud services
+    // Cloud objects removed for local version - empty collections
+    let cloud_objects: Vec<Box<dyn CloudObjectStub>> = Vec::new();
 
     let db_teams: Vec<model::Team> = schema::teams::dsl::teams.load(conn)?;
 
     let team_member_rows: Vec<model::TeamMemberRow> =
         schema::team_members::dsl::team_members.load(conn)?;
-    let members_by_team_id: HashMap<i32, Vec<TeamMember>> =
+    let members_by_team_id: HashMap<i32, Vec<TeamMemberStub>> =
         team_member_rows
             .into_iter()
             .fold(HashMap::new(), |mut acc, row| {
-                let member = TeamMember {
+                let member = TeamMemberStub {
                     uid: UserUid::new(&row.user_uid),
                     email: row.email,
                     role: serde_json::from_str(&row.role)

@@ -1191,7 +1191,7 @@ impl CodePageWidget {
     ) -> Box<dyn Element> {
         let ui_builder = appearance.ui_builder();
         let theme = appearance.theme();
-        let admin_setting = UserWorkspaces::as_ref(app).team_allows_codebase_context();
+        // Cloud admin setting removed for local version
 
         let label = ui_builder
             .span(CODEBASE_INDEXING_LABEL)
@@ -1208,13 +1208,11 @@ impl CodePageWidget {
             .switch(self.switch_state.clone())
             .check(UserWorkspaces::as_ref(app).is_codebase_context_enabled(app));
 
-        let disabled_tooltip_text = match admin_setting {
-            AdminEnablementSetting::Enable => Some(INDEXING_WORKSPACE_ENABLED_ADMIN_TEXT),
-            AdminEnablementSetting::Disable => Some(INDEXING_DISABLED_ADMIN_TEXT),
-            AdminEnablementSetting::RespectUserSetting if !global_ai_enabled => {
-                Some(INDEXING_DISABLED_GLOBAL_AI_TEXT)
-            }
-            AdminEnablementSetting::RespectUserSetting => None,
+        // Cloud admin setting removed for local version
+        let disabled_tooltip_text = if !global_ai_enabled {
+            Some(INDEXING_DISABLED_GLOBAL_AI_TEXT)
+        } else {
+            None
         };
 
         let toggle_element = if let Some(tooltip_text) = disabled_tooltip_text {
@@ -2455,18 +2453,16 @@ impl SettingsWidget for CodebaseIndexingCategorizedWidget {
         let mut content = Flex::column();
 
         // Codebase indexing toggle using render_body_item for consistent styling
-        let admin_setting = UserWorkspaces::as_ref(app).team_allows_codebase_context();
+        // Cloud admin setting removed for local version
         let switch = ui_builder
             .switch(self.inner.switch_state.clone())
             .check(codebase_context_enabled);
 
-        let disabled_tooltip_text = match admin_setting {
-            AdminEnablementSetting::Enable => Some(INDEXING_WORKSPACE_ENABLED_ADMIN_TEXT),
-            AdminEnablementSetting::Disable => Some(INDEXING_DISABLED_ADMIN_TEXT),
-            AdminEnablementSetting::RespectUserSetting if !global_ai_enabled => {
-                Some(INDEXING_DISABLED_GLOBAL_AI_TEXT)
-            }
-            AdminEnablementSetting::RespectUserSetting => None,
+        // Cloud admin setting removed for local version
+        let disabled_tooltip_text = if !global_ai_enabled {
+            Some(INDEXING_DISABLED_GLOBAL_AI_TEXT)
+        } else {
+            None
         };
 
         let toggle_element = if let Some(tooltip_text) = disabled_tooltip_text {

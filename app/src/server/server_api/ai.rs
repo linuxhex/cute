@@ -1549,33 +1549,8 @@ impl AIClient for ServerApi {
             cute_graphql::queries::get_request_limit_info::UserResult::UserOutput(user_output) => {
                 let request_limit_info = user_output.user.request_limit_info.into();
 
-                let workspace_bonus_grants = user_output
-                    .user
-                    .workspaces
-                    .into_iter()
-                    .filter(|workspace| workspace.uid != PLACEHOLDER_WORKSPACE_UID.into())
-                    .flat_map(|workspace| {
-                        let workspace_uid =
-                            WorkspaceUid::from(ServerId::from_string_lossy(workspace.uid.inner()));
-                        workspace
-                            .bonus_grants_info
-                            .grants
-                            .into_iter()
-                            .map(move |grant| {
-                                BonusGrant::from_gql_bonus_grant(
-                                    grant,
-                                    BonusGrantScope::Workspace(workspace_uid),
-                                )
-                            })
-                    });
-
-                let bonus_grants: Vec<BonusGrant> = user_output
-                    .user
-                    .bonus_grants
-                    .into_iter()
-                    .map(|grant| BonusGrant::from_gql_bonus_grant(grant, BonusGrantScope::User))
-                    .chain(workspace_bonus_grants)
-                    .collect();
+                // Cloud bonus grants removed for local version - empty list
+                let bonus_grants: Vec<BonusGrant> = Vec::new();
 
                 Ok(RequestUsageInfo {
                     request_limit_info,
@@ -2699,6 +2674,28 @@ impl From<cute_graphql::queries::get_feature_model_choices::LlmModelHost> for LL
                 LLMModelHost::CustomEndpoint
             }
             cute_graphql::queries::get_feature_model_choices::LlmModelHost::Other(value) => {
+                report_error!(anyhow!(
+                    "Unknown LlmModelHost '{value}'. Make sure to update client GraphQL types!"
+                ));
+                LLMModelHost::Unknown
+            }
+        }
+    }
+}
+
+impl From<cute_graphql::workspace::LlmModelHost> for LLMModelHost {
+    fn from(value: cute_graphql::workspace::LlmModelHost) -> Self {
+        match value {
+            cute_graphql::workspace::LlmModelHost::DirectApi => {
+                LLMModelHost::DirectApi
+            }
+            cute_graphql::workspace::LlmModelHost::AwsBedrock => {
+                LLMModelHost::AwsBedrock
+            }
+            cute_graphql::workspace::LlmModelHost::CustomEndpoint => {
+                LLMModelHost::CustomEndpoint
+            }
+            cute_graphql::workspace::LlmModelHost::Other(value) => {
                 report_error!(anyhow!(
                     "Unknown LlmModelHost '{value}'. Make sure to update client GraphQL types!"
                 ));
