@@ -11,9 +11,10 @@ use cute_graphql::scalars::time::ServerTimestamp;
 
 use crate::auth::UserUid;
 use crate::drive::sharing::{SharingAccessLevel, Subject, TeamKind, UserKind};
-use crate::ids::{FolderId, ServerId, SyncId};
+use crate::ids::{FolderId, GenericStringObjectId, ServerId, SyncId};
 
 pub mod model;
+pub mod models;
 mod generic_string_model;
 
 pub use generic_string_model::*;
@@ -730,15 +731,16 @@ pub trait ServerObjectModel: std::fmt::Debug + Clone + Send + Sync + 'static {
 }
 
 /// Status of conflicts for cloud objects.
-#[derive(Clone, Debug)]
-pub enum ConflictStatus<T: ServerObjectModel> {
-    /// There are conflicting changes with the server version.
-    ConflictingChanges { object: Box<T> },
+#[derive(Clone, Debug, Default)]
+pub enum ConflictStatus<T> {
     /// No conflicts detected.
+    #[default]
     NoConflicts,
+    /// There are conflicting changes with the server version.
+    ConflictingChanges { object: std::sync::Arc<T> },
 }
 
-impl<T: ServerObjectModel> ConflictStatus<T> {
+impl<T> ConflictStatus<T> {
     /// Returns true if there are conflicts.
     pub fn has_conflicts(&self) -> bool {
         matches!(self, ConflictStatus::ConflictingChanges { .. })
@@ -1002,4 +1004,306 @@ impl From<Owner> for cute_graphql::object_permissions::Owner {
             },
         }
     }
+}
+
+// ===== Cloud Object Types (restored signatures) =====
+// Type definitions restored from the original cloud_object submodules so that signatures
+// (fields, variants, generics) match what the app expects. Network/sync methods remain
+// stubbed (return Err) at the CloudModelType trait level.
+
+use std::marker::PhantomData;
+use std::sync::Arc;
+
+use crate::ids::{ClientId, ServerIdAndType};
+
+/// A portable payload for persisting or otherwise upserting a cloud object without app-local
+/// event types.
+#[derive(Clone, Debug)]
+pub struct CloudObjectUpsertParams<M> {
+    pub id: SyncId,
+    pub object_type: ObjectType,
+    pub metadata: CloudObjectMetadata,
+    pub permissions: CloudObjectPermissions,
+    pub model: M,
+}
+
+/// An object that maps directly to the data returned from the server for a given model and id
+/// type.
+pub struct GenericServerObject<K, M> {
+    pub id: SyncId,
+    pub model: M,
+    pub metadata: ServerMetadata,
+    pub permissions: ServerPermissions,
+    _marker: PhantomData<fn() -> K>,
+}
+
+impl<K, M> Clone for GenericServerObject<K, M>
+where
+    M: Clone,
+{
+    fn clone(&self) -> Self {
+        Self::new(
+            self.id,
+            self.model.clone(),
+            self.metadata.clone(),
+            self.permissions.clone(),
+        )
+    }
+}
+
+impl<K, M> std::fmt::Debug for GenericServerObject<K, M>
+where
+    M: std::fmt::Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("GenericServerObject")
+            .field("id", &self.id)
+            .field("model", &self.model)
+            .field("metadata", &self.metadata)
+            .field("permissions", &self.permissions)
+            .finish()
+    }
+}
+
+impl<K, M> GenericServerObject<K, M> {
+    /// Constructs a server object from its server-provided parts.
+    pub fn new(
+        id: SyncId,
+        model: M,
+        metadata: ServerMetadata,
+        permissions: ServerPermissions,
+    ) -> Self {
+        Self {
+            id,
+            model,
+            metadata,
+            permissions,
+            _marker: PhantomData,
+        }
+    }
+
+    /// Gets a reference to the model held by the object.
+    pub fn model(&self) -> &M {
+        &self.model
+    }
+}
+
+/// A generic implementation of cloud objects that can be used for any model and id types.
+///
+/// Rather than directly implementing the CloudObject trait, CloudObjects can implement
+/// GenericCloudObject<K, M> where K is their id type and M is their model type.
+#[derive(Clone, Debug)]
+pub struct GenericCloudObject<K, M> {
+    pub id: SyncId,
+    pub metadata: CloudObjectMetadata,
+    pub permissions: CloudObjectPermissions,
+    /// Tracks whether this object has a conflict with the server version. Runtime state.
+    pub conflict_status: ConflictStatus<GenericServerObject<K, M>>,
+    // Intentionally private to prevent holding references outside this struct. Arc enables
+    // clone-on-write semantics for the model.
+    model: Arc<M>,
+}
+
+impl<K, M> PartialEq for GenericCloudObject<K, M>
+where
+    M: PartialEq,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id && self.model() == other.model()
+    }
+}
+
+impl<K, M> GenericCloudObject<K, M> {
+    /// Gets a reference to the model held by the object.
+    pub fn model(&self) -> &M {
+        &self.model
+    }
+
+    /// Returns a shared handle to the model.
+    pub fn shared_model(&self) -> Arc<M> {
+        self.model.clone()
+    }
+
+    /// Sets a new version of the model on the object, replacing the old version.
+    pub fn set_model(&mut self, model: M) {
+        self.model = model.into();
+    }
+
+    /// Constructs a new instance with the given id, model, metadata and permissions.
+    pub fn new(
+        id: SyncId,
+        model: M,
+        metadata: CloudObjectMetadata,
+        permissions: CloudObjectPermissions,
+    ) -> Self {
+        Self {
+            id,
+            model: model.into(),
+            metadata,
+            permissions,
+            conflict_status: ConflictStatus::NoConflicts,
+        }
+    }
+
+    /// Creates a new GenericCloudObject with the given model, owner, and initial folder id.
+    /// This is for the local creation flow, as opposed to creating from a server update.
+    pub fn new_local(
+        model: M,
+        owner: Owner,
+        initial_folder_id: Option<SyncId>,
+        client_id: ClientId,
+    ) -> Self {
+        Self {
+            id: SyncId::ClientId(client_id),
+            model: model.into(),
+            metadata: CloudObjectMetadata {
+                pending_changes_statuses: CloudObjectStatuses {
+                    content_sync_status: CloudObjectSyncStatus::InFlight(NumInFlightRequests(1)),
+                    has_pending_metadata_change: false,
+                    has_pending_permissions_change: false,
+                    pending_untrash: false,
+                    pending_delete: false,
+                },
+                folder_id: initial_folder_id,
+                revision: Default::default(),
+                metadata_last_updated_ts: Default::default(),
+                current_editor_uid: Default::default(),
+                trashed_ts: Default::default(),
+                is_welcome_object: false,
+                creator_uid: None,
+                last_editor_uid: None,
+                last_task_run_ts: None,
+            },
+            permissions: CloudObjectPermissions {
+                owner,
+                anyone_with_link: None,
+                guests: Default::default(),
+                permissions_last_updated_ts: None,
+            },
+            conflict_status: ConflictStatus::NoConflicts,
+        }
+    }
+
+    /// Creates a new [`GenericCloudObject`] from a [`GenericServerObject`].
+    pub fn new_from_server(server_object: GenericServerObject<K, M>) -> Self {
+        Self {
+            id: server_object.id,
+            model: server_object.model.into(),
+            metadata: CloudObjectMetadata::new_from_server(server_object.metadata),
+            permissions: CloudObjectPermissions::new_from_server(server_object.permissions),
+            conflict_status: ConflictStatus::NoConflicts,
+        }
+    }
+
+    /// Marks this object as being in conflict with the provided object.
+    pub fn set_conflicting_object(&mut self, object: Arc<GenericServerObject<K, M>>) {
+        self.conflict_status = ConflictStatus::ConflictingChanges { object };
+    }
+
+    pub fn update_from_server_object(&mut self, server_object: GenericServerObject<K, M>) {
+        if self.metadata.has_pending_content_changes() || self.conflict_status.has_conflicts() {
+            self.conflict_status = ConflictStatus::ConflictingChanges {
+                object: Arc::new(server_object),
+            };
+        } else {
+            self.metadata
+                .update_revision_from_server(&server_object.metadata);
+            self.model = server_object.model.into();
+            self.conflict_status = ConflictStatus::NoConflicts;
+        }
+    }
+
+    /// Returns portable upsert parameters for this object.
+    pub fn upsert_params(&self, object_type: ObjectType) -> CloudObjectUpsertParams<M>
+    where
+        M: Clone,
+    {
+        CloudObjectUpsertParams {
+            id: self.id,
+            object_type,
+            metadata: self.metadata.clone(),
+            permissions: self.permissions.clone(),
+            model: self.model().clone(),
+        }
+    }
+
+    /// Converts this object into portable upsert parameters.
+    pub fn into_upsert_params(self, object_type: ObjectType) -> CloudObjectUpsertParams<M>
+    where
+        M: Clone,
+    {
+        let Self {
+            id,
+            metadata,
+            permissions,
+            model,
+            conflict_status: _,
+        } = self;
+        let model = Arc::try_unwrap(model).unwrap_or_else(|model| (*model).clone());
+        CloudObjectUpsertParams {
+            id,
+            object_type,
+            metadata,
+            permissions,
+            model,
+        }
+    }
+}
+
+impl<K, M> From<CloudObjectUpsertParams<M>> for GenericCloudObject<K, M> {
+    fn from(params: CloudObjectUpsertParams<M>) -> Self {
+        Self::new(params.id, params.model, params.metadata, params.permissions)
+    }
+}
+
+// ===== Creation / Update types (from creation.rs / update.rs) =====
+// Only the data shapes are restored; network send_* methods live on the CloudModelType trait
+// where they are already stubbed to return Err.
+
+/// Helper struct that contains all the info needed to create an object on the server.
+#[derive(Clone, Debug)]
+pub struct CreateObjectRequest {
+    pub serialized_model: Option<SerializedModel>,
+    pub title: Option<String>,
+    pub owner: Owner,
+    pub client_id: ClientId,
+    pub initial_folder_id: Option<FolderId>,
+    pub entrypoint: CloudObjectEventEntrypoint,
+}
+
+/// The data returned by the server when an object is created, generic to any object type.
+#[derive(Debug, Clone)]
+pub struct CreatedCloudObject {
+    pub client_id: ClientId,
+    pub revision_and_editor: RevisionAndLastEditor,
+    pub metadata_ts: ServerTimestamp,
+    pub server_id_and_type: ServerIdAndType,
+    pub creator_uid: Option<String>,
+    pub permissions: ServerPermissions,
+}
+
+/// Result of attempting to create a cloud object.
+#[derive(Debug, Clone)]
+pub enum CreateCloudObjectResult {
+    /// The object creation was successful.
+    Success {
+        created_cloud_object: CreatedCloudObject,
+    },
+    /// The object creation was denied due to an expected user error.
+    UserFacingError(String),
+    /// The object creation was rejected because the generic string object had already been
+    /// created by another client.
+    GenericStringObjectUniqueKeyConflict,
+}
+
+/// Result of attempting to update a cloud object.
+#[derive(Debug)]
+pub enum UpdateCloudObjectResult<T> {
+    /// The update was successful and the object now has the specified revision.
+    Success {
+        revision_and_editor: RevisionAndLastEditor,
+    },
+    /// The update was rejected because the update was not sent from the current revision in
+    /// storage. The object and revision in storage are returned.
+    Rejected { object: T },
 }

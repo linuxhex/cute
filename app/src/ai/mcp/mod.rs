@@ -57,8 +57,8 @@ pub use crate::cloud_stub_types::models::mcp::{
     StaticHeader, TransportType,
 };
 pub use crate::cloud_stub_types::models::mcp::CloudMCPServer;
-// Import MCPServerState from cute_server_client (it's used by other parts of the codebase)
-pub use cute_server_client::cloud_object::models::MCPServerState;
+// Use local MCPServerState definition (includes Authenticating, Enabled, Disabled variants)
+pub use crate::cloud_stub_types::models::mcp::MCPServerState;
 pub use templatable::{JsonTemplate, TemplatableMCPServer, TemplateVariable};
 pub mod logs;
 pub mod templatable_installation;

@@ -55,6 +55,8 @@ pub enum MCPServerState {
     Running,
     ShuttingDown,
     FailedToStart,
+    Enabled,
+    Disabled,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

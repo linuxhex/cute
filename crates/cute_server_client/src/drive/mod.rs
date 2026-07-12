@@ -63,6 +63,20 @@ impl CloudObjectTypeAndId {
         }
     }
 
+    /// Returns a combined string representation of the type and hashed ID for SQLite storage.
+    /// This method is used by persistence layer.
+    pub fn sqlite_type_and_uid_hash(self) -> String {
+        let hash = self.sqlite_uid_hash();
+        let type_prefix = match self {
+            CloudObjectTypeAndId::Notebook(_) => "Notebook",
+            CloudObjectTypeAndId::Workflow(_) => "Workflow",
+            CloudObjectTypeAndId::Folder(_) => "Folder",
+            CloudObjectTypeAndId::EnvVarCollection(_) => "EnvVarCollection",
+            CloudObjectTypeAndId::GenericStringObject { .. } => "GenericStringObject",
+        };
+        format!("{}-{}", type_prefix, hash)
+    }
+
     pub fn object_id_type(&self) -> ObjectIdType {
         match self {
             CloudObjectTypeAndId::Notebook(_) => ObjectIdType::Notebook,

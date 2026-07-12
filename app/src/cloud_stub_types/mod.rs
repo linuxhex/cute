@@ -193,6 +193,52 @@ pub use models::{
     CloudFolder, CloudFolderModel, CloudNotebook, CloudNotebookModel, NotebookId,
 };
 
+// ===== Minimal Stub Types for Cloud Object Operations =====
+// These types provide minimal definitions for cloud operations that have been removed
+
+/// Information about server object creation.
+/// Minimal stub for server creation info.
+#[derive(Clone, Debug)]
+pub struct ServerCreationInfo {
+    pub server_id_and_type: CloudObjectTypeAndId,
+    pub creator_uid: Option<String>,
+}
+
+/// Trait for server objects that can be converted to/from server representations.
+/// This trait is dyn-compatible (object-safe).
+pub trait ServerObject: std::fmt::Debug + Send + Sync + 'static {
+    /// Returns the server ID for this object.
+    fn server_id(&self) -> Option<crate::server::ids::ServerId>;
+
+    /// Clone the object. This is needed because Clone is not object-safe.
+    fn clone_box(&self) -> Box<dyn ServerObject>;
+}
+
+impl Clone for Box<dyn ServerObject> {
+    fn clone(&self) -> Self {
+        self.clone_box()
+    }
+}
+
+/// Result of bulk creating cloud objects.
+#[derive(Clone, Debug)]
+pub struct BulkCreateCloudObjectResult {
+    pub created_objects: Vec<CreateCloudObjectResult>,
+}
+
+/// Request to bulk create generic string objects.
+#[derive(Clone, Debug)]
+pub struct BulkCreateGenericStringObjectsRequest {
+    pub objects: Vec<CreateObjectRequest>,
+}
+
+/// Objects to update in a bulk operation. Local stub (cloud sync removed);
+/// only used as an unused parameter type, so a unit payload keeps it Send + Clone.
+#[derive(Debug, Default, Clone)]
+pub struct ObjectsToUpdate {
+    pub objects: Vec<()>,
+}
+
 // REMOVED: SharedSessionSource and related types - cloud feature disabled in local version
 // pub use crate::terminal::model::terminal_model::{SharedSessionSource, SessionSourceType};
 
