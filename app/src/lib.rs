@@ -1179,7 +1179,22 @@ pub(crate) fn initialize_app(
 
     ctx.add_singleton_model(|ctx| AIRequestUsageModel::new(ai_client, ctx));
 
-    // COMMENTED: UserWorkspaces disabled in local version
+    // Register CloudModel as singleton (stub implementation for local version)
+    ctx.add_singleton_model(|ctx| {
+        let model_event_sender = GlobalResourceHandlesProvider::as_ref(ctx).get().model_event_sender.clone();
+        CloudModel::new(model_event_sender, Vec::new(), None)
+    });
+
+    // Register ChangelogModel as singleton
+    ctx.add_singleton_model({
+        let server_api = server_api.clone();
+        |_ctx| ChangelogModel::new(server_api)
+    });
+
+    // Register UserWorkspaces stub for local version
+    ctx.add_singleton_model(|_ctx| UserWorkspaces::default());
+
+    // COMMENTED: Original UserWorkspaces initialization disabled in local version
     // ctx.add_singleton_model(|ctx| {
     //     UserWorkspaces::new(
     //         server_api_provider.as_ref(ctx).get_team_client(),
