@@ -999,7 +999,6 @@ pub(crate) fn initialize_app(
 
     // Register an implementation of the secure storage service.
     // 使用 no-op 存储避免 macOS keychain 弹窗提示
-    // 由于设置了 SkipFirebaseAnonymousUser feature flag，不需要持久化用户认证信息
     cuteui_extras::secure_storage::register_noop(&data_domain, ctx);
 
     // One-time migration: give Preview its own config directory by

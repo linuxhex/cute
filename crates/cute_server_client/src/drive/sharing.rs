@@ -1,3 +1,5 @@
+// Sharing types stub -保留了关键的类型定义用于 cloud_stub_types
+
 use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
@@ -119,6 +121,7 @@ pub enum LinkSharingSubjectType {
     None,
     Anyone,
 }
+
 /// A `Subject` is someone with access to a shared object, like its owner or a directly-added
 /// guest.
 #[derive(Debug, Clone, PartialEq)]

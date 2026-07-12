@@ -267,6 +267,15 @@ fn project_dirs_for_app_id(
 /// * [`containerURLForSecurityApplicationGroupIdentifier`](https://developer.apple.com/documentation/foundation/filemanager/containerurl(forsecurityapplicationgroupidentifier:)?language=objc)
 #[cfg(target_os = "macos")]
 pub fn app_group_container_path() -> Option<PathBuf> {
+    // Cute(Oss) 无 Apple 团队签名 / app group entitlement，而下面的 group id
+    // 写死的是官方 Warp 的（`{APPLE_TEAM_ID}.dev.warp`）。访问 Warp 的 Group
+    // Container 时 `tempfile_in` 的 open() 会触发权限仲裁、永久阻塞主线程，
+    // 导致应用卡在 finishLaunching、窗口无法创建。Oss 渠道跳过它，改用普通
+    // 的 state_dir（~/Library/Application Support/dev.cute.Cute/）。
+    if ChannelState::channel() == Channel::Oss {
+        return None;
+    }
+
     use std::sync::LazyLock;
     static CONTAINER_PATH: LazyLock<Option<PathBuf>> = LazyLock::new(|| {
         use objc2_foundation::{NSFileManager, NSString};

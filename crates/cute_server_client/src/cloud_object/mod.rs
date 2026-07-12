@@ -5,39 +5,18 @@ use std::str::FromStr;
 use anyhow::{Result, anyhow};
 use chrono::{DateTime, Utc};
 use derivative::Derivative;
-use pathfinder_geometry::vector::vec2f;
 use serde::{Deserialize, Serialize};
-use cute_core::ui::Icon;
-use cute_core::ui::appearance::Appearance;
-use cute_core::ui::theme::Fill;
 use cute_graphql::object_permissions::AccessLevel;
 use cute_graphql::scalars::time::ServerTimestamp;
-use cuteui_core::Element;
-use cuteui_core::elements::{
-    Align, ChildAnchor, ConstrainedBox, Hoverable, MouseStateHandle, OffsetPositioning,
-    ParentAnchor, ParentElement, ParentOffsetBounds, Stack,
-};
-use cuteui_core::ui_components::components::UiComponent;
 
 use crate::auth::UserUid;
 use crate::drive::sharing::{SharingAccessLevel, Subject, TeamKind, UserKind};
 use crate::ids::{FolderId, ServerId, SyncId};
 
-mod creation;
-pub mod breadcrumbs;
-mod generic_cloud_object;
-mod generic_string_model;
 pub mod model;
-pub mod models;
-mod server_object;
-mod update;
+mod generic_string_model;
 
-pub use creation::*;
-pub use generic_cloud_object::*;
 pub use generic_string_model::*;
-pub use models::*;
-pub use server_object::*;
-pub use update::*;
 /// The type of object id each ObjectType corresponds to.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum ObjectIdType {
@@ -456,11 +435,7 @@ pub enum CloudObjectSyncStatus {
     Errored,
 }
 
-const SYNC_ICON_DIMENSIONS: f32 = 16.;
 
-const SYNC_STATUS_TOOLTIP_LOCAL_ONLY: &str = "Saved locally";
-const SYNC_STATUS_TOOLTIP_INFLIGHT: &str = "Saving";
-const SYNC_STATUS_TOOLTIP_ERROR: &str = "Failed to save";
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct CloudObjectPermissions {
@@ -727,86 +702,7 @@ impl CloudObjectStatuses {
         }
     }
 
-    pub fn render_icon(
-        &self,
-        sync_queue_is_dequeueing: bool,
-        hover_state: MouseStateHandle,
-        appearance: &Appearance,
-    ) -> Option<Box<dyn Element>> {
-        let theme = appearance.theme();
-        let has_in_flight_requests = match &self.content_sync_status {
-            CloudObjectSyncStatus::InFlight(reqs) => reqs.0 > 0,
-            _ => false,
-        };
 
-        let should_show_local_only_indicator = has_in_flight_requests && !sync_queue_is_dequeueing;
-        let should_show_syncing_indicator = has_in_flight_requests
-            || self.has_pending_metadata_change
-            || self.has_pending_permissions_change
-            || self.pending_untrash;
-        let should_show_error_indicator = matches!(
-            self.content_sync_status,
-            CloudObjectSyncStatus::Errored | CloudObjectSyncStatus::InConflict
-        );
-
-        let icon_and_tooltip_text = if should_show_local_only_indicator {
-            Some((
-                Icon::Laptop.to_cuteui_icon(theme.main_text_color(theme.surface_1())),
-                SYNC_STATUS_TOOLTIP_LOCAL_ONLY,
-            ))
-        } else if should_show_syncing_indicator {
-            Some((
-                Icon::Refresh.to_cuteui_icon(theme.sub_text_color(theme.surface_2())),
-                SYNC_STATUS_TOOLTIP_INFLIGHT,
-            ))
-        } else if should_show_error_indicator {
-            Some((
-                Icon::AlertTriangle.to_cuteui_icon(Fill::Solid(theme.ui_error_color())),
-                SYNC_STATUS_TOOLTIP_ERROR,
-            ))
-        } else {
-            None
-        };
-
-        if let Some((icon, tooltip_text)) = icon_and_tooltip_text {
-            return Some(
-                Align::new(
-                    Hoverable::new(hover_state, move |hover_state| {
-                        let mut stack = Stack::new().with_child(
-                            ConstrainedBox::new(icon.finish())
-                                .with_height(SYNC_ICON_DIMENSIONS)
-                                .with_width(SYNC_ICON_DIMENSIONS)
-                                .finish(),
-                        );
-
-                        if hover_state.is_hovered() {
-                            let tooltip = appearance
-                                .ui_builder()
-                                .tool_tip(tooltip_text.to_string())
-                                .build()
-                                .finish();
-
-                            stack.add_positioned_overlay_child(
-                                tooltip,
-                                OffsetPositioning::offset_from_parent(
-                                    vec2f(0., -24.),
-                                    ParentOffsetBounds::Unbounded,
-                                    ParentAnchor::Center,
-                                    ChildAnchor::Center,
-                                ),
-                            );
-                        }
-
-                        stack.finish()
-                    })
-                    .finish(),
-                )
-                .finish(),
-            );
-        }
-
-        None
-    }
 }
 
 // Used for event tracking purposes, matches
@@ -827,6 +723,27 @@ pub enum CloudObjectEventEntrypoint {
 // A newtype for a serialized model that wraps a plain string.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SerializedModel(String);
+
+/// A trait for models that represent server objects.
+pub trait ServerObjectModel: std::fmt::Debug + Clone + Send + Sync + 'static {
+    fn object_type(&self) -> ObjectType;
+}
+
+/// Status of conflicts for cloud objects.
+#[derive(Clone, Debug)]
+pub enum ConflictStatus<T: ServerObjectModel> {
+    /// There are conflicting changes with the server version.
+    ConflictingChanges { object: Box<T> },
+    /// No conflicts detected.
+    NoConflicts,
+}
+
+impl<T: ServerObjectModel> ConflictStatus<T> {
+    /// Returns true if there are conflicts.
+    pub fn has_conflicts(&self) -> bool {
+        matches!(self, ConflictStatus::ConflictingChanges { .. })
+    }
+}
 
 impl SerializedModel {
     pub fn new(s: String) -> Self {

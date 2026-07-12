@@ -24,9 +24,6 @@ fn main() -> Result<()> {
     if cfg!(debug_assertions) {
         state = state.with_additional_features(cute_core::features::DEBUG_FLAGS);
     }
-    // 跳过登录，直接进入主页面
-    state = state
-        .with_additional_features(&[cute_core::features::FeatureFlag::SkipFirebaseAnonymousUser]);
     ChannelState::set(state);
 
     cute::run()
