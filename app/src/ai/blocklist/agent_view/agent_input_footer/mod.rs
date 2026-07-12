@@ -1944,14 +1944,9 @@ impl AgentInputFooter {
     /// user is anonymous or logged out, since session sharing requires a
     /// real account.
     fn sync_remote_control_button(&self, ctx: &mut ViewContext<Self>) {
-        let login_required = AuthStateProvider::as_ref(ctx)
-            .get()
-            .is_anonymous_or_logged_out();
-        let tooltip = if login_required {
-            START_REMOTE_CONTROL_LOGIN_REQUIRED_TOOLTIP
-        } else {
-            START_REMOTE_CONTROL_TOOLTIP
-        };
+        // Cute: 本地版本始终为已登录状态，不需要登录提示
+        let login_required = false;
+        let tooltip = START_REMOTE_CONTROL_TOOLTIP;
         self.start_remote_control_button.update(ctx, |button, ctx| {
             button.set_disabled(login_required, ctx);
             button.set_tooltip(Some(tooltip), ctx);

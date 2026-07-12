@@ -2504,12 +2504,8 @@ impl WorkflowView {
         let upgrade_link = "".to_string(); // Default empty link for local version
 
         let window_id = ctx.window_id();
-        let toast_link = if self.auth_state.is_anonymous_or_logged_out() {
-            ToastLink::new("Upgrade for more credits.".into())
-                .with_onclick_action(WorkspaceAction::AttemptLoginGatedAIUpgrade)
-        } else {
-            ToastLink::new("Upgrade for more credits.".into()).with_href(upgrade_link)
-        };
+        // Cute: 本地版本始终不为匿名用户，直接显示升级链接
+        let toast_link = ToastLink::new("Upgrade for more credits.".into()).with_href(upgrade_link);
 
         crate::workspace::ToastStack::handle(ctx).update(ctx, |stack, ctx| {
             stack.add_ephemeral_toast(

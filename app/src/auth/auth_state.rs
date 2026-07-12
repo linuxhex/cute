@@ -139,12 +139,14 @@ impl AuthState {
     //     }
     // }
 
+    // Cute: 本地版本始终处于已登录状态
     pub fn is_logged_in(&self) -> bool {
-        self.credentials.read().is_some()
+        true
     }
 
+    // Cute: 本地版本始终不为匿名或未登录状态
     pub fn is_anonymous_or_logged_out(&self) -> bool {
-        !self.is_logged_in() || self.is_user_anonymous().unwrap_or(true)
+        false
     }
 
     pub fn get_access_token_ignoring_validity(&self) -> Option<String> {

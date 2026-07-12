@@ -26,7 +26,8 @@ use super::settings_page::{
 };
 use super::SettingsSection;
 use crate::appearance::Appearance;
-use crate::auth::AuthStateProvider;
+// COMMENTED: AuthStateProvider no longer needed - local version always logged in
+// use crate::auth::AuthStateProvider;
 use crate::channel::{Channel, ChannelState};
 use crate::menu::{Event as MenuEvent, Event, Menu, MenuItem, MenuItemFields};
 use crate::server::block::Block;
@@ -610,12 +611,9 @@ impl SettingsPageMeta for ShowBlocksView {
         SettingsSection::SharedBlocks
     }
 
-    fn should_render(&self, ctx: &AppContext) -> bool {
-        let is_anonymous = AuthStateProvider::as_ref(ctx)
-            .get()
-            .is_anonymous_or_logged_out();
-
-        !is_anonymous
+    fn should_render(&self, _ctx: &AppContext) -> bool {
+        // Cute: 本地版本始终显示Shared Blocks页面（如果功能启用）
+        true
     }
 
     fn on_page_selected(&mut self, _: bool, ctx: &mut ViewContext<Self>) {

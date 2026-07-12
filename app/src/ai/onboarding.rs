@@ -37,11 +37,7 @@ pub fn build_onboarding_models(
     (models, default_id)
 }
 
-pub fn current_onboarding_auth_state(ctx: &AppContext) -> OnboardingAuthState {
-    let auth_state = AuthStateProvider::as_ref(ctx).get();
-    if auth_state.is_anonymous_or_logged_out() {
-        return OnboardingAuthState::LoggedOut;
-    }
-    // Simplified: local version always treats as paid plan
+pub fn current_onboarding_auth_state(_ctx: &AppContext) -> OnboardingAuthState {
+    // Cute: 本地版本始终为付费用户状态（不需要云端认证）
     OnboardingAuthState::PayingUser
 }

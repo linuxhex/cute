@@ -68,7 +68,8 @@ use crate::ai::mcp::TemplatableMCPServerManager;
 use crate::ai::paths::host_native_absolute_path;
 use crate::auth::auth_manager::{AuthManager, LoginGatedFeature};
 use crate::auth::auth_view_modal::AuthViewVariant;
-use crate::auth::AuthStateProvider;
+// COMMENTED: AuthStateProvider import kept for other uses
+// use crate::auth::AuthStateProvider;
 use crate::workspace::WorkspaceAction;
 use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
 use crate::cloud_stub_types::GenericStringObjectFormat::Json;
@@ -3718,9 +3719,8 @@ impl SettingsWidget for GlobalAIWidget {
         let is_ai_disabled_due_to_remote_session_org_policy =
             AISettings::as_ref(app).is_ai_disabled_due_to_remote_session_org_policy(app);
 
-        let is_anonymous = AuthStateProvider::as_ref(app)
-            .get()
-            .is_anonymous_or_logged_out();
+        // Cute: 本地版本始终不为匿名用户
+        let is_anonymous = false;
 
         let mut row = Flex::row()
             .with_main_axis_size(MainAxisSize::Max)
