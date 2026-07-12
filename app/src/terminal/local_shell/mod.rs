@@ -120,7 +120,13 @@ impl LocalShellState {
             |me, res, _| match me {
                 LocalShellState::Loaded(local_shell_state) => {
                     // Trim to remove trailing newline from `echo $PATH` output
-                    local_shell_state.path_env_var = res.ok().map(|s| s.trim().to_string());
+                    let path = res.ok().map(|s| s.trim().to_string());
+                    local_shell_state.path_env_var = path.clone();
+                    // Set PATH environment variable for all child processes
+                    if let Some(path) = path {
+                        std::env::set_var("PATH", &path);
+                        log::info!("Set PATH from shell: {}", path);
+                    }
                 }
                 LocalShellState::NotLoaded => {
                     log::warn!("Tried to execute a command on LocalShell that wasn't loaded")
@@ -196,6 +202,18 @@ impl LocalShellState {
 
                 async move { rx.recv().await.ok().flatten() }.boxed()
             }
+        }
+    }
+
+    /// Returns the cached interactive PATH if already captured, or None otherwise.
+    /// This is a synchronous version for use in blocking contexts.
+    pub fn get_cached_interactive_path(&self) -> Option<String> {
+        let LocalShellState::Loaded(local_shell) = self else {
+            return None;
+        };
+        match &local_shell.interactive_env_state {
+            InteractiveEnvState::Ready(path) => path.clone(),
+            _ => None,
         }
     }
 }

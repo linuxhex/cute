@@ -1074,135 +1074,139 @@ impl Workspace {
     fn load_branches_for_repo(
         &self,
         repo_path: &std::path::Path,
-        _ctx: &mut ViewContext<Self>,
+        ctx: &mut ViewContext<Self>,
     ) -> Vec<crate::workspace::branch_selector::BranchInfo> {
         use crate::workspace::branch_selector::BranchInfo;
+        use crate::terminal::local_shell::LocalShellState;
 
         let mut branches = Vec::new();
+
+        // Get cached interactive PATH from shell (for GUI-launched apps)
+        let path_env = LocalShellState::handle(ctx)
+            .read(ctx, |shell, _| shell.get_cached_interactive_path());
 
         // Get current branch (1 command)
         let current_branch = crate::util::git::detect_current_branch_sync(repo_path);
 
+        // Helper function to run git command with PATH env
+        let run_git_with_path = |args: &[&str]| -> Option<String> {
+            let mut cmd = command::blocking::Command::new("git");
+            cmd.args(args)
+                .current_dir(repo_path)
+                .stdout(command::Stdio::piped())
+                .stderr(command::Stdio::null());
+            if let Some(path) = &path_env {
+                cmd.env("PATH", path);
+            }
+            cmd.output().ok().and_then(|out| {
+                if out.status.success() {
+                    Some(String::from_utf8_lossy(&out.stdout).to_string())
+                } else {
+                    None
+                }
+            })
+        };
+
         // Optimized: Get all local branches with last commit info in ONE command
         // Format: %(refname:short) %(objectname:short) %(subject) %(authorname) %(authoremail) %(authordate:unix)
-        let output = command::blocking::Command::new("git")
-            .args([
-                "for-each-ref",
-                "--sort=-committerdate",
-                "--count=50",  // 限制加载数量,避免分支过多
-                "--format=%(refname:short)	%(objectname:short)	%(subject)	%(authorname)	%(authoremail)	%(authordate:unix)",
-                "refs/heads/",
-            ])
-            .current_dir(repo_path)
-            .stdout(command::Stdio::piped())
-            .stderr(command::Stdio::null())
-            .output();
+        if let Some(stdout) = run_git_with_path(&[
+            "for-each-ref",
+            "--sort=-committerdate",
+            "--count=50",  // 限制加载数量,避免分支过多
+            "--format=%(refname:short)	%(objectname:short)	%(subject)	%(authorname)	%(authoremail)	%(authordate:unix)",
+            "refs/heads/",
+        ]) {
+            for line in stdout.lines() {
+                let parts: Vec<&str> = line.split('\t').collect();
+                if parts.len() >= 6 {
+                    let branch_name = parts[0].to_string();
+                    let is_current = current_branch.as_ref() == Some(&branch_name);
+                    let timestamp = parts[5].parse::<i64>().ok();
 
-        if let Ok(out) = output {
-            if out.status.success() {
-                let stdout = String::from_utf8_lossy(&out.stdout);
-                for line in stdout.lines() {
-                    let parts: Vec<&str> = line.split('\t').collect();
-                    if parts.len() >= 6 {
-                        let branch_name = parts[0].to_string();
-                        let is_current = current_branch.as_ref() == Some(&branch_name);
-                        let timestamp = parts[5].parse::<i64>().ok();
+                    let last_commit = timestamp.map(|ts| {
+                        crate::workspace::branch_selector::CommitInfo {
+                            hash: parts[1].to_string(),
+                            message: parts[2].to_string(),
+                            author: parts[3].to_string(),
+                            author_email: parts[4].to_string(),
+                            timestamp: chrono::DateTime::from_timestamp(ts, 0)
+                                .unwrap_or_default()
+                                .with_timezone(&chrono::Utc),
+                            graph_line: None,
+                        }
+                    });
 
-                        let last_commit = timestamp.map(|ts| {
-                            crate::workspace::branch_selector::CommitInfo {
-                                hash: parts[1].to_string(),
-                                message: parts[2].to_string(),
-                                author: parts[3].to_string(),
-                                author_email: parts[4].to_string(),
-                                timestamp: chrono::DateTime::from_timestamp(ts, 0)
-                                    .unwrap_or_default()
-                                    .with_timezone(&chrono::Utc),
-                                graph_line: None,
-                            }
-                        });
-
-                        branches.push(BranchInfo {
-                            name: branch_name.clone(),
-                            full_name: branch_name,
-                            is_current,
-                            is_remote: false,
-                            remote_name: None,
-                            last_commit,
-                            recent_commits: Vec::new(), // 延迟加载
-                            ahead: 0,
-                            behind: 0,
-                        });
-                    }
+                    branches.push(BranchInfo {
+                        name: branch_name.clone(),
+                        full_name: branch_name,
+                        is_current,
+                        is_remote: false,
+                        remote_name: None,
+                        last_commit,
+                        recent_commits: Vec::new(), // 延迟加载
+                        ahead: 0,
+                        behind: 0,
+                    });
                 }
             }
         }
 
         // Get remote branches - also use for-each-ref for batch loading
         // Limit to 30 most recent remote branches per remote
-        let remote_output = command::blocking::Command::new("git")
-            .args([
-                "for-each-ref",
-                "--sort=-committerdate",
-                "--count=100",  // 限制远程分支数量
-                "--format=%(refname)\t%(objectname:short)\t%(subject)\t%(authorname)\t%(authoremail)\t%(authordate:unix)",
-                "refs/remotes/",
-            ])
-            .current_dir(repo_path)
-            .stdout(command::Stdio::piped())
-            .stderr(command::Stdio::null())
-            .output();
-
-        if let Ok(out) = remote_output {
-            if out.status.success() {
-                let stdout = String::from_utf8_lossy(&out.stdout);
-                for line in stdout.lines() {
-                    let parts: Vec<&str> = line.split('\t').collect();
-                    if parts.len() >= 6 {
-                        let full_ref_name = parts[0];  // refs/remotes/origin/branch
-                        
-                        // Parse refs/remotes/remote_name/branch_name
-                        if !full_ref_name.starts_with("refs/remotes/") {
-                            continue;
-                        }
-                        let without_prefix = &full_ref_name["refs/remotes/".len()..];
-                        let name_parts: Vec<&str> = without_prefix.splitn(2, '/').collect();
-                        if name_parts.len() != 2 {
-                            continue;
-                        }
-                        let remote_name = name_parts[0].to_string();
-                        let branch_name = name_parts[1].to_string();
-
-                        // Skip HEAD references
-                        if branch_name == "HEAD" {
-                            continue;
-                        }
-
-                        let timestamp = parts[5].parse::<i64>().ok();
-                        let last_commit = timestamp.map(|ts| {
-                            crate::workspace::branch_selector::CommitInfo {
-                                hash: parts[1].to_string(),
-                                message: parts[2].to_string(),
-                                author: parts[3].to_string(),
-                                author_email: parts[4].to_string(),
-                                timestamp: chrono::DateTime::from_timestamp(ts, 0)
-                                    .unwrap_or_default()
-                                    .with_timezone(&chrono::Utc),
-                                graph_line: None,
-                            }
-                        });
-
-                        branches.push(BranchInfo {
-                            name: branch_name,
-                            full_name: full_ref_name.to_string(),
-                            is_current: false,
-                            is_remote: true,
-                            remote_name: Some(remote_name),
-                            last_commit,
-                            recent_commits: Vec::new(),
-                            ahead: 0,
-                            behind: 0,
-                        });
+        if let Some(stdout) = run_git_with_path(&[
+            "for-each-ref",
+            "--sort=-committerdate",
+            "--count=100",  // 限制远程分支数量
+            "--format=%(refname)\t%(objectname:short)\t%(subject)\t%(authorname)\t%(authoremail)\t%(authordate:unix)",
+            "refs/remotes/",
+        ]) {
+            for line in stdout.lines() {
+                let parts: Vec<&str> = line.split('\t').collect();
+                if parts.len() >= 6 {
+                    let full_ref_name = parts[0];  // refs/remotes/origin/branch
+                    
+                    // Parse refs/remotes/remote_name/branch_name
+                    if !full_ref_name.starts_with("refs/remotes/") {
+                        continue;
                     }
+                    let without_prefix = &full_ref_name["refs/remotes/".len()..];
+                    let name_parts: Vec<&str> = without_prefix.splitn(2, '/').collect();
+                    if name_parts.len() != 2 {
+                        continue;
+                    }
+                    let remote_name = name_parts[0].to_string();
+                    let branch_name = name_parts[1].to_string();
+
+                    // Skip HEAD references
+                    if branch_name == "HEAD" {
+                        continue;
+                    }
+
+                    let timestamp = parts[5].parse::<i64>().ok();
+                    let last_commit = timestamp.map(|ts| {
+                        crate::workspace::branch_selector::CommitInfo {
+                            hash: parts[1].to_string(),
+                            message: parts[2].to_string(),
+                            author: parts[3].to_string(),
+                            author_email: parts[4].to_string(),
+                            timestamp: chrono::DateTime::from_timestamp(ts, 0)
+                                .unwrap_or_default()
+                                .with_timezone(&chrono::Utc),
+                            graph_line: None,
+                        }
+                    });
+
+                    branches.push(BranchInfo {
+                        name: branch_name,
+                        full_name: full_ref_name.to_string(),
+                        is_current: false,
+                        is_remote: true,
+                        remote_name: Some(remote_name),
+                        last_commit,
+                        recent_commits: Vec::new(),
+                        ahead: 0,
+                        behind: 0,
+                    });
                 }
             }
         }
@@ -1253,23 +1257,27 @@ impl Workspace {
         repo_path: &std::path::Path,
         branch_name: &str,
         limit: usize,
+        path_env: Option<&str>,
     ) -> Vec<crate::workspace::branch_selector::CommitInfo> {
         use crate::workspace::branch_selector::CommitInfo;
 
         // 使用 --graph 参数获取分支图形信息
         // --format 使用特殊分隔符 ||| 来分隔图形和提交信息
-        let output = command::blocking::Command::new("git")
-            .args([
-                "log",
-                &format!("-{}", limit),
-                branch_name,
-                "--graph",
-                "--format=%H|||%s|||%an|||%ae|||%at",
-            ])
-            .current_dir(repo_path)
-            .stdout(command::Stdio::piped())
-            .stderr(command::Stdio::null())
-            .output();
+        let mut cmd = command::blocking::Command::new("git");
+        cmd.args([
+            "log",
+            &format!("-{}", limit),
+            branch_name,
+            "--graph",
+            "--format=%H|||%s|||%an|||%ae|||%at",
+        ])
+        .current_dir(repo_path)
+        .stdout(command::Stdio::piped())
+        .stderr(command::Stdio::null());
+        if let Some(path) = path_env {
+            cmd.env("PATH", path);
+        }
+        let output = cmd.output();
 
         // 辅助函数：判断是否为 git graph 字符
         #[allow(dead_code)]
@@ -12738,9 +12746,14 @@ impl Workspace {
         ctx: &mut ViewContext<Self>,
     ) {
         use crate::pane_group::pane::branch_selector_pane::BranchSelectorPane;
+        use crate::terminal::local_shell::LocalShellState;
 
         let pane = BranchSelectorPane::new(ctx);
         let branch_selector_view = pane.branch_selector_view(ctx);
+
+        // Get cached interactive PATH for git commands
+        let path_env = LocalShellState::handle(ctx)
+            .read(ctx, |shell, _| shell.get_cached_interactive_path());
 
         // 先创建 pane,不阻塞 UI
         let _new_pane_id = self.active_tab_pane_group().update(ctx, |pane_group, ctx| {
@@ -12786,6 +12799,7 @@ impl Workspace {
 
         // 自动选中最新的提交记录（延迟加载）
         if should_select_first_commit {
+            let path_for_closure = path_env.clone();
             branch_selector_view.update(ctx, |view, ctx| {
                 // 加载当前分支的提交记录
                 if let Some(branch_idx) = view.state.selected_branch_index {
@@ -12796,6 +12810,7 @@ impl Workspace {
                                     repo_path,
                                     &branch.full_name,
                                     10,
+                                    path_for_closure.as_deref(),
                                 );
                                 view.state.branches[branch_idx].recent_commits = recent_commits;
                             }
@@ -12808,7 +12823,7 @@ impl Workspace {
 
                 // 当前分支：显示工作区改动，而不是最新提交的改动
                 if let Some(repo_path) = &view.state.repo_path {
-                    let changed_files = Self::get_working_directory_changes(repo_path);
+                    let changed_files = Self::get_working_directory_changes(repo_path, path_for_closure.as_deref());
                     view.set_changed_files(changed_files, ctx);
                 }
             });
@@ -12823,6 +12838,11 @@ impl Workspace {
         ctx: &mut ViewContext<Self>,
     ) {
         use crate::pane_group::pane::branch_selector_pane::BranchSelectorPane;
+        use crate::terminal::local_shell::LocalShellState;
+
+        // Get cached interactive PATH for git commands
+        let path_env = LocalShellState::handle(ctx)
+            .read(ctx, |shell, _| shell.get_cached_interactive_path());
 
         let pane_group = self.active_tab_pane_group();
 
@@ -12843,6 +12863,7 @@ impl Workspace {
                                         repo_path,
                                         &branch.full_name,
                                         if branch.is_remote { 3 } else { 10 },
+                                        path_env.as_deref(),
                                     );
                                     view.state.branches[index].recent_commits = recent_commits;
                                 }
@@ -12863,7 +12884,7 @@ impl Workspace {
                                     } else {
                                         // 当前分支：显示工作区改动（与 HEAD 的差异）
                                         let changed_files =
-                                            Self::get_working_directory_changes(repo_path);
+                                            Self::get_working_directory_changes(repo_path, path_env.as_deref());
                                         view.set_changed_files(changed_files, ctx);
                                     }
                                 }
@@ -12878,16 +12899,20 @@ impl Workspace {
     /// Get working directory changes (unstaged + staged changes)
     fn get_working_directory_changes(
         repo_path: &std::path::Path,
+        path_env: Option<&str>,
     ) -> Vec<crate::workspace::branch_selector::ChangedFile> {
         use crate::workspace::branch_selector::{ChangedFile, FileStatus};
 
         // Get status output for working directory changes
-        let output = command::blocking::Command::new("git")
-            .args(["status", "--porcelain"])
+        let mut cmd = command::blocking::Command::new("git");
+        cmd.args(["status", "--porcelain"])
             .current_dir(repo_path)
             .stdout(command::Stdio::piped())
-            .stderr(command::Stdio::null())
-            .output();
+            .stderr(command::Stdio::null());
+        if let Some(path) = path_env {
+            cmd.env("PATH", path);
+        }
+        let output = cmd.output();
 
         let mut files = Vec::new();
 
@@ -12934,6 +12959,11 @@ impl Workspace {
         ctx: &mut ViewContext<Self>,
     ) {
         use crate::pane_group::pane::branch_selector_pane::BranchSelectorPane;
+        use crate::terminal::local_shell::LocalShellState;
+
+        // Get cached interactive PATH for git commands
+        let path_env = LocalShellState::handle(ctx)
+            .read(ctx, |shell, _| shell.get_cached_interactive_path());
 
         let pane_group = self.active_tab_pane_group();
 
@@ -12957,7 +12987,7 @@ impl Workspace {
                         if let (Some(repo_path), Some(commit_hash)) = (repo_path, commit_hash) {
                             // Get changed files for this commit
                             let changed_files =
-                                Self::get_changed_files_for_commit(&repo_path, &commit_hash);
+                                Self::get_changed_files_for_commit(&repo_path, &commit_hash, path_env.as_deref());
                             view.set_changed_files(changed_files, ctx);
                             log::info!(
                                 "Loaded {} changed files for commit {}",
@@ -13098,6 +13128,12 @@ impl Workspace {
 
     /// Handle switch branch action
     fn handle_switch_branch(&mut self, branch_name: String, ctx: &mut ViewContext<Self>) {
+        use crate::terminal::local_shell::LocalShellState;
+
+        // Get cached interactive PATH for git commands
+        let path_env = LocalShellState::handle(ctx)
+            .read(ctx, |shell, _| shell.get_cached_interactive_path());
+
         // Get the active terminal's working directory
         if let Some(terminal_view) = self.active_session_view(ctx) {
             let cwd = terminal_view
@@ -13109,10 +13145,13 @@ impl Workspace {
             if let Some(cute_util::local_or_remote_path::LocalOrRemotePath::Local(repo_path)) = cwd
             {
                 // Execute git checkout command
-                let output = command::blocking::Command::new("git")
-                    .args(["checkout", &branch_name])
-                    .current_dir(&repo_path)
-                    .output();
+                let mut cmd = command::blocking::Command::new("git");
+                cmd.args(["checkout", &branch_name])
+                    .current_dir(&repo_path);
+                if let Some(path) = &path_env {
+                    cmd.env("PATH", path);
+                }
+                let output = cmd.output();
 
                 let window_id = ctx.window_id();
                 if let Ok(output) = output {
@@ -13134,6 +13173,7 @@ impl Workspace {
                         use crate::pane_group::pane::branch_selector_pane::BranchSelectorPane;
                         let pane_group = self.active_tab_pane_group();
                         let pane_ids: Vec<_> = pane_group.as_ref(ctx).pane_ids().collect();
+                        let path_for_closure = path_env.clone();
                         pane_group.update(ctx, |pane_group, ctx| {
                             for pane_id in pane_ids {
                                 if let Some(pane_content) = pane_group.content_by_pane_id(pane_id) {
@@ -13149,7 +13189,7 @@ impl Workspace {
                                                         if let Some(selected_branch) = view.state.branches.get(selected_idx) {
                                                             if selected_branch.name == *current {
                                                                 // 当前分支：显示工作区改动
-                                                                let changed_files = Self::get_working_directory_changes(&repo_path);
+                                                                let changed_files = Self::get_working_directory_changes(&repo_path, path_for_closure.as_deref());
                                                                 view.set_changed_files(changed_files, ctx);
                                                             }
                                                         }
@@ -13437,22 +13477,26 @@ impl Workspace {
     fn get_changed_files_for_commit(
         repo_path: &std::path::Path,
         commit_hash: &str,
+        path_env: Option<&str>,
     ) -> Vec<crate::workspace::branch_selector::ChangedFile> {
         use crate::workspace::branch_selector::{ChangedFile, FileStatus};
 
         // Get file changes with stats
-        let output = command::blocking::Command::new("git")
-            .args([
-                "show",
-                "--name-status",
-                "--numstat",
-                "--format=", // Don't show commit info, just files
-                commit_hash,
-            ])
-            .current_dir(repo_path)
-            .stdout(command::Stdio::piped())
-            .stderr(command::Stdio::null())
-            .output();
+        let mut cmd = command::blocking::Command::new("git");
+        cmd.args([
+            "show",
+            "--name-status",
+            "--numstat",
+            "--format=", // Don't show commit info, just files
+            commit_hash,
+        ])
+        .current_dir(repo_path)
+        .stdout(command::Stdio::piped())
+        .stderr(command::Stdio::null());
+        if let Some(path) = path_env {
+            cmd.env("PATH", path);
+        }
+        let output = cmd.output();
 
         let mut files = Vec::new();
 
