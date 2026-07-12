@@ -20,7 +20,6 @@ use cuteui::{AppContext, EntityId, SingletonEntity as _, TypedActionView, ViewHa
 use self::docker::open_docker_container;
 use crate::ai::active_agent_views_model::{ActiveAgentViewsModel, ConversationOrTaskId};
 use crate::ai::agent::api::ServerConversationToken;
-// COMMENTED: Drive object imports disabled for local version
 // use crate::cloud_stub_types::ObjectType;
 // use crate::cloud_stub_types::{OpenWarpDriveObjectArgs, OpenWarpDriveObjectSettings};
 use crate::features::FeatureFlag;
@@ -110,7 +109,6 @@ impl UriHost {
     fn handle(&self, primary_window_id: Option<WindowId>, url: &Url, ctx: &mut AppContext) {
         // Handle host
         match self {
-            // COMMENTED: Team URI handling disabled for local version
             UriHost::Team => {
                 // Team features disabled in local version
                 log::warn!("Team URI handling not available in local version: {}", url);
@@ -184,7 +182,6 @@ impl UriHost {
                     log::warn!("Failed to open conversation with uri={url}");
                 }
             }
-            // COMMENTED: Drive URI handling disabled for local version
             UriHost::Drive => {
                 // Drive features disabled in local version
                 log::warn!("Drive URI handling not available in local version: {}", url);

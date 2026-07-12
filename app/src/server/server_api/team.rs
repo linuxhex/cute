@@ -18,12 +18,10 @@ pub trait TeamClient: 'static + Send + Sync {
 
     // Team operations - not supported in local version
     
-    // COMMENTED: Team invitation operations
     // async fn send_team_invite_email(&self, _team_uid: ServerId, _email: String) -> Result<WorkspacesMetadataWithPricing> {
     //     Err(anyhow!("Team operations not supported in local version"))
     // }
     
-    // COMMENTED: Team invitation link operations
     // async fn add_invite_link_domain_restriction(&self, _team_uid: ServerId, _domain: String) -> Result<WorkspacesMetadataWithPricing> {
     //     Err(anyhow!("Team operations not supported in local version"))
     // }

@@ -2980,7 +2980,6 @@ impl EditorView {
 
         #[cfg(feature = "voice_input")]
         {
-            // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
             // ctx.subscribe_to_model(&UserWorkspaces::handle(ctx), |me, _handle, _event, ctx| {
             //     me.update_voice_transcription_options(Self::voice_options(ctx), ctx);
             //     // Re-render if teams-related data changed that may affect whether features such as voice input are enabled.

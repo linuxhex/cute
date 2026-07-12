@@ -207,7 +207,6 @@ impl AwsCredentialRefresher for ApiKeyManager {
     }
 
     fn subscribe_to_settings_changes(&mut self, ctx: &mut ModelContext<Self>) {
-        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
         // Subscribe to UserWorkspaces events to refresh AWS credentials when workspace settings change
         // (this also initializes AWS credentials on app startup via TeamsChanged)
         // ctx.subscribe_to_model(&UserWorkspaces::handle(ctx), |manager, event, ctx| {
@@ -259,7 +258,6 @@ fn refresh_aws_credentials_local_chain(
     manager: &mut ApiKeyManager,
     ctx: &mut ModelContext<ApiKeyManager>,
 ) -> BoxFuture<'static, Result<(), String>> {
-    // COMMENTED: UserWorkspaces disabled in local version - AWS Bedrock disabled
     let is_available = false; // UserWorkspaces::as_ref(ctx).is_aws_bedrock_credentials_enabled(ctx);
 
     if !is_available {

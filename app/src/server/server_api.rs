@@ -53,7 +53,6 @@ use crate::auth::auth_manager::AuthManager;
 use crate::auth::auth_state::AuthState;
 use crate::auth::UserUid;
 use crate::server::graphql::default_request_options;
-// COMMENTED: Cloud IAP module disabled - use stub types from cloud_stub_types
 use crate::cloud_stub_types::{IapManager, IapState, OAuth2Client};
 use crate::server::server_api::presigned_upload::HttpStatusError;
 use crate::settings::PrivacySettingsSnapshot;
@@ -421,7 +420,6 @@ pub struct ServerApi {
     event_sender: async_channel::Sender<ServerApiEvent>,
     last_server_time: Arc<Mutex<Option<ServerTime>>>,
     // We technically use OAuth2 for headless device authentication.
-    // COMMENTED: Cloud OAuth2 disabled - use stub type
     oauth_client: OAuth2Client,
     /// Cached ambient workload token for requests from ambient agents.
     ambient_workload_token: Arc<Mutex<Option<cute_isolation_platform::WorkloadToken>>>,
@@ -714,7 +712,6 @@ impl ServerApi {
         }
     }
 
-    // COMMENTED: Cloud OAuth2 disabled - return stub client
     fn create_oauth_client() -> OAuth2Client {
         OAuth2Client::new()
     }

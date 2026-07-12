@@ -80,7 +80,6 @@ mod common;
 mod config_file;
 pub(crate) mod driver;
 mod environment;
-// COMMENTED: 禁用联邦功能
 // mod federate;
 mod harness_support;
 #[cfg(not(target_family = "wasm"))]
@@ -95,7 +94,6 @@ pub mod output;
 mod profiles;
 mod provider;
 pub(crate) mod retry;
-// COMMENTED: 禁用定时 Agent 功能
 // mod schedule;
 mod secret;
 pub(crate) mod setup_observability;
@@ -164,7 +162,6 @@ fn dispatch_command(
         CliCommand::Integration(_) => {
             return Err(anyhow::anyhow!("invalid value 'integration'"));
         }
-        // COMMENTED: 禁用定时 Agent 和自动化功能
         // CliCommand::Schedule(schedule_cmd) => {
         //     if !FeatureFlag::ScheduledAmbientAgents.is_enabled() {
         //         return Err(anyhow::anyhow!("invalid value 'schedule'"));
@@ -180,7 +177,6 @@ fn dispatch_command(
             }
             secret::run(ctx, global_options, secret_cmd)
         }
-        // COMMENTED: 禁用联邦和跨区域功能
         // CliCommand::Federate(federate_cmd) => {
         //     if !FeatureFlag::OzIdentityFederation.is_enabled() {
         //         return Err(anyhow::anyhow!("invalid value 'federate'"));
@@ -1374,7 +1370,6 @@ impl AgentDriverRunner {
             })
             .await??;
 
-        // COMMENTED: 禁用云提供商联邦认证
                 // if FeatureFlag::OzIdentityFederation.is_enabled() {
                 //     let run_id = driver_options
                 //         .task_id

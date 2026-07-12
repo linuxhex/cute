@@ -1146,7 +1146,6 @@ impl SettingsView {
             me.handle_privacy_page_event(event, ctx);
         });
 
-        // COMMENTED: Warp Drive page removed
         // let warp_drive_page_handle =
         //     ctx.add_view(|ctx| SettingsPageView::new(WarpDriveSettingsPageView::new(ctx)));
         // ctx.subscribe_to_view(&warp_drive_page_handle, |me, _, event, ctx| {
@@ -1726,7 +1725,6 @@ impl SettingsView {
         }
     }
 
-    // COMMENTED: Warp Drive page removed
     // fn handle_warp_drive_page_event(
     //     &mut self,
     //     event: &cute_drive_page::WarpDriveSettingsPageEvent,

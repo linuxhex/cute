@@ -26,7 +26,6 @@ use super::settings_page::{
 };
 use super::SettingsSection;
 use crate::appearance::Appearance;
-// COMMENTED: AuthStateProvider no longer needed - local version always logged in
 // use crate::auth::AuthStateProvider;
 use crate::channel::{Channel, ChannelState};
 use crate::menu::{Event as MenuEvent, Event, Menu, MenuItem, MenuItemFields};

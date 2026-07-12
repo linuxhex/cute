@@ -420,13 +420,11 @@ impl CLIAgent {
     /// We special-case this so Uber employees get the toolbar without needing
     /// to configure anything.
     fn is_aifx_agent_run_claude(_resolved_command: &str, _ctx: &AppContext) -> bool {
-        // COMMENTED: UserWorkspaces disabled in local version
         false
     }
 
     #[allow(dead_code)]
     fn is_on_uber_team(_user_workspaces: &UserWorkspaces) -> bool {
-        // COMMENTED: UserWorkspaces disabled in local version
         false
     }
 }

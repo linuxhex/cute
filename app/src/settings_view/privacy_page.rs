@@ -49,7 +49,6 @@ use crate::terminal::safe_mode_settings::{
 use crate::ui_components::buttons::icon_button;
 use crate::ui_components::icons::Icon;
 use crate::util::links::PRIVACY_POLICY_URL;
-// COMMENTED: Team admin setting imports disabled for local version
 use crate::view_components::{Dropdown, DropdownItem};
 use crate::report_if_error;
 use crate::settings::AdminEnablementSetting;

@@ -390,7 +390,6 @@ impl CategoriesView {
             ),
         );
 
-        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
         // let user_workspaces = UserWorkspaces::handle(ctx);
         // ctx.observe(&user_workspaces, |_, _, ctx| {
         //     ctx.notify();
@@ -484,7 +483,6 @@ impl CategoriesView {
         );
     }
 
-    // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
     // pub fn load_cloud_workflows(&mut self, ctx: &mut ViewContext<Self>) {
     //     let user_workspaces = UserWorkspaces::as_ref(ctx);
     //     let cloud_model = CloudModel::as_ref(ctx);
@@ -561,7 +559,6 @@ impl CategoriesView {
                     )
                 })
                 .unwrap_or_default(),
-            // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
             WorkflowViewType::Team => {
                 // TODO: this only assumes one team
                 // let team_uid = UserWorkspaces::as_ref(ctx).current_team_uid();

@@ -118,7 +118,6 @@ fn apply_agent_settings(agent_settings: &AgentDevelopmentSettings, app: &mut App
             .set_value(default_mode, ctx));
     });
 
-    // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
     // Cloud workspace autonomy settings removed for local version
 
     AISettings::handle(app).update(app, |settings, ctx| {

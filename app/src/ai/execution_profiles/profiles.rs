@@ -282,7 +282,6 @@ impl AIExecutionProfilesModel {
         new_profile.is_default_profile = false;
         new_profile.autosync_plans_to_warp_drive = true;
 
-        // COMMENTED: 云端功能 UpdateManager 调用已禁用
         // let update_manager = UpdateManager::handle(ctx);
         // let client_id = ClientId::default();
         // update_manager.update(ctx, |update_manager, ctx| {
@@ -315,7 +314,6 @@ impl AIExecutionProfilesModel {
 
         self.profile_id_to_sync_id.remove(&profile_id);
 
-        // COMMENTED: 云端功能 UpdateManager 调用已禁用
         // let update_manager = UpdateManager::handle(ctx);
         // update_manager.update(ctx, |update_manager, ctx| {
         //     update_manager.delete_ai_execution_profile(sync_id, ctx);
@@ -1072,7 +1070,6 @@ impl AIExecutionProfilesModel {
                 }
 
                 if let Some(owner) = UserWorkspaces::as_ref(ctx).personal_drive(ctx) {
-                    // COMMENTED: 云端功能 UpdateManager 调用已禁用
                     // let update_manager = UpdateManager::handle(ctx);
                     let client_id = ClientId::default();
                     // update_manager.update(ctx, |update_manager, ctx| {
@@ -1126,7 +1123,6 @@ impl AIExecutionProfilesModel {
                 if !value_changed {
                     return false;
                 }
-                // COMMENTED: 云端功能 UpdateManager 调用已禁用
                 // let update_manager = UpdateManager::handle(ctx);
                 // update_manager.update(ctx, |update_manager, ctx| {
                 //     update_manager.update_ai_execution_profile(data, *sync_id, None, ctx);

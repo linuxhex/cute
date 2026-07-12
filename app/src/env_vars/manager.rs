@@ -31,7 +31,6 @@ pub enum EnvVarCollectionSource {
 /// Manages EnvVarCollection panes
 impl EnvVarCollectionManager {
     pub fn new(ctx: &mut ModelContext<Self>) -> Self {
-        // COMMENTED: 云端功能 UpdateManager 订阅已禁用
         // ctx.subscribe_to_model(
         //     &UpdateManager::handle(ctx),
         //     Self::handle_update_manager_event,
@@ -174,7 +173,6 @@ impl EnvVarCollectionManager {
         }
     }
 
-    // COMMENTED: 云端功能 UpdateManagerEvent 处理已禁用
     // fn handle_update_manager_event(
     //     &mut self,
     //     event: &UpdateManagerEvent,

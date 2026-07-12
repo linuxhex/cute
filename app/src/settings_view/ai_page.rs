@@ -68,7 +68,6 @@ use crate::ai::mcp::TemplatableMCPServerManager;
 use crate::ai::paths::host_native_absolute_path;
 use crate::auth::auth_manager::{AuthManager, LoginGatedFeature};
 use crate::auth::auth_view_modal::AuthViewVariant;
-// COMMENTED: AuthStateProvider import kept for other uses
 // use crate::auth::AuthStateProvider;
 use crate::workspace::WorkspaceAction;
 use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
@@ -369,7 +368,6 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
             AISettings::as_ref(app)
                 .git_operations_autogen_enabled_internal
                 .is_supported_on_current_platform()
-                // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
                 && true, // UserWorkspaces::as_ref(app).is_git_operations_ai_enabled(),
         )],
         app,
@@ -618,7 +616,6 @@ impl AISettingsPageView {
     pub fn new(ctx: &mut ViewContext<Self>) -> Self {
         let is_any_ai_enabled = AISettings::as_ref(ctx).is_any_ai_enabled(ctx);
 
-        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
         // let workspace = UserWorkspaces::handle(ctx);
         // let ai_autonomy_settings = workspace.as_ref(ctx).ai_autonomy_settings();
         // ctx.subscribe_to_model(&workspace, |me, workspace, event, ctx| {
@@ -6698,7 +6695,6 @@ impl SettingsWidget for CloudHandoffWidget {
     }
 
     fn should_render(&self, _app: &AppContext) -> bool {
-        // COMMENTED: 禁用 handoff 功能
         // FeatureFlag::OzHandoff.is_enabled() && FeatureFlag::HandoffLocalCloud.is_enabled()
         false
     }

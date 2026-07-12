@@ -13,7 +13,6 @@ use cute_managed_secrets::{ManagedSecretManager, ManagedSecretValue};
 use cuteui::{Entity, ModelContext, RequestState, SingletonEntity};
 
 use crate::ai::harness_display;
-// COMMENTED: Auth imports disabled for local version
 // use crate::auth::auth_manager::{AuthManager, AuthManagerEvent};
 // use crate::auth::AuthStateProvider;
 use crate::network::{NetworkStatus, NetworkStatusEvent, NetworkStatusKind};
@@ -164,7 +163,6 @@ impl HarnessAvailabilityModel {
         //     }
         // });
 
-        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
         // ctx.subscribe_to_model(&UserWorkspaces::handle(ctx), |me, event, ctx| {
         //     if let UserWorkspacesEvent::TeamsChanged = event {
         //         me.refresh(ctx);

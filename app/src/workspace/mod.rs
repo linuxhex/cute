@@ -962,7 +962,6 @@ pub fn init(app: &mut AppContext) {
         ]);
     }
 
-    // COMMENTED: Cloud changelog view disabled for local version
     // if FeatureFlag::Changelog.is_enabled() {
     //     app.register_editable_bindings([
     //         // Always show the "View latest changelog" action in the command palette,

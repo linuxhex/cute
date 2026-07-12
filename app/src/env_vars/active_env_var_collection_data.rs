@@ -44,7 +44,6 @@ pub struct ActiveEnvVarCollectionData {
 
 impl ActiveEnvVarCollectionData {
     pub fn new(ctx: &mut ModelContext<Self>) -> Self {
-        // COMMENTED: 云端功能 UpdateManager 订阅已禁用
         // let update_manager = UpdateManager::handle(ctx);
         //
         // ctx.subscribe_to_model(&update_manager, |me, event, ctx| {
@@ -72,7 +71,6 @@ impl ActiveEnvVarCollectionData {
         }
     }
 
-    // COMMENTED: 云端功能 UpdateManagerEvent 处理已禁用
     // fn handle_update_manager_event(
     //     &mut self,
     //     event: &UpdateManagerEvent,

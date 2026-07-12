@@ -137,7 +137,6 @@ pub mod workflows {
 
 /// Re-export cloud_object_styling module
 pub mod cloud_object_styling {
-    // COMMENTED: warp_drive_icon_color deprecated, use cute_drive_icon_color instead
     // pub use crate::cloud_stub_types::{warp_drive_icon_color, cute_drive_icon_color, DriveObjectType};
     pub use crate::cloud_stub_types::{cute_drive_icon_color, DriveObjectType};
 }
@@ -314,7 +313,6 @@ pub struct OpenCuteDriveObjectSettings {
     pub open_mode: WorkflowOpenMode,
     pub focus_pane: bool,
     pub focused_folder_id: Option<crate::server::ids::ServerId>,
-    // COMMENTED: Team invitation - invitee_email field
     // pub invitee_email: Option<String>,
     #[allow(dead_code)]
     invitee_email: Option<String>, // Simplified: kept for struct compatibility but not used
@@ -1625,7 +1623,6 @@ impl ShareableObject {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SharingDialogSource {
     ConversationList,
-    // COMMENTED: Team invitation - InviteeRequest variant
     // InviteeRequest,
     WorkflowView,
     DrivePanel,
@@ -2883,7 +2880,6 @@ pub trait CloudObject: Debug {
     }
 
     fn space(&self, app: &AppContext) -> Space {
-        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
         Space::Personal // UserWorkspaces::as_ref(app).owner_to_space(self.permissions().owner, app)
     }
 
@@ -3930,84 +3926,72 @@ impl UserWorkspaces {
     }
 
     /// Returns whether enterprise secret redaction is enabled.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn is_enterprise_secret_redaction_enabled(&self) -> bool {
         // Cloud feature disabled in local version
         false
     }
 
     /// Returns whether AI is allowed for the current team.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn ai_allowed_for_current_team(&self) -> bool {
         // Cloud feature disabled in local version
         false
     }
 
     /// Returns whether codebase context is enabled.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn is_codebase_context_enabled(&self, _ctx: &AppContext) -> bool {
         // Cloud feature disabled in local version
         false
     }
 
     /// Returns whether team allows codebase context.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn team_allows_codebase_context(&self) -> bool {
         // Cloud feature disabled in local version
         false
     }
 
     /// Returns the default host slug for orchestration.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn default_host_slug(&self) -> Option<&str> {
         // Cloud feature disabled in local version
         None
     }
 
     /// Returns the team metadata for a given team UID.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn team_from_uid(&self, _team_uid: ServerId) -> Option<&TeamMetadata> {
         // Cloud feature disabled in local version
         None
     }
 
     /// Returns all user spaces (personal + teams).
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn all_user_spaces(&self, _ctx: &AppContext) -> Vec<Space> {
         // Cloud feature disabled in local version - return empty vector
         Vec::new()
     }
 
     /// Returns the current team UID if on a team.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn current_team_uid(&self) -> Option<ServerId> {
         // Cloud feature disabled in local version
         None
     }
 
     /// Returns the current team metadata if on a team.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn current_team(&self) -> Option<&TeamMetadata> {
         // Cloud feature disabled in local version
         None
     }
 
     /// Returns the personal drive space.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn personal_drive(&self, _ctx: &AppContext) -> Option<Owner> {
         // Cloud feature disabled in local version
         None
     }
 
     /// Returns cloud conversation storage enablement setting.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn get_cloud_conversation_storage_enablement_setting(&self) -> crate::settings::AdminEnablementSetting {
         // Cloud feature disabled in local version
         crate::settings::AdminEnablementSetting::Disabled
     }
 
     /// Converts owner to space.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn owner_to_space(&self, owner: Owner, _ctx: &AppContext) -> Space {
         // Simplified: convert owner to space without cloud logic
         match owner {
@@ -4017,115 +4001,96 @@ impl UserWorkspaces {
     }
 
     /// Returns whether voice is enabled.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn is_voice_enabled(&self) -> bool {
         false
     }
 
     /// Returns whether prompt suggestions are toggleable.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn is_prompt_suggestions_toggleable(&self) -> bool {
         false
     }
 
     /// Returns whether code suggestions are toggleable.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn is_code_suggestions_toggleable(&self) -> bool {
         false
     }
 
     /// Returns whether AI autonomy is allowed.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn is_custom_inference_enabled(&self) -> bool {
         false
     }
 
     /// Returns whether BYO API key is enabled.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn is_byo_api_key_enabled(&self) -> bool {
         false
     }
 
     /// Returns whether AWS Bedrock credentials are enabled.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn is_aws_bedrock_credentials_enabled(&self) -> bool {
         false
     }
 
     /// Returns whether AWS Bedrock is available from workspace.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn is_aws_bedrock_available_from_workspace(&self) -> bool {
         false
     }
 
     /// Returns whether AWS Bedrock credentials are toggleable.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn is_aws_bedrock_credentials_toggleable(&self) -> bool {
         false
     }
 
     /// Returns whether user has teams.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn has_teams(&self) -> bool {
         false
     }
 
     /// Returns AWS Bedrock host enablement setting.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn aws_bedrock_host_enablement_setting(&self) -> AdminEnablementSetting {
         AdminEnablementSetting::Disabled
     }
 
     /// Returns upgrade link.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn upgrade_link(&self) -> Option<String> {
         None
     }
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn is_ai_autonomy_allowed(&self) -> bool {
         false
     }
 
     /// Returns the current workspace.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn current_workspace(&self) -> Option<&WorkspaceMetadata> {
         None
     }
 
     /// Returns UGC collection enablement setting.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn get_ugc_collection_enablement_setting(&self) -> crate::settings::AdminEnablementSetting {
         crate::settings::AdminEnablementSetting::Disabled
     }
 
     /// Returns AI autonomy settings.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn ai_autonomy_settings(&self) -> crate::settings::AiAutonomySettings {
         crate::settings::AiAutonomySettings::default()
     }
 
 
     /// Returns whether next command is enabled.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn is_next_command_enabled(&self) -> bool {
         false
     }
 
     /// Returns whether git operations AI is enabled.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn is_git_operations_ai_enabled(&self) -> bool {
         false
     }
 
     /// Returns agent attribution setting.
-    /// COMMENTED: Cloud feature disabled in local version
     pub fn get_agent_attribution_setting(&self) -> crate::settings::AdminEnablementSetting {
         crate::settings::AdminEnablementSetting::Disabled
     }
 }
 
 /// Minimal stub for ObjectIdType - used in sqlite persistence
-/// COMMENTED: Cloud feature disabled in local version
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum ObjectIdType {
     Notebook,

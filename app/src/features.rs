@@ -258,7 +258,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::AmbientAgentsCommandLine,
         #[cfg(feature = "ambient_agents_image_upload")]
         FeatureFlag::AmbientAgentsImageUpload,
-        // COMMENTED: 禁用定时 Agent 和自动化
         // #[cfg(feature = "scheduled_ambient_agents")]
         // FeatureFlag::ScheduledAmbientAgents,
         #[cfg(feature = "conversation_api")]
@@ -369,7 +368,6 @@ fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::InlineProfileSelector,
         #[cfg(feature = "oz_platform_skills")]
         FeatureFlag::OzPlatformSkills,
-        // COMMENTED: 禁用联邦和跨区域功能
         // #[cfg(feature = "oz_identity_federation")]
         // FeatureFlag::OzIdentityFederation,
         #[cfg(feature = "oz_changelog_updates")]

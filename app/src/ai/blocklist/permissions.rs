@@ -222,7 +222,6 @@ impl BlocklistAIPermissions {
     /// Returns the applicable workspace autonomy settings based on execution mode.
     /// In sandboxed mode, returns settings derived from the sandboxed agent config.
     /// In unsandboxed mode, returns the standard AI autonomy settings.
-    /// COMMENTED: Cloud feature disabled in local version - always returns default settings
     fn workspace_autonomy_settings(_ctx: &AppContext) -> AiAutonomySettings {
         // Cloud workspaces disabled - always return default settings
         AiAutonomySettings::default()

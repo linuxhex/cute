@@ -512,7 +512,6 @@ pub enum Event {
     OpenWorkflowModalWithCommand(String),
     // Tell the workspace to open the workflow for edit.
     OpenCloudWorkflowForEdit(SyncId),
-    // COMMENTED: Team invitation - OpenDriveObjectShareDialog
     // Tell the workspace to open the share dialog for the given drive object. The share dialog will
     // open in the index. If the invitee email is provided, it will be added to the share dialog.
     // OpenDriveObjectShareDialog {
@@ -6930,7 +6929,6 @@ impl PaneGroup {
     // Simplified: browser URL update does not need to wait for cloud load in local version
     #[cfg(target_family = "wasm")]
     fn update_browser_url(&self, ctx: &mut ViewContext<Self>) {
-        // COMMENTED: Browser URL update disabled in local version
         // // We need to wait for the app to be loaded before we attempt to get the
         // // shareable links. This is because the links come from CloudModel objects
         //

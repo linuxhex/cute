@@ -538,7 +538,6 @@ impl Input {
 
         // Only show the host selector when a default host is configured.
         if let Some(host) = self.host_selector() {
-            // COMMENTED: UserWorkspaces disabled in local version - no default host
             let has_default_host = std::env::var("WARP_CLOUD_MODE_DEFAULT_HOST")
                 .ok()
                 .filter(|s| !s.is_empty())

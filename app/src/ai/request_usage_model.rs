@@ -11,7 +11,6 @@ use cuteui::{AppContext, Entity, ModelContext, SingletonEntity};
 
 use crate::ai::agent::conversation::AIConversationId;
 use crate::ai::agent::AIAgentExchangeId;
-// COMMENTED: Auth import disabled for local version
 // use crate::auth::AuthStateProvider;
 use crate::server::server_api::ai::AIClient;
 use crate::settings::AISettings;
@@ -452,7 +451,6 @@ impl AIRequestUsageModel {
 
     #[allow(dead_code)]
     pub fn total_current_workspace_bonus_credits_remaining(&self, ctx: &AppContext) -> i32 {
-        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
         0 // UserWorkspaces::as_ref(ctx)
         //     .current_workspace()
         //     .map(|workspace| self.total_workspace_bonus_credits_remaining(workspace.uid))

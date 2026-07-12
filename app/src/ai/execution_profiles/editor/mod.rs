@@ -772,7 +772,6 @@ impl ExecutionProfileEditorView {
             },
         );
 
-        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
         // let workspace = UserWorkspaces::handle(ctx);
         // ctx.subscribe_to_model(&workspace, |me, workspace, event, ctx| {
         //     if let UserWorkspacesEvent::TeamsChanged = event {

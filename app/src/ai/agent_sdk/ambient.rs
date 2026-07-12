@@ -201,7 +201,6 @@ impl AmbientAgentRunner {
         }
 
         let refresh_future = super::common::refresh_workspace_metadata(ctx);
-        // COMMENTED: Cloud sync disabled for local version
         // let warp_drive_sync_future = super::common::refresh_warp_drive(ctx);
         // let setup_future = future::try_join(refresh_future, warp_drive_sync_future);
         let setup_future = refresh_future; // Simplified: use only workspace metadata refresh

@@ -636,7 +636,6 @@ impl AgentConversationsModel {
             me.sync_conversations(ctx);
         });
 
-        // COMMENTED: 云端功能 UpdateManager 订阅已禁用
         // // Subscribe to UpdateManager for RTC task updates
         // if FeatureFlag::AmbientAgentsRTC.is_enabled() {
         //     let update_manager = UpdateManager::handle(ctx);
@@ -713,7 +712,6 @@ impl AgentConversationsModel {
         }
     }
 
-    // COMMENTED: 云端功能 UpdateManagerEvent 处理已禁用
     // fn handle_update_manager_event(
     //     &mut self,
     //     event: &UpdateManagerEvent,

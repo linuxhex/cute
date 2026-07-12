@@ -28,7 +28,6 @@ pub async fn fetch_channel_versions(
             .context("Failed to parse channel versions JSON");
     }
 
-    // COMMENTED: Cloud channel version fetching disabled in local version
     // let channel_versions = server_api
     //     .fetch_channel_versions(include_changelogs, is_daily)
     //     .await

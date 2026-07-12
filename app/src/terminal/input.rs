@@ -3653,7 +3653,6 @@ impl Input {
     fn maybe_launch_cloud_handoff_request(&mut self, ctx: &mut ViewContext<Self>) -> bool {
         use crate::cloud_stub_types::CloudObjectLookup as _;
 
-        // COMMENTED: 禁用 handoff 功能
         // if !FeatureFlag::OzHandoff.is_enabled()
         //     || !FeatureFlag::HandoffLocalCloud.is_enabled()
         //     || !cfg!(all(feature = "local_fs", not(target_family = "wasm")))

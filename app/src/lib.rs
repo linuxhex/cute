@@ -287,7 +287,6 @@ use crate::root_view::{
 // use crate::server::cloud_objects::listener::Listener; // Removed: cloud_objects module deleted
 // use crate::server::cloud_objects::update_manager::UpdateManager; // Removed: cloud_objects module deleted
 use crate::server::sync_queue::SyncQueue;
-// COMMENTED: IAP disabled in local version
 // #[cfg(not(target_family = "wasm"))]
 // use crate::server::iap::IapManager;
 use crate::session_management::{RunningSessionSummary, SessionNavigationData};
@@ -1038,7 +1037,6 @@ pub(crate) fn initialize_app(
     let agent_source = determine_agent_source(launch_mode);
 
 
-    // COMMENTED: IAP disabled in local version
     // // Create a shared IAP state for staging builds. The same `Arc<IapState>`
     // // is handed to both `ServerApi` (for sync reads on the request path) and
     // // `IapManager` (which owns refresh logic on the main thread).
@@ -1054,7 +1052,6 @@ pub(crate) fn initialize_app(
         move |ctx| ServerApiProvider::new(auth_state, agent_source, None, ctx)
     });
 
-    // COMMENTED: IAP disabled in local version
     // #[cfg(not(target_family = "wasm"))]
     // ctx.add_singleton_model(move |ctx| IapManager::new(iap_state, ctx));
     let server_api = server_api_provider.as_ref(ctx).get();
@@ -1193,7 +1190,6 @@ pub(crate) fn initialize_app(
     // Register UserWorkspaces stub for local version
     ctx.add_singleton_model(|_ctx| UserWorkspaces::default());
 
-    // COMMENTED: Original UserWorkspaces initialization disabled in local version
     // ctx.add_singleton_model(|ctx| {
     //     UserWorkspaces::new(
     //         server_api_provider.as_ref(ctx).get_team_client(),
@@ -1459,7 +1455,6 @@ pub(crate) fn initialize_app(
     let display_count = ctx.windows().display_count();
     ctx.add_singleton_model(|_| DisplayCount(display_count));
 
-    // COMMENTED: Cloud changelog model disabled for local version
     // ctx.add_singleton_model(|_| ChangelogModel::new(server_api.clone()));
     ctx.add_singleton_model(|_| GitHubAuthNotifier::new());
     ctx.add_singleton_model(|_| NetworkStatus::new());
@@ -1553,7 +1548,6 @@ pub(crate) fn initialize_app(
         )
     });
 
-    // COMMENTED: UserProfiles disabled in local version
     // ctx.add_singleton_model(|_| UserProfiles::new(restored_user_profiles));
 
     // 删除：云端功能已禁用 - ObjectActions::new(object_actions)
@@ -1562,7 +1556,6 @@ pub(crate) fn initialize_app(
     ctx.add_singleton_model(|_| AudibleBell::new());
 
     // This model has to be registered after the user workspaces model because it relies on it,
-    // COMMENTED: 禁用团队和云端对象更新管理器
     // // and before the UpdateManager models because they rely on the TeamTester model.
     // ctx.add_singleton_model(TeamTesterStatus::new);
     //
@@ -1641,7 +1634,6 @@ pub(crate) fn initialize_app(
     ctx.add_singleton_model(NotebookKeybindings::new);
     ctx.add_singleton_model(TerminalKeybindings::new);
     ctx.add_singleton_model(|_| ActiveSession::default());
-    // COMMENTED: 禁用云端对象监听器
     // ctx.add_singleton_model(|ctx| {
     //     Listener::new(
     //         server_api_provider.as_ref(ctx).get_cloud_objects_client(),
@@ -1664,7 +1656,6 @@ pub(crate) fn initialize_app(
     ctx.add_singleton_model(EnvVarCollectionManager::new);
     ctx.add_singleton_model(WorkflowManager::new);
 
-    // COMMENTED: 禁用定时 Agent 和自动化功能
     // if FeatureFlag::ScheduledAmbientAgents.is_enabled() {
     //     ctx.add_singleton_model(ScheduledAgentManager::new);
     // }
@@ -1691,7 +1682,6 @@ pub(crate) fn initialize_app(
         // the org level). Billing metadata — including `warp_ai_policy.is_voice_enabled`
         // — lives inside the team data, so `TeamsChanged` covers all policy updates.
         let tip_model_handle_for_teams = tip_model_handle.clone();
-        // COMMENTED: UserWorkspaces disabled in local version
         // ctx.subscribe_to_model(&UserWorkspaces::handle(ctx), move |_, event, ctx| {
         //     if matches!(event, UserWorkspacesEvent::TeamsChanged) {
         //         tip_model_handle_for_teams.update(ctx, |model, ctx| {
@@ -1729,7 +1719,6 @@ pub(crate) fn initialize_app(
     ctx.add_singleton_model(DefaultTerminal::new);
 
     ctx.add_singleton_model(|ctx| {
-        // COMMENTED: UserWorkspaces disabled in local version
         let should_restore_indices = launch_mode.supports_indexing()
             && false; // UserWorkspaces::as_ref(ctx).is_codebase_context_enabled(ctx);
         let indices_to_restore = if should_restore_indices {

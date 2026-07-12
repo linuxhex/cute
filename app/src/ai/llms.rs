@@ -21,7 +21,6 @@ use crate::UserWorkspaces;
 /// Checks if a user's' API key is being used for the given provider.
 /// Returns `true` if BYO API key is enabled and a key exists for the provider.
 pub fn is_using_api_key_for_provider(provider: &LLMProvider, app: &AppContext) -> bool {
-    // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
     let api_keys = false; // UserWorkspaces::as_ref(app)
         // .is_byo_api_key_enabled(app)
         // .then(|| ApiKeyManager::as_ref(app).keys().clone());
@@ -35,7 +34,6 @@ pub fn is_using_api_key_for_provider(provider: &LLMProvider, app: &AppContext) -
 }
 
 pub fn should_show_bedrock_icon_for_model(llm: &LLMInfo, app: &AppContext) -> bool {
-    // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
     false // UserWorkspaces::as_ref(app).is_aws_bedrock_credentials_enabled(app)
         && llm
             .host_configs
@@ -590,7 +588,6 @@ impl LLMPreferences {
             }
         });
 
-        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
         // ctx.subscribe_to_model(&UserWorkspaces::handle(ctx), |me, event, ctx| {
         //     if let UserWorkspacesEvent::TeamsChanged = event {
         //         me.sanitize_disabled_custom_model_preferences(ctx);
@@ -1119,7 +1116,6 @@ impl LLMPreferences {
     }
 
     pub fn refresh_available_models(&self, ctx: &mut ModelContext<Self>) {
-        // COMMENTED: Auth check disabled for local version - always use authed models
         // if AuthStateProvider::as_ref(ctx).get().is_logged_in() {
         //     self.refresh_authed_models(ctx);
         // } else {

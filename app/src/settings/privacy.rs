@@ -14,7 +14,6 @@ use super::cloud_preferences_syncer::CloudPreferencesSyncer;
 use crate::ai::blocklist::telemetry_banner::should_collect_ai_ugc_telemetry;
 use crate::auth::auth_state::AuthState;
 use crate::auth::AuthStateProvider;
-// COMMENTED: Cloud model import disabled for local version
 // use crate::cloud_stub_types::model::persistence::CloudModel;
 use crate::report_error;
 
@@ -472,7 +471,6 @@ impl PrivacySettings {
                     .set_value(new_value, ctx);
             });
 
-            // COMMENTED: Auth check disabled for local version
             // if self.auth_state.is_logged_in() {
             //     let auth_client = self.auth_client.clone();
             //     let _ = ctx.spawn(
@@ -507,7 +505,6 @@ impl PrivacySettings {
                 let _ = settings.is_telemetry_enabled.set_value(new_value, ctx);
             });
 
-            // COMMENTED: Auth check disabled for local version
             // if self.auth_state.is_logged_in() {
             //     let auth_client = self.auth_client.clone();
             //     let _ = ctx.spawn(
@@ -542,7 +539,6 @@ impl PrivacySettings {
                 .set_value(new_value, ctx);
         });
 
-        // COMMENTED: Auth check disabled for local version
         // if self.auth_state.is_logged_in() {
         //     let auth_client = self.auth_client.clone();
         //     let _ = ctx.spawn(
@@ -644,7 +640,6 @@ impl PrivacySettings {
 
     /// Sends request(s) to update server-side user settings with current local values.
     fn update_server_with_local_settings(&self, ctx: &mut ModelContext<Self>) {
-        // COMMENTED: Auth check disabled for local version - no server sync
         // if self.auth_state.is_logged_in() {
         //     let auth_client = self.auth_client.clone();
         //     let snapshot = self.get_snapshot(ctx);
@@ -670,7 +665,6 @@ impl PrivacySettings {
     /// 2) update the warp drive prefs to match the values from the legacy user_settings endpoint so
     ///    that we can use warp drive prefs going forward.
     pub fn maybe_sync_with_warp_drive_prefs(&mut self, ctx: &mut ModelContext<Self>) {
-        // COMMENTED: Cloud preference sync disabled in local version
         // // Wait for cloud objects to load, and, if telemetry & crash reporting are synced to warp drive
         // // initialize from the warp drive values.
         // let update_manager = UpdateManager::as_ref(ctx);
@@ -684,7 +678,6 @@ impl PrivacySettings {
         self.initialize_default_regexes_once(ctx);
     }
 
-    // COMMENTED: Cloud preference sync handler disabled in local version
     // fn handle_warp_drive_objects_loaded(&mut self, _: bool, ctx: &mut ModelContext<Self>) {
     //     self.initialize_default_regexes_once(ctx);
     //     // Check if the warp drive preferences are set. If they are, and telemetry and crash reporting

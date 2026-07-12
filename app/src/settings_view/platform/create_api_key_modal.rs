@@ -28,8 +28,6 @@ use crate::view_components::dropdown::{DROPDOWN_PADDING, TOP_MENU_BAR_HEIGHT};
 use crate::view_components::{Dropdown as DropdownView, DropdownItem};
 use crate::UserWorkspaces;
 
-const OZ_AGENTS_URL: &str = "https://oz.warp.dev/agents?new=true";
-
 const LABEL_FONT_SIZE: f32 = 14.;
 const INPUT_WIDTH: f32 = 428.; // 460px - (2 * 16px) padding
 const AGENT_DROPDOWN_POSITION_ID: &str = "create_api_key_modal_agent_dropdown";
@@ -859,7 +857,7 @@ impl TypedActionView for CreateApiKeyModal {
                 ctx.notify();
             }
             CreateApiKeyModalAction::CreateNewAgent => {
-                ctx.open_url(OZ_AGENTS_URL);
+                // 云端Agent创建功能已禁用
             }
         }
     }

@@ -2188,7 +2188,6 @@ enum SecretTooltip {
 }
 
 pub fn is_prompt_suggestions_enabled(app: &AppContext) -> bool {
-    // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
     AISettings::as_ref(app).is_prompt_suggestions_enabled(app)
         && true // UserWorkspaces::as_ref(app).is_prompt_suggestions_toggleable()
 }
@@ -3350,7 +3349,6 @@ impl TerminalView {
             },
         );
 
-        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
         // ctx.subscribe_to_model(&UserWorkspaces::handle(ctx), |me, _, event, ctx| {
         //     if matches!(event, UserWorkspacesEvent::TeamsChanged) {
         //         me.update_focused_terminal_info(ctx);
@@ -3841,7 +3839,6 @@ impl TerminalView {
 
         ctx.subscribe_to_model(&AISettings::handle(ctx), |me, _, ai_settings_event, ctx| {
             if let AISettingsChangedEvent::AwsBedrockCredentialsEnabled { .. } = ai_settings_event {
-                // COMMENTED: UserWorkspaces disabled in local version - AWS Bedrock disabled
                 // if !UserWorkspaces::as_ref(ctx).is_aws_bedrock_credentials_enabled(ctx) {
                     me.remove_aws_bedrock_login_banner(ctx);
                 // }
@@ -6917,7 +6914,6 @@ impl TerminalView {
             return;
         }
 
-        // COMMENTED: UserWorkspaces disabled in local version - AI allowed in remote sessions
         let is_ai_allowed_in_remote_sessions = true; // UserWorkspaces::as_ref(ctx).is_ai_allowed_in_remote_sessions();
 
         // Only update the FocusedTerminalInfo model if the user has disabled AI in remote sessions
@@ -9138,7 +9134,6 @@ impl TerminalView {
         let ai_settings = AISettings::as_ref(ctx);
         let is_prompt_suggestions_enabled = ai_settings.is_prompt_suggestions_enabled(ctx);
         let is_setting_enabled = ai_settings.is_code_suggestions_enabled(ctx);
-        // COMMENTED: UserWorkspaces disabled in local version - code suggestions always toggleable
         let is_setting_toggleable = true; // UserWorkspaces::as_ref(ctx).is_code_suggestions_toggleable();
         is_prompt_suggestions_enabled && is_setting_enabled && is_setting_toggleable
     }
@@ -9576,7 +9571,6 @@ impl TerminalView {
             return;
         }
 
-        // COMMENTED: UserWorkspaces disabled in local version - AWS Bedrock disabled
         // Check if AWS Bedrock is available in the workspace
         // if !UserWorkspaces::as_ref(ctx).is_aws_bedrock_credentials_enabled(ctx) {
             return;
@@ -10016,13 +10010,11 @@ impl TerminalView {
             return false;
         };
 
-        // COMMENTED: UserWorkspaces disabled in local version - AI allowed in remote sessions
         if true /*UserWorkspaces::as_ref(app).is_ai_allowed_in_remote_sessions()*/ {
             // We don't check any regexes if the user is allowed to run AI in remote sessions.
             return false;
         }
 
-        // COMMENTED: UserWorkspaces disabled in local version - no remote session regex list
         let remote_session_regex_list: Vec<regex::Regex> = Vec::new(); // UserWorkspaces::as_ref(app).get_remote_session_regex_list();
 
         // First check if the command matches any of the regexes in the list.
@@ -11172,7 +11164,6 @@ impl TerminalView {
                             .to_string();
 
                     // If the block was a cloud workflow, record the workflow execution as an object action.
-                    // COMMENTED: 云端功能 UpdateManager 调用已禁用
                     if let Some(cloud_workflow_id) = cloud_workflow_id {
                         let id_and_type = CloudObjectTypeAndId::Workflow(*cloud_workflow_id);
                         // UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
@@ -11185,7 +11176,6 @@ impl TerminalView {
                         // });
                     }
 
-                    // COMMENTED: 云端功能 UpdateManager 调用已禁用
                     if let Some(cloud_env_var_collection_id) = cloud_env_var_collection_id {
                         let id_and_type = CloudObjectTypeAndId::GenericStringObject {
                             object_type: GenericStringObjectFormat::Json(
@@ -13835,7 +13825,6 @@ impl TerminalView {
         if let Some(correction) = corrections.into_iter().next() {
             let rule = correction.rule_applied;
 
-            // COMMENTED: UserWorkspaces disabled in local version - next command disabled
             if AISettings::as_ref(ctx).is_intelligent_autosuggestions_enabled(ctx)
                 && false /*UserWorkspaces::as_ref(ctx).is_next_command_enabled()*/
                 && COMMAND_CORRECTIONS_PREFERRED_DENYLIST.contains(rule.to_str())
@@ -23163,7 +23152,6 @@ impl TerminalView {
                         },
                     }));
 
-                    // COMMENTED: 云端功能 UpdateManager 调用已禁用
                     // UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
                     //     update_manager.record_object_action(
                     //         cloud_object_type_and_id.clone(),
@@ -23370,7 +23358,6 @@ impl TerminalView {
         self.set_and_execute_subshell_command(&shell_path_string, shell_type, ctx);
 
         // Ok to update the execution record here because we auto-execute when in subshell
-        // COMMENTED: 云端功能 UpdateManager 调用已禁用
         // UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
         //     update_manager.record_object_action(
         //         cloud_env_var_collection.cloud_object_type_and_id(),

@@ -175,7 +175,6 @@ pub fn log_out(app: &mut AppContext) {
         agent_conversations_model.reset();
     });
 
-    // COMMENTED: TeamUpdateManager disabled
     // crate::workspaces::update_manager::TeamUpdateManager::handle(app).update(app, |manager, _| {
     //     manager.stop_polling_for_workspace_metadata_updates();
     // });

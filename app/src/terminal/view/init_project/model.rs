@@ -366,7 +366,6 @@ impl InitProjectModel {
     }
 
     fn compute_codebase_context_step(&mut self, pwd_path: &Path, ctx: &mut ModelContext<Self>) {
-        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
         // if !UserWorkspaces::as_ref(ctx).is_codebase_context_enabled(ctx) {
         //     // Feature disabled, leave as None
         //     return;

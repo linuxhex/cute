@@ -44,7 +44,6 @@ impl fmt::Display for BaseImage {
     }
 }
 
-/// COMMENTED: 禁用云提供商联邦配置
 /// GCP provider configuration for workload identity federation
 /// #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 /// pub struct GcpProviderConfig {
@@ -130,7 +129,6 @@ pub struct AmbientAgentEnvironment {
     /// List of setup commands to run after cloning
     #[serde(default)]
     pub setup_commands: Vec<String>,
-    /// COMMENTED: 禁用云提供商配置
     /// Optional cloud provider configurations for automatic auth.
     /// #[serde(default, skip_serializing_if = "ProvidersConfig::is_empty")]
     /// pub providers: ProvidersConfig,

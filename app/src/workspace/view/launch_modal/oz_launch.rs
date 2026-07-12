@@ -87,7 +87,7 @@ impl Slide for OzLaunchSlide {
                 "Oz agents can be defined using the standard Skills format. You can use the built in scheduler to setup agents to run autonomously at set intervals, or use the Oz SDK or API to programmatically start and manage Oz agents."
             }
             OzLaunchSlide::AgentManagement => {
-                "View all of your agents across local and cloud sessions in the Warp app or at [oz.warp.dev](https://oz.warp.dev). Join live agent sessions, continue tasks locally, and steer agents with one click."
+                "View all of your agents across local and cloud sessions in the Warp app. Join live agent sessions, continue tasks locally, and steer agents with one click."
             }
             OzLaunchSlide::LaunchCredits => {
                 "You have 1,000 credits to try using Oz. Credits are eligible for Oz runs in cloud environments."  // Simplified: no upgrade required
@@ -153,7 +153,6 @@ impl Slide for OzLaunchSlide {
     }
 
     fn should_show_checkbox(&self, app: &AppContext) -> bool {
-        // COMMENTED: UserWorkspaces disabled in local version
         // let cloud_storage_setting =
         //     UserWorkspaces::as_ref(app).get_cloud_conversation_storage_enablement_setting();
         // let ugc_setting = UserWorkspaces::as_ref(app).get_ugc_collection_enablement_setting();

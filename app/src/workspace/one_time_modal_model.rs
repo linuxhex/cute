@@ -45,7 +45,6 @@ impl OneTimeModalModel {
                 return;
             };
 
-            // COMMENTED: Auth check disabled for local version
             // let auth_state = crate::auth::AuthStateProvider::as_ref(ctx).get().clone();
             // let is_existing_user = auth_state.is_onboarded().unwrap_or_default();
             // Simplified: Assume existing user for local mode
@@ -417,7 +416,6 @@ impl OneTimeModalModel {
             return false;
         }
 
-        // COMMENTED: Auth check disabled for local version - no build plan migration
         // // Check if user is authenticated
         // let auth_state = crate::auth::AuthStateProvider::as_ref(ctx).get();
         // if auth_state.is_anonymous_or_logged_out() {
@@ -427,7 +425,6 @@ impl OneTimeModalModel {
         return false;
 
         // Check if current workspace has sunsetted_to_build_ts set
-        // COMMENTED: UserWorkspaces disabled in local version
         // let user_workspaces = UserWorkspaces::as_ref(ctx);
         // let Some(current_team) = user_workspaces.current_team() else {
         //     return false;
@@ -445,7 +442,6 @@ impl OneTimeModalModel {
 ///
 /// Users on `Default` already see the chip via `AgentToolbarItemKind::default_right()`.
 fn maybe_ensure_handoff_chip_in_toolbar(ctx: &mut ModelContext<OneTimeModalModel>) {
-    // COMMENTED: 禁用 handoff 功能
     // if !FeatureFlag::OzHandoff.is_enabled()
     //     || !FeatureFlag::HandoffLocalCloud.is_enabled()
     //     || !cfg!(all(feature = "local_fs", not(target_family = "wasm")))

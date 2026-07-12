@@ -72,7 +72,6 @@ pub enum CloudViewModelEvent {
 impl CloudViewModel {
     pub fn new(ctx: &mut ModelContext<Self>) -> Self {
         ctx.subscribe_to_model(&CloudModel::handle(ctx), Self::handle_cloud_model_event);
-        // COMMENTED: 云端功能 UpdateManager 订阅已禁用
         // ctx.subscribe_to_model(
         //     &UpdateManager::handle(ctx),
         //     Self::handle_update_manager_event,
@@ -356,7 +355,6 @@ impl CloudViewModel {
         }
     }
 
-    // COMMENTED: 云端功能 UpdateManagerEvent 处理已禁用
     // fn handle_update_manager_event(
     //     &mut self,
     //     event: &UpdateManagerEvent,

@@ -93,7 +93,6 @@ pub fn resolve_owner(team_flag: bool, user_flag: bool, ctx: &AppContext) -> anyh
     }
 
     if user_flag {
-        // COMMENTED: Auth check disabled for local version
         // let user_id = AuthStateProvider::as_ref(ctx)
         //     .get()
         //     .user_id()
@@ -128,7 +127,6 @@ pub fn refresh_workspace_metadata<C>(
 where
     C: GetSingletonModelHandle + UpdateModel,
 {
-    // COMMENTED: TeamUpdateManager disabled in local version
     // let refresh_future = TeamUpdateManager::handle(ctx).update(ctx, |manager, ctx| {
     //     manager
     //         .refresh_workspace_metadata(ctx)
@@ -149,7 +147,6 @@ where
 pub fn refresh_cute_drive(
     ctx: &AppContext,
 ) -> impl Future<Output = anyhow::Result<()>> + Send + 'static {
-    // COMMENTED: Cloud load check disabled in local version
     // let load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
     async move {
         // Simplified: always return success in local version

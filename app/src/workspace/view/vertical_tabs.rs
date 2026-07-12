@@ -45,7 +45,6 @@ use crate::code::editor::{add_color, remove_color};
 use crate::code::icon_from_file_path;
 use crate::context_chips::display_chip::GitLineChanges;
 use crate::context_chips::github_pr_display_text_from_url;
-// COMMENTED: cute_drive_icon_color deprecated, renamed to cute_drive_icon_color
 // use crate::cloud_stub_types::cloud_object_styling::cute_drive_icon_color;
 use crate::cloud_stub_types::cloud_object_styling::cute_drive_icon_color;
 use crate::cloud_stub_types::DriveObjectType;

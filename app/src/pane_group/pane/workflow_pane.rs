@@ -193,7 +193,6 @@ fn handle_workflow_event(
         WorkflowViewEvent::UpdatedWorkflow(_id) => {
             log::warn!("Updates not yet handled in pane")
         }
-        // COMMENTED: Team invitation - OpenDriveObjectShareDialog event handling
         // WorkflowViewEvent::OpenDriveObjectShareDialog {
         //     cloud_object_type_and_id,
         //     invitee_email,

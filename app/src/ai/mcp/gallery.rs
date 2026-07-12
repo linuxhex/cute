@@ -125,7 +125,6 @@ impl MCPGalleryManager {
             templatable_mcp_servers: Default::default(),
         };
 
-        // COMMENTED: 云端功能 UpdateManager 订阅已禁用
         // // Subscribe to UpdateManager events to receive MCP gallery updates
         // let update_manager = UpdateManager::handle(ctx);
         // ctx.subscribe_to_model(&update_manager, |me, event, ctx| {

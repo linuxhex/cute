@@ -229,7 +229,6 @@ pub enum WorkflowViewEvent {
     CreatedWorkflow(SyncId),
     UpdatedWorkflow(SyncId),
     ViewInWarpDrive(WarpDriveItemId),
-    // COMMENTED: Team invitation related - OpenDriveObjectShareDialog
     // OpenDriveObjectShareDialog {
     //     cloud_object_type_and_id: CloudObjectTypeAndId,
     //     invitee_email: Option<String>,
@@ -415,7 +414,6 @@ impl WorkflowView {
             ctx.add_model(|ctx| SyntaxHighlightable::new(view_only_content_editor.clone(), ctx));
 
         let workflow_id = SyncId::ClientId(ClientId::default());
-        // COMMENTED: alias_bar module removed
         // let alias_bar = ctx.add_typed_action_view(|ctx| AliasBar::new(workflow_id, ctx));
         // ctx.subscribe_to_view(&alias_bar, |me, _, event, ctx| {
         //     me.handle_alias_bar_event(event, ctx);
@@ -720,7 +718,6 @@ impl WorkflowView {
             );
         }
 
-        // COMMENTED: Team invitation logic - invitee_email handling
         // if let Some(invitee_email) = settings.invitee_email.clone() {
         //     let object_id_to_share = settings
         //         .focused_folder_id
@@ -1042,7 +1039,6 @@ impl WorkflowView {
         }
     }
 
-    // COMMENTED: alias_bar module removed
     // fn handle_alias_bar_event(&mut self, event: &AliasBarEvent, ctx: &mut ViewContext<Self>) {
     //     if !FeatureFlag::WorkflowAliases.is_enabled() {
     //         return;
@@ -2497,7 +2493,6 @@ impl WorkflowView {
         user_id: UserUid,
         ctx: &mut ViewContext<Self>,
     ) {
-        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
         // let upgrade_link = team_uid
         //     .map(UserWorkspaces::upgrade_link_for_team)
         //     .unwrap_or_else(|| UserWorkspaces::upgrade_link(user_id));

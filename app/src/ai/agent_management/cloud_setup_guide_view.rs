@@ -33,7 +33,6 @@ use crate::workflows::WorkflowType;
 const DOCS_URL: &str = "https://docs.warp.dev/agent-platform/cloud-agents/overview";
 const ENV_DOCS_URL: &str =
     "https://docs.warp.dev/reference/cli/integration-setup#creating-an-environment";
-const OZ_URL: &str = "https://oz.warp.dev";
 
 const CONTENT_MAX_WIDTH: f32 = 720.;
 
@@ -208,13 +207,13 @@ impl CloudSetupGuideView {
         header_container.finish()
     }
 
-    /// Render the quick start banner with link to oz.warp.dev.
+    /// Render the quick start banner.
     fn render_quick_start_banner(&self, appearance: &Appearance) -> Box<dyn Element> {
         let theme = appearance.theme();
         let font_size = 16.;
 
         let text = Text::new_inline(
-            "Quick start: Visit oz.warp.dev for a UI-based setup experience.",
+            "Quick start: Follow the documentation for a UI-based setup experience.",
             appearance.ui_font_family(),
             font_size,
         )
@@ -646,7 +645,7 @@ impl TypedActionView for CloudSetupGuideView {
                 ));
             }
             CloudSetupGuideAction::VisitOz => {
-                ctx.open_url(OZ_URL);
+                // 云端Oz平台访问功能已禁用
             }
             CloudSetupGuideAction::OpenDocs { docs } => {
                 let url = match docs {

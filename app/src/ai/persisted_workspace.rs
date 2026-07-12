@@ -264,7 +264,6 @@ impl PersistedWorkspace {
                 }
             });
 
-            // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
             // Subscribe to changes in workspace settings.
             // ctx.subscribe_to_model(
             //     &UserWorkspaces::handle(ctx),
@@ -629,7 +628,6 @@ impl PersistedWorkspace {
             if !manager.is_indexing_enabled() {
                 return;
             }
-            // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
             let codebase_context_enabled = true; // UserWorkspaces::as_ref(ctx).is_codebase_context_enabled(ctx);
             if codebase_context_enabled {
                 Self::enable_codebase_indexing(manager, ctx);
@@ -670,7 +668,6 @@ impl PersistedWorkspace {
         ProjectContextModel::handle(ctx).update(ctx, |model, ctx| {
             let _ = model.index_and_store_rules(directory_path.clone(), ctx);
         });
-        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
         if FeatureFlag::FullSourceCodeEmbedding.is_enabled()
             && true // UserWorkspaces::as_ref(ctx).is_codebase_context_enabled(ctx)
             && *CodeSettings::as_ref(ctx).auto_indexing_enabled
@@ -824,7 +821,6 @@ impl PersistedWorkspace {
         terminal_view_id: cuteui::EntityId,
         ctx: &mut ModelContext<Self>,
     ) {
-        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
         if true // !UserWorkspaces::as_ref(ctx).is_codebase_context_enabled(ctx)
         {
             return;

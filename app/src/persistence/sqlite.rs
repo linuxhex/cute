@@ -92,7 +92,6 @@ use crate::terminal::ShellLaunchData;
 use crate::themes::theme::AnsiColorIdentifier;
 use crate::{report_error, report_if_error, safe_info};
 
-// COMMENTED: Cloud object imports disabled for local version
 use crate::cloud_stub_types::{
     NotebookId, OpenCuteDriveObjectSettings, GenericStringObjectId, MembershipRole,
     TeamMetadata, Revision, CloudObjectSyncStatus, NumInFlightRequests,
@@ -2643,17 +2642,14 @@ fn read_sqlite_data(
     let object_permissions: Vec<model::ObjectPermissions> = Vec::new();
 
     // Cloud objects removed for local version - empty collections
-    // COMMENTED: Cloud feature disabled - CloudObjectStub removed
     let cloud_objects: Vec<Box<dyn crate::cloud_stub_types::CloudObject>> = Vec::new();
 
-    // COMMENTED: Cloud teams feature disabled in local version
     let db_teams: Vec<model::Team> = Vec::new(); // schema::teams::dsl::teams.load(conn)?;
     let members_by_team_id: HashMap<i32, Vec<model::TeamMemberRow>> = HashMap::new();
     let settings_by_team_id: HashMap<i32, String> = HashMap::new();
 
     let teams: Vec<TeamMetadata> = Vec::new(); // Empty for local version
 
-    // COMMENTED: Cloud workspaces feature disabled in local version
     let workspaces: Vec<WorkspaceMetadata> = Vec::new();
     let current_workspace_uid: Option<WorkspaceUid> = None;
 
@@ -2668,7 +2664,6 @@ fn read_sqlite_data(
     let user_profiles: Vec<crate::cloud_stub_types::UserProfile> = schema::user_profiles::dsl::user_profiles
         .load_iter::<model::UserProfile, DefaultLoadingMode>(conn)?
         .filter_map(|user_profile| user_profile.ok())
-        // COMMENTED: Cloud feature disabled - user_profile_from_persistence removed
         // .map(user_profile_from_persistence)
         .map(|p| crate::cloud_stub_types::UserProfile { email: p.email, photo_url: p.photo_url })
         .collect();
@@ -2739,12 +2734,10 @@ fn id_from_metadata<K: HashableId + ToServerId>(metadata: &ObjectMetadata) -> Op
     }
 }
 
-// COMMENTED: Cloud feature disabled in local version - to_cloud_object_metadata removed
 // fn to_cloud_object_metadata(metadata: &ObjectMetadata) -> CloudObjectMetadata {
 //     CloudObjectMetadata::default()
 // }
 
-// COMMENTED: Cloud feature disabled in local version - to_cloud_object_permissions removed
 // fn to_cloud_object_permissions(
 //     permissions: &ObjectPermissions,
 //     default_user_id: Option<UserUid>,
@@ -2752,7 +2745,6 @@ fn id_from_metadata<K: HashableId + ToServerId>(metadata: &ObjectMetadata) -> Op
 //     None
 // }
 
-// COMMENTED: Cloud feature disabled in local version - owner_for_permissions removed
 // fn owner_for_permissions(
 //     permissions: &ObjectPermissions,
 //     default_user_id: Option<UserUid>,
@@ -2835,7 +2827,6 @@ fn update_finished_command(
     })
 }
 
-// COMMENTED: Cloud feature disabled in local version - upsert_user_profiles removed
 // fn upsert_user_profiles(
 //     conn: &mut SqliteConnection,
 //     profiles: Vec<UserProfileWithUID>,

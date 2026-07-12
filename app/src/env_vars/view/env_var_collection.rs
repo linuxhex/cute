@@ -593,7 +593,6 @@ impl EnvVarCollectionView {
         window_id: WindowId,
         ctx: &mut ViewContext<Self>,
     ) {
-        // COMMENTED: Cloud load wait disabled in local version
         // let initial_load_complete = UpdateManager::handle(ctx).update(ctx, |update_manager, _| {
         //     update_manager.initial_load_complete()
         // });
@@ -619,7 +618,6 @@ impl EnvVarCollectionView {
             });
             log::warn!("Tried to open unknown env var collection {env_var_collection_id:?}");
         }
-        // COMMENTED: Cloud load wait disabled in local version
     }
 
     fn fetch_and_load_env_var_collection(
@@ -628,7 +626,6 @@ impl EnvVarCollectionView {
         window_id: WindowId,
         ctx: &mut ViewContext<Self>,
     ) {
-        // COMMENTED: 云端功能 UpdateManager fetch 已禁用
         // let fetch_cloud_object_rx =
         //     UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
         //         update_manager.fetch_single_cloud_object(
@@ -835,7 +832,6 @@ impl EnvVarCollectionView {
             .active_env_var_collection();
 
         match active_env_var_collection {
-            // COMMENTED: 云端功能 UpdateManager 已禁用
             // If the EVC has already been committed, then update the local
             // memory and server data via update manager
             ActiveEnvVarCollection::CommittedEnvVarCollection(id) => {
@@ -854,7 +850,6 @@ impl EnvVarCollectionView {
                 //     });
                 log::warn!("云端更新功能已禁用 - 无法保存已提交的环境变量集合");
             }
-            // COMMENTED: 云端功能 UpdateManager 已禁用
             // If the EVC hasn't been committed yet, create the EVC through update
             // manager, and update the active EVC
             ActiveEnvVarCollection::NewEnvVarCollection(env_var_collection) => {

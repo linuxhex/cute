@@ -121,7 +121,6 @@ impl HandoffEnvironmentCreationModal {
                     return;
                 };
 
-                // COMMENTED: 云端功能 UpdateManager 调用已禁用
                 // let client_id = ClientId::default();
                 // let create_future =
                 //     UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {

@@ -189,7 +189,6 @@ pub struct AIDocumentModel {
 
 impl AIDocumentModel {
     pub fn new(ctx: &mut ModelContext<Self>) -> Self {
-        // COMMENTED: 云端功能 UpdateManager 订阅已禁用
         // ctx.subscribe_to_model(&UpdateManager::handle(ctx), |me, event, ctx| {
         //     me.handle_update_manager_event(event, ctx);
         // });
@@ -276,7 +275,6 @@ impl AIDocumentModel {
 
     /// Handles UpdateManager events.
     /// Cloud sync disabled for local version - no longer processes cloud object operations.
-    // COMMENTED: 云端功能 UpdateManagerEvent 处理已禁用
     // fn handle_update_manager_event(
     //     &mut self,
     //     event: &UpdateManagerEvent,

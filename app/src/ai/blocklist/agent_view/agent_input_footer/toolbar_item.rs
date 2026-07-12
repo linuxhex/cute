@@ -213,7 +213,6 @@ impl AgentToolbarItemKind {
             Self::ContextWindowUsage,
             Self::ModelSelector,
         ];
-        // COMMENTED: 禁用 handoff 功能
         // if FeatureFlag::OzHandoff.is_enabled()
         //     && FeatureFlag::HandoffLocalCloud.is_enabled()
         //     && cfg!(all(feature = "local_fs", not(target_family = "wasm")))
@@ -241,7 +240,6 @@ impl AgentToolbarItemKind {
         if FeatureFlag::FastForwardAutoexecuteButton.is_enabled() {
             items.push(Self::FastForwardToggle);
         }
-        // COMMENTED: 禁用 handoff 功能
         // if FeatureFlag::OzHandoff.is_enabled()
         //     && FeatureFlag::HandoffLocalCloud.is_enabled()
         //     && cfg!(all(feature = "local_fs", not(target_family = "wasm")))

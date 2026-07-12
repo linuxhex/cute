@@ -167,7 +167,6 @@ impl EnvironmentCommandRunner {
     }
 
     fn list(&self, global_options: GlobalOptions, ctx: &mut ModelContext<Self>) {
-        // COMMENTED: 云端功能 UpdateManager 调用已禁用
         // let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
         // let initial_sync = async move { initial_load_complete }
         //     .with_timeout(WARP_DRIVE_SYNC_TIMEOUT);
@@ -240,7 +239,6 @@ impl EnvironmentCommandRunner {
     }
 
     fn get(&mut self, id: String, ctx: &mut ModelContext<Self>) {
-        // COMMENTED: 云端功能 UpdateManager 调用已禁用
         // let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
         // let initial_sync = async move { initial_load_complete }
         //     .with_timeout(WARP_DRIVE_SYNC_TIMEOUT);
@@ -403,7 +401,6 @@ impl EnvironmentCommandRunner {
         scope: cute_cli::scope::ObjectScope,
         ctx: &mut ModelContext<Self>,
     ) {
-        // COMMENTED: 云端功能 UpdateManager 调用已禁用
         // let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
         // let initial_sync = async move { initial_load_complete }
         //     .with_timeout(WARP_DRIVE_SYNC_TIMEOUT);
@@ -694,13 +691,11 @@ impl EnvironmentCommandRunner {
             }
         };
 
-        // COMMENTED: 云端功能 UpdateManager 调用已禁用
         // Create on the server
         // UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
         //     update_manager.create_ambient_agent_environment(environment, client_id, owner, ctx);
         // });
 
-        // COMMENTED: 云端功能订阅已禁用
         // Await creation on the server, then return.
         // We should subscribe to the UpdateManager here because we want to wait
         // for our environment to be assigned a ServerId. Environments are not
@@ -800,7 +795,6 @@ impl EnvironmentCommandRunner {
         force: bool,
         ctx: &mut ModelContext<Self>,
     ) {
-        // COMMENTED: 云端功能 UpdateManager 调用已禁用
         // let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
         // let initial_sync = async move { initial_load_complete }
         //     .with_timeout(WARP_DRIVE_SYNC_TIMEOUT);
@@ -941,7 +935,6 @@ impl EnvironmentCommandRunner {
             }
         }
 
-        // COMMENTED: 云端功能 UpdateManager 调用已禁用
         // Update the environment via UpdateManager
         // let revision_str = environment
         //     .metadata
@@ -959,7 +952,6 @@ impl EnvironmentCommandRunner {
         //         );
         // });
 
-        // COMMENTED: 云端功能订阅已禁用
         // Subscribe to UpdateManager to wait for the update to complete
         // ctx.subscribe_to_model(&UpdateManager::handle(ctx), move |_, event, ctx| {
         //     if let UpdateManagerEvent::ObjectOperationComplete { result } = event {
@@ -991,7 +983,6 @@ impl EnvironmentCommandRunner {
     }
 
     fn delete(&mut self, id: String, force: bool, ctx: &mut ModelContext<Self>) {
-        // COMMENTED: 云端功能 UpdateManager 调用已禁用
         // let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
         // let initial_sync = async move { initial_load_complete }
         //     .with_timeout(WARP_DRIVE_SYNC_TIMEOUT);
@@ -1047,12 +1038,10 @@ impl EnvironmentCommandRunner {
     }
 
     fn execute_delete(type_and_id: CloudObjectTypeAndId, ctx: &mut ModelContext<Self>) {
-        // COMMENTED: 云端功能 UpdateManager 调用已禁用
         // UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
         //     update_manager.delete_object_by_user(type_and_id, ctx);
         // });
 
-        // COMMENTED: 云端功能订阅已禁用
         // Listen to the UpdateManager for a completed object deletion
         // ctx.subscribe_to_model(&UpdateManager::handle(ctx), move |_, event, ctx| {
         //     if let UpdateManagerEvent::ObjectOperationComplete { result } = event {

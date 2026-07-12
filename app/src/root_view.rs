@@ -277,7 +277,6 @@ pub fn init(app: &mut AppContext) {
         "root_view:add_session_at_path",
         RootView::add_session_at_path,
     );
-    // COMMENTED: Team intent link action disabled for local version
     // app.add_action(
     //     "root_view:handle_team_intent_link_action",
     //     RootView::handle_team_intent_link_action,
@@ -328,7 +327,6 @@ pub fn init(app: &mut AppContext) {
         "root_view:create_environment_in_existing_window_and_run",
         RootView::create_environment_in_existing_window_and_run,
     );
-    // COMMENTED: Warp Drive object opening disabled for local version
     // app.add_global_action(
     //     "root_view:open_drive_object_new_window",
     //     open_warp_drive_object,
@@ -914,7 +912,6 @@ fn open_mcp_settings_in_new_window(args: &OpenMCPSettingsArgs, ctx: &mut AppCont
         if let AuthOnboardingState::Terminal(workspace_view_handle) =
             &root_view.auth_onboarding_state
         {
-            // COMMENTED: Cloud load wait disabled in local version
             // let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
             workspace_view_handle.update(ctx, |_, ctx| {
                 // Simplified: directly open MCP servers page without waiting
@@ -938,7 +935,6 @@ fn open_codex_in_new_window(_: &(), ctx: &mut AppContext) {
         if let AuthOnboardingState::Terminal(workspace_view_handle) =
             &root_view.auth_onboarding_state
         {
-            // COMMENTED: Cloud load wait disabled in local version
             // let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
             workspace_view_handle.update(ctx, |_, ctx| {
                 // Simplified: directly open Codex modal without waiting
@@ -965,7 +961,6 @@ fn open_linear_issue_work_in_new_window(args: &LinearIssueWork, ctx: &mut AppCon
     });
 }
 
-// COMMENTED: Warp Drive object opening disabled for local version
 // fn open_warp_drive_object(arg: &OpenWarpDriveObjectArgs, ctx: &mut AppContext) {
 //     if cfg!(feature = "skip_login") {
 //         return;
@@ -992,7 +987,6 @@ fn display_object_missing_error_in_window(window_id: WindowId, ctx: &mut AppCont
     });
 }
 
-// COMMENTED: Workspace notebook opening disabled for local version
 // fn open_new_workspace_with_notebook_open(
 //     notebook_id: SyncId,
 //     settings: OpenWarpDriveObjectSettings,
@@ -1010,7 +1004,6 @@ fn display_object_missing_error_in_window(window_id: WindowId, ctx: &mut AppCont
 //     );
 // }
 
-// COMMENTED: Workspace workflow opening disabled for local version
 // fn open_new_workspace_with_workflow_open(
 //     workflow_id: SyncId,
 //     settings: OpenWarpDriveObjectSettings,
@@ -1616,7 +1609,6 @@ impl RootView {
             paste_auth_token_modal: None,
         };
 
-        // COMMENTED: Cloud changelog check disabled for local version
         // match &root_view.auth_onboarding_state {
         //     AuthOnboardingState::Terminal(workspace) if FeatureFlag::Changelog.is_enabled() => {
         //         workspace.update(ctx, |workspace, ctx| {
@@ -1709,7 +1701,6 @@ impl RootView {
             let (models, default_model_id) =
                 build_onboarding_models(LLMPreferences::as_ref(ctx), ctx);
 
-            // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
             let workspace_enforces_autonomy = false; // UserWorkspaces::as_ref(ctx)
             //     .ai_autonomy_settings()
             //     .has_any_overrides();
@@ -1751,7 +1742,6 @@ impl RootView {
             },
         );
 
-        // COMMENTED: UserWorkspaces disabled in local version - 注释掉云端工作空间/团队功能 - 本地版本不支持
         // Subscribe to workspace changes to update autonomy enforcement state and detect upgrades.
         // TeamsChanged fires whenever the workspace/billing metadata poll returns, which is also
         // when a free→paid upgrade would be reflected (customer_type changes).
@@ -1798,7 +1788,6 @@ impl RootView {
                         LLMPreferences::handle(ctx).update(ctx, |prefs, ctx| {
                             prefs.refresh_available_models(ctx);
                         });
-                        // COMMENTED: TeamUpdateManager disabled
                         // TeamUpdateManager::handle(ctx).update(ctx, |manager, ctx| {
                         //     drop(manager.refresh_workspace_metadata(ctx));
                         // });
@@ -1929,7 +1918,6 @@ impl RootView {
                 LLMPreferences::handle(ctx).update(ctx, |prefs, ctx| {
                     prefs.refresh_available_models(ctx);
                 });
-                // COMMENTED: TeamUpdateManager disabled
                 // TeamUpdateManager::handle(ctx).update(ctx, |manager, ctx| {
                 //     drop(manager.refresh_workspace_metadata(ctx));
                 // });
@@ -2028,7 +2016,6 @@ impl RootView {
         true
     }
 
-    // COMMENTED: Warp Drive object opening disabled for local version
     // pub fn open_warp_drive_object_in_existing_window(
     //     &mut self,
     //     arg: &OpenWarpDriveObjectArgs,
@@ -2266,7 +2253,6 @@ impl RootView {
         true
     }
 
-    // COMMENTED: Team intent link action disabled for local version
     // /// Shows the user the settings view of their newly joined team
     // /// within the app.
     // pub fn handle_team_intent_link_action(&mut self, _: &(), ctx: &mut ViewContext<Self>) -> bool {
@@ -2290,7 +2276,6 @@ impl RootView {
     //     true
     // }
 
-    // COMMENTED: Team settings page opening disabled for local version
     // pub fn open_team_settings_page(&mut self, _: &(), ctx: &mut ViewContext<Self>) -> bool {
     //     let window_id = ctx.window_id();
     //     if let AuthOnboardingState::Terminal(handle) = &self.auth_onboarding_state {
@@ -2335,7 +2320,6 @@ impl RootView {
     ) -> bool {
         if let AuthOnboardingState::Terminal(handle) = &self.auth_onboarding_state {
             let autoinstall = args.autoinstall.clone();
-            // COMMENTED: Cloud load wait disabled in local version
             // let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
             handle.update(ctx, |_, ctx| {
                 // Simplified: directly open MCP servers page without waiting

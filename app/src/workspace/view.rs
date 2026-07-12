@@ -7,7 +7,6 @@ pub mod global_search;
 pub(crate) mod launch_modal;
 pub(crate) mod left_panel;
 pub(crate) mod onboarding;
-// COMMENTED: openwarp_launch_modal module removed - cloud feature disabled
 // pub(crate) mod openwarp_launch_modal;
 pub(crate) mod orchestration_launch_modal;
 pub(crate) mod right_panel;
@@ -3149,7 +3148,6 @@ impl Workspace {
             },
         );
 
-        // COMMENTED: 云端功能 UpdateManager 订阅已禁用
         // let update_manager = UpdateManager::handle(ctx);
         // ctx.subscribe_to_model(&update_manager, |me, _handle, event, ctx| {
         //     me.handle_update_manager_event(event, ctx);
@@ -4100,7 +4098,6 @@ impl Workspace {
         let initial_tab = self.active_tab_pane_group().clone();
 
         if open_warp_drive && !cfg!(feature = "skip_login") {
-            // COMMENTED: Warp Drive auto-open disabled in local version
             // // We open Warp Drive automatically in two cases:
             // // * The user is new to Warp, and went through the overall onboarding flow
             // // * The user is on the web, so we can't open a terminal session.
@@ -4395,7 +4392,6 @@ impl Workspace {
             }
         }
 
-        // COMMENTED: Warp Drive object pane check disabled for local version
         // // Check if focused pane is a Warp Drive object
         // let focused_pane_id = pane_group.focused_pane_id(ctx);
         // if focused_pane_id.is_warp_drive_object_pane() {
@@ -4533,13 +4529,11 @@ impl Workspace {
     }
 
     /// Sets focused to the index of either the selected object or the first item in WD
-    /// COMMENTED: Warp Drive disabled for local version
     fn reset_focused_index_in_warp_drive(
         &mut self,
         _should_scroll: bool,
         _ctx: &mut ViewContext<Self>,
     ) {
-        // COMMENTED: Warp Drive functionality disabled for local version
         // ctx.focus(&self.left_panel_view);
         // self.update_warp_drive_view(ctx, |drive_panel, ctx| {
         //     drive_panel.reset_focused_index_in_warp_drive(should_scroll, ctx);
@@ -4766,7 +4760,6 @@ impl Workspace {
         // Starts from terminal
         if self.active_tab_pane_group().is_self_or_child_focused(ctx) {
             if self.current_workspace_state.is_warp_drive_open {
-                // COMMENTED: Warp Drive disabled for local version
                 // self.reset_focused_index_in_warp_drive(true, ctx);
             } else if self.is_theme_chooser_open() {
                 ctx.focus(&self.theme_chooser_view);
@@ -4816,7 +4809,6 @@ impl Workspace {
             else if self.current_workspace_state.is_resource_center_open {
                 ctx.focus(&self.resource_center_view);
             }
-            // COMMENTED: Warp Drive disabled for local version
             // else if self.current_workspace_state.is_warp_drive_open {
             //     self.reset_focused_index_in_warp_drive(true, ctx);
             // }
@@ -4836,7 +4828,6 @@ impl Workspace {
             || self.resource_center_view.is_self_or_child_focused(ctx)
         {
             if self.current_workspace_state.is_left_panel_open() {
-                // COMMENTED: Warp Drive disabled for local version
                 // if self.current_workspace_state.is_warp_drive_open {
                 //     self.reset_focused_index_in_warp_drive(true, ctx);
                 // }
@@ -6655,7 +6646,6 @@ impl Workspace {
             return false;
         }
 
-        // COMMENTED: Auth checks disabled for local version
         // if self.auth_state.is_onboarded().unwrap_or_default() {
         //     return false;
         // }
@@ -6691,7 +6681,6 @@ impl Workspace {
             return false;
         }
 
-        // COMMENTED: Auth checks disabled for local version
         // if !self.auth_state.is_onboarded().unwrap_or_default() {
         //     if self.should_show_agent_onboarding(ctx) {
         //         // If the user is anonymous, we shouldn't trigger agent onboarding.
@@ -6855,7 +6844,6 @@ impl Workspace {
                     &locator,
                 );
             }
-            // COMMENTED: Team invitation - invitee_email handling
             // If the was an invitee email, open the share dialog as well after focusing the pane.
             // if let Some(invitee_email) = settings.invitee_email.clone() {
             //     if let NotebookSource::Existing(sync_id) = source {
@@ -6917,7 +6905,6 @@ impl Workspace {
         }
         // If running workflows is supported, do so. Otherwise, or if the workflow isn't in memory,
         // fall back to the workflow pane.
-        // COMMENTED: Team invitation - invitee_email check removed, always run workflow
         // We don't want to run the workflow if the invitee email is set, as we want to open the share dialog instead with the
         // workflow open in a pane.
         // if ContextFlag::RunWorkflow.is_enabled() && settings.invitee_email.is_none() {
@@ -16930,7 +16917,6 @@ impl Workspace {
         if self.is_readonly_shared_session_active(ctx) {
             return;
         }
-        // COMMENTED: Auth check disabled for local version
         // if self.auth_state.is_anonymous_or_logged_out()
         //     && workflow.as_workflow().is_agent_mode_workflow()
         // {
@@ -17224,7 +17210,6 @@ impl Workspace {
         }
     }
 
-    // COMMENTED: 云端功能 handle_update_manager_event 函数已禁用
     // fn handle_update_manager_event(
     //     &mut self,
     //     event: &UpdateManagerEvent,
@@ -19560,7 +19545,6 @@ impl Workspace {
 
         // Cute: Removed avatar/settings button from tab bar
 
-        // COMMENTED: Auth check disabled for local version - no anonymous user button
         // if self.auth_state.is_anonymous_or_logged_out()
         //     && !FeatureFlag::OpenWarpNewSettingsModes.is_enabled()
         // {
@@ -21657,7 +21641,6 @@ impl TypedActionView for Workspace {
         use WorkspaceAction::*;
         let window_id = ctx.window_id();
 
-        // COMMENTED: Auth check disabled for local version - no login gating
         // if self.auth_state.is_anonymous_or_logged_out() && action.blocked_for_anonymous_user() {
         //     AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
         //         auth_manager.attempt_login_gated_feature(
@@ -23516,7 +23499,6 @@ impl TypedActionView for Workspace {
                 // Open branch selector in a split pane instead of popup
                 self.open_branch_selector_pane(*pane_id, ctx);
             }
-            // COMMENTED: 禁用云端启动模态框
             OpenOpenWarpLaunchModal => {}
             ResetOpenWarpLaunchModalState => {}
         };
@@ -23624,7 +23606,6 @@ impl View for Workspace {
             context.set.insert("WarpDrive_BelongsToTeam");
         }
 
-        // COMMENTED: Auth check disabled for local version
         // if self.auth_state.is_anonymous_or_logged_out() {
         //     context.set.insert("IsAnonymousUser");
         // }

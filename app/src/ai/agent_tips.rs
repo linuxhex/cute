@@ -118,7 +118,6 @@ static DEFAULT_TIPS: LazyLock<Vec<AgentTip>> = LazyLock::new(|| {
             }),
             kind: AgentTipKind::General,
         },
-        // COMMENTED: CuteDrive tip disabled for local version
         // AgentTip {
         //     description: "Store reusable workflows, notebooks, and prompts in your".to_string(),
         //     link: Some("https://docs.cute.dev/knowledge-and-collaboration/cute-drive".to_string()),
