@@ -926,17 +926,18 @@ pub fn init(app: &mut AppContext) {
     .with_group(bindings::BindingGroup::Settings.as_str())
     .with_context_predicate(id!("Workspace") & !id!("IsAnonymousUser"))]);
 
-    // Cute: 禁用云端资源中心快捷键 - 本地版本不启用 launchpad/dashboard
-    // if !FeatureFlag::AvatarInTabBar.is_enabled() {
-    //     app.register_editable_bindings([EditableBinding::new(
-    //         "workspace:toggle_resource_center",
-    //         "Toggle resource center",
-    //         WorkspaceAction::ToggleResourceCenter,
-    //     )
-    //     .with_group(bindings::BindingGroup::Navigation.as_str())
-    //     .with_context_predicate(id!("Workspace"))
-    //     .with_custom_action(CustomAction::ToggleResourceCenter)]);
-    // }
+    // Cute: 禁用云端资源中心快捷键 - 但保留action注册（dead_code）
+    #[allow(dead_code)]
+    if !FeatureFlag::AvatarInTabBar.is_enabled() {
+        app.register_editable_bindings([EditableBinding::new(
+            "workspace:toggle_resource_center",
+            "Toggle resource center",
+            WorkspaceAction::ToggleResourceCenter,
+        )
+        .with_group(bindings::BindingGroup::Navigation.as_str())
+        .with_context_predicate(id!("Workspace"))
+        .with_custom_action(CustomAction::ToggleResourceCenter)]);
+    }
 
     // Simplified: removed workspace:export_all_warp_drive_objects binding
 

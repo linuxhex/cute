@@ -57,30 +57,8 @@ pub fn sections(ctx: &mut ViewContext<ResourceCenterMainView>) -> Vec<Section> {
     };
     sections.push(Section::Feature(maximize_warp));
 
-    let advanced_setup = ContentSectionData {
-        section_name: FeatureSection::AdvancedSetup,
-        items: vec![
-            ContentItem {
-                title: "Use your custom prompt",
-                description: "Set up Warp to honor your PS1 setting",
-                url: "https://docs.warp.dev/terminal/appearance/prompt",
-                button_label: "View documentation",
-            },
-            ContentItem {
-                title: "Integrate Warp with your IDE",
-                description: "Configure Warp to launch from your most used development tools",
-                url: "https://docs.warp.dev/terminal/integrations-and-plugins",
-                button_label: "View documentation",
-            },
-            ContentItem {
-                title: "How Warp uses Warp",
-                description: "Learn how Warp's engineering team uses their favorite features",
-                url: "https://www.warp.dev/blog/how-warp-uses-warp",
-                button_label: "Read article",
-            },
-        ],
-    };
-    sections.push(Section::Content(advanced_setup));
+    // Cute: 删除云端相关内容 - 移除了 advanced_setup section
+    // 原有的文档链接都是 warp.dev 相关的，本地版本不需要
 
     sections
 }

@@ -92,7 +92,8 @@ pub struct WorkspaceState {
     pub is_changelog_modal_open: bool,
     pub is_tab_being_dragged: bool,
     pub is_launch_config_save_modal_open: bool,
-    pub is_resource_center_open: bool,
+    #[allow(dead_code)]
+    pub is_resource_center_open: bool, // Cute: 云端资源中心已禁用，保留字段避免破坏性变更
     pub is_command_search_open: bool,
     pub is_warp_drive_open: bool,
     pub is_ai_assistant_panel_open: bool,

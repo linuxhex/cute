@@ -355,28 +355,9 @@ impl SectionView for ChangelogSectionView {
         None
     }
 
-    fn section_link(&self, appearance: &Appearance) -> Option<Box<dyn Element>> {
-        Some(
-            appearance
-                .ui_builder()
-                .link(
-                    "Read all changelogs".into(),
-                    Some("https://docs.warp.dev/changelog".into()),
-                    None,
-                    self.changelog_button_mouse_states
-                        .view_changelogs_mouse_state
-                        .clone(),
-                )
-                .soft_wrap(false)
-                .with_style(UiComponentStyles {
-                    border_width: Some(2.),
-                    font_size: Some(14.0),
-                    font_weight: Some(Weight::Normal),
-                    ..Default::default()
-                })
-                .build()
-                .finish(),
-        )
+    fn section_link(&self, _appearance: &Appearance) -> Option<Box<dyn Element>> {
+        // Cute: 删除云端链接 - 本地版本不显示warp.dev链接
+        None
     }
 }
 

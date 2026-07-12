@@ -914,9 +914,8 @@ pub struct Workspace {
     rewind_confirmation_dialog: ViewHandle<RewindConfirmationDialog>,
     delete_conversation_confirmation_dialog: ViewHandle<DeleteConversationConfirmationDialog>,
     // Cute: 禁用云端资源中心 - 本地版本不启用 launchpad/dashboard
-    // resource_center_view: ViewHandle<ResourceCenterView>,
     #[allow(dead_code)]
-    resource_center_view_placeholder: (), // 占位符，避免结构体字段变化导致编译错误
+    resource_center_view: ViewHandle<ResourceCenterView>,
     command_search_view: ViewHandle<CommandSearchView>,
     reauth_banner_dismissed: bool,
     settings_file_error: Option<crate::settings::SettingsFileError>,
@@ -2896,8 +2895,9 @@ impl Workspace {
             Self::build_settings_views(global_resource_handles, tips_completed.clone(), ctx);
 
         // Cute: 禁用云端资源中心 - 本地版本不启用 launchpad/dashboard
-        // let resource_center_view =
-        //     Self::build_resource_center_view(ctx, tips_completed.clone(), changelog_model.clone());
+        #[allow(dead_code)]
+        let resource_center_view =
+            Self::build_resource_center_view(ctx, tips_completed.clone(), changelog_model.clone());
 
         let build_plan_migration_modal = ctx.add_typed_action_view(BuildPlanMigrationModal::new);
         ctx.subscribe_to_view(&build_plan_migration_modal, |me, _, event, ctx| {
@@ -3280,8 +3280,8 @@ impl Workspace {
             rewind_confirmation_dialog,
             delete_conversation_confirmation_dialog,
             // Cute: 禁用云端资源中心
-            // resource_center_view,
-            resource_center_view_placeholder: (),
+            #[allow(dead_code)]
+            resource_center_view,
             command_search_view,
             reauth_banner_dismissed: false,
             settings_file_error,
@@ -4525,8 +4525,6 @@ impl Workspace {
         self.current_workspace_state.close_all_modals();
 
         if self.current_workspace_state.is_ai_assistant_panel_open {
-            // Close the resource center panel if we open the AI Assistant panel.
-            self.current_workspace_state.is_resource_center_open = false;
             ctx.focus(&self.ai_assistant_panel);
         } else {
             self.focus_active_tab(ctx);
@@ -4582,8 +4580,8 @@ impl Workspace {
         }
 
         if self.ai_assistant_panel.is_self_or_child_focused(app)
-            // Cute: 禁用云端资源中心
-            // || self.resource_center_view.is_self_or_child_focused(app)
+            // Cute: 禁用云端资源中心 - 但字段已保留
+            || self.resource_center_view.is_self_or_child_focused(app)
         {
             return FocusRegion::RightPanel;
         }
@@ -4637,10 +4635,6 @@ impl Workspace {
         if self.current_workspace_state.is_ai_assistant_panel_open {
             ctx.focus(&self.ai_assistant_panel);
         }
-        // Cute: 禁用云端资源中心
-        // else if self.current_workspace_state.is_resource_center_open {
-        //     ctx.focus(&self.resource_center_view);
-        // }
     }
 
     fn navigate_pane_or_panel(
@@ -4779,16 +4773,9 @@ impl Workspace {
             } else if self.current_workspace_state.is_ai_assistant_panel_open {
                 ctx.focus(&self.ai_assistant_panel);
             }
-            // Cute: 禁用云端资源中心
-            // else if self.current_workspace_state.is_resource_center_open {
-            //     ctx.focus(&self.resource_center_view);
-            // }
         }
-        // Starts from a right panel: AI panel, resource center (keyboard shortcuts page only)
-        else if self.ai_assistant_panel.is_self_or_child_focused(ctx)
-            // Cute: 禁用云端资源中心
-            // || self.resource_center_view.is_self_or_child_focused(ctx)
-        {
+        // Starts from a right panel: AI panel
+        else if self.ai_assistant_panel.is_self_or_child_focused(ctx) {
             self.focus_active_tab(ctx);
         }
         // Starts from a left panel: Warp Drive
@@ -4798,10 +4785,6 @@ impl Workspace {
                 if self.current_workspace_state.is_ai_assistant_panel_open {
                     ctx.focus(&self.ai_assistant_panel);
                 }
-                // Cute: 禁用云端资源中心
-                // else if self.current_workspace_state.is_resource_center_open {
-                //     ctx.focus(&self.resource_center_view);
-                // }
             } else {
                 self.focus_active_tab(ctx);
             }
@@ -4812,10 +4795,6 @@ impl Workspace {
                 if self.current_workspace_state.is_ai_assistant_panel_open {
                     ctx.focus(&self.ai_assistant_panel);
                 }
-                // Cute: 禁用云端资源中心
-                // else if self.current_workspace_state.is_resource_center_open {
-                //     ctx.focus(&self.resource_center_view);
-                // }
             } else {
                 self.focus_active_tab(ctx);
             }
@@ -4833,10 +4812,10 @@ impl Workspace {
             if self.current_workspace_state.is_ai_assistant_panel_open {
                 ctx.focus(&self.ai_assistant_panel);
             }
-            // Cute: 禁用云端资源中心
-            // else if self.current_workspace_state.is_resource_center_open {
-            //     ctx.focus(&self.resource_center_view);
-            // }
+            // Cute: 禁用云端资源中心 - 但字段已保留
+            else if self.current_workspace_state.is_resource_center_open {
+                ctx.focus(&self.resource_center_view);
+            }
             // COMMENTED: Warp Drive disabled for local version
             // else if self.current_workspace_state.is_warp_drive_open {
             //     self.reset_focused_index_in_warp_drive(true, ctx);
@@ -4853,8 +4832,8 @@ impl Workspace {
         }
         // Starts from a right panel: AI panel, resource center (keyboard shortcuts page only)
         else if self.ai_assistant_panel.is_self_or_child_focused(ctx)
-            // Cute: 禁用云端资源中心
-            // || self.resource_center_view.is_self_or_child_focused(ctx)
+            // Cute: 禁用云端资源中心 - 但字段已保留
+            || self.resource_center_view.is_self_or_child_focused(ctx)
         {
             if self.current_workspace_state.is_left_panel_open() {
                 // COMMENTED: Warp Drive disabled for local version
@@ -15120,8 +15099,8 @@ impl Workspace {
                 // ctx.notify();
             }
             pane_group::Event::Escape => {
-                if self.current_workspace_state.is_resource_center_open {
-                    self.current_workspace_state.is_resource_center_open = false;
+            if self.current_workspace_state.is_resource_center_open {
+                self.current_workspace_state.is_resource_center_open = false;
                     ctx.notify()
                 }
             }
@@ -16329,31 +16308,31 @@ impl Workspace {
         };
     }
 
-    // Cute: 禁用云端资源中心 - 本地版本不启用 launchpad/dashboard
+    // Cute: 禁用云端资源中心 - 但字段已保留
+    #[allow(dead_code)]
     fn handle_resource_center_event(
         &mut self,
-        _event: &ResourceCenterEvent,
-        _ctx: &mut ViewContext<Self>,
+        event: &ResourceCenterEvent,
+        ctx: &mut ViewContext<Self>,
     ) {
-        // 云端资源中心已禁用 - 不处理任何事件
-        // match event {
-        //     ResourceCenterEvent::Close => {
-        //         self.current_workspace_state.is_resource_center_open = false;
-        //         ctx.notify();
-        //     }
-        //     ResourceCenterEvent::Escape => {
-        //         // Calls terminal view focus to determine where focus should be
-        //         if let Some(pane_group_handle) = self.get_pane_group_view(self.active_tab_index) {
-        //             pane_group_handle.update(ctx, |pane_group, ctx| {
-        //                 if let Some(terminal_view_handle) = pane_group.active_session_view(ctx) {
-        //                     terminal_view_handle.update(ctx, |terminal, ctx| {
-        //                         terminal.redetermine_global_focus(ctx);
-        //                     });
-        //                 }
-        //             });
-        //         }
-        //     }
-        // };
+        match event {
+            ResourceCenterEvent::Close => {
+                self.current_workspace_state.is_resource_center_open = false;
+                ctx.notify();
+            }
+            ResourceCenterEvent::Escape => {
+                // Calls terminal view focus to determine where focus should be
+                if let Some(pane_group_handle) = self.get_pane_group_view(self.active_tab_index) {
+                    pane_group_handle.update(ctx, |pane_group, ctx| {
+                        if let Some(terminal_view_handle) = pane_group.active_session_view(ctx) {
+                            terminal_view_handle.update(ctx, |terminal, ctx| {
+                                terminal.redetermine_global_focus(ctx);
+                            });
+                        }
+                    });
+                }
+            }
+        };
     }
 
     fn show_command_search(
@@ -17504,10 +17483,10 @@ impl Workspace {
             } else if self.current_workspace_state.is_theme_chooser_open {
                 self.focus_theme_chooser(ctx);
             }
-            // Cute: 禁用云端资源中心
-            // else if self.current_workspace_state.is_resource_center_open {
-            //     ctx.focus(&self.resource_center_view);
-            // }
+            // Cute: 禁用云端资源中心 - 但字段已保留
+            else if self.current_workspace_state.is_resource_center_open {
+                ctx.focus(&self.resource_center_view);
+            }
             else if self.current_workspace_state.is_ai_assistant_panel_open {
                 ctx.focus(&self.ai_assistant_panel);
             } else if self
@@ -20181,12 +20160,12 @@ impl Workspace {
     }
 
     #[cfg(not(target_family = "wasm"))]
+    #[allow(dead_code)]
     fn render_resource_center(&self) -> Box<dyn Element> {
-        // Cute: 禁用云端资源中心 - 返回空元素
-        // ConstrainedBox::new(ChildView::new(&self.resource_center_view).finish())
-        //     .with_width(RESOURCE_CENTER_WIDTH)
-        //     .finish()
-        cuteui::elements::Empty::new().finish()
+        // Cute: 禁用云端资源中心 - 但字段已保留
+        ConstrainedBox::new(ChildView::new(&self.resource_center_view).finish())
+            .with_width(RESOURCE_CENTER_WIDTH)
+            .finish()
     }
 
     // Allow let and return because of the conditional linux compilation (otherwise we get a clippy
