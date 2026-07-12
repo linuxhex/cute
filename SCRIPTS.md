@@ -71,13 +71,13 @@ target/{arch}/{profile}/bundle/osx/dmg/cute/Cute.dmg
 
 ```bash
 # 从 images/logoimg.png 生成所有渠道图标
-python3 scripts/generate_icons.py
+python3 script/generate_icons.py
 
 # 去除 cute 渠道图标白边
-python3 scripts/remove_icon_border.py
+python3 script/remove_icon_border.py
 
 # 批量处理所有渠道图标
-python3 scripts/process_all_icons.py
+python3 script/process_all_icons.py
 ```
 
 ### 图标源文件
@@ -131,7 +131,7 @@ cargo clean
 
 ```bash
 # 重新生成图标
-python3 scripts/generate_icons.py
+python3 script/generate_icons.py
 
 # 清理缓存后打包
 rm -rf target/*/bundle/osx/Cute.app
@@ -153,6 +153,6 @@ tail -f /tmp/cute-*.log
 - `script/run` - 跨平台运行入口
 - `script/macos/run` - macOS 专用运行脚本
 - `script/macos/bundle` - macOS 打包脚本
-- `scripts/generate_icons.py` - 图标生成
-- `scripts/remove_icon_border.py` - 去除白边
-- `scripts/process_all_icons.py` - 批量处理图标
+- `script/generate_icons.py` - 图标生成
+- `script/remove_icon_border.py` - 去除白边
+- `script/process_all_icons.py` - 批量处理图标

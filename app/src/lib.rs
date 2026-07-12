@@ -1129,6 +1129,7 @@ pub(crate) fn initialize_app(
         persisted_ignored_suggestions,
         persisted_mcp_server_installations,
         mcp_servers_to_restore,
+        persisted_cloud_objects,
     ) = sqlite_data
         .map(|sqlite_data| {
             (
@@ -1149,6 +1150,7 @@ pub(crate) fn initialize_app(
                 sqlite_data.ignored_suggestions,
                 sqlite_data.mcp_server_installations,
                 sqlite_data.mcp_servers_to_restore,
+                sqlite_data.cloud_objects,
             )
         })
         .unwrap_or_else(|| {
@@ -1170,15 +1172,16 @@ pub(crate) fn initialize_app(
                 Default::default(),
                 Default::default(),
                 Default::default(),
+                Default::default(),
             )
         });
 
     ctx.add_singleton_model(|ctx| AIRequestUsageModel::new(ai_client, ctx));
 
     // Register CloudModel as singleton (stub implementation for local version)
-    ctx.add_singleton_model(|ctx| {
+    ctx.add_singleton_model(move |ctx| {
         let model_event_sender = GlobalResourceHandlesProvider::as_ref(ctx).get().model_event_sender.clone();
-        CloudModel::new(model_event_sender, Vec::new(), None)
+        CloudModel::new(model_event_sender, persisted_cloud_objects, None)
     });
 
     // Register ChangelogModel as singleton

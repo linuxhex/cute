@@ -36,7 +36,7 @@ verify_cute_icon_assets() {
 
     if [[ "$missing" -ne 0 ]]; then
         echo "hint: regenerate icons with:" >&2
-        echo "  python3 scripts/generate_macos_icons.py" >&2
+        echo "  python3 script/generate_macos_icons.py" >&2
         return 1
     fi
 

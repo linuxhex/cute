@@ -27,7 +27,7 @@ ICON_BUNDLE_PATH="$REPO_ROOT/app/channels/$CHANNEL/icon/AppIcon.icon"
 if [[ ! -d "$ICON_BUNDLE_PATH" ]]; then
     if [[ "$CHANNEL" = "cute" ]]; then
         echo "Error: Cute AppIcon.icon bundle required at $ICON_BUNDLE_PATH" >&2
-        echo "Run: python3 scripts/generate_macos_icons.py" >&2
+        echo "Run: python3 script/generate_macos_icons.py" >&2
         exit 1
     fi
     if [[ "$CHANNEL" = "oss" ]]; then

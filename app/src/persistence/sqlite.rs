@@ -42,13 +42,24 @@ use super::block_list::{
 };
 use super::model::{
     self, ActiveMCPServer, CurrentUserInformation, MCPEnvironmentVariables, NewActiveMCPServer,
-    NewApp, NewCommand, NewFolder, NewNotebook, NewTab, NewTeam, NewWindow,
-    NewWorkspace, NewWorkspaceMetadata, NewWorkspaceTeam, ObjectMetadata, ObjectPermissions,
-    Project, Tab, Window, WorkspaceMetadata as WorkspaceMetadataModel, AI_DOCUMENT_PANE_KIND,
-    AI_FACT_PANE_KIND, CODE_PANE_KIND, ENV_VAR_COLLECTION_PANE_KIND,
+    NewApp, NewCommand, NewFolder, NewNotebook, NewTab, NewTeam,
+    NewWindow, NewWorkflow, NewWorkspace, NewWorkspaceMetadata, NewWorkspaceTeam, ObjectMetadata,
+    ObjectPermissions, Project, Tab, Window, WorkspaceMetadata as WorkspaceMetadataModel,
+    AI_DOCUMENT_PANE_KIND, AI_FACT_PANE_KIND, CODE_PANE_KIND, ENV_VAR_COLLECTION_PANE_KIND,
     EXECUTION_PROFILE_EDITOR_PANE_KIND, MCP_SERVER_PANE_KIND, NOTEBOOK_PANE_KIND,
     SETTINGS_PANE_KIND, TERMINAL_PANE_KIND, WELCOME_PANE_KIND, WORKFLOW_PANE_KIND,
 };
+use cute_server_client::cloud_object::{
+    CloudObjectMetadata, CloudObjectPermissions, GenericCloudObject, GenericStringModel,
+    JsonObjectType, ObjectIdType, ObjectType,
+};
+use crate::cloud_stub_types::CloudObject;
+use crate::cloud_stub_types::model::generic_string_model::CloudStringObject;
+use crate::cloud_stub_types::models::ai_fact::{AIFact, CloudAIFact, CloudAIFactModel};
+use crate::cloud_stub_types::models::env_vars::{
+    CloudEnvVarCollection, CloudEnvVarCollectionModel, EnvVarCollection,
+};
+use crate::cloud_stub_types::models::json_model::JsonSerializer;
 use super::{
     schema, BlockCompleted, FinishedCommandMetadata, ModelEvent, PersistedData, PersistenceScope,
     StartedCommandMetadata, WriterHandles,
@@ -116,8 +127,6 @@ diesel::define_sql_function! {
 // events to queue.
 const CHANNEL_SIZE: usize = 1024;
 const COMMANDS_COUNT_LIMIT: i64 = 10000;
-
-use cute_server_client::persistence::{upsert_cloud_object, CloudObjectId};
 
 const CUTE_SQLITE_FILE_NAME: &str = "cute.sqlite";
 
@@ -586,13 +595,13 @@ fn handle_model_event(event: ModelEvent, connection: &mut SqliteConnection) -> a
         ModelEvent::UpsertFolders(folders) => {
             upsert_folders(connection, folders).context("error saving folders")
         }
-        // REMOVED: Cloud feature - UpsertGenericStringObject disabled in local version
-        ModelEvent::UpsertGenericStringObject { object: _ } => {
-            Ok(()) // No-op in local version
+        ModelEvent::UpsertGenericStringObject { object } => {
+            upsert_generic_string_objects(connection, vec![object])
+                .context("error upserting generic string object")
         }
-        // REMOVED: Cloud feature - UpsertGenericStringObjects disabled in local version
-        ModelEvent::UpsertGenericStringObjects(_) => {
-            Ok(()) // No-op in local version
+        ModelEvent::UpsertGenericStringObjects(objects) => {
+            upsert_generic_string_objects(connection, objects)
+                .context("error upserting generic string objects")
         }
         ModelEvent::UpsertNotebook { notebook } => {
             upsert_notebooks(connection, vec![notebook]).context("error upserting notebook")
@@ -2142,39 +2151,383 @@ fn update_object_metadata(
 }
 */
 
-// 云端通用字符串对象插入功能已禁用
-/*
+/// The sqlite id of a cloud object (the i32 primary key in the type-specific table).
+type CloudObjectId = i32;
+
+/// When upserting a cloud object, this callback creates the type-specific row and returns its id.
+type CreateCloudObjectFn =
+    Box<dyn FnOnce(&mut SqliteConnection) -> Result<CloudObjectId, Error>>;
+
+/// When upserting a cloud object, this callback updates the type-specific row for the given id.
+type UpdateCloudObjectFn =
+    Box<dyn FnOnce(&mut SqliteConnection, CloudObjectId) -> Result<(), Error>>;
+
+/// Helper that upserts a cloud object: manages the object_metadata + object_permissions rows that
+/// map the object's SyncId to a shareable_object_id (the i32 primary key in the type-specific
+/// table), and invokes the supplied create/update callbacks to write the type-specific row.
+fn upsert_cloud_object(
+    conn: &mut SqliteConnection,
+    cloud_object_type: ObjectType,
+    sync_id: SyncId,
+    cloud_object_metadata: CloudObjectMetadata,
+    cloud_object_permissions: CloudObjectPermissions,
+    create_object_fn: CreateCloudObjectFn,
+    update_object_fn: UpdateCloudObjectFn,
+) -> Result<(), Error> {
+    use schema::object_metadata::dsl::{
+        client_id, current_editor, folder_id, is_pending, last_editor_uid,
+        metadata_last_updated_ts, object_metadata, revision_ts, server_id, trashed_ts,
+    };
+    use schema::object_permissions::dsl::{
+        anyone_with_link_access_level, anyone_with_link_source, object_guests, object_metadata_id,
+        object_permissions, permissions_last_updated_at, subject_id, subject_type, subject_uid,
+    };
+    use super::model::{NewObjectMetadata, NewObjectPermissions};
+
+    let (subject_type_value, subject_id_value, subject_uid_value) =
+        match cloud_object_permissions.owner {
+            Owner::User { user_uid } => ("USER", Some(user_uid.to_string()), user_uid.to_string()),
+            Owner::Team { team_uid } => ("TEAM", None, team_uid.to_string()),
+        };
+    let permissions_ts = cloud_object_permissions
+        .permissions_last_updated_ts
+        .map(|ts| ts.timestamp_micros());
+
+    let revision = cloud_object_metadata
+        .revision
+        .as_ref()
+        .map(|r| r.timestamp_micros());
+    let has_pending_content_changes = cloud_object_metadata.has_pending_content_changes();
+
+    let hashed_sync_id = sync_id.sqlite_uid_hash(cloud_object_type.into());
+    let metadata_filter = object_metadata
+        .filter(client_id.eq(Some(hashed_sync_id.as_str())))
+        .or_filter(server_id.eq(Some(hashed_sync_id.as_str())));
+    let metadata: Option<ObjectMetadata> = metadata_filter.first(conn).ok();
+
+    match metadata {
+        Some(metadata) => {
+            update_object_fn(conn, metadata.shareable_object_id)?;
+
+            let metadata_last_updated_at = cloud_object_metadata
+                .metadata_last_updated_ts
+                .map(|ts| ts.timestamp_micros());
+            let trashed_timestamp = cloud_object_metadata
+                .trashed_ts
+                .map(|ts| ts.timestamp_micros());
+            let folder_id_str = cloud_object_metadata
+                .folder_id
+                .map(|folder_sync_id| folder_sync_id.sqlite_uid_hash(ObjectIdType::Folder));
+
+            diesel::update(metadata_filter)
+                .set((
+                    revision_ts.eq(revision),
+                    is_pending.eq(has_pending_content_changes),
+                    last_editor_uid.eq(cloud_object_metadata.last_editor_uid.clone()),
+                ))
+                .execute(conn)?;
+
+            if !cloud_object_metadata
+                .pending_changes_statuses
+                .has_pending_metadata_change
+            {
+                diesel::update(metadata_filter)
+                    .set((
+                        metadata_last_updated_ts.eq(metadata_last_updated_at),
+                        trashed_ts.eq(trashed_timestamp),
+                        folder_id.eq(folder_id_str),
+                        current_editor.eq(cloud_object_metadata.current_editor_uid.clone()),
+                    ))
+                    .execute(conn)?;
+            }
+
+            if !cloud_object_metadata
+                .pending_changes_statuses
+                .has_pending_permissions_change
+            {
+                let permissions_filter =
+                    object_permissions.filter(object_metadata_id.eq(metadata.id));
+                diesel::update(permissions_filter)
+                    .set((
+                        subject_type.eq(subject_type_value),
+                        subject_id.eq(subject_id_value),
+                        subject_uid.eq(subject_uid_value),
+                        permissions_last_updated_at.eq(permissions_ts),
+                        object_guests.eq(None::<Vec<u8>>),
+                        anyone_with_link_access_level.eq(None::<String>),
+                        anyone_with_link_source.eq(None::<Vec<u8>>),
+                    ))
+                    .execute(conn)?;
+            }
+        }
+        None => {
+            let object_id = create_object_fn(conn)?;
+
+            let mut new_object_metadata = NewObjectMetadata {
+                object_type: cloud_object_type.sqlite_object_type_as_str().to_string(),
+                revision_ts: revision,
+                shareable_object_id: object_id,
+                is_pending: has_pending_content_changes,
+                retry_count: 0,
+                author_id: None,
+                client_id: None,
+                server_id: None,
+                metadata_last_updated_ts: cloud_object_metadata
+                    .metadata_last_updated_ts
+                    .map(|ts| ts.timestamp_micros()),
+                trashed_ts: cloud_object_metadata
+                    .trashed_ts
+                    .map(|ts| ts.timestamp_micros()),
+                folder_id: cloud_object_metadata
+                    .folder_id
+                    .map(|sync_id| sync_id.sqlite_uid_hash(ObjectIdType::Folder)),
+                is_welcome_object: cloud_object_metadata.is_welcome_object,
+                creator_uid: cloud_object_metadata.creator_uid.clone(),
+                last_editor_uid: cloud_object_metadata.last_editor_uid.clone(),
+                current_editor: cloud_object_metadata.current_editor_uid.clone(),
+            };
+
+            match sync_id {
+                SyncId::ClientId(_) => {
+                    new_object_metadata.client_id = Some(hashed_sync_id.clone());
+                }
+                SyncId::ServerId(_) => {
+                    new_object_metadata.server_id = Some(hashed_sync_id.clone());
+                }
+            }
+            diesel::insert_into(object_metadata)
+                .values(new_object_metadata)
+                .execute(conn)?;
+
+            let metadata_id: i32 = object_metadata
+                .select(schema::object_metadata::dsl::id)
+                .order(schema::object_metadata::dsl::id.desc())
+                .first(conn)?;
+
+            let new_object_permissions = NewObjectPermissions {
+                object_metadata_id: metadata_id,
+                subject_type: subject_type_value.to_owned(),
+                subject_id: subject_id_value,
+                subject_uid: subject_uid_value,
+                permissions_last_updated_at: permissions_ts,
+                object_guests: None,
+                anyone_with_link_access_level: None,
+                anyone_with_link_source: None,
+            };
+            diesel::insert_into(object_permissions)
+                .values(new_object_permissions)
+                .execute(conn)?;
+        }
+    }
+
+    Ok(())
+}
+
 fn upsert_generic_string_objects(
     conn: &mut SqliteConnection,
     cloud_generic_string_objects: Vec<Box<dyn CloudStringObject>>,
 ) -> Result<(), Error> {
-    // 云端通用字符串对象插入功能已禁用
-    Ok(())
+    use schema::generic_string_objects::dsl::*;
+    conn.transaction::<(), Error, _>(|conn| {
+        for object in cloud_generic_string_objects {
+            let serialized_data = Arc::new(object.serialized().take());
+            let serialized_data_clone = serialized_data.clone();
+            let object_type =
+                ObjectType::GenericStringObject(object.generic_string_object_format());
+            let object_id = object.id();
+            let metadata = object.metadata().clone();
+            let permissions = object.permissions().clone();
+            upsert_cloud_object(
+                conn,
+                object_type,
+                object_id,
+                metadata,
+                permissions,
+                Box::new(move |conn| {
+                    let new_object = NewGenericStringObject {
+                        data: serialized_data.as_ref(),
+                    };
+                    diesel::insert_into(schema::generic_string_objects::dsl::generic_string_objects)
+                        .values(new_object)
+                        .execute(conn)?;
+                    let object_id: i32 =
+                        schema::generic_string_objects::dsl::generic_string_objects
+                            .select(schema::generic_string_objects::columns::id)
+                            .order(schema::generic_string_objects::columns::id.desc())
+                            .first(conn)?;
+                    Ok(object_id)
+                }),
+                Box::new(move |conn, object_id| {
+                    diesel::update(
+                        generic_string_objects
+                            .filter(schema::generic_string_objects::dsl::id.eq(object_id)),
+                    )
+                    .set((data.eq(serialized_data_clone.as_ref()),))
+                    .execute(conn)?;
+                    Ok(())
+                }),
+            )?
+        }
+        Ok(())
+    })
 }
-*/
 
 fn upsert_workflows(
     conn: &mut SqliteConnection,
     cloud_workflows: Vec<CloudWorkflow>,
 ) -> Result<(), Error> {
-    // 删除：云端功能已禁用
-    Ok(())
+    use schema::workflows::dsl::*;
+    conn.transaction::<(), Error, _>(|conn| {
+        for cloud_workflow in cloud_workflows {
+            let workflow_id = cloud_workflow.id;
+            if let Ok(serialized_workflow) = serde_json::to_string(&cloud_workflow.model().data) {
+                let serialized_workflow_clone = serialized_workflow.clone();
+                let metadata = cloud_workflow.metadata.clone();
+                let permissions = cloud_workflow.permissions.clone();
+                upsert_cloud_object(
+                    conn,
+                    ObjectType::Workflow,
+                    workflow_id,
+                    metadata,
+                    permissions,
+                    Box::new(move |conn| {
+                        let workflow = NewWorkflow {
+                            data: serialized_workflow.clone(),
+                        };
+                        diesel::insert_into(schema::workflows::dsl::workflows)
+                            .values(workflow)
+                            .execute(conn)?;
+                        let workflow_id: i32 = schema::workflows::dsl::workflows
+                            .select(schema::workflows::columns::id)
+                            .order(schema::workflows::columns::id.desc())
+                            .first(conn)?;
+                        Ok(workflow_id)
+                    }),
+                    Box::new(move |conn, workflow_id| {
+                        diesel::update(workflows.filter(schema::workflows::dsl::id.eq(workflow_id)))
+                            .set((data.eq(serialized_workflow_clone),))
+                            .execute(conn)?;
+                        Ok(())
+                    }),
+                )?
+            }
+        }
+        Ok(())
+    })
 }
 
 fn upsert_notebooks(
     conn: &mut SqliteConnection,
     cloud_notebooks: Vec<CloudNotebook>,
 ) -> Result<(), Error> {
-    // 删除：云端功能已禁用
-    Ok(())
+    use schema::notebooks::dsl::*;
+    conn.transaction::<(), Error, _>(|conn| {
+        for cloud_notebook in cloud_notebooks {
+            let title_clone = cloud_notebook.model().title.clone();
+            let data_clone = cloud_notebook.model().data.clone();
+            let ai_document_id_clone = cloud_notebook
+                .model()
+                .ai_document_id
+                .as_ref()
+                .map(|doc_id| doc_id.to_string());
+            let update_title = cloud_notebook.model().title.clone();
+            let update_data = cloud_notebook.model().data.clone();
+            let update_ai_document_id = cloud_notebook
+                .model()
+                .ai_document_id
+                .as_ref()
+                .map(|doc_id| doc_id.to_string());
+            let metadata = cloud_notebook.metadata.clone();
+            let permissions = cloud_notebook.permissions.clone();
+            let notebook_id = cloud_notebook.id;
+            upsert_cloud_object(
+                conn,
+                ObjectType::Notebook,
+                notebook_id,
+                metadata,
+                permissions,
+                Box::new(move |conn| {
+                    let new_notebook = NewNotebook {
+                        title: Some(title_clone),
+                        data: Some(data_clone),
+                        ai_document_id: ai_document_id_clone,
+                    };
+                    diesel::insert_into(schema::notebooks::dsl::notebooks)
+                        .values(new_notebook)
+                        .execute(conn)?;
+                    let notebook_id: i32 = schema::notebooks::dsl::notebooks
+                        .select(schema::notebooks::columns::id)
+                        .order(schema::notebooks::columns::id.desc())
+                        .first(conn)?;
+                    Ok(notebook_id)
+                }),
+                Box::new(move |conn, notebook_id| {
+                    diesel::update(notebooks.filter(schema::notebooks::dsl::id.eq(notebook_id)))
+                        .set((
+                            title.eq(update_title),
+                            data.eq(update_data),
+                            ai_document_id.eq(update_ai_document_id),
+                        ))
+                        .execute(conn)?;
+                    Ok(())
+                }),
+            )?
+        }
+        Ok(())
+    })
 }
 
 fn upsert_folders(
     conn: &mut SqliteConnection,
     cloud_folders: Vec<CloudFolder>,
 ) -> Result<(), Error> {
-    // 删除：云端功能已禁用
-    Ok(())
+    use schema::folders::dsl::*;
+    conn.transaction::<(), Error, _>(|conn| {
+        for cloud_folder in cloud_folders {
+            let folder_name = cloud_folder.model().name.clone();
+            let folder_is_open = cloud_folder.model().is_open;
+            let folder_is_cute_pack = cloud_folder.model().is_cute_pack;
+            let update_name = cloud_folder.model().name.clone();
+            let update_is_open = cloud_folder.model().is_open;
+            let update_is_cute_pack = cloud_folder.model().is_cute_pack;
+            let metadata = cloud_folder.metadata.clone();
+            let permissions = cloud_folder.permissions.clone();
+            let folder_id = cloud_folder.id;
+            upsert_cloud_object(
+                conn,
+                ObjectType::Folder,
+                folder_id,
+                metadata,
+                permissions,
+                Box::new(move |conn| {
+                    let new_folder = NewFolder {
+                        name: folder_name,
+                        is_open: folder_is_open,
+                        is_warp_pack: folder_is_cute_pack,
+                    };
+                    diesel::insert_into(schema::folders::dsl::folders)
+                        .values(new_folder)
+                        .execute(conn)?;
+                    let folder_id: i32 = schema::folders::dsl::folders
+                        .select(schema::folders::columns::id)
+                        .order(schema::folders::columns::id.desc())
+                        .first(conn)?;
+                    Ok(folder_id)
+                }),
+                Box::new(move |conn, folder_id| {
+                    diesel::update(folders.filter(schema::folders::dsl::id.eq(folder_id)))
+                        .set((
+                            name.eq(update_name),
+                            is_open.eq(update_is_open),
+                            is_warp_pack.eq(update_is_cute_pack),
+                        ))
+                        .execute(conn)?;
+                    Ok(())
+                }),
+            )?
+        }
+        Ok(())
+    })
 }
 
 /// Parse conversation IDs from JSON string.
@@ -2637,12 +2990,16 @@ fn read_sqlite_data(
         })
         .collect();
 
-    // Cloud object metadata and permissions loading removed for local version
-    let object_metadata: Vec<model::ObjectMetadata> = Vec::new();
-    let object_permissions: Vec<model::ObjectPermissions> = Vec::new();
+    let object_metadata: Vec<model::ObjectMetadata> =
+        schema::object_metadata::dsl::object_metadata
+            .load::<model::ObjectMetadata>(conn)?;
+    let _object_permissions: Vec<model::ObjectPermissions> =
+        schema::object_permissions::dsl::object_permissions
+            .load::<model::ObjectPermissions>(conn)?;
 
-    // Cloud objects removed for local version - empty collections
-    let cloud_objects: Vec<Box<dyn crate::cloud_stub_types::CloudObject>> = Vec::new();
+    // Reconstruct cloud objects (folders, notebooks, workflows, generic string objects) from the
+    // object_metadata rows + the type-specific tables so they survive restart.
+    let cloud_objects = rebuild_cloud_objects(conn, &object_metadata)?;
 
     let db_teams: Vec<model::Team> = Vec::new(); // schema::teams::dsl::teams.load(conn)?;
     let members_by_team_id: HashMap<i32, Vec<model::TeamMemberRow>> = HashMap::new();
@@ -2732,6 +3089,167 @@ fn id_from_metadata<K: HashableId + ToServerId>(metadata: &ObjectMetadata) -> Op
         (None, Some(client_id)) => ClientId::from_hash(client_id).map(SyncId::ClientId),
         _ => None,
     }
+}
+
+/// Default `CloudObjectMetadata` for locally-reconstructed objects. We don't persist the full
+/// metadata graph (revision timestamps, editors, etc.) for the local-only app — these objects are
+/// shown as fully-synced with no pending changes.
+fn default_local_metadata() -> CloudObjectMetadata {
+    use crate::cloud_stub_types::{CloudObjectStatuses, CloudObjectSyncStatus};
+    CloudObjectMetadata {
+        revision: None,
+        metadata_last_updated_ts: None,
+        current_editor_uid: None,
+        pending_changes_statuses: CloudObjectStatuses {
+            content_sync_status: CloudObjectSyncStatus::NoLocalChanges,
+            has_pending_metadata_change: false,
+            has_pending_permissions_change: false,
+            pending_untrash: false,
+            pending_delete: false,
+        },
+        trashed_ts: None,
+        folder_id: None,
+        is_welcome_object: false,
+        last_editor_uid: None,
+        creator_uid: None,
+        last_task_run_ts: None,
+    }
+}
+
+/// Default `CloudObjectPermissions` for locally-reconstructed objects: personal ownership, no
+/// sharing, no guests.
+fn default_local_permissions() -> CloudObjectPermissions {
+    CloudObjectPermissions {
+        owner: Owner::default(),
+        permissions_last_updated_ts: None,
+        anyone_with_link: None,
+        guests: Vec::new(),
+    }
+}
+
+/// Reconstructs `CloudObject`s from the persisted `object_metadata` rows joined with the
+/// type-specific tables (folders / notebooks / workflows / generic_string_objects). Objects whose
+/// rows can't be parsed are skipped (filter_map).
+fn rebuild_cloud_objects(
+    conn: &mut SqliteConnection,
+    metadata_rows: &[ObjectMetadata],
+) -> Result<Vec<Box<dyn CloudObject>>, Error> {
+    use crate::cloud_stub_types::models::folder::CloudFolderModel;
+    use crate::cloud_stub_types::models::notebook::{CloudNotebookModel, NotebookId};
+    use crate::cloud_stub_types::models::workflow::{CloudWorkflowModel, Workflow, WorkflowId};
+    use ai::document::AIDocumentId;
+
+    let folders: HashMap<i32, model::Folder> = schema::folders::dsl::folders
+        .load::<model::Folder>(conn)?
+        .into_iter()
+        .map(|f| (f.id, f))
+        .collect();
+    let notebooks: HashMap<i32, model::Notebook> = schema::notebooks::dsl::notebooks
+        .load::<model::Notebook>(conn)?
+        .into_iter()
+        .map(|n| (n.id, n))
+        .collect();
+    let workflows: HashMap<i32, model::Workflow> = schema::workflows::dsl::workflows
+        .load::<model::Workflow>(conn)?
+        .into_iter()
+        .map(|w| (w.id, w))
+        .collect();
+    let generic_objects: HashMap<i32, model::GenericStringObject> =
+        schema::generic_string_objects::dsl::generic_string_objects
+            .load::<model::GenericStringObject>(conn)?
+            .into_iter()
+            .map(|g| (g.id, g))
+            .collect();
+
+    let default_metadata = default_local_metadata();
+    let default_permissions = default_local_permissions();
+
+    let cloud_objects: Vec<Box<dyn CloudObject>> = metadata_rows
+        .iter()
+        .filter_map(|row| {
+            let ot = row.object_type.as_str();
+            let sid = row.shareable_object_id;
+            if ot == "FOLDER" {
+                let f = folders.get(&sid)?;
+                let sync_id = id_from_metadata::<cute_server_client::ids::FolderId>(row)?;
+                let model = CloudFolderModel {
+                    name: f.name.clone(),
+                    is_open: f.is_open,
+                    is_cute_pack: f.is_warp_pack,
+                };
+                Some(Box::new(CloudFolder::new(
+                    sync_id,
+                    model,
+                    default_metadata.clone(),
+                    default_permissions.clone(),
+                ))
+                    as Box<dyn CloudObject>)
+            } else if ot == "NOTEBOOK" {
+                let n = notebooks.get(&sid)?;
+                let sync_id = id_from_metadata::<NotebookId>(row)?;
+                let model = CloudNotebookModel {
+                    title: n.title.clone().unwrap_or_default(),
+                    data: n.data.clone().unwrap_or_default(),
+                    ai_document_id: n
+                        .ai_document_id
+                        .as_ref()
+                        .and_then(|s| AIDocumentId::try_from(s.as_str()).ok()),
+                    conversation_id: None,
+                };
+                Some(Box::new(CloudNotebook::new(
+                    sync_id,
+                    model,
+                    default_metadata.clone(),
+                    default_permissions.clone(),
+                ))
+                    as Box<dyn CloudObject>)
+            } else if ot == "WORKFLOW" {
+                let w = workflows.get(&sid)?;
+                let sync_id = id_from_metadata::<WorkflowId>(row)?;
+                let workflow: Workflow = serde_json::from_str(&w.data).ok()?;
+                let model = CloudWorkflowModel { data: workflow };
+                Some(Box::new(CloudWorkflow::new(
+                    sync_id,
+                    model,
+                    default_metadata.clone(),
+                    default_permissions.clone(),
+                ))
+                    as Box<dyn CloudObject>)
+            } else if ot.starts_with("GENERIC_STRING_") {
+                let g = generic_objects.get(&sid)?;
+                let sync_id = id_from_metadata::<GenericStringObjectId>(row)?;
+                let subtype_str = ot.strip_prefix("GENERIC_STRING_JSON_").unwrap_or("");
+                let json_obj_type = JsonObjectType::try_from(subtype_str).ok()?;
+                match json_obj_type {
+                    JsonObjectType::EnvVarCollection => {
+                        let model = CloudEnvVarCollectionModel::deserialize_owned(&g.data).ok()?;
+                        Some(Box::new(CloudEnvVarCollection::new(
+                            sync_id,
+                            model,
+                            default_metadata.clone(),
+                            default_permissions.clone(),
+                        ))
+                            as Box<dyn CloudObject>)
+                    }
+                    JsonObjectType::AIFact => {
+                        let model = CloudAIFactModel::deserialize_owned(&g.data).ok()?;
+                        Some(Box::new(CloudAIFact::new(
+                            sync_id,
+                            model,
+                            default_metadata.clone(),
+                            default_permissions.clone(),
+                        ))
+                            as Box<dyn CloudObject>)
+                    }
+                    _ => None,
+                }
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    Ok(cloud_objects)
 }
 
 // fn to_cloud_object_metadata(metadata: &ObjectMetadata) -> CloudObjectMetadata {
