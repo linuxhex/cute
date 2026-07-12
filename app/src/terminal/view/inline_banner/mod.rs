@@ -12,7 +12,7 @@ mod open_in_cute;
 mod passive_code_diff;
 pub(crate) mod prompt_suggestions;
 mod session_state;
-mod shared_sessions;  // 已注释：清理 shared_session 共享会话功能 (保留目录，但简化内容)
+// mod shared_sessions;  // Removed: shared_session cloud feature
 mod shell_process_terminated;
 mod ssh;
 mod vim_mode;

@@ -31,7 +31,6 @@ use crate::pane_group::pane::welcome_view::WelcomeViewAction;
 use crate::search::action::search_item::MatchedBinding;
 use crate::search::action::{CommandBindingDataSource, Event as CommandBindingDataSourceEvent};
 use crate::search::binding_source::BindingSource;
-use crate::search::command_palette::conversations::{self};
 use crate::search::command_palette::mixer::CommandPaletteItemAction;
 use crate::search::command_palette::new_session::{AllowedSessionKinds, NewSessionDataSource};
 use crate::search::command_palette::{launch_config, CommandPaletteMixer};
@@ -137,7 +136,6 @@ pub struct WelcomePalette {
     zero_state_items: Vec<QueryResultRenderer<CommandPaletteItemAction>>,
     selected_item: SelectedItem,
     project_data_source: ModelHandle<ProjectDataSource>,
-    conversations_data_source: ModelHandle<conversations::DataSource>,
     suggested_projects_data_source: ModelHandle<SuggestedProjectsDataSource>,
     open_project_keybinding: Option<String>,
     terminal_session_keybinding: Option<String>,
@@ -232,7 +230,6 @@ impl WelcomePalette {
 
         let project_data_source = ctx.add_model(ProjectDataSource::new);
         let suggested_projects_data_source = ctx.add_model(SuggestedProjectsDataSource::new);
-        let conversations_data_source = ctx.add_model(|_| conversations::DataSource::new());
         let launch_config_data_source = ctx.add_model(launch_config::DataSource::new);
         let new_session_data_source = ctx.add_model(|ctx| {
             NewSessionDataSource::new(binding_source.clone(), ctx)
@@ -244,10 +241,6 @@ impl WelcomePalette {
             mixer.add_sync_source(actions_data_source.clone(), HashSet::new());
             mixer.add_sync_source(project_data_source.clone(), HashSet::new());
             mixer.add_sync_source(suggested_projects_data_source.clone(), HashSet::new());
-
-            if AISettings::as_ref(ctx).is_any_ai_enabled(ctx) {
-                mixer.add_sync_source(conversations_data_source.clone(), HashSet::new());
-            }
 
             if ContextFlag::LaunchConfigurations.is_enabled() {
                 mixer.add_sync_source(launch_config_data_source.clone(), HashSet::new());
@@ -297,7 +290,6 @@ impl WelcomePalette {
             placeholder_query_renderer: placeholder_element,
             binding_source,
             project_data_source,
-            conversations_data_source,
             open_project_keybinding,
             terminal_session_keybinding,
             suggested_projects_data_source,
@@ -353,19 +345,6 @@ impl WelcomePalette {
             vec![]
         };
 
-        let conversation_slots = MAX_ITEMS_IN_ZERO_STATE
-            .saturating_sub(projects.len())
-            .saturating_sub(suggested_projects.len());
-
-        let conversations = if conversation_slots > 0 {
-            self.conversations_data_source
-                .read(ctx, |conversations, ctx| {
-                    conversations.top_n(conversation_slots, ctx).collect()
-                })
-        } else {
-            vec![]
-        };
-
         let projects = dedupe_score(
             projects
                 .into_iter()
@@ -376,7 +355,6 @@ impl WelcomePalette {
 
         self.zero_state_items = projects
             .into_iter()
-            .chain(conversations)
             .enumerate()
             .map(|(i, item)| Self::create_query_result_renderer(i, item))
             .collect();

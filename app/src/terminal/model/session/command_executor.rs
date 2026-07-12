@@ -8,10 +8,6 @@ mod tmux_executor;
 mod wsl_command_executor;
 use std::collections::HashMap;
 mod noop_command_executor;
-#[cfg(feature = "local_tty")]
-mod remote_command_executor;
-
-mod shared;
 
 use std::any::Any;
 use std::fmt::Debug;
@@ -27,16 +23,40 @@ pub use in_band_command_executor::{
 #[cfg(feature = "local_tty")]
 pub use local_command_executor::LocalCommandExecutor;
 pub use noop_command_executor::NoOpCommandExecutor;
-#[cfg(feature = "local_tty")]
-pub use remote_command_executor::RemoteCommandExecutor;
-pub use shared::{shell_escape_single_quotes, ExecutorCommandEvent};
 use cute_completer::completer::CommandOutput;
 use cuteui::ModelContext;
 
 use super::SessionInfo;
 use crate::terminal::event::ExecutedExecutorCommandEvent;
 use crate::terminal::model::session::Sessions;
+use crate::terminal::model::tmux::commands::TmuxCommand;
 use crate::terminal::shell::Shell;
+use crate::terminal::shell::ShellType;
+
+pub enum ExecutorCommandEvent {
+    ExecuteCommand {
+        command: InBandCommand,
+        cancel_tx: Sender<InBandCommandCancelledEvent>,
+    },
+    ExecuteTmuxCommand(TmuxCommand),
+    CancelCommand {
+        id: String,
+    },
+}
+
+pub fn shell_escape_single_quotes(command: &str, shell_type: ShellType) -> String {
+    match shell_type {
+        ShellType::Fish => {
+            command.replace('\'', r"\'")
+        }
+        ShellType::PowerShell => {
+            command.replace('\'', "''")
+        }
+        _ => {
+            command.replace('\'', r#"'"'"'"#)
+        }
+    }
+}
 
 #[derive(Copy, Clone, Debug)]
 pub struct ExecuteCommandOptions {
@@ -295,15 +315,8 @@ fn new_command_executor_for_local_tty_session(
                 && !FeatureFlag::InBandGeneratorsForSSH.is_enabled()
                 && !force_use_in_band_generators =>
         {
-            if let IsLegacySSHSession::Yes { socket_path } = &session_info.is_legacy_ssh_session {
-                let wsl_distro = parent_session_info
-                    .and_then(|session| session.wsl_name())
-                    .map(ToOwned::to_owned);
-                log::info!("creating a legacy ssh executor!");
-                Arc::new(RemoteCommandExecutor::new(socket_path.clone(), wsl_distro))
-            } else {
-                unreachable!("Unreachable because of match! above. Unfortunately if let guards in rust are still experimental.")
-            }
+            log::info!("creating a no-op executor for legacy ssh (cloud feature removed)!");
+            Arc::new(NoOpCommandExecutor::new())
         }
         _ => {
             if *should_force_disable_in_band_generators {

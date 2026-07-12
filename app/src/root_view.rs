@@ -1093,14 +1093,14 @@ fn open_new_tab_insert_subshell_command_and_bootstrap_if_supported(
 
 /// Returns the common configuration for a new "regular" window (not Quake Mode).
 fn default_window_options(window_settings: &WindowSettings, ctx: &AppContext) -> AddWindowOptions {
-    let (inherited_bounds, window_style) = ctx.next_window_bounds_and_style();
+    let (_, window_style) = ctx.next_window_bounds_and_style();
     let next_bounds =
-        bounds_for_opening_at_custom_window_size(inherited_bounds, window_settings, ctx);
+        bounds_for_opening_at_custom_window_size(WindowBounds::Default, window_settings, ctx);
 
     AddWindowOptions {
         window_style,
         window_bounds: next_bounds,
-        title: Some("Warp".to_owned()),
+        title: Some("Cute".to_owned()),
         background_blur_radius_pixels: Some(*window_settings.background_blur_radius),
         background_blur_texture: *window_settings.background_blur_texture,
         on_gpu_driver_selected: on_gpu_driver_selected_callback(),

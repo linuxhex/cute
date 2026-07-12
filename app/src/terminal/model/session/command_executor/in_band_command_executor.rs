@@ -20,7 +20,7 @@ use crate::safe_info;
 use crate::server::datetime_ext::DateTimeExt;
 use crate::terminal::event::ExecutedExecutorCommandEvent;
 use crate::terminal::model::session::command_executor::{
-    shared, CommandExecutor, ExecutorCommandEvent,
+    CommandExecutor, ExecutorCommandEvent, shell_escape_single_quotes,
 };
 use crate::terminal::shell::{Shell, ShellType};
 use crate::terminal::SizeInfo;
@@ -323,7 +323,7 @@ impl InBandCommandExecutor {
                 // Because we wrap the command in single quotes in the string sent to the pty,
                 // escape the single quotes in a valid way given the session's shell type.
                 let escaped_command =
-                    shared::shell_escape_single_quotes(command, shell.shell_type());
+                    shell_escape_single_quotes(command, shell.shell_type());
 
                 let in_band_command = match shell.shell_type() {
                     ShellType::PowerShell => {

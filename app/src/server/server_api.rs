@@ -7,7 +7,7 @@ pub mod managed_secrets;
 pub mod object;
 pub(crate) mod presigned_upload;
 // pub mod referral; // Removed: referral feature
-pub mod team;
+// pub mod team; // Removed: team cloud feature
 pub mod workspace;
 
 use std::borrow::Cow;
@@ -33,7 +33,7 @@ use prost::Message;
 // use referral::ReferralsClient; // Removed: referral feature
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
-use team::TeamClient;
+// use team::TeamClient; // Removed: team cloud feature
 use url::Url;
 use cute_core::errors::{register_error, AnyhowErrorExt, ErrorExt};
 use cute_managed_secrets::client::ManagedSecretsClient;
@@ -1760,7 +1760,7 @@ impl ServerApiProvider {
         self.server_api.clone()
     }
 
-    pub fn get_team_client(&self) -> Arc<dyn TeamClient> {
+    pub fn get_team_client(&self) -> Arc<dyn std::any::Any> {
         self.server_api.clone()
     }
 

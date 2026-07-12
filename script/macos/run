@@ -128,20 +128,17 @@ SIGNING_CERT="$(security find-identity -p codesigning -v | grep "Apple Developme
 codesign --force --deep --options runtime --sign "${SIGNING_CERT:--}" "$WARP_APP_PATH" --entitlements script/Debug-Entitlements.plist
 
 if [ "$DONT_OPEN" = false ] ; then
-    if  [ "$OPEN_WITH_LAUNCHD" = true ]; then
-        echo "Launching with MacOS application launcher"
-        PATH="" /usr/bin/open "./$WARP_APP_PATH"
-        if [ "$WARP_CHANNEL" = "local" ]; then
-            LOG_FILE=~/Library/Logs/warp_local.log
-        elif [ "$WARP_CHANNEL" = "oss" ]; then
-            LOG_FILE=~/Library/Logs/warp-oss.log
-        else
-            echo "Warning: unrecognized WARP_CHANNEL '$WARP_CHANNEL', defaulting to OSS log path" >&2
-            LOG_FILE=~/Library/Logs/warp-oss.log
-        fi
-        tail -F "$LOG_FILE"
+    # 默认使用 open 命令打开应用，确保正确注册到 macOS 并显示在 Dock
+    echo "Opening app with 'open' command (will appear in Dock)"
+    PATH="" /usr/bin/open "./$WARP_APP_PATH"
+    if [ "$WARP_CHANNEL" = "local" ]; then
+        LOG_FILE=~/Library/Logs/warp_local.log
+    elif [ "$WARP_CHANNEL" = "oss" ]; then
+        LOG_FILE=~/Library/Logs/cute.log
     else
-        echo "Opening app at ./$WARP_APP_PATH/Contents/MacOS/$WARP_BIN_NAME"
-        "./$WARP_APP_PATH/Contents/MacOS/$WARP_BIN_NAME" "${WARP_ARGS[@]}"
+        echo "Warning: unrecognized WARP_CHANNEL '$WARP_CHANNEL', defaulting to OSS log path" >&2
+        LOG_FILE=~/Library/Logs/cute.log
     fi
+    echo "Following logs (Ctrl+C to stop)..."
+    tail -F "$LOG_FILE"
 fi

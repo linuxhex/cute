@@ -21,11 +21,13 @@ OS_TYPE="$(uname -s)"
 
 # Start with default features to ensure all CLI agent features are enabled
 FEATURES="default"
-INSTALL_COMMON_SKILLS=1
+# Skip common skills installation for OSS version (no access to private repos)
+INSTALL_COMMON_SKILLS=0
 FORCE_COMMON_SKILLS=0
 COMMON_SKILLS_TARGET="${WARP_COMMON_SKILLS_INSTALL_TARGET:-}"
 
-./script/install_channel_config || echo "Skipping internal channel config installation (no repo access)."
+# Skip internal config installation for OSS version (no SSH access to private repo)
+# ./script/install_channel_config || echo "Skipping internal channel config installation (no repo access)."
 
 
 # Cute application only - no warp support

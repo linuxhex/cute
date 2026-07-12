@@ -3953,7 +3953,7 @@ impl cuteui::SingletonEntity for UserWorkspaces {}
 
 impl UserWorkspaces {
     pub fn new(
-        _team_client: std::sync::Arc<dyn crate::server::server_api::team::TeamClient>,
+        _team_client: std::sync::Arc<dyn std::any::Any>,
         _workspace_client: std::sync::Arc<dyn crate::server::server_api::workspace::WorkspaceClient>,
         _cached_workspaces: Vec<WorkspaceMetadata>,
         _ctx: &mut cuteui::ModelContext<Self>,

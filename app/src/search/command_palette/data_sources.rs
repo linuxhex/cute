@@ -6,19 +6,16 @@ use cute_core::features::FeatureFlag;
 use cuteui::keymap::BindingId;
 use cuteui::{AppContext, Entity, ModelContext, ModelHandle, SingletonEntity};
 
-use super::conversations;
 use crate::search::action::CommandBindingDataSource;
 use crate::search::binding_source::BindingSource;
 use crate::search::command_palette::mixer::{CommandPaletteItemAction, ItemSummary};
 use crate::search::command_palette::new_session::NewSessionDataSource;
-use crate::search::command_palette::repos::RepoDataSource;
 use crate::search::command_palette::{files, launch_config, navigation, tabs, CommandPaletteMixer};
 use crate::search::data_source::QueryResult;
 use crate::search::files::model::FileSearchModel;
 use crate::search::mixer::AddAsyncSourceOptions;
 use crate::search::QueryFilter;
 use crate::session_management::SessionSource;
-use crate::settings::AISettings;
 
 /// Store of all of the [`crate::search::DataSource`]s for the command palette.
 pub struct DataSourceStore {
@@ -26,8 +23,6 @@ pub struct DataSourceStore {
     sessions_data_source: ModelHandle<navigation::DataSource>,
     launch_config_data_source: ModelHandle<launch_config::DataSource>,
     new_session_data_source: Option<ModelHandle<NewSessionDataSource>>,
-    all_conversation_data_source: ModelHandle<conversations::DataSource>,
-    repo_data_source: ModelHandle<RepoDataSource>,
     tabs_data_source: Option<ModelHandle<tabs::DataSource>>,
 }
 
@@ -49,18 +44,11 @@ impl DataSourceStore {
             && cfg!(feature = "local_tty"))
         .then_some(ctx.add_model(|ctx| NewSessionDataSource::new(binding_source, ctx)));
 
-        let all_conversation_data_source: ModelHandle<conversations::DataSource> =
-            ctx.add_model(|_| conversations::DataSource::new());
-
-        let repo_data_source = ctx.add_model(|_| RepoDataSource::new());
-
         Self {
             actions_data_source,
             sessions_data_source,
             launch_config_data_source,
             new_session_data_source,
-            all_conversation_data_source,
-            repo_data_source,
             tabs_data_source: None,
         }
     }
@@ -69,7 +57,7 @@ impl DataSourceStore {
     pub fn reset_search_mixer(
         &mut self,
         mixer: ModelHandle<CommandPaletteMixer>,
-        is_shared_session_viewer: bool,
+        _is_shared_session_viewer: bool,
         ctx: &mut ModelContext<Self>,
     ) {
         mixer.update(ctx, |mixer, ctx| {
@@ -99,7 +87,7 @@ impl DataSourceStore {
                 );
             }
 
-            if FeatureFlag::CommandPaletteFileSearch.is_enabled() && !is_shared_session_viewer {
+            if FeatureFlag::CommandPaletteFileSearch.is_enabled() {
                 let file_search_model = FileSearchModel::as_ref(ctx);
                 let is_in_git_repo = file_search_model.repo_root_location(ctx).is_some();
 
@@ -119,19 +107,6 @@ impl DataSourceStore {
                     ctx,
                 );
             }
-
-            // Add conversation search if AI is enabled
-            if AISettings::as_ref(ctx).is_any_ai_enabled(ctx) {
-                mixer.add_sync_source(
-                    self.all_conversation_data_source.clone(),
-                    HashSet::from([QueryFilter::Conversations]),
-                );
-            }
-
-            mixer.add_sync_source(
-                self.repo_data_source.clone(),
-                HashSet::from([QueryFilter::Repos]),
-            );
 
             ctx.notify();
         });
@@ -246,32 +221,17 @@ impl DataSourceStore {
                 Some(QueryResult::from(search_item))
             }
             ItemSummary::Project { path: _ } => {
-                // For project summaries, we would need a project data source to reconstruct the item,
-                // but this is typically handled by the welcome palette, not the command palette.
-                // For now, return None as projects aren't expected in the regular command palette.
                 None
             }
-            ItemSummary::Conversation { id } => conversations::DataSource::query_result(id, app),
-
-            ItemSummary::NewConversation => {
-                // The new conversation item should not show up in the recent command list,
-                // as its use is specific to the conversation filter.
-                None
-            }
-
-            ItemSummary::ForkConversation => {
-                // The forked conversation item should not show up in the recent command list,
-                // as its use is specific to the conversation filter.
+            ItemSummary::Conversation { .. } | ItemSummary::NewConversation | ItemSummary::ForkConversation => {
                 None
             }
 
             ItemSummary::NoOp => {
-                // No-op action (used for non-interactable separator items that don't do anything on click).
                 None
             }
 
             ItemSummary::Tab { .. } => {
-                // Tabs are only shown in the ctrl_tab palette, not in recent commands.
                 None
             }
         }
@@ -291,7 +251,3 @@ impl DataSourceStore {
 impl Entity for DataSourceStore {
     type Event = ();
 }
-
-#[cfg(test)]
-#[path = "data_sources_tests.rs"]
-mod tests;
