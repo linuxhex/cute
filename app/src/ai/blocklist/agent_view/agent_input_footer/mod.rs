@@ -124,7 +124,6 @@ const FAST_FORWARD_LOCKED_TOOLTIP: &str =
     "Fast forward is always enabled for cloud agent conversations";
 
 const START_REMOTE_CONTROL_TOOLTIP: &str = "Start remote control";
-const START_REMOTE_CONTROL_LOGIN_REQUIRED_TOOLTIP: &str = "Log in to use /remote-control";
 
 const CLOUD_MODE_V2_FOOTER_GAP: f32 = 4.;
 

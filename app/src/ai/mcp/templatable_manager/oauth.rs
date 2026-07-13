@@ -21,19 +21,6 @@ use crate::ai::mcp::FileBasedMCPManager;
 pub(crate) const TEMPLATABLE_MCP_CREDENTIALS_KEY: &str = "TemplatableMcpCredentials";
 pub(crate) const FILE_BASED_MCP_CREDENTIALS_KEY: &str = "FileBasedMcpCredentials";
 
-/// The issuer URL for GitHub's OAuth provider.
-const GITHUB_ISSUER: &str = "https://github.com/login/oauth";
-
-static GITHUB_OAUTH_SCOPES: [&str; 7] = [
-    "repo",
-    "read:org",
-    "gist",
-    "notifications",
-    "user",
-    "project",
-    "workflow",
-];
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PersistedCredentials {
     /// The credential information that `rmcp` wants us to store and retrieve.

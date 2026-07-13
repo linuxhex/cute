@@ -9,7 +9,7 @@ use anyhow::anyhow;
 use async_trait::async_trait;
 use base64::Engine;
 use chrono::{DateTime, Utc};
-use cynic::{MutationBuilder, QueryBuilder};
+
 use itertools::Itertools;
 #[cfg(test)]
 use mockall::automock;
@@ -52,9 +52,6 @@ use cute_graphql::mutations::generate_metadata_for_command::{
     GenerateMetadataForCommandStatus, GenerateMetadataForCommandSuccess,
     GenerateMetadataForCommandVariables,
 };
-use cute_graphql::mutations::populate_merkle_tree_cache::{
-    PopulateMerkleTreeCache, PopulateMerkleTreeCacheResult, PopulateMerkleTreeCacheVariables,
-};
 // Note: request_bonus mutation has been removed
 use cute_graphql::mutations::update_agent_task::{
     AgentTaskStatusMessageInput, UpdateAgentTask, UpdateAgentTaskInput, UpdateAgentTaskResult,
@@ -77,9 +74,7 @@ use cute_graphql::queries::get_available_harnesses::{
 use cute_graphql::queries::get_feature_model_choices::{
     GetFeatureModelChoices, GetFeatureModelChoicesVariables,
 };
-use cute_graphql::queries::get_relevant_fragments::{
-    GetRelevantFragmentsQuery, GetRelevantFragmentsResult, GetRelevantFragmentsVariables,
-};
+
 #[cfg(not(feature = "agent_mode_evals"))]
 use cute_graphql::queries::get_request_limit_info::{
     GetRequestLimitInfo, GetRequestLimitInfoVariables,
@@ -88,12 +83,7 @@ use cute_graphql::queries::get_scheduled_agent_history::{
     GetScheduledAgentHistory, GetScheduledAgentHistoryVariables, ScheduledAgentHistory,
     ScheduledAgentHistoryInput, ScheduledAgentHistoryResult,
 };
-use cute_graphql::queries::rerank_fragments::{
-    RerankFragments, RerankFragmentsResult, RerankFragmentsVariables,
-};
-use cute_graphql::queries::sync_merkle_tree::{
-    SyncMerkleTree, SyncMerkleTreeInput, SyncMerkleTreeResult, SyncMerkleTreeVariables,
-};
+
 use cute_graphql::queries::task_attachments::{
     Task as TaskAttachmentsQuery, TaskInput, TaskResult, TaskVariables,
 };
