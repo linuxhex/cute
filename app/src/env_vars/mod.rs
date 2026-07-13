@@ -14,7 +14,7 @@ use crate::cloud_stub_types::model::json_model::JsonModel;
 use crate::cloud_stub_types::{
     GenericStringObjectFormat, GenericStringObjectUniqueKey, JsonObjectType, Revision,
 };
-use crate::cloud_stub_types::items::env_var_collection::WarpDriveEnvVarCollection;
+use crate::cloud_stub_types::items::env_var_collection::CuteDriveEnvVarCollection;
 use crate::cloud_stub_types::CuteDriveItem;
 use crate::server::ids::SyncId;
 use crate::terminal::shell::ShellType;
@@ -22,7 +22,7 @@ use crate::{Appearance, CloudObjectTypeAndId};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum EnvVarCollectionType {
-    /// Saved env vars, saved using cloud-sync. Today, we only support cloud
+    /// Saved env vars, stored locally
     Cloud(Box<CloudEnvVarCollection>),
 }
 
@@ -138,31 +138,12 @@ impl StringModel for EnvVarCollection {
         true
     }
 
-    fn renders_in_warp_drive(&self) -> bool {
-        true
-    }
-
     fn can_export(&self) -> bool {
         true
     }
 
     fn supports_linking(&self) -> bool {
-        true
-    }
-
-    fn to_warp_drive_item(
-        &self,
-        id: SyncId,
-        _appearance: &Appearance,
-        env_var_collection: &CloudEnvVarCollection,
-    ) -> Option<Box<dyn CuteDriveItem>> {
-        Some(Box::new(WarpDriveEnvVarCollection::new(
-            CloudObjectTypeAndId::from_generic_string_object(
-                GenericStringObjectFormat::Json(JsonObjectType::EnvVarCollection),
-                id,
-            ),
-            env_var_collection.clone(),
-        )))
+        false // Linking disabled for local-only version
     }
 }
 

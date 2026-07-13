@@ -17,11 +17,11 @@ use super::{
     BlockVisibilitySettings, ChangelogSettings, CodeSettings, DebugSettings, EmacsBindingsSettings,
     FontSettings, FontSettingsChangedEvent, GPUSettings, InputBoxType, InputModeSettings,
     InputSettings, PaneSettings, SameLinePromptBlockSettings, ScrollSettings, SelectionSettings,
-    SshSettings, ThemeSettings, VimBannerSettings, WarpDrivePrivacySettings,
+    SshSettings, ThemeSettings, VimBannerSettings, CuteDrivePrivacySettings,
 };
 // use crate::ai::cloud_agent_settings::CloudAgentSettings; // Cute: 已注释，清理云端 Agent 设置
 use crate::banner::BannerState;
-use crate::cloud_stub_types::settings::WarpDriveSettings;
+use crate::cloud_stub_types::settings::CuteDriveSettings;
 use crate::resource_center::TipsCompleted;
 use crate::search::command_search::settings::CommandSearchSettings;
 use crate::terminal::alt_screen_reporting::AltScreenReporting;
@@ -80,7 +80,7 @@ pub fn register_all_settings(ctx: &mut AppContext) {
     AccessibilitySettings::register(ctx);
     NativePreferenceSettings::register(ctx);
     CloudPreferencesSettings::register(ctx);
-    WarpDrivePrivacySettings::register(ctx);
+    CuteDrivePrivacySettings::register(ctx);
     UserAppInstallDetectionSettings::register(ctx);
     AppIconSettings::register(ctx);
     AppEditorSettings::register(ctx);
@@ -91,7 +91,7 @@ pub fn register_all_settings(ctx: &mut AppContext) {
     SshSettings::register(ctx);
     VimBannerSettings::register(ctx);
     // SharedSessionSettings::register(ctx);  // 已注释：清理 shared_session 共享会话功能
-    WarpDriveSettings::register(ctx);
+    CuteDriveSettings::register(ctx);
     WorkflowAliases::register(ctx);
     EmacsBindingsSettings::register(ctx);
     SameLinePromptBlockSettings::register(ctx);

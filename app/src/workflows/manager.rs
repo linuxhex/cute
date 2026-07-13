@@ -138,7 +138,6 @@ impl WorkflowManager {
         let entry = self.panes_by_hashed_id.entry(workflow_id.uid());
         if let Entry::Vacant(entry) = entry {
             entry.insert(WorkflowPaneData {
-                workflow_id,
                 window_id,
                 locator: PaneViewLocator {
                     pane_group_id,
@@ -176,7 +175,6 @@ impl WorkflowManager {
 }
 
 struct WorkflowPaneData {
-    workflow_id: SyncId,
     window_id: WindowId,
     locator: PaneViewLocator,
 }

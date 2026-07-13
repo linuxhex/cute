@@ -32,34 +32,6 @@ use crate::ui_components::icons::Icon;
 use crate::view_components::action_button::{ActionButton, PrimaryTheme, SecondaryTheme};
 use crate::workspace::view::launch_modal::cta_button::{CTAButton, CTAButtonAction};
 
-pub fn init<S: Slide>(app: &mut AppContext) {
-    use cuteui::keymap::macros::*;
-
-    app.register_fixed_bindings([
-        FixedBinding::new("escape", LaunchModalAction::<S>::Close, id!("LaunchModal")),
-        FixedBinding::new(
-            "enter",
-            LaunchModalAction::<S>::NextSlide,
-            id!("LaunchModal"),
-        ),
-        FixedBinding::new(
-            "left",
-            LaunchModalAction::<S>::PrevSlide,
-            id!("LaunchModal"),
-        ),
-        FixedBinding::new(
-            "right",
-            LaunchModalAction::<S>::NextSlide,
-            id!("LaunchModal"),
-        ),
-        FixedBinding::new("up", LaunchModalAction::<S>::PrevSlide, id!("LaunchModal")),
-        FixedBinding::new(
-            "down",
-            LaunchModalAction::<S>::NextSlide,
-            id!("LaunchModal"),
-        ),
-    ]);
-}
 
 /// Configuration for an optional checkbox displayed in the modal's control panel.
 pub struct CheckboxConfig {
@@ -76,7 +48,6 @@ where
     fn modal_subtext_paragraphs(&self) -> Vec<FormattedTextLine>;
     fn first() -> Self;
     fn next(&self) -> Option<Self>;
-    fn prev(&self) -> Option<Self>;
     fn display_text(&self) -> Option<&'static str>;
     fn short_label(&self) -> &'static str;
     fn title(&self) -> &'static str;
@@ -695,24 +666,6 @@ impl<S: Slide> TypedActionView for LaunchModal<S> {
                 self.update_buttons_based_on_slide(ctx);
                 ctx.notify();
             }
-            LaunchModalAction::NextSlide => {
-                if let Some(next_slide) = self.slide.next() {
-                    self.slide = next_slide;
-                    self.update_buttons_based_on_slide(ctx);
-                    ctx.notify();
-                } else {
-                    // If we're on the last slide, trigger the CTA button action.
-                    self.handle_cta_button_action(ctx);
-                }
-            }
-            LaunchModalAction::PrevSlide => {
-                if let Some(prev_slide) = self.slide.prev() {
-                    self.slide = prev_slide;
-                    self.update_buttons_based_on_slide(ctx);
-                    ctx.notify();
-                }
-                // If we're on the first slide, do nothing.
-            }
             LaunchModalAction::Close => {
                 self.slide.on_close(ctx);
                 ctx.emit(LaunchModalEvent::Close);
@@ -739,8 +692,6 @@ pub enum LaunchModalEvent {
 #[derive(Copy, Clone, Debug)]
 pub enum LaunchModalAction<S: Slide> {
     SelectSlide(S),
-    NextSlide,
-    PrevSlide,
     Close,
     Finish,
     FinishSecondary,

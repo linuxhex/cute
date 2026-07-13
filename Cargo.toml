@@ -6,8 +6,7 @@ members = [
 resolver = "2"
 
 # Include all members except serve-wasm (since it's a helper helper for serving
-# wasm binaries and not something we want to regularly compile or run
-# tests against) and integration (since it is only used for testing).
+# wasm binaries and not something we want to regularly compile or run).
 default-members = [
   "app",
   "crates/channel_versions",
@@ -56,7 +55,6 @@ onboarding = { path = "crates/onboarding" }
 persistence = { path = "crates/persistence" }
 prevent_sleep = { path = "crates/prevent_sleep" }
 repo_metadata = { path = "crates/repo_metadata" }
-session-sharing-protocol = { path = "crates/session_sharing_protocol" }
 settings = { path = "crates/settings" }
 settings_value = { path = "crates/settings_value", default-features = false }
 settings_value_derive = { path = "crates/settings_value_derive" }
@@ -93,6 +91,7 @@ cuteui_core = { path = "crates/cuteui_core" }
 cuteui_extras = { path = "crates/cuteui_extras", default-features = false }
 watcher = { path = "crates/watcher" }
 websocket = { path = "crates/websocket" }
+session-sharing-protocol = { path = "crates/session_sharing_protocol" }
 
 # Workspace-level dependencies used by multiple crates. Prefer adding dependencies
 # here to copying-and-pasting versions.
@@ -306,8 +305,7 @@ vec1 = { version = "1.8.0", features = ["serde"] }
 version-compare = "0.1"
 vte = { git = "https://github.com/warpdotdev/vte.git", rev = "4b399c87b63ba88f45709edaa6383fc519f6c900", default-features = false }
 walkdir = "2"
-warp-workflows = { git = "https://github.com/warpdotdev/workflows", rev = "793a98ddda6ef19682aed66364faebd2829f0e01" }
-warp_multi_agent_api = { git = "https://github.com/warpdotdev/warp-proto-apis.git", rev = "c67de64fc4949f693a679552dc88cebc9f7d0180" }
+cute-workflows = { git = "https://github.com/warpdotdev/workflows", rev = "793a98ddda6ef19682aed66364faebd2829f0e01", package = "warp-workflows" }
 cute_multi_agent_api = { git = "https://github.com/warpdotdev/warp-proto-apis.git", rev = "c67de64fc4949f693a679552dc88cebc9f7d0180", package = "warp_multi_agent_api" }
 wasm-bindgen = "0.2.89"
 wasm-bindgen-futures = "0.4.42"

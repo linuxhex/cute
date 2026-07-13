@@ -7,7 +7,6 @@ pub mod global_search;
 pub(crate) mod launch_modal;
 pub(crate) mod left_panel;
 pub(crate) mod onboarding;
-// pub(crate) mod openwarp_launch_modal;
 pub(crate) mod orchestration_launch_modal;
 pub(crate) mod right_panel;
 mod startup_directory;
@@ -17,11 +16,6 @@ mod tests;
 mod vertical_tabs;
 #[cfg(target_family = "wasm")]
 mod wasm_view;
-
-// Cute: stub type for disabled cloud feature
-pub enum SharedSessionActionSource {
-    Tab,
-}
 
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
@@ -210,7 +204,6 @@ use crate::banner::BannerState;
 use crate::changelog_model::{ChangelogModel, ChangelogRequestType, Event as ChangelogEvent};
 use crate::channel::{Channel, ChannelState};
 use crate::cloud_stub_types::model::persistence::CloudModel;
-// use crate::cloud_stub_types::toast_message::CloudObjectToastMessage; // Cute: 已禁用云端对象Toast消息
 use crate::cloud_stub_types::{
     CloudObject, GenericStringObjectFormat, JsonObjectType, ObjectType, Owner, Space,
 };
@@ -228,7 +221,7 @@ use crate::default_terminal::DefaultTerminal;
 use crate::cloud_stub_types::export::ExportManager;
 use crate::cloud_stub_types::import::modal::{ImportModal, ImportModalEvent};
 use crate::cloud_stub_types::items::WarpDriveItemId;
-use crate::cloud_stub_types::settings::{WarpDriveSettings, WarpDriveSettingsChangedEvent};
+use crate::cloud_stub_types::settings::{CuteDriveSettings, CuteDriveSettingsChangedEvent};
 use crate::cloud_stub_types::workflows::arguments::ArgumentsState;
 use crate::cloud_stub_types::workflows::modal::{WorkflowModal, WorkflowModalEvent};
 use crate::cloud_stub_types::{
@@ -280,9 +273,6 @@ use crate::search::command_search::settings::CommandSearchSettings;
 use crate::search::command_search::view::{CommandSearchEvent, CommandSearchView};
 use crate::search::slash_command_menu::static_commands::commands;
 use crate::search::{self, QueryFilter};
-// use crate::server::cloud_objects::update_manager::{
-//     ObjectOperation, OperationSuccessType, UpdateManager, UpdateManagerEvent,
-// };
 use crate::server::ids::{ObjectUid, ServerId, SyncId};
 use crate::server::server_api::ai::AIClient;
 use crate::server::server_api::auth::AuthClient;
@@ -292,7 +282,6 @@ use crate::server::telemetry::{
     LaunchConfigUiLocation, PaletteSource,
 };
 use crate::cloud_stub_types::sharing::dialog::SharingDialogSource;
-use crate::session_management::{SessionNavigationData, SessionSource, TabNavigationData};
 use crate::settings::{
     active_theme_kind, respect_system_theme, AISettings, AISettingsChangedEvent,
     AccessibilitySettings, AliasExpansionSettings, AppEditorSettings, BlockVisibilitySettings,
@@ -537,7 +526,7 @@ pub(crate) const TOGGLE_NOTIFICATION_MAILBOX_BINDING_NAME: &str =
 
 // these won't have to be public after we deprecate the code mode v1 project explorer which is defined in terminal
 pub(crate) const TOGGLE_PROJECT_EXPLORER_BINDING_NAME: &str = "workspace:toggle_project_explorer";
-pub(crate) const TOGGLE_WARP_DRIVE_BINDING_NAME: &str = "workspace:toggle_warp_drive";
+
 pub(crate) const TOGGLE_RIGHT_PANEL_BINDING_NAME: &str = "workspace:toggle_right_panel";
 pub(crate) const TOGGLE_VERTICAL_TABS_PANEL_BINDING_NAME: &str =
     "workspace:toggle_vertical_tabs_panel";
@@ -546,17 +535,14 @@ pub(crate) const TOGGLE_CONVERSATION_LIST_VIEW_BINDING_NAME: &str =
     "workspace:toggle_conversation_list_view";
 pub(crate) const NEW_TAB_BINDING_NAME: &str = "workspace:new_tab";
 pub(crate) const NEW_TERMINAL_TAB_BINDING_NAME: &str = "workspace:new_terminal_tab";
-pub(crate) const NEW_AGENT_TAB_BINDING_NAME: &str = "workspace:new_agent_tab";
-pub(crate) const NEW_AMBIENT_AGENT_TAB_BINDING_NAME: &str = "workspace:new_ambient_agent_tab";
+
 pub(crate) const TOGGLE_TAB_CONFIGS_MENU_BINDING_NAME: &str = "workspace:toggle_tab_configs_menu";
 
 // Editable left panel toolbelt keybindings.
 pub(crate) const LEFT_PANEL_PROJECT_EXPLORER_BINDING_NAME: &str =
     "workspace:left_panel_project_explorer";
 pub(crate) const LEFT_PANEL_GLOBAL_SEARCH_BINDING_NAME: &str = "workspace:left_panel_global_search";
-pub(crate) const LEFT_PANEL_WARP_DRIVE_BINDING_NAME: &str = "workspace:left_panel_warp_drive";
-pub(crate) const LEFT_PANEL_AGENT_CONVERSATIONS_BINDING_NAME: &str =
-    "workspace:left_panel_agent_conversations";
+
 
 const KEYBINDINGS_TO_CACHE: [&str; 4] = [
     ASK_AI_ASSISTANT_KEYBINDING_NAME,
@@ -566,7 +552,6 @@ const KEYBINDINGS_TO_CACHE: [&str; 4] = [
 ];
 
 const WORKFLOW_AND_ENV_VAR_SPLIT_RATIO: f32 = 0.56;
-const NOTEBOOK_SMART_SPLIT_RATIO: f32 = 0.42;
 
 #[cfg(target_family = "wasm")]
 const MOBILE_OVERLAY_PANEL_WIDTH_RATIO: f32 = 0.9;
@@ -581,10 +566,6 @@ const MAX_FORK_TOAST_TITLE_LENGTH: usize = 100;
 
 // The max length of the window title (matching conversation title truncation).
 const MAX_WINDOW_TITLE_LENGTH: usize = 80;
-
-#[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-const AUTO_CLOUD_HANDOFF_PROMPT: &str =
-    "Continue this local Warp Agent task in the cloud from the current conversation state.";
 
 /// The default display name used for the user if they have no associated display name.
 pub const DEFAULT_USER_DISPLAY_NAME: &str = "User";
@@ -868,7 +849,6 @@ pub struct Workspace {
     user_default_shell_unsupported_banner_model_handle: ModelHandle<BannerState>,
     server_api: Arc<ServerApi>,
     auth_state: Arc<AuthState>,
-    server_time: Option<Arc<ServerTime>>,
     tab_bar_overflow_menu: ViewHandle<Menu<WorkspaceAction>>,
     show_tab_bar_overflow_menu: bool,
     tab_right_click_menu: ViewHandle<Menu<WorkspaceAction>>,
@@ -1917,7 +1897,7 @@ impl Workspace {
                 ctx.notify();
             }
             AuthOverrideWarningModalEvent::BulkExport => {
-                self.export_all_warp_drive_objects(ctx);
+                self.export_all_cute_drive_objects(ctx);
             }
         }
     }
@@ -2810,7 +2790,7 @@ impl Workspace {
 
     pub fn new(
         global_resource_handles: GlobalResourceHandles,
-        server_time: Option<Arc<ServerTime>>,
+        _server_time: Option<Arc<ServerTime>>,
         workspace_setting: NewWorkspaceSource,
         ctx: &mut ViewContext<Self>,
     ) -> Self {
@@ -3109,8 +3089,8 @@ impl Workspace {
             }
         });
 
-        ctx.subscribe_to_model(&WarpDriveSettings::handle(ctx), |me, _, event, ctx| {
-            if let WarpDriveSettingsChangedEvent::EnableWarpDrive { .. } = event {
+        ctx.subscribe_to_model(&CuteDriveSettings::handle(ctx), |me, _, event, ctx| {
+            if let CuteDriveSettingsChangedEvent::EnableWarpDrive { .. } = event {
                 me.update_left_panel_available_views(ctx);
                 ctx.notify();
             }
@@ -3254,7 +3234,6 @@ impl Workspace {
             user_default_shell_unsupported_banner_model_handle,
             server_api,
             auth_state: AuthStateProvider::as_ref(ctx).get().clone(),
-            server_time,
             tab_bar_overflow_menu,
             show_tab_bar_overflow_menu: false,
             tab_right_click_menu,
@@ -4328,7 +4307,7 @@ impl Workspace {
 
     }
 
-    fn stop_sharing_session(&mut self, _terminal_view_id: EntityId, _source: SharedSessionActionSource, _ctx: &mut ViewContext<Self>) {}
+    fn stop_sharing_session(&mut self, _terminal_view_id: EntityId, _ctx: &mut ViewContext<Self>) {}
 
     fn copy_shared_session_link_from_tab(&mut self, _tab_index: usize, _ctx: &mut ViewContext<Self>) {}
 
@@ -4537,18 +4516,18 @@ impl Workspace {
     }
 
     /// Sets focused to the index of either the selected object or the first item in WD
-    fn reset_focused_index_in_warp_drive(
+    fn reset_focused_index_in_cute_drive(
         &mut self,
         _should_scroll: bool,
         _ctx: &mut ViewContext<Self>,
     ) {
         // ctx.focus(&self.left_panel_view);
-        // self.update_warp_drive_view(ctx, |drive_panel, ctx| {
-        //     drive_panel.reset_focused_index_in_warp_drive(should_scroll, ctx);
+        // self.update_cute_drive_view(ctx, |drive_panel, ctx| {
+        //     drive_panel.reset_focused_index_in_cute_drive(should_scroll, ctx);
         // });
     }
 
-    pub fn has_warp_drive_initialized_sections(
+    pub fn has_cute_drive_initialized_sections(
         &self,
         app: &AppContext,
     ) -> bool {
@@ -4561,9 +4540,9 @@ impl Workspace {
         //     .has_warp_drive_initialized_sections(app)
     }
 
-    /// Check if Warp Drive view is focused within.
-    /// Routes to the appropriate Warp Drive panel.
-    fn is_warp_drive_view_focused(&self, ctx: &mut ViewContext<Self>) -> bool {
+    /// Check if Cute Drive view is focused within.
+    /// Routes to the appropriate Cute Drive panel.
+    fn is_cute_drive_view_focused(&self, ctx: &mut ViewContext<Self>) -> bool {
         let app = ctx;
         self.left_panel_view.is_self_or_child_focused(app)
     }
@@ -4780,7 +4759,7 @@ impl Workspace {
             self.focus_active_tab(ctx);
         }
         // Starts from a left panel: Warp Drive
-        else if self.is_warp_drive_view_focused(ctx) {
+        else if self.is_cute_drive_view_focused(ctx) {
             if self.current_workspace_state.is_right_panel_open() {
                 self.set_selected_object(None, ctx);
                 if self.current_workspace_state.is_ai_assistant_panel_open {
@@ -4824,9 +4803,8 @@ impl Workspace {
                 ctx.focus(&self.theme_chooser_view);
             }
         }
-        // Starts from a left panel: Warp Drive, theme chooser
-        else if self.is_warp_drive_view_focused(ctx)
-            || self.theme_chooser_view.is_self_or_child_focused(ctx)
+        // Starts from a left panel: theme chooser (Warp Drive disabled)
+        else if self.theme_chooser_view.is_self_or_child_focused(ctx)
         {
             self.focus_active_tab(ctx);
         }
@@ -4903,39 +4881,6 @@ impl Workspace {
         }
     }
 
-    fn tab_navigation_data(&self, window_id: WindowId, ctx: &AppContext) -> Vec<TabNavigationData> {
-        self.tab_mru_order
-            .iter()
-            .filter_map(|&pane_group_id| {
-                let (tab_index, tab) = self
-                    .tabs
-                    .iter()
-                    .enumerate()
-                    .find(|(_, t)| t.pane_group.id() == pane_group_id)?;
-                let title = tab.pane_group.as_ref(ctx).display_title(ctx);
-                let subtitle = tab
-                    .pane_group
-                    .as_ref(ctx)
-                    .active_session_path(ctx)
-                    .map(|p| {
-                        if let Some(home) = dirs::home_dir() {
-                            if let Ok(stripped) = p.strip_prefix(&home) {
-                                return format!("~/{}", stripped.display());
-                            }
-                        }
-                        p.display().to_string()
-                    });
-                Some(TabNavigationData {
-                    pane_group_id,
-                    title,
-                    subtitle,
-                    window_id,
-                    tab_index: tab_index + 1,
-                })
-            })
-            .collect()
-    }
-
     pub fn tab_views(&self) -> impl Iterator<Item = &ViewHandle<PaneGroup>> {
         self.tabs.iter().map(|s| &s.pane_group)
     }
@@ -4981,25 +4926,6 @@ impl Workspace {
                 )
             })
         })
-    }
-
-    /// Gets all sessions in the current workspace.
-    pub fn workspace_sessions<'a>(
-        &'a self,
-        window_id: WindowId,
-        app: &'a AppContext,
-    ) -> impl Iterator<Item = SessionNavigationData> + 'a {
-        self.tabs.iter().flat_map(move |tab| {
-            // Each tab has a pane group
-            let pane_group_id = tab.pane_group.id();
-            let view = tab.pane_group.as_ref(app);
-
-            view.pane_sessions(pane_group_id, window_id, app)
-        })
-    }
-
-    pub fn set_server_time(&mut self, server_time: Arc<ServerTime>) {
-        self.server_time = Some(server_time);
     }
 
     /// Returns the PaneGroup view handle for the currently active tab.
@@ -6126,7 +6052,7 @@ impl Workspace {
             .write(ClipboardContent::plain_text(version.to_string()));
     }
 
-    fn export_all_warp_drive_objects(&mut self, ctx: &mut ViewContext<Self>) {
+    fn export_all_cute_drive_objects(&mut self, ctx: &mut ViewContext<Self>) {
         let window_id = ctx.window_id();
         let cloud_model = CloudModel::as_ref(ctx);
         let exportable_objects = cloud_model.get_all_exportable_object_ids();
@@ -6775,9 +6701,9 @@ impl Workspace {
         ctx.notify();
     }
 
-    /// Opens the Warp Drive object identified by `uid` in a new pane
+    /// Opens the Cute Drive object identified by `uid` in a new pane
     /// if it has a pane representation.
-    fn open_warp_drive_object_in_new_pane(&mut self, uid: &ObjectUid, ctx: &mut ViewContext<Self>) {
+    fn open_cute_drive_object_in_new_pane(&mut self, uid: &ObjectUid, ctx: &mut ViewContext<Self>) {
         if cfg!(feature = "skip_login") {
             return;
         }
@@ -6787,14 +6713,6 @@ impl Workspace {
 
         let sync_id = object.sync_id();
         match object.object_type() {
-            ObjectType::Notebook => {
-                self.open_notebook(
-                    &NotebookSource::Existing(sync_id),
-                    &OpenWarpDriveObjectSettings::default(),
-                    ctx,
-                    true,
-                );
-            }
             ObjectType::Workflow => {
                 self.open_workflow_in_pane(
                     &WorkflowOpenSource::Existing(sync_id),
@@ -7726,7 +7644,7 @@ impl Workspace {
 
         // Reset focused index when opening/toggling Warp Drive open
         if self.current_workspace_state.is_warp_drive_open {
-            self.reset_focused_index_in_warp_drive(true, ctx);
+            self.reset_focused_index_in_cute_drive(true, ctx);
         }
 
         ctx.notify();
@@ -9188,14 +9106,11 @@ impl Workspace {
                 // If saved workflow id matches the one that is currently displayed, then refresh workflow info box + input
                 self.maybe_refresh_workflow_info_box_and_input(&SyncId::from(WorkflowId::from(workflow_id.clone())), ctx);
             }
-            WorkflowModalEvent::ViewInWarpDrive(id) => {
+            WorkflowModalEvent::ViewInCuteDrive(id) => {
                 self.view_in_and_focus_warp_drive(WarpDriveItemId::Object(id.clone()), ctx);
             }
             // Simplified: local version has no upgrade
             WorkflowModalEvent::AiAssistUpgradeError(_team_uid, _user_id) => {}
-            WorkflowModalEvent::ViewInCuteDrive(id) => {
-                self.view_in_and_focus_warp_drive(WarpDriveItemId::Object(id.clone()), ctx);
-            }
             WorkflowModalEvent::OpenFromCuteDrive(id, _settings) => {
                 self.view_in_and_focus_warp_drive(WarpDriveItemId::Object(id.clone()), ctx);
             }
@@ -9646,13 +9561,6 @@ impl Workspace {
                 .size()
         });
 
-        let warp_drive_index_width = modal_sizes.map(|ms| {
-            ms.warp_drive_index_width
-                .lock()
-                .expect("should be able to lock warp drive resizable state handle")
-                .size()
-        });
-
         let left_panel_width = modal_sizes.map(|ms| {
             ms.left_panel_width
                 .lock()
@@ -9680,7 +9588,7 @@ impl Workspace {
             quake_mode,
             universal_search_width,
             warp_ai_width,
-            warp_drive_index_width,
+            cute_drive_index_width: None,  // Cute Drive disabled
             left_panel_open: self.left_panel_open,
             vertical_tabs_panel_open: self.vertical_tabs_panel_open,
             left_panel_width,
@@ -12033,11 +11941,7 @@ impl Workspace {
 
         match query_filter {
             QueryFilter::Tabs => {
-                let window_id = ctx.window_id();
-                let tabs = self.tab_navigation_data(window_id, ctx.as_ref());
-                data_source_store.update(ctx, |store, ctx| {
-                    store.reset_ctrl_tab_mixer(mixer, tabs, ctx);
-                });
+                // tab_navigation_data disabled - skip this filter
             }
             QueryFilter::Sessions => {
                 data_source_store.update(ctx, |store, ctx| {
@@ -12068,18 +11972,6 @@ impl Workspace {
         ctx.notify();
     }
 
-    fn open_warp_drive_palette(&mut self, ctx: &mut ViewContext<Self>) {
-        if cfg!(feature = "skip_login") {
-            return;
-        }
-        self.palette.update(ctx, |view, ctx| {
-            view.reset(ctx);
-            view.set_active_query_filter(QueryFilter::Drive, ctx);
-            ctx.focus(&self.palette);
-        });
-        ctx.notify();
-    }
-
     fn set_navigation_palette_session_source(
         &mut self,
         source: PaletteSource,
@@ -12101,18 +11993,11 @@ impl Workspace {
             &self.palette
         };
         active_palette_handle.update(ctx, |view, ctx| {
-            // Set the session source when the active_tab_id is Some.
-            if let Some(active_tab_id) = active_tab_id {
-                view.set_session_source(
-                    SessionSource::Set {
-                        active_pane_id,
-                        active_tab_id,
-                        active_window_id,
-                    },
-                    ctx,
-                );
-                ctx.notify();
-            }
+            // Removed: session_management module deleted
+            // if let Some(active_tab_id) = active_tab_id {
+            //     view.set_session_source(SessionSource::Set { ... }, ctx);
+            //     ctx.notify();
+            // }
             ctx.notify();
         });
     }
@@ -12246,7 +12131,6 @@ impl Workspace {
                 _ => self.open_navigation_palette(ctx),
             },
             PaletteMode::LaunchConfig => self.open_launch_config_palette(ctx),
-            PaletteMode::WarpDrive => self.open_warp_drive_palette(ctx),
             PaletteMode::Files => self.open_files_palette(ctx),
             PaletteMode::Conversations => self.open_conversations_palette(ctx),
         }
@@ -12335,12 +12219,6 @@ impl Workspace {
 
                 self.invoke_environment_variables(env_var_collection.clone(), false, ctx);
             }
-            CommandPaletteEvent::OpenNotebook { id } => self.open_notebook(
-                &NotebookSource::Existing(*id),
-                &OpenWarpDriveObjectSettings::default(),
-                ctx,
-                true,
-            ),
             #[allow(unused_variables)]
             CommandPaletteEvent::OpenFile {
                 path,
@@ -12402,7 +12280,7 @@ impl Workspace {
 
     /// This function is used when we set a selected object, which is an object open in an active pane.
     /// We do not want to focus Warp Drive, instead we want to focus the editor of the open object.
-    fn view_in_warp_drive(&mut self, item_id: WarpDriveItemId, ctx: &mut ViewContext<Self>) {
+    fn view_in_cute_drive(&mut self, item_id: WarpDriveItemId, ctx: &mut ViewContext<Self>) {
         self.open_left_panel(ctx);
         // self.left_panel_view.update(ctx, |left_panel, ctx| {
         //     left_panel.handle_action(&LeftPanelAction::WarpDrive, ctx);
@@ -12426,7 +12304,7 @@ impl Workspace {
         item_id: WarpDriveItemId,
         ctx: &mut ViewContext<Self>,
     ) {
-        self.view_in_warp_drive(item_id.clone(), ctx);
+        self.view_in_cute_drive(item_id.clone(), ctx);
 
         self.update_warp_drive_view(ctx, |warp_drive, ctx| {
             warp_drive.reset_and_open_to_main_index(ctx);
@@ -12456,7 +12334,7 @@ impl Workspace {
         _source: SharingDialogSource,
         ctx: &mut ViewContext<Self>,
     ) {
-        self.view_in_warp_drive(WarpDriveItemId::Object(object_id.clone()), ctx);
+        self.view_in_cute_drive(WarpDriveItemId::Object(object_id.clone()), ctx);
         self.update_warp_drive_view(ctx, |warp_drive, ctx| {
             warp_drive.reset_and_open_to_main_index(ctx);
             warp_drive.open_object_sharing_settings(&object_id, ctx);
@@ -14486,18 +14364,6 @@ impl Workspace {
                 me.handoff_environment_creation_modal = None;
                 me.focus_active_tab(ctx);
             }
-            HandoffEnvironmentCreationModalEvent::CreationFailed { error_message } => {
-                me.handoff_environment_creation_modal = None;
-                me.toast_stack.update(ctx, |toast_stack, ctx| {
-                    toast_stack.add_ephemeral_toast(
-                        DismissibleToast::error(format!(
-                            "Failed to create environment: {error_message}"
-                        )),
-                        ctx,
-                    );
-                });
-                me.focus_active_tab(ctx);
-            }
         });
         modal.update(ctx, |modal, ctx| modal.show(ctx));
         ctx.focus(&modal);
@@ -14577,18 +14443,6 @@ impl Workspace {
             }
             HandoffEnvironmentCreationModalEvent::Cancelled => {
                 me.handoff_environment_creation_modal = None;
-                me.focus_active_tab(ctx);
-            }
-            HandoffEnvironmentCreationModalEvent::CreationFailed { error_message } => {
-                me.handoff_environment_creation_modal = None;
-                me.toast_stack.update(ctx, |toast_stack, ctx| {
-                    toast_stack.add_ephemeral_toast(
-                        DismissibleToast::error(format!(
-                            "Failed to create environment: {error_message}"
-                        )),
-                        ctx,
-                    );
-                });
                 me.focus_active_tab(ctx);
             }
         });
@@ -15468,7 +15322,7 @@ impl Workspace {
                 // Focus an existing pane by its locator (used when avoiding duplicate file panes during undo close pane)
                 self.focus_pane(*locator, ctx);
             }
-            pane_group::Event::ViewInWarpDrive(id) => {
+            pane_group::Event::ViewInCuteDrive(id) => {
                 self.view_in_and_focus_warp_drive(id.clone(), ctx);
             }
             // If focused pane contains an object, then set selected state in WD to that object
@@ -15905,7 +15759,7 @@ impl Workspace {
             }
             pane_group::Event::ClearHoveredTabIndex => self.hovered_tab_index = None,
             pane_group::Event::OpenWarpDriveObjectInPane(uid) => {
-                self.open_warp_drive_object_in_new_pane(uid, ctx);
+                self.open_cute_drive_object_in_new_pane(uid, ctx);
             }
             pane_group::Event::OpenSuggestedAgentModeWorkflowModal { workflow_and_id } => {
                 self.open_suggested_agent_mode_workflow_modal(workflow_and_id, ctx);
@@ -16710,12 +16564,7 @@ impl Workspace {
                 );
             }
             DrivePanelEvent::OpenSearch => {
-                self.open_palette_action(
-                    PaletteMode::WarpDrive,
-                    PaletteSource::WarpDrive,
-                    None,
-                    ctx,
-                );
+                // WarpDrive palette mode has been removed
             }
             DrivePanelEvent::OpenNotebook(source) => {
                 let notebook_source = crate::cloud_stub_types::NotebookSource::Existing(source.sync_id());
@@ -17254,253 +17103,6 @@ impl Workspace {
         }
     }
 
-    // fn handle_update_manager_event(
-    //     &mut self,
-    //     event: &UpdateManagerEvent,
-    //     ctx: &mut ViewContext<Self>,
-    // ) {
-    //     let UpdateManagerEvent::ObjectOperationComplete { result } = event else {
-    //         return;
-    //     };
-    //
-    //     let cloud_model = CloudModel::as_ref(ctx);
-    //
-    //     let object_id = result
-    //         .server_id
-    //         .map(|server_id| server_id.uid())
-    //         .or_else(|| result.client_id.map(|client_id| client_id.to_string()));
-    //
-    //     if let Some(object_id) = object_id {
-    //         if let Some(object) = cloud_model.get_by_uid(&object_id) {
-    //             let cloud_object_type_and_id = object.cloud_object_type_and_id();
-    //             if !object.should_show_activity_toasts() {
-    //                 // Early exit for objects that don't show toasts.
-    //                 return;
-    //             }
-    //             if let Some(message) = CloudObjectToastMessage::toast_message(
-    //                 object,
-    //                 &result.operation,
-    //                 &result.success_type,
-    //                 ctx,
-    //             ) {
-    //                 let workflow: Option<&CloudWorkflow> = object.into();
-    //                 let cloned_workflow = workflow.cloned();
-    //                 let env_var_collection: Option<&CloudEnvVarCollection> = object.into();
-    //                 let cloned_env_var_collection = env_var_collection.cloned();
-    //
-    //                 let notebook: Option<&CloudNotebook> = object.into();
-    //                 let cloned_notebook = notebook.cloned();
-    //
-    //                 self.toast_stack
-    //                     .update(ctx, |view, ctx| match result.success_type {
-    //                         OperationSuccessType::Success => {
-    //                             let object_id_clone = object_id.clone();
-    //                             let mut new_toast =
-    //                                 DismissibleToast::success(message).with_object_id(object_id);
-    //                             if let Some(notebook) = cloned_notebook {
-    //                                 if (matches!(result.operation, ObjectOperation::Create { .. })
-    //                                     || result.operation == ObjectOperation::Update)
-    //                                     && notebook.model().ai_document_id.is_some()
-    //                                 {
-    //                                     // This is a plan. Only show the "Plan synced" toast if the plan is open in
-    //                                     // the currently active pane group, to avoid confusing users
-    //                                     // who are working in a different tab.
-    //                                     if notebook.model().ai_document_id.is_some_and(
-    //                                         |ai_doc_id| {
-    //                                             self.active_tab_pane_group()
-    //                                                 .as_ref(ctx)
-    //                                                 .contains_ai_document(&ai_doc_id, ctx)
-    //                                         },
-    //                                     ) {
-    //                                         new_toast = DismissibleToast::success(
-    //                                             "Plan synced to your Warp Drive".to_string(),
-    //                                         )
-    //                                         .with_object_id(object_id_clone)
-    //                                         .with_link(
-    //                                             ToastLink::new("View".to_string())
-    //                                                 .with_onclick_action(
-    //                                                     WorkspaceAction::ViewObjectInWarpDrive(
-    //                                                         WarpDriveItemId::Object(
-    //                                                             CloudObjectTypeAndId::Notebook(
-    //                                                                 notebook.id,
-    //                                                             ),
-    //                                                         ),
-    //                                                     ),
-    //                                                 ),
-    //                                         );
-    //                                     } else {
-    //                                         return;
-    //                                     }
-    //                                 }
-    //                             }
-    //
-    //                             if let Some(workflow) = cloned_workflow {
-    //                                 if matches!(result.operation, ObjectOperation::Create { .. })
-    //                                     || result.operation == ObjectOperation::Update
-    //                                 {
-    //                                     new_toast = new_toast.with_link(
-    //                                         ToastLink::new("View".to_string()).with_onclick_action(
-    //                                             WorkspaceAction::ViewObjectInWarpDrive(
-    //                                                 WarpDriveItemId::Object(
-    //                                                     CloudObjectTypeAndId::Workflow(workflow.id),
-    //                                                 ),
-    //                                             ),
-    //                                         ),
-    //                                     )
-    //                                 }
-    //                             }
-    //
-    //                             if result.operation == ObjectOperation::Trash {
-    //                                 new_toast = new_toast.with_link(
-    //                                     ToastLink::new("Undo".to_string()).with_onclick_action(
-    //                                         WorkspaceAction::UndoTrash(cloud_object_type_and_id),
-    //                                     ),
-    //                                 )
-    //                             }
-    //
-    //                             view.add_ephemeral_toast(new_toast, ctx);
-    //                         }
-    //                         OperationSuccessType::Failure => {
-    //                             // Suppress failure toasts for plan notebook updates
-    //                             // that are not visible in the active pane group.
-    //                             // Plan notebooks auto-save in the background, and
-    //                             // showing persistent error toasts for transient
-    //                             // failures is confusing when the user didn't
-    //                             // initiate the action.
-    //                             if let Some(notebook) = &cloned_notebook {
-    //                                 if result.operation == ObjectOperation::Update
-    //                                     && notebook.model().ai_document_id.is_some_and(
-    //                                         |ai_doc_id| {
-    //                                             !self
-    //                                                 .active_tab_pane_group()
-    //                                                 .as_ref(ctx)
-    //                                                 .contains_ai_document(&ai_doc_id, ctx)
-    //                                         },
-    //                                     )
-    //                                 {
-    //                                     return;
-    //                                 }
-    //                             }
-    //                             let new_toast =
-    //                                 DismissibleToast::error(message).with_object_id(object_id);
-    //                             view.add_persistent_toast(new_toast, ctx);
-    //                         }
-    //                         OperationSuccessType::Rejection => {
-    //                             let new_toast = if let Some(workflow) = cloned_workflow {
-    //                                 DismissibleToast::error(message)
-    //                                     .with_link(
-    //                                         ToastLink::new(
-    //                                             "Check out the latest version and try again."
-    //                                                 .to_string(),
-    //                                         )
-    //                                         .with_onclick_action(
-    //                                             WorkspaceAction::HandleConflictingWorkflow(
-    //                                                 workflow.id,
-    //                                             ),
-    //                                         ),
-    //                                     )
-    //                                     .with_object_id(object_id)
-    //                             } else if let Some(env_var_collection) = cloned_env_var_collection {
-    //                                 DismissibleToast::error(message)
-    //                                     .with_link(
-    //                                         ToastLink::new(
-    //                                             "Check out the latest version and try again."
-    //                                                 .to_string(),
-    //                                         )
-    //                                         .with_onclick_action(
-    //                                             WorkspaceAction::HandleConflictingEnvVarCollection(
-    //                                                 env_var_collection.id,
-    //                                             ),
-    //                                         ),
-    //                                     )
-    //                                     .with_object_id(object_id)
-    //                             } else {
-    //                                 return;
-    //                             };
-    //                             view.add_persistent_toast(new_toast, ctx);
-    //                         }
-    //                         OperationSuccessType::FeatureNotAvailable => {
-    //                             if cloned_workflow.is_some() {
-    //                                 log::error!(
-    //                                     "Getting feature not available message for workflows"
-    //                                 );
-    //                             }
-    //                         }
-    //                         OperationSuccessType::Denied(_) => {
-    //                             let new_toast =
-    //                                 DismissibleToast::error(message).with_object_id(object_id);
-    //                             view.add_persistent_toast(new_toast, ctx);
-    //                         }
-    //                     });
-    //             }
-    //         }
-    //     }
-    //
-    //     // For confirmation toast of permadeletion
-    //     if let Some(n) = result.num_objects {
-    //         if let Some(message) = CloudObjectToastMessage::toast_deletion_confirm_message(
-    //             n as i32,
-    //             &result.operation,
-    //             &result.success_type,
-    //         ) {
-    //             self.toast_stack
-    //                 .update(ctx, |view, ctx| match result.success_type {
-    //                     OperationSuccessType::Success => {
-    //                         let new_toast = DismissibleToast::success(message);
-    //                         view.add_ephemeral_toast(new_toast, ctx);
-    //                     }
-    //                     OperationSuccessType::Failure => {
-    //                         let new_toast: DismissibleToast<WorkspaceAction> =
-    //                             DismissibleToast::error(message);
-    //                         view.add_ephemeral_toast(new_toast, ctx);
-    //                     }
-    //                     OperationSuccessType::Rejection => {
-    //                         let new_toast = DismissibleToast::error(message);
-    //                         view.add_ephemeral_toast(new_toast, ctx);
-    //                     }
-    //                     OperationSuccessType::FeatureNotAvailable => {
-    //                         log::error!("Should not get deletion confirmation message when feature is not available. Operation type {:?}", result.operation);
-    //                     }
-    //                     OperationSuccessType::Denied(_) => {
-    //                         let new_toast = DismissibleToast::error(message);
-    //                         view.add_ephemeral_toast(new_toast, ctx);
-    //                     },
-    //                 })
-    //         }
-    //     }
-    //
-    //     // If this was a successful update on a workflow - caused by this client - then we may need
-    //     // to update the contents of the workflow info box to represent the new synced state.
-    //     if result.success_type == OperationSuccessType::Success
-    //         && result.operation == ObjectOperation::Update
-    //     {
-    //         let cloud_model = CloudModel::as_ref(ctx);
-    //         let updated_object = cloud_model
-    //             .get_by_uid(&result.server_id.expect("Expect server id on success").uid());
-    //         if let Some(CloudObjectTypeAndId::Workflow(workflow_id)) =
-    //             updated_object.map(|o| o.cloud_object_type_and_id())
-    //         {
-    //             self.maybe_refresh_workflow_info_box_and_input(&workflow_id, ctx)
-    //         }
-    //     }
-    //
-    //     // If this was a successful personal object creation, then potentially show the sharing
-    //     // onboarding block.
-    //     if result.success_type == OperationSuccessType::Success
-    //         && matches!(result.operation, ObjectOperation::Create { .. })
-    //     {
-    //         if let Some(created_object) = result
-    //             .server_id
-    //             .and_then(|id| CloudModel::as_ref(ctx).get_by_uid(&id.uid()))
-    //         {
-    //             if created_object.space(ctx) == Space::Personal
-    //                 && created_object.renders_in_warp_drive()
-    //             {
-    //             }
-    //         }
-    //     }
-    // }
-
     fn restore_previous_workspace_state(&mut self, ctx: &mut ViewContext<Self>) {
         if let Some(previous_state) = self.previous_workspace_state.take() {
             self.current_workspace_state = previous_state;
@@ -17875,7 +17477,7 @@ impl Workspace {
         // If WD open, show the highlighted object (force expand necessary ancestors)
         if self.current_workspace_state.is_warp_drive_open {
             if let Some(id) = id {
-                self.view_in_warp_drive(id, ctx);
+                self.view_in_cute_drive(id, ctx);
                 ctx.notify();
             }
         }
@@ -18037,23 +17639,6 @@ impl Workspace {
             }
         }
     }
-
-    // Cute: OpenWarpLaunchModal 类型不存在
-    // fn handle_openwarp_launch_modal_event(
-    //     &mut self,
-    //     event: &OpenWarpLaunchModalEvent,
-    //     ctx: &mut ViewContext<Self>,
-    // ) {
-    //     match event {
-    //         OpenWarpLaunchModalEvent::Close => {
-    //             OneTimeModalModel::handle(ctx).update(ctx, |model, ctx| {
-    //                 model.mark_openwarp_launch_modal_dismissed(ctx);
-    //             });
-    //             self.focus_active_tab(ctx);
-    //             ctx.notify();
-    //         }
-    //     }
-    // }
 
     fn handle_orchestration_launch_modal_event(
         &mut self,
@@ -18493,7 +18078,7 @@ impl Workspace {
     }
 
     /// Opens the workflow using a mocked [`Workflow`] object as the base
-    fn open_workflow_with_temporary(&mut self, workflow: Workflow, ctx: &mut ViewContext<Self>) {
+    fn open_workflow_with_temporary(&mut self, _workflow: Workflow, _ctx: &mut ViewContext<Self>) {
         // 注释掉云端个人存储功能 - 本地版本不支持
         // let Some(owner) = UserWorkspaces::as_ref(ctx).personal_drive(ctx) else {
         //     log::warn!("Unable to open temporary workflow - unset personal drive");
@@ -18514,7 +18099,7 @@ impl Workspace {
     }
 
     /// Opens the workflow for create with a prepopulated command specified
-    fn open_workflow_with_command(&mut self, command: String, ctx: &mut ViewContext<Self>) {
+    fn open_workflow_with_command(&mut self, _command: String, _ctx: &mut ViewContext<Self>) {
         // 注释掉云端个人存储功能 - 本地版本不支持
         // let Some(owner) = UserWorkspaces::as_ref(ctx).personal_drive(ctx) else {
         //     log::warn!("Unable to open workflow with command - unset personal drive");
@@ -21283,9 +20868,6 @@ impl Workspace {
         if *ai_settings.rule_suggestions_enabled_internal.value() {
             context.set.insert(flags::SUGGESTED_RULES_FLAG);
         }
-        if *ai_settings.warp_drive_context_enabled.value() {
-            context.set.insert(flags::WARP_DRIVE_CONTEXT_FLAG);
-        }
         if *ai_settings.file_based_mcp_enabled.value() {
             context.set.insert(flags::FILE_BASED_MCP_FLAG);
         }
@@ -21462,7 +21044,7 @@ impl Workspace {
         self.tab_views().map(|tab| tab.id())
     }
 
-    fn team_uid(&self, app: &AppContext) -> Option<ServerId> {
+    fn team_uid(&self, _app: &AppContext) -> Option<ServerId> {
         // TODO this is a stop gap for now - ideally a specific team uid should
         // be passed into each event
         // 注释掉云端团队功能 - 本地版本不支持
@@ -21473,7 +21055,7 @@ impl Workspace {
     fn initiate_user_signup(
         &mut self,
         entrypoint: AnonymousUserSignupEntrypoint,
-        ctx: &mut ViewContext<Self>,
+        _ctx: &mut ViewContext<Self>,
     ) {
         // 注释掉匿名用户链接和注册流程 - 本地版本不需要
         // if self.auth_state.is_user_anonymous().unwrap_or_default() {
@@ -21521,11 +21103,6 @@ impl Workspace {
         // This gives views a chance to clean up any state through on_view_detached before being dropped.
         self.on_window_closed(ctx);
     }
-
-    // Cute: OpenWarpLaunchModal 类型不存在
-    // fn focus_openwarp_launch_modal(&mut self, ctx: &mut ViewContext<Self>) {
-    //     ctx.focus(&self.openwarp_launch_modal);
-    // }
 
     fn focus_orchestration_launch_modal(&mut self, ctx: &mut ViewContext<Self>) {
         ctx.focus(&self.orchestration_launch_modal);
@@ -21605,7 +21182,7 @@ impl Workspace {
                 entry_focus: GlobalSearchEntryFocus::Results,
             });
         }
-        // if WarpDriveSettings::is_warp_drive_enabled(ctx) {
+        // if CuteDriveSettings::is_warp_drive_enabled(ctx) {
         //     views.push(ToolPanelView::WarpDrive);
         // }
         views
@@ -22029,7 +21606,7 @@ impl TypedActionView for Workspace {
                 ctx.dispatch_global_action("app:maybe_log_out", ());
             }
             ExportAllWarpDriveObjects => {
-                self.export_all_warp_drive_objects(ctx);
+                self.export_all_cute_drive_objects(ctx);
             }
             CopyVersion(version) => self.copy_version(version, ctx),
             DownloadNewVersion => self.download_new_version(ctx),
@@ -22177,7 +21754,7 @@ impl TypedActionView for Workspace {
                 self.current_workspace_state.is_tab_being_dragged = true;
             }
             OpenWarpDrive => {
-                // if WarpDriveSettings::is_warp_drive_enabled(ctx) {
+                // if CuteDriveSettings::is_warp_drive_enabled(ctx) {
                 //     self.open_left_panel_view(&LeftPanelAction::WarpDrive, ctx);
                 // }
             }
@@ -22639,7 +22216,7 @@ impl TypedActionView for Workspace {
                 self.open_share_session_modal(*index, ctx);
             }
             StopSharingSessionFromTabMenu { terminal_view_id } => {
-                self.stop_sharing_session(*terminal_view_id, SharedSessionActionSource::Tab, ctx)
+                self.stop_sharing_session(*terminal_view_id, ctx)
             }
             StopSharingAllSessionsInTab { pane_group } => {
                 self.stop_sharing_all_panes_in_tab(pane_group, ctx)
@@ -23114,10 +22691,9 @@ impl TypedActionView for Workspace {
                 });
                 let new_value = *AISettings::as_ref(ctx).did_check_to_trigger_oz_launch_modal;
                 log::info!(
-                    "Oz launch modal state: old={}, new={}, feature_flag_enabled={}",
+                    "Oz launch modal state: old={}, new={}",
                     old_value,
                     new_value,
-                    FeatureFlag::OzLaunchModal.is_enabled()
                 );
             }
             // Cute: OpenWarpLaunchModal 类型不存在
@@ -23308,7 +22884,7 @@ impl TypedActionView for Workspace {
                 }
             }
             ToggleWarpDrive => {
-                // if WarpDriveSettings::is_warp_drive_enabled(ctx) {
+                // if CuteDriveSettings::is_warp_drive_enabled(ctx) {
                 //     let is_showing =
                 //         self.left_panel_view.as_ref(ctx).active_view() == ToolPanelView::WarpDrive;
                 //     self.toggle_left_panel_view(&LeftPanelAction::WarpDrive, is_showing, ctx);
@@ -23629,7 +23205,7 @@ impl View for Workspace {
             }
         };
 
-        if WarpDriveSettings::is_warp_drive_enabled(app) {
+        if CuteDriveSettings::is_cute_drive_enabled(app) {
             context.set.insert(flags::ENABLE_WARP_DRIVE);
         }
 

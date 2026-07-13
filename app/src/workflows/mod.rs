@@ -29,14 +29,14 @@ use crate::cloud_stub_types::{
     CloudModelType, CloudObjectUpsertParams, CreateCloudObjectResult,
     CreateObjectRequest, GenericServerObject, ObjectType, Revision, UpdateCloudObjectResult,
 };
-// use crate::cloud_stub_types::items::workflow::WarpDriveWorkflow;
+// use crate::cloud_stub_types::items::workflow::CuteDriveWorkflow;
 use crate::cloud_stub_types::CuteDriveItem;
 use crate::cloud_stub_types::CloudObjectTypeAndId;
 use crate::cloud_stub_types::{NotebookId, NotebookLocation};
 use crate::persistence::ModelEvent;
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::server_api::object::ObjectClient;
-use crate::cloud_stub_types::WarpDriveWorkflow;
+use crate::cloud_stub_types::CuteDriveWorkflow;
 
 pub fn init(app: &mut AppContext) {
     categories::init(app);
@@ -272,17 +272,17 @@ impl CloudModelType for CloudWorkflowModel {
             .await
     }
 
-    fn renders_in_warp_drive(&self) -> bool {
+    fn renders_in_cute_drive(&self) -> bool {
         true
     }
 
-    fn to_warp_drive_item(
+    fn to_cute_drive_item(
         &self,
         id: SyncId,
         _appearance: &Appearance,
         workflow: &CloudWorkflow,
     ) -> Option<Box<dyn CuteDriveItem>> {
-        Some(Box::new(WarpDriveWorkflow::new(
+        Some(Box::new(CuteDriveWorkflow::new(
             self.cloud_object_type_and_id(id),
             workflow.clone(),
             workflow.model().data.is_agent_mode_workflow(),

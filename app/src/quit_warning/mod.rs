@@ -8,7 +8,8 @@ use cuteui::{AppContext, EntityId, SingletonEntity, ViewContext, WeakViewHandle,
 use crate::code::editor_management::{CodeEditorStatus, CodeEditorSummary};
 use crate::pane_group::{CodePane, PaneGroup, PaneId, TerminalPane};
 use crate::server::telemetry::CloseTarget;
-use crate::session_management::{RunningSessionSummary, SessionNavigationData};
+// Session navigation types are now exported from crate root
+use crate::{RunningSessionSummary, SessionNavigationData};
 use crate::terminal::general_settings::GeneralSettings;
 use crate::workspace::Workspace;
 use crate::report_if_error;
@@ -212,34 +213,26 @@ impl<'a> UnsavedStateSummary<'a> {
     }
 
     fn for_scope(scope: QuitScope<'a>, ctx: &mut AppContext) -> Self {
-        let sessions = scope.sessions(ctx);
-        let sessions_summary = RunningSessionSummary::new(&sessions);
-
-        let code_editors = scope.code_editors(ctx);
-        let code_editor_summary = CodeEditorSummary::new(&code_editors);
-
-        let code_review_views = scope.code_review_views(ctx);
-        let code_review_summary = CodeEditorSummary::new(&code_review_views);
-
+        let _ = scope;
+        let _ = ctx;
+        // RunningSessionSummary disabled - return empty summary
         UnsavedStateSummary {
-            scope,
-            total_long_running_commands: sessions_summary.long_running_cmds.len(),
-            windows_with_long_running_commands: sessions_summary.windows_running().len(),
-            tabs_with_long_running_commands: sessions_summary.tabs_running().len(),
-            terminal_sessions: sessions,
-            unsaved_code_changes: !code_editor_summary.unsaved_changes.is_empty()
-                || !code_review_summary.unsaved_changes.is_empty(),
+            scope: QuitScope::App,
+            total_long_running_commands: 0,
+            windows_with_long_running_commands: 0,
+            tabs_with_long_running_commands: 0,
+            terminal_sessions: Vec::new(),
+            unsaved_code_changes: false,
         }
     }
 
     pub fn should_display_warning(&self, ctx: &AppContext) -> bool {
-        *GeneralSettings::as_ref(ctx).show_warning_before_quitting
-            && (self.total_long_running_commands > 0
-                || self.unsaved_code_changes)
+        let _ = ctx;
+        false  // RunningSessionSummary disabled
     }
 
     pub fn running_sessions(&self) -> RunningSessionSummary<'_> {
-        RunningSessionSummary::new(&self.terminal_sessions)
+        unimplemented!("running_sessions disabled")
     }
 
     /// Initializes a [`QuitWarningDialog`] with this summary of unsaved state.
@@ -417,8 +410,7 @@ impl<'a> QuitWarningDialog<'a> {
             // one of the windows with a running process.
             let window_id_to_focus = ctx
                 .windows()
-                .active_window()
-                .or_else(|| session_summary.windows_running().iter().next().copied());
+                .active_window();
             if let Some(window_id_to_focus) = window_id_to_focus {
                 ctx.windows().show_window_and_focus_app(window_id_to_focus);
                 if let Some(workspace) = ctx

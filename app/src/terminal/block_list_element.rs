@@ -59,7 +59,7 @@ use crate::ai::blocklist::agent_view::{agent_view_bg_fill, AgentViewState};
 use crate::ai::blocklist::{ai_brand_color, ATTACH_AS_AGENT_MODE_CONTEXT_TEXT};
 use crate::ai_assistant::{AI_ASSISTANT_SVG_PATH, ASK_AI_ASSISTANT_TEXT};
 use crate::appearance::Appearance;
-use crate::cloud_stub_types::settings::WarpDriveSettings;
+use crate::cloud_stub_types::settings::CuteDriveSettings;
 use crate::features::FeatureFlag;
 use crate::pane_group::SplitPaneState;
 use crate::settings::{
@@ -144,9 +144,6 @@ const BLOCK_HOVER_BUTTON_HEIGHT: f32 = 28.;
 
 const TAG_AGENT_FOR_ASSISTANCE_TEXT: &str = "Tag agent for assistance";
 
-const SAVE_AS_WORKFLOW_TEXT: &str = "Save as Workflow";
-const SAVE_AS_WORKFLOW_SECRETS_TEXT: &str = "Blocks containing secrets cannot be saved.";
-
 enum ScrollingAcceleration {
     Polynomial(f32),
 }
@@ -161,8 +158,6 @@ impl ScrollingAcceleration {
 
 enum SelectionCursorRenderLocation {
     None,
-    Start,
-    End,
 }
 
 const OVERFLOW_BUTTON_ICON_PATH: &str = "bundled/svg/overflow.svg";
@@ -171,11 +166,6 @@ const OVERFLOW_BUTTON_ICON_PATH: &str = "bundled/svg/overflow.svg";
 const SNACKBAR_TOGGLE_BUTTON_HOVER_LINES: f32 = 4.;
 const SNACKBAR_TOGGLE_BUTTON_WIDTH: f32 = 30.;
 const SNACKBAR_TOGGLE_BUTTON_HEIGHT: f32 = 16.;
-
-/// How far away from the right edge of the blocklist the selected block avatar should be
-const SELECTED_BLOCK_AVATAR_EDGE_OFFSET: f32 = 25.;
-/// Space between multiple avatars on a selected block.
-const SPACE_BETWEEN_SELECTED_BLOCK_AVATARS: f32 = 2.;
 
 const CLI_SUBAGENT_HORIZONTAL_MARGIN: f32 = 8.;
 const CLI_SUBAGENT_VERTICAL_MARGIN: f32 = 8.;
@@ -1182,43 +1172,8 @@ impl BlockListElement {
             self.ask_ai_assistant_button = Some(element);
         }
 
-        if WarpDriveSettings::is_warp_drive_enabled(app) {
-            let icon = Container::new(
-                ConstrainedBox::new(
-                    ui_components::icons::Icon::Save
-                        .to_cuteui_icon(icon_color.into())
-                        .finish(),
-                )
-                .with_height(16.)
-                .with_width(16.)
-                .finish(),
-            )
-            .with_uniform_padding(4.);
-
-            // Simplified: local version has no enterprise secret redaction
-            // Always show normal save as workflow button
-            let element = render_hoverable_block_button(
-                icon,
-                Some(ToolbeltButtonTooltip {
-                    label: SAVE_AS_WORKFLOW_TEXT.to_owned(),
-                    tool_tip_below_button: should_render_tooltip_below_button,
-                }),
-                false,
-                true,
-                self.mouse_states
-                    .save_as_workflow_button_mouse_state
-                    .clone(),
-                &self.warp_theme,
-                &self.ui_builder,
-                move |ctx: &mut EventContext, _, _| {
-                    ctx.dispatch_typed_action(TerminalAction::OpenWorkflowModalForBlock(
-                        block_index,
-                    ));
-                },
-            );
-
-            self.save_as_workflow_button = Some(element);
-        }
+        // CuteDriveSettings::is_warp_drive_enabled disabled - remove workflow button
+        self.save_as_workflow_button = None;
 
         self
     }
@@ -2026,35 +1981,6 @@ impl BlockListElement {
             color,
             ctx,
         );
-        match selection_cursor_render_location {
-            SelectionCursorRenderLocation::Start => {
-                let mut cursor_color = color;
-                cursor_color.a = crate::util::color::OPAQUE;
-                grid_renderer::render_selection_cursor(
-                    &start,
-                    &self.size_info,
-                    viewport.scroll_top_in_lines(),
-                    selection_origin,
-                    cursor_color,
-                    false,
-                    ctx,
-                );
-            }
-            SelectionCursorRenderLocation::End => {
-                let mut cursor_color = color;
-                cursor_color.a = crate::util::color::OPAQUE;
-                grid_renderer::render_selection_cursor(
-                    &end,
-                    &self.size_info,
-                    viewport.scroll_top_in_lines(),
-                    selection_origin,
-                    cursor_color,
-                    true,
-                    ctx,
-                );
-            }
-            _ => (),
-        }
         if rendered_snackbar_selection {
             // Rendering the snackbar creates a layer that we need to close.
             ctx.scene.stop_layer();

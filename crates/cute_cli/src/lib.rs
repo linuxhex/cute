@@ -40,9 +40,6 @@ pub const OZ_RUN_ID_ENV: &str = "OZ_RUN_ID";
 pub const OZ_PARENT_RUN_ID_ENV: &str = "OZ_PARENT_RUN_ID";
 pub const OZ_CLI_ENV: &str = "OZ_CLI";
 pub const OZ_HARNESS_ENV: &str = "OZ_HARNESS";
-pub const SERVER_ROOT_URL_OVERRIDE_ENV: &str = "WARP_SERVER_ROOT_URL";
-pub const WS_SERVER_URL_OVERRIDE_ENV: &str = "WARP_WS_SERVER_URL";
-pub const SESSION_SHARING_SERVER_URL_OVERRIDE_ENV: &str = "WARP_SESSION_SHARING_SERVER_URL";
 
 /// Options related to the parent process that spawned this Warp instance.
 #[derive(Debug, Default, Clone, clap::Args)]
@@ -105,33 +102,6 @@ pub struct Args {
     /// Enable debug mode.
     #[arg(long = "debug", global = true, help = "Enable debug logging")]
     debug: bool,
-
-    /// Override the server root URL.
-    #[arg(
-        long = "server-root-url",
-        global = true,
-        hide = true,
-        env = "WARP_SERVER_ROOT_URL"
-    )]
-    server_root_url: Option<String>,
-
-    /// Override the websocket server URL.
-    #[arg(
-        long = "ws-server-url",
-        global = true,
-        hide = true,
-        env = "WARP_WS_SERVER_URL"
-    )]
-    ws_server_url: Option<String>,
-
-    /// Override the session sharing server URL.
-    #[arg(
-        long = "session-sharing-server-url",
-        global = true,
-        hide = true,
-        env = "WARP_SESSION_SHARING_SERVER_URL"
-    )]
-    session_sharing_server_url: Option<String>,
 
     #[command(subcommand)]
     command: Option<Command>,
@@ -221,28 +191,10 @@ impl Args {
                     }
                 }
 
-                if !FeatureFlag::OzIdentityFederation.is_enabled() {
-                    let args: Vec<String> = env::args().collect();
-                    if args.len() > 1 && args[1] == "federate" {
-                        eprintln!("error: unrecognized subcommand 'federate'\n");
-                        eprintln!("For more information, try '--help'");
-                        std::process::exit(2);
-                    }
-                }
-
                 if !FeatureFlag::ArtifactCommand.is_enabled() {
                     let args: Vec<String> = env::args().collect();
                     if args.len() > 1 && args[1] == "artifact" {
                         eprintln!("error: unrecognized subcommand 'artifact'\n");
-                        eprintln!("For more information, try '--help'");
-                        std::process::exit(2);
-                    }
-                }
-
-                if !FeatureFlag::APIKeyManagement.is_enabled() {
-                    let args: Vec<String> = env::args().collect();
-                    if args.len() > 1 && args[1] == "api-key" {
-                        eprintln!("error: unrecognized subcommand 'api-key'\n");
                         eprintln!("For more information, try '--help'");
                         std::process::exit(2);
                     }
@@ -321,26 +273,11 @@ impl Args {
             command = command.mut_subcommand("secret", |c| c.hide(true));
         }
 
-        // Hide the federate subcommand from help text.
-        if !FeatureFlag::OzIdentityFederation.is_enabled() {
-            command = command.mut_subcommand("federate", |c| c.hide(true));
-        }
-
         // Hide the harness-support subcommand from help text.
         if !FeatureFlag::AgentHarness.is_enabled() {
             command = command.mut_subcommand("harness-support", |c| c.hide(true));
         }
 
-        // Hide the conversation subcommand and --conversation flag from help text.
-        if !FeatureFlag::ConversationApi.is_enabled() {
-            command = command.mut_subcommand("run", |run_cmd| {
-                run_cmd
-                    .mut_subcommand("conversation", |c| c.hide(true))
-                    .mut_subcommand("get", |get_cmd| {
-                        get_cmd.mut_arg("conversation", |arg| arg.hide(true))
-                    })
-            });
-        }
         // Hide the message subcommand from help text.
         if true {
             command = command.mut_subcommand("run", |run_cmd| {
@@ -351,11 +288,6 @@ impl Args {
         // Hide the artifact subcommand from help text.
         if !FeatureFlag::ArtifactCommand.is_enabled() {
             command = command.mut_subcommand("artifact", |c| c.hide(true));
-        }
-
-        // Hide the api-key subcommand from help text.
-        if !FeatureFlag::APIKeyManagement.is_enabled() {
-            command = command.mut_subcommand("api-key", |c| c.hide(true));
         }
 
         // Wire up `--version` / `-V` using the same version metadata used elsewhere in the
@@ -414,18 +346,6 @@ impl Args {
     /// Returns true if debug logging is enabled.
     pub fn debug(&self) -> bool {
         self.debug
-    }
-
-    pub fn server_root_url(&self) -> Option<&str> {
-        self.server_root_url.as_deref()
-    }
-
-    pub fn ws_server_url(&self) -> Option<&str> {
-        self.ws_server_url.as_deref()
-    }
-
-    pub fn session_sharing_server_url(&self) -> Option<&str> {
-        self.session_sharing_server_url.as_deref()
     }
 }
 

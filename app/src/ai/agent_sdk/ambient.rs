@@ -1,5 +1,5 @@
 //! Commands to interact with ambient agents on Warp's platform.
-use futures::{future, StreamExt};
+use futures::StreamExt;
 use cute_cli::agent::{Harness, OutputFormat, Prompt, RunCloudArgs};
 use cute_cli::json_filter::JsonOutput;
 use cute_cli::task::{
@@ -26,7 +26,6 @@ use crate::ai::ambient_agent_types::{
     AgentConfigSnapshot, AmbientAgentTask, AmbientAgentTaskState,
 };
 use crate::ai::ambient_agent_types::task::TaskAttachment;
-use crate::auth::AuthStateProvider;
 use crate::cloud_stub_types::model::persistence::CloudModel;
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::server_api::ai::{
@@ -35,7 +34,6 @@ use crate::server::server_api::ai::{
 };
 use crate::util::time_format::format_approx_duration_from_now_utc;
 use crate::ServerApiProvider;
-use crate::UserWorkspaces;
 
 const MAX_LINE_WIDTH: usize = 90;
 
@@ -295,7 +293,7 @@ impl AmbientAgentRunner {
                 return;
             }
 
-            let attachments = if FeatureFlag::AmbientAgentsImageUpload.is_enabled() {
+            let attachments = if false { // Image upload is disabled as cloud feature is removed.
                 if !args.attachment_paths.is_empty() {
                     match args
                         .attachment_paths

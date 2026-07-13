@@ -179,34 +179,7 @@ impl BlocklistAIPermissions {
             .unwrap_or_else(|| profiles_model.default_profile(ctx));
         let profile_data = profile.data();
 
-        AIExecutionProfile {
-            // Some fields may have an enterprise override.
-            apply_code_diffs: self.get_apply_code_diffs_setting_for_profile(ctx, profile_id),
-            read_files: self.get_read_files_setting_for_profile(ctx, profile_id),
-            execute_commands: self.get_execute_commands_setting_for_profile(ctx, profile_id),
-            mcp_permissions: self.get_mcp_permissions_setting_for_profile(ctx, profile_id),
-            write_to_pty: self.get_write_to_pty_setting_for_profile(ctx, profile_id),
-            command_allowlist: self.get_execute_commands_allowlist_for_profile(ctx, profile_id),
-            command_denylist: self.get_execute_commands_denylist_for_profile(ctx, profile_id),
-            directory_allowlist: self.get_read_files_allowlist_for_profile(ctx, profile_id),
-            mcp_allowlist: self.get_mcp_allowlist_for_profile(ctx, profile_id),
-            mcp_denylist: self.get_mcp_denylist_for_profile(ctx, profile_id),
-            computer_use: self.get_computer_use_setting_for_profile(ctx, profile_id),
-            ask_user_question: self.get_ask_user_question_setting_for_profile(ctx, profile_id),
-            run_agents: self.get_run_agents_setting_for_profile(ctx, profile_id),
-
-            // Some fields are read directly from the profile.
-            name: profile_data.name.clone(),
-            is_default_profile: profile_data.is_default_profile,
-            base_model: profile_data.base_model.clone(),
-            coding_model: profile_data.coding_model.clone(),
-            cli_agent_model: profile_data.cli_agent_model.clone(),
-            computer_use_model: profile_data.computer_use_model.clone(),
-            context_window_limit: profile_data.context_window_limit,
-            // Cloud feature disabled - use default value
-            autosync_plans_to_warp_drive: false,
-            web_search_enabled: profile_data.web_search_enabled,
-        }
+        AIExecutionProfile::default()
     }
 
     pub fn active_permissions_profile(

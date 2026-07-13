@@ -69,15 +69,15 @@ impl CloudModelType for CloudFolderModel {
         ModelEvent::UpsertFolders(objects.into_iter().map(CloudFolder::from).collect())
     }
 
-    fn renders_in_warp_drive(&self) -> bool {
+    fn renders_in_cute_drive(&self) -> bool {
         true
     }
 
-    fn to_warp_drive_item(
+    fn to_cute_drive_item(
         &self,
         _id: SyncId,
         _appearance: &Appearance,
-        _object: &CloudFolder,
+        _object: &GenericCloudObject<FolderId, Self>,
     ) -> Option<Box<dyn CuteDriveItem>> {
         // Folder items not implemented in stub
         None

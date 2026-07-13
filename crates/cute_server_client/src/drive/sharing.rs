@@ -3,12 +3,40 @@
 use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
-use session_sharing_protocol::common::{ProfileData as SessionSharingProfileData, Role};
+// Cute: session-sharing-protocol已删除，Role和ProfileData类型在本地定义
+// use session_sharing_protocol::common::{ProfileData as SessionSharingProfileData, Role};
 use cute_graphql::object_permissions::AccessLevel;
 
 use crate::auth::UserUid;
 use crate::cloud_object::Owner;
 use crate::ids::ServerId;
+
+// Cute: stub types for Role and ProfileData
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Role {
+    Reader,
+    Executor,
+    Full,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ProfileData {
+    pub firebase_uid: String,
+    pub display_name: Option<String>,
+    pub email: Option<String>,
+    pub photo_url: Option<String>,
+}
+
+impl Default for ProfileData {
+    fn default() -> Self {
+        Self {
+            firebase_uid: String::new(),
+            display_name: None,
+            email: None,
+            photo_url: None,
+        }
+    }
+}
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum SharingAccessLevel {
@@ -143,7 +171,7 @@ pub enum UserKind {
     Account(UserUid),
     /// A session-sharing participant.
     // TODO(CLD-2283): Remove this once we have Firebase UIDs for shared session participants.
-    SharedSessionParticipant(SessionSharingProfileData),
+    SharedSessionParticipant(ProfileData),
 }
 
 /// A kind of team. Team permission updates are propagated differently for

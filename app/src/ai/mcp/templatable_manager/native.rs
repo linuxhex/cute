@@ -1854,11 +1854,10 @@ async fn determine_transport(
         StatusCode::OK => Ok(Transport::Http(None)),
         StatusCode::NOT_FOUND | StatusCode::METHOD_NOT_ALLOWED => Ok(Transport::Sse(None)),
         StatusCode::UNAUTHORIZED => {
-            if !FeatureFlag::McpOauth.is_enabled() {
-                return Err(rmcp::RmcpError::transport_creation::<ReqwestHttpTransport>(
-                    "Server requires authentication, which is not yet supported.".to_string(),
-                ));
-            }
+            // OAuth is disabled as cloud feature is removed.
+            return Err(rmcp::RmcpError::transport_creation::<ReqwestHttpTransport>(
+                "Server requires authentication, which is not yet supported.".to_string(),
+            ));
 
             let spawner = auth_context.spawner.clone();
             // Go through the OAuth flow to get an authenticated client.

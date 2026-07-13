@@ -68,15 +68,15 @@ impl CloudModelType for CloudNotebookModel {
         ModelEvent::UpsertNotebooks(objects.into_iter().map(CloudNotebook::from).collect())
     }
 
-    fn renders_in_warp_drive(&self) -> bool {
+    fn renders_in_cute_drive(&self) -> bool {
         true
     }
 
-    fn to_warp_drive_item(
+    fn to_cute_drive_item(
         &self,
         _id: SyncId,
         _appearance: &Appearance,
-        _object: &CloudNotebook,
+        _object: &GenericCloudObject<NotebookId, Self>,
     ) -> Option<Box<dyn CuteDriveItem>> {
         // Notebook items not implemented in stub
         None

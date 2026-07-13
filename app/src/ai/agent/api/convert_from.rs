@@ -28,7 +28,7 @@ use crate::ai::agent::{
     StartAgentExecutionMode, SubagentCall, SubagentType, SuggestedAgentModeWorkflow, SuggestedRule,
     Suggestions, SummarizationType, TodoOperation, UserQueryMode, WebFetchStatus, WebSearchStatus,
 };
-use crate::ai::artifact_download::sanitized_basename;
+use crate::ai::artifacts::sanitized_basename;
 use crate::ai::document::ai_document_model::{AIDocumentId, AIDocumentVersion};
 
 impl TryFrom<api::Attachment> for AIAgentAttachment {

@@ -176,7 +176,6 @@ serde_regex = "1.1.0"
 serde_urlencoded.workspace = true
 serde_with.workspace = true
 serde_yaml.workspace = true
-session-sharing-protocol.workspace = true
 settings.workspace = true
 settings_value = { workspace = true, features = ["derive"] }
 sha2.workspace = true
@@ -215,7 +214,7 @@ vec1.workspace = true
 version-compare.workspace = true
 vte.workspace = true
 walkdir.workspace = true
-warp-workflows.workspace = true
+cute-workflows.workspace = true
 cute_assets.workspace = true
 cute_completer.workspace = true
 cute_cli.workspace = true
@@ -252,6 +251,7 @@ rmcp = { workspace = true, features = ["client"] }
 cute_isolation_platform.workspace = true
 cute_ripgrep.workspace = true
 cute_managed_secrets.workspace = true
+session-sharing-protocol.workspace = true
 
 [target.'cfg(target_os = "macos")'.dependencies]
 block.workspace = true
@@ -414,6 +414,7 @@ embed-resource = "3.0"
 
 # Note that we support channel-specific enables for these features
 [features]
+integration_tests = ["cuteui/integration_tests"]
 ai_resume_button = []
 autoupdate = []
 figma_detection = []
@@ -447,7 +448,6 @@ crash_reporting = [
     "cute_logging/crash_reporting",
     "ai/crash_reporting",
 ]
-creating_shared_sessions = []
 cross_repo_context = []
 codebase_index_persistence = ["full_source_code_embedding"]
 default = [
@@ -675,7 +675,6 @@ log_expensive_frames_in_sentry = []
 markdown_tables = []
 markdown_mermaid = []
 mcp_server = []
-mcp_oauth = []
 mcp_debugging_ids = []
 notebook_parameter = []
 oz_changelog_updates = []
@@ -745,7 +744,6 @@ avatar_in_tab_bar = []
 ssh_drag_and_drop = []
 permanent_autosuggestion_hint = []
 cycle_next_command_suggestion = []
-multi_workspace = []
 ime_marked_text = []
 partial_next_command_suggestions = []
 drive_objects_as_context = []
@@ -788,8 +786,6 @@ pr_comments_v2 = []
 pr_comments_skill = []
 conversation_artifacts = []
 conversations_as_context = []
-conversation_api = []
-sync_ambient_plans = []
 projects = []
 vim_code_editor = []
 allow_opening_file_links_using_editor_env = []
@@ -799,8 +795,6 @@ code_review_save_changes = []
 remote_code_review = []
 file_tree = []
 code_launch_modal = []
-api_key_authentication = []
-api_key_management = []
 diff_set_as_context = []
 discard_per_file_and_all_changes = []
 ui_zoom = []
@@ -846,8 +840,6 @@ lsp_as_a_tool = []
 inline_model_selector = ["agent_view"]
 inline_profile_selector = ["agent_view"]
 oz_platform_skills = []
-oz_identity_federation = []
-oz_launch_modal = []
 open_warp_launch_modal = []
 new_tab_styling = []
 file_based_mcp = []
@@ -866,7 +858,6 @@ vertical_tabs_summary_mode = []
 tab_configs = []
 grouped_tabs = []
 agent_harness = []
-oz_handoff = []
 
 hoa_notifications = []
 open_code_notifications = []
@@ -885,9 +876,7 @@ configurable_context_window = []
 
 git_credential_refresh = []
 ambient_agents_command_line = []
-ambient_agents_image_upload = []
 scheduled_ambient_agents = []
-ambient_agents_rtc = []
 
 [package.metadata.bundle.bin.cute]
 category = "public.app-category.developer-tools"

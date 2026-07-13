@@ -737,7 +737,7 @@ impl ServerApi {
         Box::pin(async move {
             let operation_name = operation.operation_name().map(Cow::into_owned);
             let auth_token = self
-                .access_token()
+                .get_or_refresh_access_token()
                 .await
                 .context("Failed to get access token for GraphQL request")?;
 

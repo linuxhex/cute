@@ -920,32 +920,8 @@ impl AIContextMenu {
                 });
             }
             #[cfg(not(target_family = "wasm"))]
-            NavigationState::Category(AIContextMenuCategory::Notebooks) => {
-                let notebook_data_source = ctx.add_model(|_| NotebookDataSource::new(false));
-                self.mixer.update(ctx, |mixer, ctx| {
-                    mixer.add_sync_source(notebook_data_source, [QueryFilter::Notebooks]);
-                    mixer.run_query(
-                        Query {
-                            text: "".into(),
-                            filters: HashSet::new(),
-                        },
-                        ctx,
-                    );
-                });
-            }
-            #[cfg(not(target_family = "wasm"))]
             NavigationState::Category(AIContextMenuCategory::Plans) => {
-                let notebook_data_source = ctx.add_model(|_| NotebookDataSource::new(true));
-                self.mixer.update(ctx, |mixer, ctx| {
-                    mixer.add_sync_source(notebook_data_source, [QueryFilter::Notebooks]);
-                    mixer.run_query(
-                        Query {
-                            text: "".into(),
-                            filters: HashSet::new(),
-                        },
-                        ctx,
-                    );
-                });
+                // NotebookDataSource removed, no action needed
             }
             #[cfg(not(target_family = "wasm"))]
             NavigationState::Category(AIContextMenuCategory::Rules) => {
@@ -1100,16 +1076,10 @@ impl AIContextMenu {
                     });
                 }
                 AIContextMenuCategory::Notebooks => {
-                    let notebook_data_source = ctx.add_model(|_| NotebookDataSource::new(false));
-                    self.mixer.update(ctx, |mixer, _ctx| {
-                        mixer.add_sync_source(notebook_data_source, [QueryFilter::Notebooks]);
-                    });
+                    // NotebookDataSource removed, no action needed
                 }
                 AIContextMenuCategory::Plans => {
-                    let notebook_data_source = ctx.add_model(|_| NotebookDataSource::new(true));
-                    self.mixer.update(ctx, |mixer, _ctx| {
-                        mixer.add_sync_source(notebook_data_source, [QueryFilter::Notebooks]);
-                    });
+                    // NotebookDataSource removed, no action needed
                 }
                 AIContextMenuCategory::Rules => {
                     let rules_data_source = ctx.add_model(|_| RulesDataSource::new());

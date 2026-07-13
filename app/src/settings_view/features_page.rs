@@ -4991,53 +4991,6 @@ impl SettingsWidget for UndoCloseWidget {
 }
 
 #[derive(Default)]
-struct ConfirmCloseSharedSessionWidget {
-    switch_state: SwitchStateHandle,
-}
-
-impl SettingsWidget for ConfirmCloseSharedSessionWidget {
-    type View = FeaturesPageView;
-
-    fn search_terms(&self) -> &str {
-        "warning popup modal dialog shared session close"
-    }
-
-    fn render(
-        &self,
-        view: &Self::View,
-        appearance: &Appearance,
-        app: &AppContext,
-    ) -> Box<dyn Element> {
-        let ui_builder = appearance.ui_builder();
-        let session_settings = SessionSettings::as_ref(app);
-        render_body_item::<FeaturesPageAction>(
-            "Confirm before closing shared session".into(),
-            None,
-            LocalOnlyIconState::for_setting(
-                ShouldConfirmCloseSession::storage_key(),
-                ShouldConfirmCloseSession::sync_to_cloud(),
-                &mut view
-                    .button_mouse_states
-                    .local_only_icon_tooltip_states
-                    .borrow_mut(),
-                app,
-            ),
-            ToggleState::Enabled,
-            appearance,
-            ui_builder
-                .switch(self.switch_state.clone())
-                .check(*session_settings.should_confirm_close_session)
-                .build()
-                .on_click(move |ctx, _, _| {
-                    ctx.dispatch_typed_action(FeaturesPageAction::ToggleConfirmCloseSession);
-                })
-                .finish(),
-            None,
-        )
-    }
-}
-
-#[derive(Default)]
 struct ExtraMetaKeysWidget {
     left_switch_state: SwitchStateHandle,
     right_switch_state: SwitchStateHandle,

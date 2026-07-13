@@ -22,10 +22,6 @@ pub enum FeatureFlag {
 
     RuntimeFeatureFlags,
 
-    /// If `true`, fetch updated Warp channel versions from the Warp server endpoint instead of
-    /// from GCP directly.
-    FetchChannelVersionsFromWarpServer,
-
     /// Does grid storage go forwards or backwards
     SequentialStorage,
 
@@ -41,15 +37,6 @@ pub enum FeatureFlag {
     /// If `true`, the "Show Initialization Block" menu item is added to the Blocks menu in the Mac
     /// menu bar.
     ToggleBootstrapBlock,
-
-    /// A runtime flag to enable the creation of shared sessions.
-    ///
-    /// It is enabled if the logged in user is part of a paying team
-    /// or part of the allowlist (via [`ServerExperiment::SessionSharingExperiment`]).
-    ///
-    /// We also use [`ServerExperiment::SessionSharingControl`] as a
-    /// killswitch for abuse prevention.
-    CreatingSharedSessions,
 
     /// Enabling context chips functionality for prompt
     ContextChips,
@@ -160,9 +147,6 @@ pub enum FeatureFlag {
 
     /// Enables cycling through the next command suggestions with down arrow.
     CycleNextCommandSuggestion,
-
-    /// Enables multi-workspace selection.
-    MultiWorkspace,
 
     /// Maximizes data in flat storage to reduce memory usage.
     MaximizeFlatStorage,
@@ -396,15 +380,6 @@ pub enum FeatureFlag {
     /// Enables the one-time modal on app startup for existing users for the Code launch.
     CodeLaunchModal,
 
-    /// Enables API key authentication for Agent SDK
-    APIKeyAuthentication,
-
-    /// Enables API key management UI in settings
-    APIKeyManagement,
-
-    /// Enables OAuth support for MCP.
-    McpOauth,
-
     /// Enables attaching diff sets (multiple hunks from multiple files) as context in Agent Mode.
     DiffSetAsContext,
 
@@ -554,9 +529,6 @@ pub enum FeatureFlag {
     /// Enables configuring header toolbar item order, side placement, and visibility.
     ConfigurableToolbar,
 
-    /// Enables real-time communication updates for ambient agent tasks.
-    AmbientAgentsRTC,
-
     // Enables a side panel conversation list view for AgentView mode.
     AgentViewConversationListView,
 
@@ -587,28 +559,16 @@ pub enum FeatureFlag {
     /// Enables conversation artifacts.
     ConversationArtifacts,
 
-    /// Enables auto-syncing ambient plans to Warp Drive.
-    SyncAmbientPlans,
-
     /// Enables platform skills support (--skill flag) for agent runs.
     ///
     /// Skills are loaded from `.agents/skills/`, `.warp/skills/`, `.claude/skills/`, and `.codex/skills/`
     /// directories to provide base prompts for agent runs.
     OzPlatformSkills,
-    /// Enables Oz identity federation commands.
-    OzIdentityFederation,
-
     /// Gates populating/reading oz updates from channel versions in the changelog model.
     OzChangelogUpdates,
 
-    /// Enables image upload for ambient agents.
-    AmbientAgentsImageUpload,
-
     /// Enables loading and returning bundled skills in the SkillManager.
     BundledSkills,
-
-    /// Enables the Oz launch modal for introducing cloud agent features.
-    OzLaunchModal,
 
     /// Enables the OpenWarp launch modal announcing Warp going open-source.
     /// When enabled, the HOA onboarding flow is suppressed.
@@ -717,16 +677,6 @@ pub enum FeatureFlag {
     /// CLIs (e.g. `claude`) to execute prompts instead of Warp's agent harness.
     AgentHarness,
 
-    /// Enables workspace- and block-snapshot handoff between cloud agent runs
-    /// and the local Warp client.
-    /// When enabled:
-    /// - The `AgentDriver` uploads a workspace snapshot (repo diffs + files) at the end of every
-    ///   cloud agent run, regardless of harness.
-    /// - Subsequent executions download the prior execution's handoff snapshot attachments.
-    /// - Third-party harness conversations hydrate their terminal output inline by fetching a
-    ///   block snapshot from the server.
-    OzHandoff,
-
     /// Enables the upgraded CLI agent session tracking and notifications infrastructure.
     HOANotifications,
 
@@ -761,9 +711,6 @@ pub enum FeatureFlag {
 
     /// Replaces the in-block warpification banner with a warpify footer.
     WarpifyFooter,
-
-    /// Enables conversation retrieval via the CLI (oz run conversation get, oz run get --conversation).
-    ConversationApi,
 
     /// Guided onboarding flow for existing users introducing HOA features
     /// (vertical tabs, agent inbox, tab configs).
@@ -839,7 +786,6 @@ pub const DOGFOOD_FLAGS: &[FeatureFlag] = &[
     FeatureFlag::AgentModeAnalytics,
     FeatureFlag::LazySceneBuilding,
     FeatureFlag::SshDragAndDrop,
-    FeatureFlag::MultiWorkspace,
     FeatureFlag::ImeMarkedText,
     FeatureFlag::MSYS2Shells,
     FeatureFlag::RetryTruncatedCodeResponses,
@@ -852,7 +798,6 @@ pub const DOGFOOD_FLAGS: &[FeatureFlag] = &[
     FeatureFlag::FileGlobV2Warnings,
     FeatureFlag::SummarizationViaMessageReplacement,
     FeatureFlag::LocalComputerUse,
-    FeatureFlag::OzLaunchModal,
     FeatureFlag::QueueSlashCommand,
     // These are enabled via 100% experiment on prod warp-server,
     // but we need to enable here for dogfood builds.

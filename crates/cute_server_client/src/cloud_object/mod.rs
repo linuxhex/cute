@@ -11,7 +11,7 @@ use cute_graphql::scalars::time::ServerTimestamp;
 
 use crate::auth::UserUid;
 use crate::drive::sharing::{SharingAccessLevel, Subject, TeamKind, UserKind};
-use crate::ids::{FolderId, GenericStringObjectId, ServerId, SyncId};
+use crate::ids::{FolderId, ServerId, SyncId};
 
 pub mod model;
 pub mod models;

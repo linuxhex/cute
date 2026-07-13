@@ -910,7 +910,7 @@ pub fn render_plan_auto_sync_toggle(
     )
     .finish();
 
-    let current_value = profile_data.autosync_plans_to_warp_drive;
+    let current_value = profile_data.autosync_plans_to_cute_drive;
     let switch = appearance
         .ui_builder()
         .switch(view.plan_auto_sync_switch.clone())

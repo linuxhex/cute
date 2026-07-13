@@ -8,7 +8,8 @@ use crate::search::command_palette::mixer::CommandPaletteItemAction;
 use crate::search::command_palette::render_util::render_search_item_icon;
 use crate::search::item::{IconLocation, SearchItem as SearchItemTrait};
 use crate::search::result_renderer::ItemHighlightState;
-use crate::session_management::TabNavigationData;
+// Session navigation types are now exported from crate root
+use crate::TabNavigationData;
 use crate::ui_components::icons::Icon;
 
 /// These items appear in the ctrl-tab palette only, not the main command palette.

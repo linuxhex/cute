@@ -105,7 +105,6 @@ pub struct RequestParams {
     pub cli_agent_model: LLMId,
     pub computer_use_model: LLMId,
     pub is_memory_enabled: bool,
-    pub cute_drive_context_enabled: bool,
     pub context_window_limit: Option<u32>,
     pub mcp_context: Option<MCPContext>,
     pub planning_enabled: bool,
@@ -163,7 +162,6 @@ impl RequestParams {
     ) -> Self {
         let ai_settings = AISettings::as_ref(app);
         let is_memory_enabled = ai_settings.is_memory_enabled(app);
-        let cute_drive_context_enabled = ai_settings.is_warp_drive_context_enabled(app);
 
         // Build MCP context - either grouped by server or flat lists based on feature flag
         let mcp_context = if FeatureFlag::MCPGroupedServerContext.is_enabled() {
@@ -326,7 +324,6 @@ impl RequestParams {
             cli_agent_model: request_input.cli_agent_model_id.clone(),
             computer_use_model: request_input.computer_use_model_id.clone(),
             is_memory_enabled,
-            cute_drive_context_enabled,
             mcp_context,
             planning_enabled: true,
             should_redact_secrets,

@@ -39,7 +39,8 @@ use crate::search::search_bar::{
 use crate::search::QueryFilter;
 use crate::server::ids::SyncId;
 use crate::server::telemetry::{LaunchConfigUiLocation, TelemetryEvent};
-use crate::session_management::SessionSource;
+// Session navigation types are now exported from crate root
+use crate::SessionSource;
 use crate::settings::CtrlTabBehavior;
 use crate::terminal::keys_settings::KeysSettings;
 use crate::themes::theme::WarpTheme;
@@ -90,8 +91,6 @@ pub enum Event {
     ExecuteWorkflow { id: SyncId },
     /// Invoke the env vars identified by `id`.
     InvokeEnvironmentVariables { id: SyncId },
-    /// Open a notebook identified by `id`.
-    OpenNotebook { id: SyncId },
     /// Open a file at the given path.
     OpenFile {
         path: String,
@@ -377,7 +376,6 @@ impl View {
                 | (PaletteMode::LaunchConfig, QueryFilter::LaunchConfigurations)
                 | (PaletteMode::Files, QueryFilter::Files)
                 | (PaletteMode::Conversations, QueryFilter::Conversations)
-                | (PaletteMode::WarpDrive, QueryFilter::Drive)
         )
     }
 
@@ -883,8 +881,6 @@ impl View {
             CommandPaletteItemAction::InvokeEnvironmentVariables { id } => {
                 ctx.emit(Event::InvokeEnvironmentVariables { id })
             }
-            CommandPaletteItemAction::OpenNotebook { id } => ctx.emit(Event::OpenNotebook { id }),
-            CommandPaletteItemAction::ViewInWarpDrive { .. } => {}
             CommandPaletteItemAction::NewSession { source } => {
                 self.dispatch_typed_action_on_view(source.action().deref(), ctx);
             }

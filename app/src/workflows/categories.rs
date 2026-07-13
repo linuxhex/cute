@@ -8,7 +8,7 @@ use fuzzy_match::{match_indices_case_insensitive, FuzzyMatchResult};
 use itertools::Itertools;
 use cute_core::ui::builder::UiBuilder;
 use cute_core::ui::theme::color::internal_colors;
-use warp_workflows::workflows as global_workflows;
+use cute_workflows::workflows as global_workflows;
 use cuteui::accessibility::{AccessibilityContent, WarpA11yRole};
 use cuteui::color::ColorU;
 use cuteui::elements::{
@@ -436,53 +436,6 @@ impl CategoriesView {
     }
 
     #[cfg(feature = "local_fs")]
-    fn on_project_workflows_loaded(
-        &mut self,
-        workflows: Vec<Workflow>,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        if !workflows.is_empty() {
-            let new_project_workflows = Self::categorize_workflows(
-                workflows.into_iter().map(WorkflowType::Local).map(Arc::new),
-            );
-            if self.workflows_by_source.get(&WorkflowSource::Project)
-                != Some(&new_project_workflows)
-            {
-                self.workflows_by_source
-                    .insert(WorkflowSource::Project, new_project_workflows);
-                self.selected_workflow_index = 0;
-                self.compute_active_workflows(ctx);
-                ctx.notify();
-            }
-        } else if !self
-            .workflows_by_source
-            .get(&WorkflowSource::Project)
-            .is_none_or(HashMap::is_empty)
-        {
-            // Reset state if there were project workflows previously, but no longer are.
-            self.workflows_by_source
-                .entry(WorkflowSource::Project)
-                .or_default()
-                .clear();
-            self.selected_workflow_index = 0;
-            self.compute_active_workflows(ctx);
-            ctx.notify();
-        }
-    }
-
-    #[cfg(feature = "local_fs")]
-    fn load_project_workflows(&mut self, path: PathBuf, ctx: &mut ViewContext<Self>) {
-        let _ = ctx.spawn(
-            async move {
-                // TODO(CORE-1372): This should probably be delegating to the
-                // `LocalWorkflows` singleton model to load and cache the
-                // project workflows at the given path.
-                super::local_workflows::load_project_workflows(&path)
-            },
-            Self::on_project_workflows_loaded,
-        );
-    }
-
     // pub fn load_cloud_workflows(&mut self, ctx: &mut ViewContext<Self>) {
     //     let user_workspaces = UserWorkspaces::as_ref(ctx);
     //     let cloud_model = CloudModel::as_ref(ctx);
@@ -717,32 +670,6 @@ impl CategoriesView {
         }
     }
 
-    fn editor_up(&mut self, ctx: &mut ViewContext<Self>) {
-        if self.selected_workflow_index > 0 {
-            self.selected_workflow_index -= 1;
-            self.workflow_highlighted(ctx);
-
-            self.workflow_list_state
-                .list_state
-                .scroll_to(self.selected_workflow_index);
-            ctx.notify();
-        }
-    }
-
-    fn editor_down(&mut self, ctx: &mut ViewContext<Self>) {
-        let filtered_workflows_count = self.filtered_workflows().count();
-
-        if self.selected_workflow_index < filtered_workflows_count.saturating_sub(1) {
-            self.selected_workflow_index += 1;
-            self.workflow_highlighted(ctx);
-
-            self.workflow_list_state
-                .list_state
-                .scroll_to(self.selected_workflow_index);
-            ctx.notify();
-        }
-    }
-
     fn render_empty_list_placeholder(&self, appearance: &Appearance) -> Box<dyn Element> {
         let no_workflows_text =
             CategoriesView::text_label("No matching workflows found.", appearance);
@@ -778,10 +705,6 @@ impl CategoriesView {
             .with_cross_axis_alignment(CrossAxisAlignment::Center);
 
         Align::new(flex_column.finish()).finish()
-    }
-
-    fn editor_enter(&mut self, ctx: &mut ViewContext<Self>) {
-        self.select_workflow_item(self.selected_workflow_index, ctx);
     }
 
     fn select_workflow_item(&mut self, index: usize, ctx: &mut ViewContext<Self>) {

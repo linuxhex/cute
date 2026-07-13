@@ -25,7 +25,6 @@ use crate::ui_components::icons;
 #[derive(Default)]
 struct ChangelogMouseStateHandles {
     top_bar_mouse_state: MouseStateHandle,
-    view_changelogs_mouse_state: MouseStateHandle,
 }
 
 const CHANGELOG_FETCH_ERROR_MSG: &str = "Unable to fetch the latest changelog.";

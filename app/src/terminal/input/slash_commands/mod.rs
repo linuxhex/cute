@@ -24,13 +24,9 @@ use cuteui::{AppContext, SingletonEntity, ViewContext};
 use crate::ai::agent::conversation::AIConversationId;
 #[cfg(not(target_family = "wasm"))]
 use crate::ai::agent_conversations_model::AgentConversationsModel;
-#[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-use crate::ai::ambient_agent_types::telemetry::HandoffEntryPoint;
 use crate::ai::blocklist::agent_view::{
     AgentViewEntryOrigin, DismissalStrategy, EphemeralMessage, ENTER_OR_EXIT_CONFIRMATION_WINDOW,
 };
-#[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-use crate::ai::blocklist::PendingCloudLaunch;
 use crate::ai::blocklist::{
     BlocklistAIHistoryModel, InputTypeAutoDetectionSource, QueuedQuery, QueuedQueryModel,
     QueuedQueryOrigin, SlashCommandRequest,
@@ -441,21 +437,7 @@ impl Input {
                     origin: AgentViewEntryOrigin::SlashCommand { trigger },
                 });
             }
-            // Cute: 已注释，清理云端 Agent slash 命令
-            // cloud_agent if command.name == commands::CLOUD_AGENT.name => {
-            //     let prompt = argument.and_then(|argument| {
-            //         let trimmed = argument.trim();
-            //         if trimmed.is_empty() {
-            //             None
-            //         } else {
-            //             Some(trimmed.to_owned())
-            //         }
-            //     });
-            //
-            //     ctx.emit(Event::EnterCloudAgentView {
-            //         initial_prompt: prompt,
-            //     });
-            // }
+
             create_docker_sandbox if command.name == commands::CREATE_DOCKER_SANDBOX.name => {
                 ctx.emit(Event::CreateDockerSandbox);
             }
@@ -465,11 +447,6 @@ impl Input {
                         model.set_mode(InputSuggestionsMode::Closed, ctx);
                     });
                     self.clear_buffer_and_reset_undo_stack(ctx);
-                    if let Some(view) = self.cloud_mode_v2_history_menu_view.clone() {
-                        view.update(ctx, |v, ctx| {
-                            v.arm_initial_buffer_sync(ctx);
-                        });
-                    }
                     ctx.dispatch_typed_action_deferred(InputAction::OpenInlineHistoryMenu);
                     return true;
                 } else if FeatureFlag::AgentView.is_enabled() {
@@ -745,53 +722,9 @@ impl Input {
                 // Open the skill selector menu for invocation - skill command will be inserted into buffer
                 self.open_invoke_skill_selector(ctx);
             }
-            // Cute: 已注释，清理云端 host 选择命令
-            // host if command.name == commands::HOST.name => {
-            //     if !self.is_cloud_mode_input_v2_composing(ctx) {
-            //         return false;
-            //     }
-            //     // Only open the host selector when a default host is configured.
-            //     let has_default_host = std::env::var("WARP_CLOUD_MODE_DEFAULT_HOST")
-            //         .ok()
-            //         .filter(|s| !s.is_empty())
-            //         .is_some()
-            //         || crate::UserWorkspaces::as_ref(ctx).default_host_slug().is_some();
-            //     if self.host_selector().is_none() && !has_default_host {
-            //         return false;
-            //     }
-            //     self.suggestions_mode_model.update(ctx, |model, ctx| {
-            //         model.set_mode(InputSuggestionsMode::Closed, ctx);
-            //     });
-            //     self.clear_buffer_and_reset_undo_stack(ctx);
-            //     self.open_v2_host_selector(ctx);
-            //     return true;
-            // }
-            // Cute: 已注释，清理云端 harness 选择命令
-            // harness if command.name == commands::HARNESS.name => {
-            //     if !self.is_cloud_mode_input_v2_composing(ctx) {
-            //         // Defensive: the command is registered only when the V2 flag is on and its
-            //         // availability requires CLOUD_AGENT_V2, so this branch should be unreachable.
-            //         return false;
-            //     }
-            //     self.suggestions_mode_model.update(ctx, |model, ctx| {
-            //         model.set_mode(InputSuggestionsMode::Closed, ctx);
-            //     });
-            //     self.clear_buffer_and_reset_undo_stack(ctx);
-            //     self.open_v2_harness_selector(ctx);
-            //     return true;
-            // }
-            // Cute: 已注释，清理云端 environment 选择命令
-            // environment if command.name == commands::ENVIRONMENT.name => {
-            //     if !self.is_cloud_mode_input_v2_composing(ctx) {
-            //         return false;
-            //     }
-            //     self.suggestions_mode_model.update(ctx, |model, ctx| {
-            //         model.set_mode(InputSuggestionsMode::Closed, ctx);
-            //     });
-            //     self.clear_buffer_and_reset_undo_stack(ctx);
-            //     self.open_v2_environment_selector(ctx);
-            //     return true;
-            // }
+
+
+
             models if command.name == commands::MODEL.name => {
                 if self.is_cloud_mode_input_v2_composing(ctx) {
                     self.suggestions_mode_model.update(ctx, |model, ctx| {
@@ -877,37 +810,7 @@ impl Input {
                     ctx.dispatch_typed_action(&TerminalAction::ToggleUsageFooter);
                 }
             }
-            #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-            move_to_cloud if command.name == commands::MOVE_TO_CLOUD.name => {
-                if !AISettings::as_ref(ctx)
-                    .is_cloud_handoff_enabled_for_terminal_view(self.terminal_view_id, ctx)
-                {
-                    return false;
-                }
-                let prompt = argument
-                    .map(|argument| argument.trim())
-                    .filter(|argument| !argument.is_empty())
-                    .map(str::to_owned);
-                if let Some(prompt) = prompt {
-                    // `/handoff query` auto-submits, same as `& query`.
-                    let attachments = self.collect_cloud_launch_attachments(ctx);
-                    let launch = PendingCloudLaunch {
-                        prompt,
-                        attachments,
-                    };
-                    ctx.dispatch_typed_action_deferred(
-                        WorkspaceAction::OpenLocalToCloudHandoffPane {
-                            launch: Some(launch),
-                            environment_id: None,
-                            entry_point: HandoffEntryPoint::SlashCommand,
-                        },
-                    );
-                } else {
-                    // `/handoff` with no query enters `&` compose mode,
-                    // same as the footer chip.
-                    self.activate_cloud_handoff_compose(HandoffEntryPoint::SlashCommand, ctx);
-                }
-            }
+
             fork if command.name == commands::FORK.name => {
                 let Some(conversation_id) = self
                     .ai_context_model

@@ -1,8 +1,6 @@
-use crate::billing::PricingInfo;
 use crate::experiment::Experiment;
 use crate::request_context::RequestContext;
 use crate::schema;
-use crate::user::DiscoverableTeamData;
 use crate::workspace::Workspace;
 
 /*
@@ -70,11 +68,6 @@ query GetWorkspacesMetadataForUser($requestContext: RequestContext!) {
                 adminGranularity
                 maxPriorCycles
               }
-              pricing {
-                enablePayAsYouGo
-                autoReloadCreditDenomination
-                autoReloadCostCents
-              }
             }
             serviceAgreements {
               currentPeriodEnd
@@ -141,24 +134,6 @@ query GetWorkspacesMetadataForUser($requestContext: RequestContext!) {
       }
     }
   }
-  pricingInfo(requestContext: $requestContext) {
-    ... on PricingInfoOutput {
-      pricingInfo {
-        plans {
-          plan
-          monthlyPlanPricePerMonthUsdCents
-          yearlyPlanPricePerMonthUsdCents
-          requestLimit
-          codebaseLimit
-          codebaseContextFileLimit
-          maxTeamSize
-        }
-        overages {
-          pricePerRequestUsdCents
-        }
-      }
-    }
-  }
 }
 */
 
@@ -180,22 +155,9 @@ pub enum UserResult {
 }
 
 #[derive(cynic::QueryFragment, Debug)]
-pub struct PricingInfoOutput {
-    pub pricing_info: PricingInfo,
-}
-
-#[derive(cynic::InlineFragments, Debug)]
-pub enum PricingInfoResult {
-    PricingInfoOutput(PricingInfoOutput),
-    #[cynic(fallback)]
-    Unknown,
-}
-
-#[derive(cynic::QueryFragment, Debug)]
 pub struct User {
     pub workspaces: Vec<Workspace>,
     pub experiments: Option<Vec<Experiment>>,
-    pub discoverable_teams: Vec<DiscoverableTeamData>,
 }
 
 #[derive(cynic::QueryFragment, Debug)]
@@ -206,8 +168,6 @@ pub struct User {
 pub struct GetWorkspacesMetadataForUser {
     #[arguments(requestContext: $request_context)]
     pub user: UserResult,
-    #[arguments(requestContext: $request_context)]
-    pub pricing_info: PricingInfoResult,
 }
 crate::client::define_operation! {
     get_workspaces_metadata_for_user(GetWorkspacesMetadataForUserVariables) -> GetWorkspacesMetadataForUser;

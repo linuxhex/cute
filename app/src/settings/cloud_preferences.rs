@@ -2,7 +2,7 @@
 //!
 //! Note: Cloud-specific logic has been removed. Simplified stub.
 
-pub use crate::cloud_stub_types::models::{CloudPreference, CloudPreferenceModel, Platform, Preference};
+pub use crate::cloud_stub_types::models::{CloudPreference, CloudPreferenceModel};
 use settings::macros::define_settings_group;
 use settings::{RespectUserSyncSetting, SupportedPlatforms, SyncToCloud};
 

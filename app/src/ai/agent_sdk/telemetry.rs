@@ -466,11 +466,8 @@ impl TelemetryEventDesc for CliTelemetryEventDiscriminants {
 
     fn enablement_state(&self) -> EnablementState {
         match self {
-            // Self::FederateIssueToken | Self::FederateIssueGcpToken => {
-            //     EnablementState::Flag(FeatureFlag::OzIdentityFederation)
-            // }
             Self::FederateIssueToken | Self::FederateIssueGcpToken => {
-                EnablementState::Flag(FeatureFlag::OzIdentityFederation)
+                EnablementState::Disabled
             }
             Self::HarnessSupportPing
             | Self::HarnessSupportReportArtifact
@@ -480,7 +477,7 @@ impl TelemetryEventDesc for CliTelemetryEventDiscriminants {
                 EnablementState::Flag(FeatureFlag::ArtifactCommand)
             }
             Self::ApiKeyList | Self::ApiKeyCreate | Self::ApiKeyExpire => {
-                EnablementState::Flag(FeatureFlag::APIKeyManagement)
+                EnablementState::Disabled
             }
             Self::RunMessageWatch
             | Self::RunMessageSend

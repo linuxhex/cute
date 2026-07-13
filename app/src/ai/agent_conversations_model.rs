@@ -1055,8 +1055,8 @@ impl AgentConversationsModel {
             return false;
         }
 
-        // Don't poll if we're using RTC
-        if FeatureFlag::AmbientAgentsRTC.is_enabled() {
+        // Don't poll if we're using RTC (RTC is disabled as cloud feature is removed).
+        if false {
             return false;
         }
 

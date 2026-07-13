@@ -107,15 +107,6 @@ impl SelectedTabColor {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
-#[allow(clippy::enum_variant_names)]
-pub enum TabTelemetryAction {
-    CloseTab,
-    CloseOtherTabs,
-    CloseTabsToRight,
-    SetColor,
-    ResetColor,
-}
 #[derive(Debug, Clone)]
 pub enum NewSessionMenuItem {
     OpenLaunchConfig(LaunchConfig),
@@ -228,49 +219,49 @@ impl TabData {
     ) -> Vec<MenuItem<WorkspaceAction>> {
         let mut menu_items = vec![];
 
-        if FeatureFlag::CreatingSharedSessions.is_enabled()
-            && ContextFlag::CreateSharedSession.is_enabled()
-        {
-            let shared_session_view_ids = self.pane_group.as_ref(ctx).shared_session_view_ids(ctx);
-            let focused_session_view = self.pane_group.as_ref(ctx).focused_session_view(ctx);
-
-            // If the focused pane is one of the shared sessions, add an option to stop it specifically,
-            // otherwise add an option to share it.
-            if let Some(focused_session_view) = focused_session_view {
-                if focused_session_view
-                    .as_ref(ctx)
-                    .model
-                    .lock()
-                    .shared_session_status()
-                    .is_active_sharer()
-                {
-                    menu_items.push(
-                        MenuItemFields::new("Stop sharing")
-                            .with_on_select_action(WorkspaceAction::StopSharingSessionFromTabMenu {
-                                terminal_view_id: focused_session_view.id(),
-                            })
-                            .into_item(),
-                    );
-                } else {
-                    menu_items.push(
-                        MenuItemFields::new("Share session")
-                            .with_on_select_action(WorkspaceAction::OpenShareSessionModal(index))
-                            .into_item(),
-                    );
-                }
-            }
-
-            // Always show an option to stop sharing all when there's at least 1 shared session in the tab.
-            if !shared_session_view_ids.is_empty() {
-                menu_items.push(
-                    MenuItemFields::new("Stop sharing all")
-                        .with_on_select_action(WorkspaceAction::StopSharingAllSessionsInTab {
-                            pane_group: self.pane_group.downgrade(),
-                        })
-                        .into_item(),
-                );
-            }
-        }
+        // Cute: CreatingSharedSessions feature removed
+        // if FeatureFlag::CreatingSharedSessions.is_enabled()
+        //     && ContextFlag::CreateSharedSession.is_enabled()
+        // {
+        //     let shared_session_view_ids = self.pane_group.as_ref(ctx).shared_session_view_ids(ctx);
+        //     let focused_session_view = self.pane_group.as_ref(ctx).focused_session_view(ctx);
+        //
+        //     // If the focused pane is one of the shared sessions, add an option to stop it specifically,
+        //     // otherwise add an option to share it.
+        //     if let Some(focused_session_view) = focused_session_view {
+        //         if focused_session_view
+        //             .as_ref(ctx)
+        //             .model
+        //             .lock()
+        //     .shared_session_status()
+            //     .is_active_sharer()
+            //     {
+            //         menu_items.push(
+            //             MenuItemFields::new("Stop sharing")
+            //                 .with_on_select_action(WorkspaceAction::StopSharingSessionFromTabMenu {
+            //                     terminal_view_id: focused_session_view.id(),
+            //                 })
+            //                 .into_item(),
+            //         );
+            //     } else {
+            //         menu_items.push(
+            //             MenuItemFields::new("Share session")
+            //                 .with_on_select_action(WorkspaceAction::OpenShareSessionModal(index))
+            //                 .into_item(),
+            //         );
+            //     }
+            // }
+            //
+            // // Always show an option to stop sharing all when there's at least 1 shared session in the tab.
+            // if !shared_session_view_ids.is_empty() {
+            //     menu_items.push(
+            //         MenuItemFields::new("Stop sharing all")
+            //             .with_on_select_action(WorkspaceAction::StopSharingAllSessionsInTab {
+            //                 pane_group: self.pane_group.downgrade(),
+            //             })
+            //             .into_item(),
+            //     );
+            // }
 
         // Add "Copy link" option if the focused session in this tab is being shared or viewed
         let is_shared_or_viewed = self
@@ -675,8 +666,6 @@ enum Indicator {
     /// This pane's inputs are being synced.
     Synced,
     Error,
-    /// At least one of the panes in this tab is being shared.
-    Shared,
     /// One of the panes in this tab is maximized.
     Maximized,
     /// We should show a shell indicator for the tab.
@@ -847,8 +836,9 @@ impl<'a> TabComponent<'a> {
             agent
         } else if active_pane_has_unsaved_code_changes {
             Indicator::UnsavedChanges
-        } else if FeatureFlag::CreatingSharedSessions.is_enabled() && is_being_shared {
-            Indicator::Shared
+        // Cute: CreatingSharedSessions feature removed
+        // } else if FeatureFlag::CreatingSharedSessions.is_enabled() && is_being_shared {
+        //     Indicator::Shared
         } else if !should_show_indicators {
             Indicator::None
         } else if are_inputs_synced {
@@ -1245,11 +1235,6 @@ impl<'a> TabComponent<'a> {
             Indicator::Error => Some(
                 Icon::AlertTriangle
                     .to_cuteui_icon(self.styles.error_color.into())
-                    .finish(),
-            ),
-            Indicator::Shared => Some(
-                Icon::Sharing
-                    .to_cuteui_icon(self.styles.sharing_color.into())
                     .finish(),
             ),
             Indicator::Maximized => Some(

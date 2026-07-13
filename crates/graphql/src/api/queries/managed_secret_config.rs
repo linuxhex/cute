@@ -42,16 +42,4 @@ pub struct UserOutput {
 #[derive(cynic::QueryFragment, Debug)]
 pub struct User {
     pub managed_secrets: Option<ManagedSecretConfig>,
-    pub workspaces: Vec<Workspace>,
-}
-
-#[derive(cynic::QueryFragment, Debug)]
-pub struct Workspace {
-    pub teams: Vec<Team>,
-}
-
-#[derive(cynic::QueryFragment, Debug)]
-pub struct Team {
-    pub uid: cynic::Id,
-    pub managed_secrets: Option<ManagedSecretConfig>,
 }

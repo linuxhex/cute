@@ -35,7 +35,7 @@ use crate::ai_assistant::execution_context::WarpAiExecutionContext;
 use crate::ai_assistant::GenerateCommandsFromNaturalLanguageError;
 use crate::appearance::Appearance;
 use crate::completer::SessionContext;
-use crate::cloud_stub_types::WarpDriveSettings;
+use crate::cloud_stub_types::CuteDriveSettings;
 use crate::search::command_search::searcher::{CommandSearchItemAction, CommandSearchMixer};
 use crate::search::mixer::AddAsyncSourceOptions;
 use crate::search::result_renderer::{QueryResultRenderer, QueryResultRendererStyles};
@@ -239,7 +239,7 @@ impl CommandSearchView {
                 );
             }
 
-            if WarpDriveSettings::is_warp_drive_enabled(ctx) {
+            if false {  // CuteDriveSettings::is_warp_drive_enabled disabled
                 mixer.add_sync_source(
                     WorkflowsDataSource::new(session_context.as_ref(), ctx),
                     HashSet::from([QueryFilter::Workflows]),
@@ -253,17 +253,6 @@ impl CommandSearchView {
                 mixer.add_async_source(
                     cloud_workflows_data_source(),
                     workflows_filters,
-                    AddAsyncSourceOptions {
-                        debounce_interval: Some(Duration::from_millis(50)),
-                        run_in_zero_state: true,
-                        run_when_unfiltered: true,
-                    },
-                    ctx,
-                );
-
-                mixer.add_async_source(
-                    notebooks_data_source(),
-                    HashSet::from([QueryFilter::Notebooks]),
                     AddAsyncSourceOptions {
                         debounce_interval: Some(Duration::from_millis(50)),
                         run_in_zero_state: true,
@@ -444,11 +433,6 @@ impl CommandSearchView {
         self.search_bar.update(ctx, |search_bar, ctx| {
             search_bar.set_query_filter(filter_and_atom_text, ctx);
         });
-    }
-
-    /// Returns the active query filters
-    fn active_query_filter(&self, app: &AppContext) -> Option<QueryFilter> {
-        self.search_bar_state.as_ref(app).active_query_filter()
     }
 
     /// Emits the `ItemSelected` event containing the passed `CommandSearchEventPayload` and closes
@@ -1049,7 +1033,7 @@ pub mod styles {
 
     use crate::appearance::Appearance;
     use crate::themes::theme::Fill;
-use crate::cloud_stub_types::WarpDriveSettings;
+use crate::cloud_stub_types::CuteDriveSettings;
 
     pub const CORNER_RADIUS: f32 = 8.;
     pub const VIEW_WIDTH: f32 = 700.;

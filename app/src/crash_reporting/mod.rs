@@ -294,6 +294,14 @@ fn get_environment() -> Cow<'static, str> {
 /// This must be called from the main thread to capture panics/crashes across the entire
 /// application.
 fn init_sentry(user_id: Option<UserUid>, email: Option<String>, ctx: &mut AppContext) {
+    let sentry_url = ChannelState::sentry_url();
+
+    // OSS builds don't have a Sentry URL, so skip initialization
+    if sentry_url.is_empty() {
+        log::info!("Sentry URL is empty; skipping crash reporting initialization (OSS build)");
+        return;
+    }
+
     let key = release_version();
 
     let environment = Some(get_environment());

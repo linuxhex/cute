@@ -70,7 +70,7 @@ pub trait StringModel: Clone + Debug + PartialEq + Send + Sync + 'static {
     fn display_name(&self) -> String;
 
     /// Returns whether to render this model as a CuteDriveItem.
-    fn renders_in_warp_drive(&self) -> bool {
+    fn renders_in_cute_drive(&self) -> bool {
         false
     }
 
@@ -87,9 +87,9 @@ pub trait StringModel: Clone + Debug + PartialEq + Send + Sync + 'static {
     /// Sets the display name for this model
     fn set_display_name(&mut self, _name: &str) {}
 
-    /// Creates a new warp drive item for this model type. Returns None
-    /// if this object does not render in Warp Drive.
-    fn to_warp_drive_item(
+    /// Creates a new cute drive item for this model type. Returns None
+    /// if this object does not render in Cute Drive.
+    fn to_cute_drive_item(
         &self,
         _id: SyncId,
         _appearance: &Appearance,
@@ -229,32 +229,16 @@ where
         true
     }
 
-    async fn send_create_request(
-        _object_client: Arc<dyn ObjectClient>,
-        _request: CreateObjectRequest,
-    ) -> Result<CreateCloudObjectResult> {
-        Err(anyhow::anyhow!("cloud sync has been removed"))
+    fn renders_in_cute_drive(&self) -> bool {
+        self.string_model.renders_in_cute_drive()
     }
 
-    async fn send_update_request(
-        &self,
-        _object_client: Arc<dyn ObjectClient>,
-        _server_id: ServerId,
-        _revision: Option<Revision>,
-    ) -> Result<UpdateCloudObjectResult<GenericServerObject<GenericStringObjectId, Self>>> {
-        Err(anyhow::anyhow!("cloud sync has been removed"))
-    }
-
-    fn renders_in_warp_drive(&self) -> bool {
-        self.string_model.renders_in_warp_drive()
-    }
-
-    fn to_warp_drive_item(
+    fn to_cute_drive_item(
         &self,
         id: SyncId,
         appearance: &Appearance,
         object: &GenericCloudObject<GenericStringObjectId, Self>,
     ) -> Option<Box<dyn CuteDriveItem>> {
-        self.string_model.to_warp_drive_item(id, appearance, object)
+        self.string_model.to_cute_drive_item(id, appearance, object)
     }
 }

@@ -174,7 +174,7 @@ impl StringModel for AIExecutionProfile {
             })
     }
 
-    fn renders_in_warp_drive(&self) -> bool {
+    fn renders_in_cute_drive(&self) -> bool {
         false
     }
 }

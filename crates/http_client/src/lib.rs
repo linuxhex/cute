@@ -2,7 +2,6 @@ pub mod iap;
 
 use std::future::Future;
 use std::pin::Pin;
-use std::sync::Arc;
 use std::time::Duration;
 use std::{fmt, future};
 

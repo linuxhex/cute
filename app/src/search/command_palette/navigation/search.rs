@@ -10,7 +10,8 @@ use crate::search::command_palette::navigation::search_item::SearchItem;
 use crate::search::command_palette::navigation::DataSource;
 use crate::search::data_source::QueryResult;
 use crate::search::SyncDataSource;
-use crate::session_management::{CommandContext, SessionNavigationData, SessionSource};
+// Session navigation types are now exported from crate root
+use crate::{CommandContext, SessionNavigationData, SessionSource};
 
 /// A session that was fuzzy matched against a search term.
 pub struct MatchedSession {
@@ -221,6 +222,8 @@ impl SessionSearcher for FuzzySessionSearcher {
         let active_session_id = match self.session_source_handle.as_ref(app) {
             SessionSource::None => None,
             SessionSource::Set { active_pane_id, .. } => Some(*active_pane_id),
+            SessionSource::Active(_) => None,  // Active variant disabled
+            SessionSource::Inactive => None,  // Inactive variant disabled
         };
 
         // Sort sessions by last focus timestamp so sessions that were focused first are shown first.
@@ -236,6 +239,8 @@ impl SessionSearcher for FuzzySessionSearcher {
         match self.session_source_handle.as_ref(app) {
             SessionSource::None => None,
             SessionSource::Set { active_pane_id, .. } => Some(*active_pane_id),
+            SessionSource::Active(_) => None,  // Active variant disabled
+            SessionSource::Inactive => None,  // Inactive variant disabled
         }
     }
 }
@@ -258,7 +263,7 @@ mod full_text_searcher {
     use crate::search::command_palette::navigation::search_item::SearchItem;
     use crate::search::data_source::QueryResult;
     use crate::search::searcher::{DEFAULT_MEMORY_BUDGET, SCORE_CONVERSION_FACTOR};
-    use crate::session_management::{SessionNavigationData, SessionSource};
+    use crate::{SessionNavigationData, SessionSource};
 
     define_search_schema!(
         schema_name: SESSION_SEARCH_SCHEMA,
@@ -302,6 +307,8 @@ mod full_text_searcher {
             let active_session_id = match self.session_source_handle.as_ref(app) {
                 SessionSource::None => None,
                 SessionSource::Set { active_pane_id, .. } => Some(*active_pane_id),
+                SessionSource::Active(_) => None,  // Active variant disabled
+                SessionSource::Inactive => None,  // Inactive variant disabled
             };
 
             if search_term.is_empty() {
@@ -347,6 +354,8 @@ mod full_text_searcher {
             match self.session_source_handle.as_ref(app) {
                 SessionSource::None => None,
                 SessionSource::Set { active_pane_id, .. } => Some(*active_pane_id),
+                SessionSource::Active(_) => None,  // Active variant disabled
+                SessionSource::Inactive => None,  // Inactive variant disabled
             }
         }
     }

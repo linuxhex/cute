@@ -212,7 +212,11 @@ impl<T: RangeBounds<CharOffset>> Index<T> for Text {
     fn index(&self, range: T) -> &Self::Output {
         let start = match range.start_bound() {
             Bound::Included(start) => cmp::min(self.range.start + *start, self.range.end),
-            Bound::Excluded(_) => unimplemented!(),
+            Bound::Excluded(start) => {
+                // Excluded bound means we start after this position
+                let excluded_start = *start + CharOffset::from(1);
+                cmp::min(self.range.start + excluded_start, self.range.end)
+            }
             Bound::Unbounded => self.range.start,
         };
         let end = match range.end_bound() {
@@ -239,7 +243,11 @@ impl Text {
     pub fn slice<T: RangeBounds<CharOffset>>(&self, range: T) -> Text {
         let start = match range.start_bound() {
             Bound::Included(start) => cmp::min(self.range.start + *start, self.range.end),
-            Bound::Excluded(_) => unimplemented!(),
+            Bound::Excluded(start) => {
+                // Excluded bound means we start after this position
+                let excluded_start = *start + CharOffset::from(1);
+                cmp::min(self.range.start + excluded_start, self.range.end)
+            }
             Bound::Unbounded => self.range.start,
         };
         let end = match range.end_bound() {
@@ -387,5 +395,3 @@ impl Text {
         cursor.start().bytes + (overshoot * cursor.item().map_or(0, |run| run.char_size()) as usize)
     }
 }
-
-

@@ -103,7 +103,6 @@ pub struct Tier {
     pub ai_autonomy_policy: Option<AiAutonomyPolicy>,
     pub telemetry_data_collection_policy: Option<TelemetryDataCollectionPolicy>,
     pub ugc_data_collection_policy: Option<UgcDataCollectionPolicy>,
-    pub usage_based_pricing_policy: Option<UsageBasedPricingPolicy>,
     pub codebase_context_policy: Option<CodebaseContextPolicy>,
     pub byo_api_key_policy: Option<ByoApiKeyPolicy>,
     pub purchase_add_on_credits_policy: Option<PurchaseAddOnCreditsPolicy>,
@@ -166,10 +165,7 @@ pub struct UgcDataCollectionPolicy {
     pub toggleable: bool,
 }
 
-#[derive(cynic::QueryFragment, Debug, Clone)]
-pub struct UsageBasedPricingPolicy {
-    pub toggleable: bool,
-}
+
 
 #[derive(cynic::QueryFragment, Debug, Clone)]
 pub struct CodebaseContextPolicy {
@@ -262,42 +258,7 @@ impl AddonCreditsOption {
     }
 }
 
-#[derive(cynic::QueryFragment, Debug, Clone)]
-pub struct PricingInfo {
-    pub plans: Vec<PlanPricing>,
-    pub overages: OveragesPricing,
-    pub addon_credits_options: Vec<AddonCreditsOption>,
-}
 
-#[derive(cynic::QueryFragment, Debug, Clone)]
-pub struct PlanPricing {
-    pub plan: StripeSubscriptionPlan,
-    pub monthly_plan_price_per_month_usd_cents: i32,
-    pub yearly_plan_price_per_month_usd_cents: i32,
-    pub request_limit: Option<i32>,
-    pub codebase_limit: i32,
-    pub codebase_context_file_limit: i32,
-    pub max_team_size: Option<i32>,
-}
-
-#[derive(cynic::QueryFragment, Debug, Clone)]
-pub struct OveragesPricing {
-    pub price_per_request_usd_cents: i32,
-}
-
-#[derive(cynic::Enum, Clone, Debug, PartialEq)]
-pub enum StripeSubscriptionPlan {
-    Business,
-    Lightspeed,
-    Pro,
-    Team,
-    Turbo,
-    Build,
-    BuildBusiness,
-    BuildMax,
-    #[cynic(fallback)]
-    Other(String),
-}
 
 #[derive(cynic::QueryFragment, Debug, Clone)]
 pub struct UsageVisibilityPolicy {

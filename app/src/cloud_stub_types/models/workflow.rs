@@ -33,7 +33,7 @@ pub enum Workflow {
         author: Option<String>,
         author_url: Option<String>,
         #[serde(default)]
-        shells: Vec<warp_workflows::Shell>,
+        shells: Vec<cute_workflows::Shell>,
         #[serde(default)]
         environment_variables: Option<SyncId>,
     },
@@ -109,7 +109,7 @@ impl Workflow {
         }
     }
 
-    pub fn shells(&self) -> Option<&Vec<warp_workflows::Shell>> {
+    pub fn shells(&self) -> Option<&Vec<cute_workflows::Shell>> {
         match self {
             Self::Command { shells, .. } => Some(shells),
             Self::AgentMode { .. } => None,
@@ -254,8 +254,8 @@ impl Workflow {
 
 /// Create a warp-internal Workflow model from a public-facing workflow
 /// https://github.com/warpdotdev/workflows/blob/main/workflow-types/src/lib.rs
-impl From<warp_workflows::Workflow> for Workflow {
-    fn from(workflow: warp_workflows::Workflow) -> Self {
+impl From<cute_workflows::Workflow> for Workflow {
+    fn from(workflow: cute_workflows::Workflow) -> Self {
         Workflow::Command {
             name: workflow.name,
             command: workflow.command,
@@ -282,8 +282,8 @@ pub struct Argument {
     pub default_value: Option<String>,
 }
 
-impl From<warp_workflows::Argument> for Argument {
-    fn from(arg: warp_workflows::Argument) -> Self {
+impl From<cute_workflows::Argument> for Argument {
+    fn from(arg: cute_workflows::Argument) -> Self {
         Argument {
             name: arg.name,
             arg_type: ArgumentType::Text,

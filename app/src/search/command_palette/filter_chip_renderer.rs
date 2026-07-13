@@ -99,7 +99,6 @@ impl FilterChipRenderer for QueryFilter {
             | QueryFilter::Actions
             | QueryFilter::Sessions
             | QueryFilter::Tabs
-            | QueryFilter::Drive
             | QueryFilter::LaunchConfigurations
             | QueryFilter::PromptHistory
             | QueryFilter::Files
@@ -121,7 +120,7 @@ impl FilterChipRenderer for QueryFilter {
                 .theme()
                 .main_text_color(appearance.theme().surface_2())
                 .into_solid(),
-            QueryFilter::Workflows | QueryFilter::Notebooks | QueryFilter::Plans | QueryFilter::EnvironmentVariables | QueryFilter::AgentModeWorkflows => appearance
+            QueryFilter::Workflows | QueryFilter::Plans | QueryFilter::EnvironmentVariables | QueryFilter::AgentModeWorkflows => appearance
                 .theme()
                 .main_text_color(appearance.theme().surface_2())
                 .into_solid(),

@@ -1655,7 +1655,7 @@ impl TypedActionView for ExecutionProfileEditorView {
             }
             ExecutionProfileEditorViewAction::SetPlanAutoSync { enabled } => {
                 AIExecutionProfilesModel::handle(ctx).update(ctx, |profiles_model, ctx| {
-                    profiles_model.set_autosync_plans_to_warp_drive(self.profile_id, *enabled, ctx);
+                    profiles_model.set_autosync_plans_to_cute_drive(self.profile_id, *enabled, ctx);
                 });
                 ctx.notify();
             }

@@ -7,6 +7,7 @@ publish.workspace = true
 license = "MIT"
 
 [features]
+integration_tests = ["dep:minimp4", "dep:openh264"]
 traces = []
 # If enabled, writes named telemetry events to the info log.  Should never be
 # enabled in release builds without a PII audit of telemetry data.

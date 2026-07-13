@@ -1,22 +1,11 @@
-use super::billing::{BillingCycleUsageHistory, BillingMetadata, BonusGrantsInfo};
 use crate::schema;
 
 #[derive(cynic::QueryFragment, Debug, Clone)]
 pub struct Workspace {
     pub uid: cynic::Id,
     pub name: String,
-    pub stripe_customer_id: Option<cynic::Id>,
     pub members: Vec<WorkspaceMember>,
-    pub teams: Vec<Team>,
-    pub billing_metadata: BillingMetadata,
-    pub bonus_grants_info: BonusGrantsInfo,
-    pub billing_cycle_usage_history: Option<BillingCycleUsageHistory>,
     pub settings: WorkspaceSettings,
-    pub has_billing_history: bool,
-    pub invite_code: Option<String>,
-    pub pending_email_invites: Vec<EmailInvite>,
-    pub invite_link_domain_restrictions: Vec<InviteLinkDomainRestriction>,
-    pub is_eligible_for_discovery: bool,
     pub feature_model_choice: FeatureModelChoice,
     pub total_requests_used_since_last_refresh: i32,
 }
@@ -147,7 +136,6 @@ pub struct WorkspaceSettings {
     pub link_sharing_settings: LinkSharingSettings,
     pub secret_redaction_settings: SecretRedactionSettings,
     pub ai_autonomy_settings: AiAutonomySettings,
-    pub usage_based_pricing_settings: UsageBasedPricingSettings,
     pub addon_credits_settings: AddonCreditsSettings,
     pub codebase_context_settings: CodebaseContextSettings,
     pub sandboxed_agent_settings: Option<SandboxedAgentSettings>,
@@ -290,20 +278,6 @@ pub struct SandboxedAgentSettings {
     pub execute_commands_denylist: Option<Vec<String>>,
 }
 
-#[derive(cynic::QueryFragment, Debug, Clone)]
-pub struct Team {
-    pub uid: cynic::Id,
-    pub name: String,
-    pub members: Vec<TeamMember>,
-}
-
-#[derive(cynic::QueryFragment, Debug, Clone)]
-pub struct TeamMember {
-    pub uid: cynic::Id,
-    pub email: String,
-    pub role: MembershipRole,
-}
-
 #[derive(cynic::Enum, Clone, Debug, PartialEq, Eq, Copy)]
 pub enum MembershipRole {
     Admin,
@@ -346,24 +320,6 @@ pub struct LlmHostSettingsEntry {
 pub struct LlmSettings {
     pub enabled: bool,
     pub host_configs: Vec<LlmHostSettingsEntry>,
-}
-
-#[derive(cynic::QueryFragment, Debug, Clone)]
-pub struct InviteLinkDomainRestriction {
-    pub uid: cynic::Id,
-    pub domain: String,
-}
-
-#[derive(cynic::QueryFragment, Debug, Clone)]
-pub struct EmailInvite {
-    pub email: String,
-    pub expired: bool,
-}
-
-#[derive(cynic::QueryFragment, Debug, Clone)]
-pub struct UsageBasedPricingSettings {
-    pub enabled: bool,
-    pub max_monthly_spend_cents: Option<i32>,
 }
 
 #[derive(cynic::QueryFragment, Debug, Clone)]

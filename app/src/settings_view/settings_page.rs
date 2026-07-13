@@ -29,7 +29,6 @@ use super::about_page::AboutPageView;
 use super::ai_page::{AISettingsPageAction, AISettingsPageView};
 use super::appearance_page::AppearanceSettingsPageView;
 use super::code_page::CodeSettingsPageView;
-use super::environments_page::EnvironmentsPageView;
 use super::features_page::FeaturesPageView;
 use super::keybindings::KeybindingsView;
 use super::mcp_servers_page::MCPServersSettingsPageView;
@@ -101,11 +100,9 @@ pub enum SettingsPageViewHandle {
     Keybindings(ViewHandle<KeybindingsView>),
     About(ViewHandle<AboutPageView>),
     Code(ViewHandle<CodeSettingsPageView>),
-    OzCloudAPIKeys(ViewHandle<super::platform_page::PlatformPageView>),
     Privacy(ViewHandle<PrivacyPageView>),
     Warpify(ViewHandle<WarpifyPageView>),
     AI(ViewHandle<AISettingsPageView>),
-    CloudEnvironments(ViewHandle<EnvironmentsPageView>),
     MCPServers(ViewHandle<MCPServersSettingsPageView>),
     // WarpDrive removed - cloud feature not available in local version
 }
@@ -120,11 +117,9 @@ impl SettingsPageViewHandle {
             Keybindings(view_handle) => ChildView::new(view_handle).finish(),
             About(view_handle) => ChildView::new(view_handle).finish(),
             Code(view_handle) => ChildView::new(view_handle).finish(),
-            OzCloudAPIKeys(view_handle) => ChildView::new(view_handle).finish(),
             Privacy(view_handle) => ChildView::new(view_handle).finish(),
             Warpify(view_handle) => ChildView::new(view_handle).finish(),
             AI(view_handle) => ChildView::new(view_handle).finish(),
-            CloudEnvironments(view_handle) => ChildView::new(view_handle).finish(),
             MCPServers(view_handle) => ChildView::new(view_handle).finish(),
             // WarpDrive removed - cloud feature not available in local version
         }
@@ -941,72 +936,6 @@ pub(crate) fn render_dropdown_item<T: DropdownItemAction>(
         .finish(),
     )
     .with_child(dropdown.finish())
-    .finish()
-}
-
-pub(crate) fn render_settings_info_banner(
-    text: &str,
-    subtext: Option<&str>,
-    appearance: &Appearance,
-) -> Box<dyn Element> {
-    let icon = Container::new(
-        ConstrainedBox::new(
-            Icon::AlertCircle
-                .to_cuteui_icon(appearance.theme().active_ui_text_color())
-                .finish(),
-        )
-        .with_width(16.)
-        .with_height(16.)
-        .finish(),
-    )
-    .with_margin_right(8.)
-    .finish();
-
-    let text = {
-        let mut children = vec![Container::new(
-            Text::new(
-                text.to_string(),
-                appearance.ui_font_family(),
-                appearance.ui_font_size(),
-            )
-            .with_color(appearance.theme().active_ui_text_color().into())
-            .finish(),
-        )
-        .finish()];
-
-        if let Some(subtext) = subtext {
-            children.push(
-                Container::new(
-                    Text::new(
-                        subtext.to_string(),
-                        appearance.ui_font_family(),
-                        appearance.ui_font_size() - 1.,
-                    )
-                    .with_color(
-                        appearance
-                            .theme()
-                            .sub_text_color(appearance.theme().background())
-                            .into(),
-                    )
-                    .finish(),
-                )
-                .with_margin_top(4.)
-                .finish(),
-            );
-        }
-
-        Shrinkable::new(1.0, Flex::column().with_children(children).finish()).finish()
-    };
-
-    Container::new(
-        Flex::row()
-            .with_children(vec![icon, text])
-            .with_main_axis_size(MainAxisSize::Max)
-            .finish(),
-    )
-    .with_background_color(appearance.theme().accent_overlay().into())
-    .with_uniform_padding(12.)
-    .with_corner_radius(CornerRadius::with_all(Radius::Pixels(4.)))
     .finish()
 }
 

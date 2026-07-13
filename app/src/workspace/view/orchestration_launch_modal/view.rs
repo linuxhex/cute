@@ -84,15 +84,6 @@ const FEATURE_ITEMS: &[FeatureItem] = &[
     },
 ];
 
-pub fn init(app: &mut AppContext) {
-    use cuteui::keymap::macros::*;
-
-    app.register_fixed_bindings([FixedBinding::new(
-        "escape",
-        OrchestrationLaunchModalAction::Close,
-        id!(OrchestrationLaunchModal::ui_name()),
-    )]);
-}
 
 #[derive(Clone, Debug)]
 pub enum OrchestrationLaunchModalAction {

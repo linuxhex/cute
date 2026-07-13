@@ -19,9 +19,7 @@ pub fn run(
     global_options: GlobalOptions,
     command: FederateCommand,
 ) -> Result<()> {
-    if !FeatureFlag::OzIdentityFederation.is_enabled() {
-        return Err(anyhow::anyhow!("This feature is not enabled"));
-    }
+    return Err(anyhow::anyhow!("This feature is not enabled"));
     match command {
         FederateCommand::IssueToken(args) => issue_token(ctx, args, global_options.output_format),
         FederateCommand::IssueGcpToken(args) => issue_gcp_token(ctx, args),

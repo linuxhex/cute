@@ -1,5 +1,6 @@
 use cute_server_client::{UserUid, ids::ServerId};
-use session_sharing_protocol::common::ProfileData;
+// Cute: session-sharing-protocol已删除，使用cute_server_client中定义的stub类型
+use cute_server_client::drive::sharing::ProfileData;
 
 /// Public struct for storing all the UserProfile data that's fed in from either sqlite or the server.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -14,7 +15,7 @@ impl From<ProfileData> for UserProfileWithUID {
     fn from(data: ProfileData) -> Self {
         Self {
             firebase_uid: UserUid::new(&data.firebase_uid),
-            display_name: Some(data.display_name),
+            display_name: data.display_name,
             email: data.email.unwrap_or_default(),
             photo_url: data.photo_url.unwrap_or_default(),
         }

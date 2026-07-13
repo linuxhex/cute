@@ -169,7 +169,7 @@ fn handle_env_var_collection_event(
         EnvVarCollectionEvent::Pane(pane_event) => {
             group.handle_pane_event(pane_id, pane_event, ctx)
         }
-        EnvVarCollectionEvent::ViewInWarpDrive(id) => view_in_warp_drive(id.clone(), ctx),
+        EnvVarCollectionEvent::ViewInCuteDrive(id) => view_in_cute_drive(id.clone(), ctx),
         EnvVarCollectionEvent::Invoke(env_var_collection) => {
             invoke_env_var_collection(env_var_collection.clone(), ctx)
         }
@@ -189,6 +189,6 @@ fn invoke_env_var_collection(
     })
 }
 
-fn view_in_warp_drive(id: WarpDriveItemId, ctx: &mut ViewContext<PaneGroup>) {
-    ctx.emit(crate::pane_group::Event::ViewInWarpDrive(id))
+fn view_in_cute_drive(id: WarpDriveItemId, ctx: &mut ViewContext<PaneGroup>) {
+    ctx.emit(crate::pane_group::Event::ViewInCuteDrive(id))
 }

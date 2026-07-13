@@ -11,7 +11,7 @@ use cuteui::{
 };
 
 use crate::appearance::Appearance;
-use crate::cloud_stub_types::settings::WarpDriveSettings;
+use crate::cloud_stub_types::settings::CuteDriveSettings;
 use crate::search::command_palette::FilterChipRenderer;
 use crate::search::QueryFilter;
 use crate::settings::AISettings;
@@ -96,10 +96,6 @@ impl ZeroState {
             }
         }
 
-        let show_warp_drive = WarpDriveSettings::is_warp_drive_enabled(app);
-        if show_warp_drive {
-            valid_filters.push(QueryFilter::Drive);
-        }
         valid_filters.extend([QueryFilter::Actions, QueryFilter::Sessions]);
 
         if ContextFlag::LaunchConfigurations.is_enabled() {

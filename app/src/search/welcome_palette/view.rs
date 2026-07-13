@@ -62,7 +62,7 @@ const PALETTE_LIST_SAVE_POSITION_ID: &str = "welcome_palette:list";
 const MAX_SEARCH_RESULTS: usize = 250;
 
 const MAX_PROJECTS_IN_ZERO_STATE: usize = 4;
-const MAX_ITEMS_IN_ZERO_STATE: usize = 5;
+
 
 #[derive(Debug)]
 pub enum Action {
@@ -89,7 +89,7 @@ pub enum Event {
         id: SyncId,
     },
     /// View the relevant object in the Warp Drive sidebar.
-    ViewInWarpDrive {
+    ViewInCuteDrive {
         id: CloudObjectTypeAndId,
     },
     /// Open a file at the given path.
@@ -776,10 +776,6 @@ impl WelcomePalette {
             }
             CommandPaletteItemAction::NavigateToConversation { .. } => {
                 // This code is dead, so no need to support this case
-            }
-            CommandPaletteItemAction::OpenNotebook { id } => {
-                self.dispatch_typed_action_on_view(&WorkspaceAction::OpenNotebook { id: *id }, ctx);
-                self.close(ctx, Some(result_action.result_type()));
             }
             CommandPaletteItemAction::ExecuteWorkflow { id } => {
                 let Some(workflow) = CloudModel::as_ref(ctx).get_workflow(id) else {

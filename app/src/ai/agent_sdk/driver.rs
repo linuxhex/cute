@@ -308,9 +308,9 @@ pub struct AgentDriver {
     third_party_harness_model_config: Option<HarnessModelConfig>,
 
     /// Async writer that records `file` declarations for paths the agent creates or edits
-    /// via `RequestFileEdits`. `Some` only when `FeatureFlag::OzHandoff` is enabled, the run
-    /// has a cloud task id, and `--no-snapshot` was not set; `None` keeps the observer a
-    /// pure no-op for local and disabled runs.
+    /// via `RequestFileEdits`. Cloud handoff feature has been removed in local version.
+    /// `None` keeps the observer a pure no-op for local runs.
+    #[allow(dead_code)]
     snapshot_file_writer: Option<snapshot::DeclarationsWriterHandle>,
 }
 
@@ -616,18 +616,9 @@ impl AgentDriver {
 
         // Spawn the async declarations writer only when the snapshot pipeline will actually
         // read what it produces: feature enabled, cloud task run, and --no-snapshot not set.
+        // Cloud handoff feature has been removed in local version, so snapshot_file_writer is always None.
         let snapshot_disabled_value = snapshot_disabled.unwrap_or(false);
-        let snapshot_file_writer = match task_id {
-            Some(id) if FeatureFlag::OzHandoff.is_enabled() && !snapshot_disabled_value => {
-                let background = ctx.background_executor();
-                Some(snapshot::DeclarationsWriterHandle::new(
-                    id,
-                    working_dir.clone(),
-                    &background,
-                ))
-            }
-            _ => None,
-        };
+        let snapshot_file_writer = None;
 
         Ok(Self {
             terminal_driver,
@@ -3062,65 +3053,10 @@ impl AgentDriver {
     /// Invoke the end-of-run snapshot upload pipeline if the feature flag is enabled and this
     /// driver is associated with a cloud task. Errors are logged internally; this helper always
     /// returns so cleanup can proceed.
-    async fn run_snapshot_upload(spawner: &ModelSpawner<Self>) {
-        if !FeatureFlag::OzHandoff.is_enabled() {
-            return;
-        }
-
-        // Snapshot upload is only meaningful for cloud task runs, so short-circuit before
-        // pulling the rest of the context onto this task.
-        let Ok((Some(task_id), snapshot_disabled, upload_timeout, script_timeout)) = spawner
-            .spawn(|me, _| {
-                (
-                    me.task_id,
-                    me.snapshot_disabled,
-                    me.snapshot_upload_timeout,
-                    me.snapshot_script_timeout,
-                )
-            })
-            .await
-        else {
-            return;
-        };
-        if snapshot_disabled {
-            log::info!("Skipping snapshot upload because --no-snapshot was specified");
-            return;
-        }
-
-        let Ok((working_dir, client)) = spawner
-            .spawn(|me, ctx| {
-                let client = ServerApiProvider::as_ref(ctx).get_harness_support_client();
-                (me.working_dir.clone(), client)
-            })
-            .await
-        else {
-            log::error!("Unable to retrieve snapshot upload context for cleanup (task {task_id})");
-            return;
-        };
-
-        // Drain any pending declarations writes from the history subscription before the
-        // declarations script runs. This guarantees no driver-side `file` append is still in
-        // flight when the bash script appends its `repo` entries.
-        if let Ok(Some(writer)) = spawner.spawn(|me, _| me.snapshot_file_writer.clone()).await {
-            writer.flush().await;
-        }
-
-        // Regenerate the declarations file so the upload pipeline sees the latest workspace
-        // state. The helper swallows its own errors at ERROR level; we just proceed.
-        snapshot::run_declarations_script(&working_dir, &task_id, script_timeout).await;
-
-        // Cap the upload so a pathological slow upload cannot wedge cleanup.
-        // On timeout we surface via report_error! so Sentry captures the incident and on-call
-        // alerting can fire, then let cloud-provider teardown continue.
-        if let Err(TimeoutError) = snapshot::upload_snapshot_from_declarations(client, &task_id)
-            .with_timeout(upload_timeout)
-            .await
-        {
-            report_error!(anyhow!(
-                "Snapshot upload timed out after {:?}; continuing with cleanup (task {task_id})",
-                upload_timeout
-            ));
-        }
+    /// Cloud handoff feature has been removed in local version, so this function does nothing.
+    async fn run_snapshot_upload(_spawner: &ModelSpawner<Self>) {
+        // Cloud handoff feature has been removed in local version.
+        // This function is no longer used but kept for compatibility.
     }
 }
 

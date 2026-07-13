@@ -48,15 +48,6 @@ const MODAL_HEIGHT: f32 = 395.;
 const LEFT_PANEL_WIDTH: f32 = 330.;
 const RIGHT_PANEL_WIDTH: f32 = 325.;
 
-pub fn init(app: &mut AppContext) {
-    use cuteui::keymap::macros::*;
-
-    app.register_fixed_bindings([FixedBinding::new(
-        "escape",
-        CodexModalAction::Close,
-        id!("CodexModal"),
-    )]);
-}
 
 #[derive(Default)]
 struct StateHandles {

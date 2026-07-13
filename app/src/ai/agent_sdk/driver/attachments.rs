@@ -37,9 +37,8 @@ pub(crate) async fn fetch_and_download_attachments(
     task_id: String,
     attachments_dir: PathBuf,
 ) -> anyhow::Result<Option<String>> {
-    if !FeatureFlag::AmbientAgentsImageUpload.is_enabled() {
-        return Ok(None);
-    }
+    // Image upload is disabled as cloud feature is removed.
+    return Ok(None);
 
     let attachments = ai_client
         .get_task_attachments(task_id.clone())
@@ -72,65 +71,12 @@ pub(crate) async fn fetch_and_download_handoff_snapshot_attachments(
     task_id: AmbientAgentTaskId,
     attachments_dir: PathBuf,
 ) -> anyhow::Result<Option<String>> {
-    if !FeatureFlag::OzHandoff.is_enabled() {
-        log::error!(
-            "fetch_and_download_handoff_snapshot_attachments called with OzHandoff disabled; \
-             call sites should gate on the flag before invoking"
-        );
-        return Ok(None);
-    }
-
-    let attachments = ai_client
-        .get_handoff_snapshot_attachments(&task_id)
-        .await
-        .context("Failed to fetch handoff snapshot attachments")?;
-
-    if attachments.is_empty() {
-        return Ok(None);
-    }
-
-    let handoff_dir = attachments_dir.join("handoff");
-    fs::create_dir_all(&handoff_dir)
-        .await
-        .context("Failed to create handoff attachments directory")?;
-
-    let attempts = attachments.len();
-    let download_futures = attachments.into_iter().map(|attachment| {
-        let file_path = handoff_dir.join(&attachment.file_id);
-        download_handoff_entry(attachment, file_path, http_client)
-    });
-    let results = join_all(download_futures).await;
-
-    let mut succeeded: usize = 0;
-    let mut failures: Vec<(String, String)> = Vec::new();
-    for result in results {
-        match result {
-            Ok(()) => succeeded += 1,
-            Err((filename, err)) => failures.push((filename, err)),
-        }
-    }
-
-    if failures.is_empty() {
-        log::info!("Handoff snapshot attachments: {succeeded}/{attempts} downloaded");
-    } else {
-        let detail = failures
-            .iter()
-            .map(|(filename, err)| format!("{filename}: {err}"))
-            .collect::<Vec<_>>()
-            .join("; ");
-        log::warn!(
-            "Handoff snapshot attachments: {succeeded}/{attempts} downloaded; {} failed ({detail})",
-            failures.len()
-        );
-    }
-
-    // Only surface the attachments dir if at least one file made it to disk. Passing a dir
-    // with zero usable entries downstream would make the rehydration prompt reference a
-    // phantom path.
-    if succeeded == 0 {
-        return Ok(None);
-    }
-    Ok(Some(attachments_dir.to_string_lossy().into_owned()))
+    // Cloud handoff feature has been removed in local version.
+    // This function should not be called anymore.
+    log::warn!(
+        "fetch_and_download_handoff_snapshot_attachments called in local version where cloud handoff is disabled"
+    );
+    return Ok(None);
 }
 
 /// Downloads task attachments from presigned URLs and writes them to the filesystem.
@@ -308,4 +254,3 @@ pub fn process_attachment(
         data: base64_data,
     })
 }
-

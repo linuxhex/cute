@@ -137,14 +137,12 @@ pub enum AgentSlideAction {
     NextClicked,
     UpgradeClicked,
     CopyUpgradeUrlClicked,
-    PasteAuthTokenFromClipboardClicked,
     DismissPlanActivatedToast,
 }
 
 #[derive(Debug, Clone)]
 pub enum AgentSlideEvent {
     CopyUpgradeUrlRequested,
-    PasteAuthTokenFromClipboardRequested,
 }
 
 pub struct AgentSlide {
@@ -171,7 +169,6 @@ pub struct AgentSlide {
     highlighted_model_id: Option<LLMId>,
     show_auth_prompt_bar: bool,
     copy_url_mouse_state: MouseStateHandle,
-    paste_token_mouse_state: MouseStateHandle,
     show_plan_activated_toast: bool,
     last_auth_state: OnboardingAuthState,
     plan_activated_close_mouse_state: MouseStateHandle,
@@ -266,7 +263,6 @@ impl AgentSlide {
             highlighted_model_id: None,
             show_auth_prompt_bar: false,
             copy_url_mouse_state: MouseStateHandle::default(),
-            paste_token_mouse_state: MouseStateHandle::default(),
             show_plan_activated_toast: false,
             last_auth_state: initial_auth_state,
             plan_activated_close_mouse_state: MouseStateHandle::default(),
@@ -1137,8 +1133,7 @@ impl AgentSlide {
 
     /// Full-width bar pinned below the slide's two-column layout. Shown after
     /// the user clicks the Upgrade button, so they can fall back to copying
-    /// the upgrade URL (or pasting the returned auth token) if the browser
-    /// didn't launch automatically.
+    /// the upgrade URL if the browser didn't launch automatically.
     fn render_auth_prompt_bar(&self, appearance: &Appearance) -> Box<dyn Element> {
         const BAR_HEIGHT: f32 = 40.;
         const ICON_SIZE: f32 = 14.;
@@ -1181,20 +1176,6 @@ impl AgentSlide {
             .build()
             .finish();
 
-        let paste_token_link = ui_builder
-            .link(
-                "Click here".into(),
-                None,
-                Some(Box::new(|ctx| {
-                    ctx.dispatch_typed_action(AgentSlideAction::PasteAuthTokenFromClipboardClicked);
-                })),
-                self.paste_token_mouse_state.clone(),
-            )
-            .soft_wrap(false)
-            .with_style(link_styles)
-            .build()
-            .finish();
-
         let text_row = Flex::row()
             .with_cross_axis_alignment(CrossAxisAlignment::Center)
             .with_child(icon)
@@ -1212,15 +1193,7 @@ impl AgentSlide {
             .with_child(copy_url_link)
             .with_child(
                 ui_builder
-                    .span(" and open the page manually. ")
-                    .with_style(text_styles)
-                    .build()
-                    .finish(),
-            )
-            .with_child(paste_token_link)
-            .with_child(
-                ui_builder
-                    .span(" to paste your token from the browser.")
+                    .span(" and open the page manually.")
                     .with_style(text_styles)
                     .build()
                     .finish(),
@@ -1627,9 +1600,6 @@ impl TypedActionView for AgentSlide {
             }
             AgentSlideAction::CopyUpgradeUrlClicked => {
                 ctx.emit(AgentSlideEvent::CopyUpgradeUrlRequested);
-            }
-            AgentSlideAction::PasteAuthTokenFromClipboardClicked => {
-                ctx.emit(AgentSlideEvent::PasteAuthTokenFromClipboardRequested);
             }
             AgentSlideAction::DismissPlanActivatedToast => {
                 self.show_plan_activated_toast = false;

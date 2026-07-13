@@ -41,14 +41,6 @@ impl Slide for OzLaunchSlide {
         }
     }
 
-    fn prev(&self) -> Option<Self> {
-        match self {
-            OzLaunchSlide::AgentAutomations => None,
-            OzLaunchSlide::AgentManagement => Some(OzLaunchSlide::AgentAutomations),
-            OzLaunchSlide::LaunchCredits => Some(OzLaunchSlide::AgentManagement),
-        }
-    }
-
     fn display_text(&self) -> Option<&'static str> {
         Some(match self {
             OzLaunchSlide::AgentAutomations => "Agent automations",
@@ -174,8 +166,4 @@ impl Slide for OzLaunchSlide {
             },
         ));
     }
-}
-
-pub fn init(app: &mut cuteui::AppContext) {
-    super::init::<OzLaunchSlide>(app);
 }

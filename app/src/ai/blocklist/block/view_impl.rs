@@ -656,12 +656,9 @@ pub fn render_citation(
 
     let (icon, name) = match citation {
         AIAgentCitation::WarpDriveObject { uid } => {
-            let item = CloudModel::as_ref(app)
-                .get_by_uid(uid)?
-                .to_warp_drive_item(appearance)?;
-            let icon = item.icon().and_then(|i| item.icon_color(appearance).map(|c| i.to_cuteui_icon(c.into())));
-            let name = item.display_name().unwrap_or(String::from("Untitled"));
-            (icon.map(|i| i.finish()), name)
+            // WarpDrive item disabled
+            let name = String::from("Untitled");
+            (None, name)
         }
         AIAgentCitation::WarpDocumentation { .. } => {
             let icon = Icon::Warp.to_cuteui_icon(theme.foreground()).finish();

@@ -34,12 +34,6 @@ bitflags! {
         const CODEBASE_CONTEXT = 1 << 6;
         /// Requires AI to be globally enabled.
         const AI_ENABLED = 1 << 7;
-        const NOT_CLOUD_AGENT = 1 << 8;
-        /// Set on the session context iff the slash command data source was constructed via
-        /// `SlashCommandDataSource::for_cloud_mode_v2` *and* `FeatureFlag::CloudModeInputV2`
-        /// is enabled. Commands that require this bit are hidden everywhere except the V2
-        /// cloud-mode composing input.
-        const CLOUD_AGENT_V2 = 1 << 9;
     }
 }
 
@@ -115,4 +109,3 @@ impl StaticCommand {
         session_context.contains(self.availability)
     }
 }
-

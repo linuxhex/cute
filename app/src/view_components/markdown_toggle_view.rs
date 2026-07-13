@@ -73,12 +73,6 @@ impl MarkdownToggleView {
         Self { segmented_control }
     }
 
-    pub fn set_selected_mode(&mut self, mode: MarkdownDisplayMode, ctx: &mut ViewContext<Self>) {
-        self.segmented_control.update(ctx, |control, ctx| {
-            control.set_selected_option(mode, ctx);
-        });
-        ctx.notify();
-    }
 }
 
 impl View for MarkdownToggleView {

@@ -24,7 +24,6 @@ use cuteui::text::word_boundaries::WordBoundariesPolicy;
 use crate::search::ai_context_menu::mixer::AIContextMenuSearchableAction;
 use crate::search::data_source::{Query, QueryResult};
 use crate::search::mixer::{AsyncDataSource, DataSourceRunErrorWrapper, SyncDataSource};
-// use crate::search::notebook_embedding::searcher::EmbeddingSearchItemAction; // Removed: cloud notebook functionality
 use futures_util::future::BoxFuture;
 use cute_editor::content::buffer::{Buffer, BufferEditAction, EditOrigin as CuteEditOrigin, InitialBufferState};
 use cute_editor::content::selection_model::BufferSelectionModel;
@@ -43,7 +42,6 @@ use cuteui::units::Pixels;
 pub mod breadcrumbs;
 pub mod model;
 pub mod models;
-pub mod toast_message;
 
 /// Prefix for generic string objects in cloud storage
 pub const GENERIC_STRING_OBJECT_PREFIX: &str = "GENERIC_STRING_";
@@ -52,26 +50,29 @@ pub const GENERIC_STRING_OBJECT_PREFIX: &str = "GENERIC_STRING_";
 
 /// Re-export items module (was crate::drive::items)
 pub mod items {
-    pub use crate::cloud_stub_types::{WarpDriveItemId, WarpDriveWorkflow, WarpDriveEnvVarCollection, WarpDriveAIFact, WarpDriveMCPServer, DriveObjectType};
+    pub use crate::cloud_stub_types::{CuteDriveItemId, CuteDriveWorkflow, CuteDriveEnvVarCollection, CuteDriveAIFact, CuteDriveMCPServer, DriveObjectType};
+
+    /// Type alias for backward compatibility
+    pub type WarpDriveItemId = CuteDriveItemId;
 
     /// Re-export ai_fact submodule
     pub mod ai_fact {
-        pub use crate::cloud_stub_types::WarpDriveAIFact;
+        pub use crate::cloud_stub_types::CuteDriveAIFact;
     }
 
     /// Re-export mcp_server submodule
     pub mod mcp_server {
-        pub use crate::cloud_stub_types::WarpDriveMCPServer;
+        pub use crate::cloud_stub_types::CuteDriveMCPServer;
     }
 
     /// Re-export workflow submodule
     pub mod workflow {
-        pub use crate::cloud_stub_types::WarpDriveWorkflow;
+        pub use crate::cloud_stub_types::CuteDriveWorkflow;
     }
 
     /// Re-export env_var_collection submodule
     pub mod env_var_collection {
-        pub use crate::cloud_stub_types::WarpDriveEnvVarCollection;
+        pub use crate::cloud_stub_types::CuteDriveEnvVarCollection;
     }
 }
 
@@ -99,7 +100,12 @@ pub mod folders {
 
 /// Re-export settings module (was crate::drive::settings)
 pub mod settings {
-    pub use crate::cloud_stub_types::{WarpDriveSettings, WarpDriveSettingsChangedEvent, CuteDriveSettings, CuteDriveSettingsChangedEvent};
+    // WarpDriveSettings has been renamed to CuteDriveSettings
+    pub use crate::cloud_stub_types::{CuteDriveSettings, CuteDriveSettingsChangedEvent};
+
+    /// Type alias for backward compatibility
+    pub type WarpDriveSettings = CuteDriveSettings;
+    pub type WarpDriveSettingsChangedEvent = CuteDriveSettingsChangedEvent;
 }
 
 /// Re-export workflows module (was crate::drive::workflows)
@@ -137,7 +143,7 @@ pub mod workflows {
 
 /// Re-export cloud_object_styling module
 pub mod cloud_object_styling {
-    // pub use crate::cloud_stub_types::{warp_drive_icon_color, cute_drive_icon_color, DriveObjectType};
+    // pub use crate::cloud_stub_types::{cute_drive_icon_color, cute_drive_icon_color, DriveObjectType};
     pub use crate::cloud_stub_types::{cute_drive_icon_color, DriveObjectType};
 }
 
@@ -295,6 +301,9 @@ pub enum CuteDriveItemId {
     Space(crate::server::ids::ServerId),
 }
 
+/// Type alias for backward compatibility
+pub type WarpDriveItemId = CuteDriveItemId;
+
 /// Re-export Owner from cute_server_client (already exported via pub use cute_server_client::cloud_object::*)
 
 
@@ -367,7 +376,7 @@ pub struct OpenCuteDriveObjectSettings {
 /// Minimal stub for CuteDriveSettings
 #[derive(Clone, Debug, Default)]
 pub struct CuteDriveSettings {
-    pub enable_warp_drive: StubSettingsValue<bool>,
+    pub enable_cute_drive: StubSettingsValue<bool>,
     pub sharing_onboarding_block_shown: StubSettingsValue<bool>,
 }
 
@@ -415,7 +424,7 @@ impl cuteui::Entity for CuteDriveSettings {
 impl SingletonEntity for CuteDriveSettings {}
 
 impl CuteDriveSettings {
-    pub fn is_warp_drive_enabled(_app: &cuteui::AppContext) -> bool {
+    pub fn is_cute_drive_enabled(_app: &cuteui::AppContext) -> bool {
         false // Disabled in stub
     }
 
@@ -424,16 +433,16 @@ impl CuteDriveSettings {
         <Self as SingletonEntity>::handle(_ctx)
     }
 
-    pub fn toggle_enable_warp_drive(&mut self, _ctx: &mut AppContext) -> Result<(), anyhow::Error> {
-        let current = self.enable_warp_drive.value().clone();
-        self.enable_warp_drive.set_value(!current, _ctx)?;
+    pub fn toggle_enable_cute_drive(&mut self, _ctx: &mut AppContext) -> Result<(), anyhow::Error> {
+        let current = self.enable_cute_drive.value().clone();
+        self.enable_cute_drive.set_value(!current, _ctx)?;
         Ok(())
     }
 
     pub fn as_ref(_ctx: &AppContext) -> &Self {
         // This is a stub, so we just return a static instance
         static INSTANCE: CuteDriveSettings = CuteDriveSettings {
-            enable_warp_drive: StubSettingsValue { value: false },
+            enable_cute_drive: StubSettingsValue { value: false },
             sharing_onboarding_block_shown: StubSettingsValue { value: false },
         };
         &INSTANCE
@@ -1525,10 +1534,6 @@ pub enum RichTextEditorModelEvent {
 }
 
 /// Stub functions for warp drive icon colors
-pub fn warp_drive_icon_color(_appearance: &cute_core::ui::appearance::Appearance, _object_type: DriveObjectType) -> pathfinder_color::ColorU {
-    pathfinder_color::ColorU::new(128, 128, 128, 255)
-}
-
 pub fn cute_drive_icon_color(_appearance: &cute_core::ui::appearance::Appearance, _object_type: DriveObjectType) -> pathfinder_color::ColorU {
     pathfinder_color::ColorU::new(128, 128, 128, 255)
 }
@@ -1548,7 +1553,6 @@ pub fn has_feature_gated_anonymous_user_reached_workflow_limit(_ctx: &cuteui::Ap
 #[derive(Clone, Debug)]
 pub enum WorkflowModalEvent {
     ViewInCuteDrive(CloudObjectTypeAndId),
-    ViewInWarpDrive(CloudObjectTypeAndId),
     AiAssistUpgradeError(String, String),
     OpenFromCuteDrive(CloudObjectTypeAndId, OpenCuteDriveObjectSettings),
     Close,
@@ -1689,7 +1693,7 @@ impl cuteui::Entity for DrivePanel {
 }
 
 impl DrivePanel {
-    pub fn reset_focused_index_in_warp_drive(&mut self, _should_scroll: bool, _ctx: &mut ViewContext<Self>) {
+    pub fn reset_focused_index_in_cute_drive(&mut self, _should_scroll: bool, _ctx: &mut ViewContext<Self>) {
         // Stub implementation
     }
 
@@ -2520,10 +2524,29 @@ impl std::fmt::Display for NotebookSource {
 }
 
 /// Minimal stub for SessionSource
+/// This is a model type used for tracking active sessions in the command palette.
 #[derive(Clone, Debug)]
 pub enum SessionSource {
+    /// No active session
+    None,
+    /// Active session set
+    Set {
+        active_pane_id: crate::pane_group::PaneId,
+    },
+    /// Active session (window-based)
     Active(cuteui::WindowId),
+    /// Inactive session
     Inactive,
+}
+
+impl Default for SessionSource {
+    fn default() -> Self {
+        SessionSource::None
+    }
+}
+
+impl Entity for SessionSource {
+    type Event = ();
 }
 
 /// Minimal stub for SessionSourceType
@@ -2913,13 +2936,13 @@ pub trait CloudObject: Debug {
         None
     }
 
-    fn renders_in_warp_drive(&self) -> bool;
+    fn renders_in_cute_drive(&self) -> bool;
 
     fn should_show_activity_toasts(&self) -> bool {
         true
     }
 
-    fn to_warp_drive_item(&self, appearance: &Appearance) -> Option<Box<dyn CuteDriveItem>>;
+    fn to_cute_drive_item(&self, appearance: &Appearance) -> Option<Box<dyn CuteDriveItem>>;
 
     fn object_link(&self) -> Option<String> {
         None
@@ -3078,8 +3101,8 @@ pub trait CloudObject: Debug {
         None
     }
 
-    fn update_object_queue_item(&self, _revision: Option<Revision>) -> crate::server::sync_queue::QueueItem {
-        panic!("update_object_queue_item: cloud sync has been removed")
+    fn update_object_queue_item(&self, _revision: Option<Revision>) -> Option<crate::server::sync_queue::QueueItem> {
+        None
     }
 }
 
@@ -3095,7 +3118,7 @@ pub trait CloudModelType: Debug + Clone + Send + Sync {
 
     fn object_type(&self) -> ObjectType;
 
-    fn renders_in_warp_drive(&self) -> bool;
+    fn renders_in_cute_drive(&self) -> bool;
 
     fn should_show_activity_toasts(&self) -> bool {
         true
@@ -3105,7 +3128,7 @@ pub trait CloudModelType: Debug + Clone + Send + Sync {
         true
     }
 
-    fn to_warp_drive_item(
+    fn to_cute_drive_item(
         &self,
         id: crate::server::ids::SyncId,
         appearance: &Appearance,
@@ -3377,12 +3400,12 @@ where
         }
     }
 
-    fn renders_in_warp_drive(&self) -> bool {
-        self.model().renders_in_warp_drive()
+    fn renders_in_cute_drive(&self) -> bool {
+        self.model().renders_in_cute_drive()
     }
 
-    fn to_warp_drive_item(&self, appearance: &Appearance) -> Option<Box<dyn CuteDriveItem>> {
-        self.model().to_warp_drive_item(self.id, appearance, self)
+    fn to_cute_drive_item(&self, appearance: &Appearance) -> Option<Box<dyn CuteDriveItem>> {
+        self.model().to_cute_drive_item(self.id, appearance, self)
     }
 
     fn can_export(&self) -> bool {
@@ -3402,7 +3425,7 @@ where
     }
 }
 
-pub fn extract_server_id_and_object_type_from_warp_drive_link(
+pub fn extract_server_id_and_object_type_from_cute_drive_link(
     _url: &Url,
 ) -> Option<OpenCuteDriveObjectArgs> {
     None
@@ -3598,17 +3621,17 @@ impl From<Owner> for WorkflowSource {
 
 // ===== Compatibility Type Aliases (from removed drive module) =====
 
-pub type WarpDriveItemId = CuteDriveItemId;
+// WarpDriveItemId has been renamed to CuteDriveItemId
 // Note: WarpDriveItem cannot be a type alias to a trait (CuteDriveItem).
 // Use CuteDriveItem directly wherever a trait object is needed (e.g., dyn CuteDriveItem).
 // WarpDriveItem is still available as a re-export in the items submodule for non-trait-bound usage.
-pub type WarpDriveWorkflow = CuteDriveWorkflow;
-pub type WarpDriveEnvVarCollection = CuteDriveEnvVarCollection;
-pub type WarpDriveAIFact = CuteDriveAIFact;
-pub type WarpDriveMCPServer = CuteDriveMCPServer;
-pub type OpenWarpDriveObjectArgs = OpenCuteDriveObjectArgs;
-pub type WarpDriveSettings = CuteDriveSettings;
-pub type WarpDriveSettingsChangedEvent = CuteDriveSettingsChangedEvent;
+// WarpDriveWorkflow has been renamed to CuteDriveWorkflow
+// WarpDriveEnvVarCollection has been renamed to CuteDriveEnvVarCollection
+// WarpDriveAIFact has been renamed to CuteDriveAIFact
+// WarpDriveMCPServer has been renamed to CuteDriveMCPServer
+// OpenWarpDriveObjectArgs has been renamed to OpenCuteDriveObjectArgs
+// WarpDriveSettings has been renamed to CuteDriveSettings
+// WarpDriveSettingsChangedEvent has been renamed to CuteDriveSettingsChangedEvent
 
 // ===== SharedSessionSource Stub (Session Sharing) =====
 
@@ -4159,4 +4182,259 @@ impl From<cute_server_client::cloud_object::ObjectType> for ObjectIdType {
             cute_server_client::cloud_object::ObjectType::GenericStringObject(_) => ObjectIdType::Command, // Default mapping
         }
     }
+}
+
+// ===== Session Navigation Types =====
+
+/// Minimal stub for SessionNavigationData - session navigation data
+/// This represents a terminal session for navigation purposes.
+#[derive(Clone, Debug)]
+pub struct SessionNavigationData {
+    window_id: cuteui::WindowId,
+    pane_id: crate::pane_group::PaneId,
+    pane_group_id: cuteui::EntityId,
+    session_source: SessionSource,
+    last_focus_ts: chrono::DateTime<chrono::Utc>,
+}
+
+impl SessionNavigationData {
+    /// Create a new session navigation data
+    pub fn new(
+        window_id: cuteui::WindowId,
+        pane_id: crate::pane_group::PaneId,
+        pane_group_id: cuteui::EntityId,
+        session_source: SessionSource,
+        ctx: &AppContext,
+    ) -> Self {
+        Self {
+            window_id,
+            pane_id,
+            pane_group_id,
+            session_source,
+            last_focus_ts: chrono::Utc::now(),
+        }
+    }
+
+    /// Returns all sessions in the app as an iterator
+    pub fn all_sessions(ctx: &AppContext) -> impl Iterator<Item = SessionNavigationData> + '_ {
+        // Stub implementation - returns empty iterator
+        std::iter::empty()
+    }
+
+    /// Returns the window ID for this session
+    pub fn window_id(&self) -> cuteui::WindowId {
+        self.window_id
+    }
+
+    /// Returns the pane ID for this session
+    pub fn pane_id(&self) -> crate::pane_group::PaneId {
+        self.pane_id
+    }
+
+    /// Returns the pane group ID for this session
+    pub fn pane_group_id(&self) -> cuteui::EntityId {
+        self.pane_group_id
+    }
+
+    /// Returns the session source
+    pub fn session_source(&self) -> &SessionSource {
+        &self.session_source
+    }
+
+    /// Returns the last focus timestamp
+    pub fn last_focus_ts(&self) -> i64 {
+        self.last_focus_ts.timestamp_millis()
+    }
+
+    /// Returns the tab name
+    pub fn tab_name(&self, _ctx: &AppContext) -> String {
+        "Session".to_string()
+    }
+
+    /// Returns a pane view locator for this session
+    pub fn pane_view_locator(&self) -> crate::workspace::PaneViewLocator {
+        crate::workspace::PaneViewLocator {
+            pane_id: self.pane_id,
+            pane_group_id: self.pane_group_id,
+        }
+    }
+
+    /// Returns prompt elements for this session
+    pub fn prompt_elements(&self) -> SessionNavigationPromptElements {
+        SessionNavigationPromptElements::default()
+    }
+
+    /// Returns the command context for this session
+    pub fn command_context(&self) -> CommandContext {
+        CommandContext::default()
+    }
+
+    /// Returns the prompt string for this session
+    pub fn prompt(&self) -> String {
+        String::new()
+    }
+
+    /// Returns whether this session is for a specific pane
+    pub fn is_for_session(&self, _pane_id: crate::pane_group::PaneId) -> bool {
+        false
+    }
+}
+
+/// Minimal stub for TabNavigationData - tab navigation data
+/// This represents a tab for navigation purposes.
+#[derive(Clone, Debug)]
+pub struct TabNavigationData {
+    pub window_id: cuteui::WindowId,
+    pub pane_group_id: cuteui::EntityId,
+    pub tab_index: usize,
+    pub title: String,
+    pub subtitle: Option<String>,
+}
+
+impl TabNavigationData {
+    /// Returns all tabs in the app
+    pub fn all_tabs(_ctx: &AppContext) -> Vec<Self> {
+        // Stub implementation - returns empty vector
+        Vec::new()
+    }
+}
+
+/// Minimal stub for RunningSessionSummary - summary of running sessions
+#[derive(Clone, Debug)]
+pub struct RunningSessionSummary<'a> {
+    sessions: Vec<SessionNavigationData>,
+    pub long_running_cmds: Vec<String>,
+    _marker: std::marker::PhantomData<&'a ()>,
+}
+
+impl<'a> RunningSessionSummary<'a> {
+    /// Create a new running session summary
+    pub fn new(sessions: Vec<SessionNavigationData>) -> Self {
+        Self {
+            sessions,
+            long_running_cmds: Vec::new(),
+            _marker: std::marker::PhantomData,
+        }
+    }
+
+    /// Returns the number of running sessions
+    pub fn len(&self) -> usize {
+        self.sessions.len()
+    }
+
+    /// Returns whether there are no running sessions
+    pub fn is_empty(&self) -> bool {
+        self.sessions.is_empty()
+    }
+
+    /// Returns an iterator over the running sessions
+    pub fn iter(&self) -> impl Iterator<Item = &SessionNavigationData> {
+        self.sessions.iter()
+    }
+
+    /// Returns the number of tabs running
+    pub fn tabs_running(&self) -> usize {
+        self.sessions.len()
+    }
+
+    /// Returns the number of windows running
+    pub fn windows_running(&self) -> usize {
+        // Stub: assume each session is in its own window
+        self.sessions.len()
+    }
+
+    /// Returns the processes in a specific window
+    pub fn processes_in_window(&self, _window_id: cuteui::WindowId) -> Vec<&SessionNavigationData> {
+        // Stub: return empty vector
+        Vec::new()
+    }
+}
+
+/// Minimal stub for CommandContext - command execution context
+#[derive(Clone, Debug)]
+pub enum CommandContext {
+    /// A command that was last run
+    LastRunCommand {
+        last_run_command: String,
+        mins_since_completion: Option<u64>,
+    },
+    /// A currently running command
+    RunningCommand {
+        running_command: String,
+    },
+    /// An AI block that was last run
+    LastRunAIBlock {
+        prompt: String,
+    },
+    /// A currently running AI block
+    RunningAIBlock {
+        prompt: String,
+    },
+    /// No command context
+    None,
+}
+
+impl Default for CommandContext {
+    fn default() -> Self {
+        CommandContext::None
+    }
+}
+
+impl CommandContext {
+    /// Returns a description for accessibility
+    pub fn a11y_description(&self) -> Option<String> {
+        match self {
+            CommandContext::LastRunCommand { last_run_command, .. } => {
+                if last_run_command.is_empty() {
+                    None
+                } else {
+                    Some(format!("Last command: {}", last_run_command))
+                }
+            }
+            CommandContext::RunningCommand { running_command } => {
+                if running_command.is_empty() {
+                    None
+                } else {
+                    Some(format!("Running: {}", running_command))
+                }
+            }
+            CommandContext::LastRunAIBlock { prompt } => {
+                if prompt.is_empty() {
+                    None
+                } else {
+                    Some("Last AI block".to_string())
+                }
+            }
+            CommandContext::RunningAIBlock { prompt } => {
+                if prompt.is_empty() {
+                    None
+                } else {
+                    Some("Running AI block".to_string())
+                }
+            }
+            CommandContext::None => None,
+        }
+    }
+}
+
+/// Minimal stub for SessionNavigationPromptElements - prompt elements for navigation
+/// This represents the prompt elements used in command palette navigation.
+#[derive(Clone, Debug, Default)]
+pub struct SessionNavigationPromptElements {
+    pub ps1_prompt_grid: Option<PromptGrid>,
+    pub prompt_chip_snapshot: Option<PromptChipSnapshot>,
+}
+
+/// Minimal stub for PromptGrid - the grid representation of a prompt
+/// This is a placeholder type that allows compilation but has stub behavior.
+#[derive(Clone, Debug, Default)]
+pub struct PromptGrid {
+    // Stub fields - would normally contain prompt grid data
+}
+
+/// Minimal stub for PromptChipSnapshot - snapshot of prompt chips
+/// This is a placeholder type that allows compilation but has stub behavior.
+#[derive(Clone, Debug, Default)]
+pub struct PromptChipSnapshot {
+    // Stub fields - would normally contain prompt chip data
 }

@@ -21,7 +21,7 @@ pub use bottom_nav::onboarding_bottom_nav;
 pub use customize_slide::CustomizeUISlide;
 pub use free_user_no_ai_slide::FreeUserNoAiSlide;
 pub use intention_slide::IntentionSlide;
-pub use intro_slide::{IntroSlide, IntroSlideEvent};
+pub use intro_slide::IntroSlide;
 pub use onboarding_slide::OnboardingSlide;
 pub use project_slide::{ProjectOnboardingSettings, ProjectSlide};
 pub use theme_picker_slide::{ThemePickerSlide, ThemePickerSlideEvent};

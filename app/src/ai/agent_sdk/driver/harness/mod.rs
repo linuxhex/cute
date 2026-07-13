@@ -11,8 +11,7 @@ use async_trait::async_trait;
 use tempfile::NamedTempFile;
 use cute_cli::agent::Harness;
 use cute_cli::{
-    OZ_CLI_ENV, OZ_HARNESS_ENV, OZ_PARENT_RUN_ID_ENV, OZ_RUN_ID_ENV, SERVER_ROOT_URL_OVERRIDE_ENV,
-    SESSION_SHARING_SERVER_URL_OVERRIDE_ENV, WS_SERVER_URL_OVERRIDE_ENV,
+    OZ_CLI_ENV, OZ_HARNESS_ENV, OZ_PARENT_RUN_ID_ENV, OZ_RUN_ID_ENV,
 };
 use cute_core::channel::ChannelState;
 use cute_managed_secrets::ManagedSecretValue;
@@ -375,27 +374,9 @@ fn task_env_vars_for_harness_name(
     }
     // Server URL overrides are disabled on release channels, so there's no
     // override to propagate to child processes there.
-    if ChannelState::channel().allows_server_url_overrides() {
-        insert_non_empty_task_env_var(
-            &mut env_vars,
-            SERVER_ROOT_URL_OVERRIDE_ENV,
-            ChannelState::server_root_url().into_owned(),
-        );
-        insert_non_empty_task_env_var(
-            &mut env_vars,
-            WS_SERVER_URL_OVERRIDE_ENV,
-            ChannelState::ws_server_url().into_owned(),
-        );
-        if let Some(url) = ChannelState::session_sharing_server_url()
-            .map(Cow::into_owned)
-            .filter(|url| !url.is_empty())
-        {
-            env_vars.insert(
-                OsString::from(SESSION_SHARING_SERVER_URL_OVERRIDE_ENV),
-                OsString::from(url),
-            );
-        }
-    }
+    // Note: SERVER_ROOT_URL_OVERRIDE_ENV, WS_SERVER_URL_OVERRIDE_ENV, and
+    // SESSION_SHARING_SERVER_URL_OVERRIDE_ENV constants have been removed.
+    // This functionality is no longer available.
 
     env_vars
 }

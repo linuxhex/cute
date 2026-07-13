@@ -1,15 +1,12 @@
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
-// use alias_bar::{AliasBar, AliasBarEvent}; // Removed: unused cloud feature
-use crate::cloud_stub_types::{AliasBar, AliasBarEvent, SyntaxHighlightable}; // Added: stub types for alias bar and syntax highlightable
 use argument_editor::{ArgumentEditorRow, DEFAULT_ARGUMENT_PREFIX};
 use env_var_selector::{EnvVarSelector, EnvVarSelectorEvent};
 use itertools::Itertools;
 use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::vec2f;
 use string_offset::CharOffset;
-// use syntax_highlightable::SyntaxHighlightable; // Removed: unused cloud feature
 use url::Url;
 use cute_core::context_flag::ContextFlag;
 use cute_core::settings::Setting;
@@ -92,11 +89,8 @@ use crate::workflows::CloudWorkflow;
 use crate::workspace::{ToastStack, WorkspaceAction};
 use crate::{FeatureFlag, UserWorkspaces};
 
-// mod alias_argument_selector; // Removed: unused cloud feature
-// mod alias_bar; // Removed: unused cloud feature
 pub(crate) mod argument_editor;
 pub mod env_var_selector;
-// mod syntax_highlightable; // Removed: unused cloud feature
 
 pub fn init(app: &mut AppContext) {
     use cuteui::keymap::macros::id;
@@ -161,8 +155,6 @@ const AI_ASSIST_BUTTON_SIZE: f32 = 92.;
 const AI_ASSIST_BUTTON_TEXT: &str = "Autofill";
 const AI_ASSIST_LOADING_TEXT: &str = "Loading";
 
-const ALIAS_HELP_TEXT: &str = "Aliases allow you to create short strings to execute workflows. Each alias can have different argument values and environment variables, and aliases are personal to you.";
-
 const RUN_ON_DESKTOP_BUTTON_TEXT: &str = "Run in Warp";
 const RUN_ON_DESKTOP_BUTTON_WIDTH: f32 = 108.;
 
@@ -204,7 +196,7 @@ impl WorkflowEditorErrorState {
 
 #[derive(Debug, Clone)]
 pub enum WorkflowAction {
-    ViewInWarpDrive(WarpDriveItemId),
+    ViewInCuteDrive(WarpDriveItemId),
     AddArgument,
     ToggleViewMode,
     RunWorkflow,
@@ -228,7 +220,7 @@ pub enum WorkflowViewEvent {
     Pane(PaneEvent),
     CreatedWorkflow(SyncId),
     UpdatedWorkflow(SyncId),
-    ViewInWarpDrive(WarpDriveItemId),
+    ViewInCuteDrive(WarpDriveItemId),
     // OpenDriveObjectShareDialog {
     //     cloud_object_type_and_id: CloudObjectTypeAndId,
     //     invitee_email: Option<String>,
@@ -271,7 +263,6 @@ struct UiStateHandles {
     edit_mode_button_mouse_state: MouseStateHandle,
     copy_content_button_mouse_state: MouseStateHandle,
     execute_command_mouse_state: MouseStateHandle,
-    alias_header_tool_tip: MouseStateHandle,
     add_environment_variables_mouse_state: MouseStateHandle,
     clipped_scroll_state: ClippedScrollStateHandle,
 }
@@ -284,12 +275,9 @@ pub struct WorkflowView {
     name_editor: ViewHandle<EditorView>,
     description_editor: ViewHandle<EditorView>,
     content_editor: ViewHandle<EditorView>,
-    content_editor_highlight_model: ModelHandle<SyntaxHighlightable>,
     view_only_content_editor: ViewHandle<EditorView>,
-    view_only_content_editor_highlight_model: ModelHandle<SyntaxHighlightable>,
     arguments_state: ArgumentsState,
     arguments_rows: Vec<ArgumentEditorRow>,
-    alias_bar: ViewHandle<AliasBar>,
     env_vars_selector: ViewHandle<EnvVarSelector>,
     env_vars_state: EnvironmentVariablesState,
     breadcrumbs: Vec<BreadcrumbState<ContainingObject>>,
@@ -407,17 +395,7 @@ impl WorkflowView {
             me.handle_enum_creation_dialog_event(event, ctx);
         });
 
-        let content_editor_highlight_model =
-            ctx.add_model(|ctx| SyntaxHighlightable::new(content_editor.clone(), ctx));
-
-        let view_only_content_editor_highlight_model =
-            ctx.add_model(|ctx| SyntaxHighlightable::new(view_only_content_editor.clone(), ctx));
-
         let workflow_id = SyncId::ClientId(ClientId::default());
-        // let alias_bar = ctx.add_typed_action_view(|ctx| AliasBar::new(workflow_id, ctx));
-        // ctx.subscribe_to_view(&alias_bar, |me, _, event, ctx| {
-        //     me.handle_alias_bar_event(event, ctx);
-        // });
 
         let env_vars_selector = ctx.add_typed_action_view(EnvVarSelector::new);
         ctx.subscribe_to_view(&env_vars_selector, |me, _, event, ctx| {
@@ -433,12 +411,9 @@ impl WorkflowView {
             name_editor,
             description_editor,
             content_editor,
-            content_editor_highlight_model,
             view_only_content_editor,
-            view_only_content_editor_highlight_model,
             arguments_state: Default::default(),
             arguments_rows: Vec::new(),
-            alias_bar: ctx.add_typed_action_view(|ctx| AliasBar::new(workflow_id, ctx)),
             env_vars_selector,
             env_vars_state: Default::default(),
             breadcrumbs: Vec::new(),
@@ -684,15 +659,6 @@ impl WorkflowView {
                 editor.set_placeholder_text(AGENT_MODE_QUERY_PLACEHOLDER_TEXT, ctx);
             });
         } else {
-            self.content_editor_highlight_model
-                .update(ctx, |model, ctx| {
-                    model.highlight_syntax(ctx);
-                });
-            self.view_only_content_editor_highlight_model
-                .update(ctx, |model, ctx| {
-                    model.highlight_syntax(ctx);
-                });
-
             if let Workflow::Command {
                 environment_variables,
                 ..
@@ -718,18 +684,6 @@ impl WorkflowView {
             );
         }
 
-        // if let Some(invitee_email) = settings.invitee_email.clone() {
-        //     let object_id_to_share = settings
-        //         .focused_folder_id
-        //         .map(|id| CloudObjectTypeAndId::Folder(SyncId::ServerId(id)))
-        //         .unwrap_or(CloudObjectTypeAndId::Workflow(workflow.id));
-        //     ctx.emit(WorkflowViewEvent::OpenDriveObjectShareDialog {
-        //         cloud_object_type_and_id: object_id_to_share,
-        //         invitee_email: Some(invitee_email),
-        //         source: SharingDialogSource::InviteeRequest,
-        //     });
-        // }
-
         if matches!(mode, WorkflowViewMode::View) {
             self.focus_first_argument_value(ctx);
         }
@@ -749,11 +703,8 @@ impl WorkflowView {
         self.workflow_id
     }
 
-    fn set_workflow_id(&mut self, id: SyncId, ctx: &mut ViewContext<Self>) {
+    fn set_workflow_id(&mut self, id: SyncId, _ctx: &mut ViewContext<Self>) {
         self.workflow_id = id;
-        self.alias_bar.update(ctx, |alias_bar, ctx| {
-            alias_bar.set_workflow_id(id, ctx);
-        });
     }
 
     pub fn workflow_link(&self, ctx: &AppContext) -> Option<String> {
@@ -824,11 +775,9 @@ impl WorkflowView {
             || self.env_vars_state.is_dirty
     }
 
-    fn are_aliases_dirty(&self, app: &AppContext) -> bool {
-        if !FeatureFlag::WorkflowAliases.is_enabled() {
-            return false;
-        }
-        self.alias_bar.as_ref(app).has_unsaved_changes()
+    fn are_aliases_dirty(&self, _app: &AppContext) -> bool {
+        // Cloud feature disabled in local version
+        false
     }
 
     fn is_save_workflow_button_disabled(&self) -> bool {
@@ -890,13 +839,6 @@ impl WorkflowView {
                 self.clear_content_formatting(current_content.chars().count(), ctx);
                 self.apply_error_underlining_to_content(ctx);
                 self.apply_argument_highlighting_to_content(ctx);
-
-                if !self.is_for_agent_mode {
-                    self.content_editor_highlight_model
-                        .update(ctx, |model, ctx| {
-                            model.highlight_syntax(ctx);
-                        });
-                }
 
                 self.errors.invalid_argument_error = !self
                     .arguments_state
@@ -1088,14 +1030,10 @@ impl WorkflowView {
     ) {
         match event {
             EnvVarSelectorEvent::SelectionChanged(id) => {
-                if self.alias_bar.as_ref(ctx).has_selected_alias() {
-                    self.alias_bar
-                        .update(ctx, |bar, ctx| bar.set_current_env_vars(*id, ctx));
-                } else {
-                    self.env_vars_state.default_env_vars = *id;
-                    self.env_vars_state.is_dirty = true;
-                    ctx.notify();
-                }
+                // Cloud feature disabled: always update default env vars
+                self.env_vars_state.default_env_vars = *id;
+                self.env_vars_state.is_dirty = true;
+                ctx.notify();
             }
             EnvVarSelectorEvent::Refreshed => {
                 // Re-render in case the selector visibility changed.
@@ -1436,18 +1374,9 @@ impl WorkflowView {
     /// Save the workflow and associated state. This makes a best-effort attempt to not
     /// unnecessarily modify the backing Warp Drive object.
     fn save(&mut self, ctx: &mut ViewContext<Self>) {
-        if FeatureFlag::WorkflowAliases.is_enabled() && self.are_aliases_dirty(ctx) {
-            self.save_aliases(ctx);
-        }
+        // Cloud feature disabled: aliases not supported in local version
         if self.is_workflow_dirty(ctx) {
             self.save_workflow(ctx);
-        }
-    }
-
-    fn save_aliases(&mut self, ctx: &mut ViewContext<Self>) {
-        if let Err(e) = self.alias_bar.update(ctx, |bar, ctx| bar.save(ctx)) {
-            log::error!("Error saving aliases: {e:?}");
-            self.display_error_toast("Error saving aliases".to_string(), ctx);
         }
     }
 
@@ -1548,11 +1477,7 @@ impl WorkflowView {
                     }
                 }
             }
-            for value in self.alias_bar.as_ref(app).get_all_argument_values() {
-                if !find_secrets_in_text(&value).is_empty() {
-                    return true;
-                }
-            }
+            // Cloud feature disabled: alias bar not supported in local version
         }
         false
     }
@@ -2012,64 +1937,9 @@ impl WorkflowView {
         .finish()
     }
 
-    fn render_alias_section(&self, appearance: &Appearance) -> Box<dyn Element> {
-        let ui_builder = appearance.ui_builder().clone();
-
-        let help_icon = Hoverable::new(
-            self.ui_state_handles.alias_header_tool_tip.clone(),
-            |state| {
-                let mut stack = Stack::new().with_child(
-                    ConstrainedBox::new(
-                        Icon::HelpCircle
-                            .to_cuteui_icon(
-                                appearance
-                                    .theme()
-                                    .sub_text_color(appearance.theme().background()),
-                            )
-                            .finish(),
-                    )
-                    .with_width(12.)
-                    .with_height(12.)
-                    .finish(),
-                );
-
-                if state.is_hovered() {
-                    let tooltip = ConstrainedBox::new(
-                        ui_builder
-                            .tool_tip(ALIAS_HELP_TEXT.to_string())
-                            .build()
-                            .finish(),
-                    )
-                    .with_max_width(200.)
-                    .finish();
-                    stack.add_positioned_child(
-                        tooltip,
-                        OffsetPositioning::offset_from_parent(
-                            vec2f(2., -2.),
-                            ParentOffsetBounds::WindowByPosition,
-                            ParentAnchor::TopRight,
-                            ChildAnchor::BottomLeft,
-                        ),
-                    );
-                }
-
-                stack.finish()
-            },
-        )
-        .finish();
-
-        Flex::column()
-            .with_children([
-                Flex::row()
-                    .with_children([
-                        self.render_section_header("Aliases", appearance),
-                        Container::new(help_icon).with_margin_left(4.).finish(),
-                    ])
-                    .with_cross_axis_alignment(CrossAxisAlignment::Center)
-                    .finish(),
-                ChildView::new(&self.alias_bar).finish(),
-            ])
-            .finish()
+    fn render_alias_section(&self, _appearance: &Appearance) -> Box<dyn Element> {
+        // Cloud feature disabled: return empty element
+        Box::new(cuteui::elements::Empty::new())
     }
 
     fn render_unsaved_changes_dialog(
@@ -2410,7 +2280,7 @@ impl WorkflowView {
     }
 
     fn view_in_cute_drive(&mut self, id: WarpDriveItemId, ctx: &mut ViewContext<Self>) {
-        ctx.emit(WorkflowViewEvent::ViewInWarpDrive(id));
+        ctx.emit(WorkflowViewEvent::ViewInCuteDrive(id));
     }
 
     fn issue_request(&mut self, ctx: &mut ViewContext<Self>) {
@@ -2738,7 +2608,7 @@ impl View for WorkflowView {
                     self.breadcrumbs.clone(),
                     appearance,
                     |ctx, _, breadcrumb| {
-                        ctx.dispatch_typed_action(WorkflowAction::ViewInWarpDrive(
+                        ctx.dispatch_typed_action(WorkflowAction::ViewInCuteDrive(
                             breadcrumb.kind.clone().into_item_id(),
                         ));
                     },
@@ -2900,7 +2770,7 @@ impl TypedActionView for WorkflowView {
 
     fn handle_action(&mut self, action: &Self::Action, ctx: &mut ViewContext<Self>) {
         match action {
-            WorkflowAction::ViewInWarpDrive(id) => self.view_in_cute_drive(id.clone(), ctx),
+            WorkflowAction::ViewInCuteDrive(id) => self.view_in_cute_drive(id.clone(), ctx),
             WorkflowAction::AddArgument => self.add_argument(ctx),
             WorkflowAction::ToggleViewMode => self.toggle_view_mode(ctx),
             WorkflowAction::CloseUnsavedDialog => self.hide_unsaved_changes_dialog(ctx),

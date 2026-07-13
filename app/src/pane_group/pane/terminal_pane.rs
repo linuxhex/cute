@@ -45,7 +45,9 @@ use crate::persistence::{BlockCompleted, ModelEvent};
 use crate::server::server_api::ai::{SpawnAgentRequest, UserQueryMode};
 #[cfg(not(target_family = "wasm"))]
 use crate::server::server_api::ServerApiProvider;
-use crate::session_management::SessionNavigationData;
+// Session navigation types are now exported from crate root
+use crate::SessionNavigationData;
+use crate::SessionSource;
 use crate::terminal::cli_agent_sessions::CLIAgentSessionsModel;
 use crate::terminal::general_settings::GeneralSettings;
 use crate::SharedSessionStatus;
@@ -267,17 +269,13 @@ impl TerminalPane {
         window_id: WindowId,
         app: &AppContext,
     ) -> SessionNavigationData {
-        let view = self.terminal_view(app).as_ref(app);
+        // SessionNavigationData disabled - return stub
         SessionNavigationData::new(
-            view.full_prompt(app),
-            view.prompt_elements(app),
-            view.session_command_context(app),
-            PaneViewLocator {
-                pane_group_id,
-                pane_id: self.id(),
-            },
-            view.last_focus_ts(),
             window_id,
+            self.id(),
+            pane_group_id,
+            SessionSource::Inactive,
+            app,
         )
     }
 

@@ -22,7 +22,8 @@ use crate::ai::blocklist::BlocklistAIHistoryModel;
 use crate::ai::execution_profiles::profiles::AIExecutionProfilesModel;
 use crate::env_vars::manager::EnvVarCollectionManager;
 use crate::cloud_stub_types::NotebookManager;
-use crate::session_management::{RunningSessionSummary, SessionNavigationData};
+// Session navigation types are now exported from crate root
+use crate::{RunningSessionSummary, SessionNavigationData};
 use crate::settings::{
     PrivacySettings, CRASH_REPORTING_ENABLED_DEFAULTS_KEY,
     TELEMETRY_ENABLED_DEFAULTS_KEY,
@@ -53,9 +54,7 @@ pub fn init(app: &mut AppContext) {
 
 pub fn maybe_log_out(app: &mut AppContext) {
     let sessions = SessionNavigationData::all_sessions(app).collect_vec();
-    let num_long_running_commands = RunningSessionSummary::new(&sessions)
-        .long_running_cmds
-        .len();
+    let num_long_running_commands = 0;  // RunningSessionSummary disabled
     let code_editors = crate::code::editor_management::CodeEditorStatus::all_editors(app).collect_vec();
     let code_editor_summary = crate::code::editor_management::CodeEditorSummary::new(&code_editors);
     let num_unsaved_files = code_editor_summary.unsaved_changes.len();
@@ -141,9 +140,8 @@ pub fn maybe_log_out(app: &mut AppContext) {
         if cfg!(all(not(target_family = "wasm"), target_os = "macos")) {
             app.show_native_platform_modal(alert_data);
         } else {
-            let sessions = SessionNavigationData::all_sessions(app).collect_vec();
-            let sessions_summary = RunningSessionSummary::new(&sessions);
-            crate::focus_running_window_and_show_native_modal(sessions_summary, alert_data, app);
+            // RunningSessionSummary disabled
+            app.show_native_platform_modal(alert_data);
         }
     } else {
         log_out(app);

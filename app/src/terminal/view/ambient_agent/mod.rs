@@ -312,7 +312,8 @@ pub fn render_loading_footer(_appearance: &crate::appearance::Appearance) -> Box
 }
 
 /// Stub function for creating cloud mode view.
-/// Placeholder for not-yet-integrated cloud agent view creation.
+/// Cloud features are disabled in local version.
+/// This function should not be called in local builds.
 pub fn create_cloud_mode_view(
     _resources: crate::pane_group::TerminalViewResources,
     _view_bounds_size: pathfinder_geometry::vector::Vector2F,
@@ -323,6 +324,7 @@ pub fn create_cloud_mode_view(
     cuteui::ViewHandle<crate::terminal::view::TerminalView>,
     cuteui::ModelHandle<Box<dyn crate::terminal::terminal_manager::TerminalManager>>,
 ) {
-    // TODO: Implement actual cloud mode view creation
-    unimplemented!("create_cloud_mode_view is not yet implemented")
+    // Cloud features are disabled in local version.
+    // This stub should never be called in local builds.
+    panic!("create_cloud_mode_view called in local build - cloud features are disabled")
 }

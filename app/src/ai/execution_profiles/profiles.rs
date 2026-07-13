@@ -280,7 +280,6 @@ impl AIExecutionProfilesModel {
         let mut new_profile = self.default_profile(ctx).data().clone();
         new_profile.name = "".to_string();
         new_profile.is_default_profile = false;
-        new_profile.autosync_plans_to_warp_drive = true;
 
         // let update_manager = UpdateManager::handle(ctx);
         // let client_id = ClientId::default();
@@ -805,7 +804,7 @@ impl AIExecutionProfilesModel {
 
     }
 
-    pub fn set_autosync_plans_to_warp_drive(
+    pub fn set_autosync_plans_to_cute_drive(
         &mut self,
         profile_id: ClientProfileId,
         enabled: bool,
@@ -814,8 +813,8 @@ impl AIExecutionProfilesModel {
         self.edit_profile_internal(
             profile_id,
             |profile| {
-                if profile.autosync_plans_to_warp_drive != enabled {
-                    profile.autosync_plans_to_warp_drive = enabled;
+                if profile.autosync_plans_to_cute_drive != enabled {
+                    profile.autosync_plans_to_cute_drive = enabled;
                     return true;
                 }
                 false

@@ -8,7 +8,8 @@ use crate::search::command_palette::navigation::search_item::SearchItem;
 use crate::search::data_source::{DataSourceSearchError, Query, QueryResult};
 use crate::search::mixer::DataSourceRunErrorWrapper;
 use crate::search::SyncDataSource;
-use crate::session_management::{SessionNavigationData, SessionSource};
+// Session navigation types are now exported from crate root
+use crate::{SessionNavigationData, SessionSource};
 use crate::workspace::PaneViewLocator;
 
 /// Data source that produces possible running sessions a user could navigate to.

@@ -14,7 +14,7 @@ use cuteui::{AppContext, ModelContext, SingletonEntity};
 use super::artifact_upload::{
     CompletedFileArtifactUpload, FileArtifactUploadRequest, FileArtifactUploader,
 };
-use crate::ai::artifact_download::{download_artifact_bytes, download_destination};
+use crate::ai::artifacts::{download_artifact_bytes, download_destination};
 #[cfg(test)]
 use crate::server::server_api::ai::FileArtifactRecord;
 use crate::server::server_api::ai::{AIClient, ArtifactDownloadResponse};

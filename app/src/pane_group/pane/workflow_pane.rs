@@ -184,7 +184,7 @@ fn handle_workflow_event(
 ) {
     match event {
         WorkflowViewEvent::Pane(pane_event) => group.handle_pane_event(pane_id, pane_event, ctx),
-        WorkflowViewEvent::ViewInWarpDrive(id) => view_in_warp_drive(id.clone(), ctx),
+        WorkflowViewEvent::ViewInCuteDrive(id) => view_in_cute_drive(id.clone(), ctx),
         WorkflowViewEvent::RunWorkflow {
             workflow,
             source,
@@ -224,6 +224,6 @@ fn run_workflow(
     });
 }
 
-fn view_in_warp_drive(id: WarpDriveItemId, ctx: &mut ViewContext<PaneGroup>) {
-    ctx.emit(crate::pane_group::Event::ViewInWarpDrive(id))
+fn view_in_cute_drive(id: WarpDriveItemId, ctx: &mut ViewContext<PaneGroup>) {
+    ctx.emit(crate::pane_group::Event::ViewInCuteDrive(id))
 }

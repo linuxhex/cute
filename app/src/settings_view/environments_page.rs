@@ -216,14 +216,7 @@ pub struct EnvironmentsPageView {
     search_editor: ViewHandle<EditorView>,
     empty_state_github_repos_button_mouse_state: MouseStateHandle,
     empty_state_local_repos_button_mouse_state: MouseStateHandle,
-    // Track pending save to show success toast when complete
-    pending_save_env_id: Option<SyncId>,
-    // Track pending create to show success toast when complete
-    pending_create_client_id: Option<ClientId>,
-    // Track pending delete to show success toast when complete
-    pending_delete_env_id: Option<SyncId>,
-    // Track pending share (personal -> team) to show error toast on failure
-    pending_share_server_id: Option<ServerId>,
+
     // Delete confirmation dialog
     delete_confirmation_dialog: ViewHandle<DeleteEnvironmentConfirmationDialog>,
     // Agent-assisted environment creation modal
@@ -514,10 +507,6 @@ impl EnvironmentsPageView {
             search_editor,
             empty_state_github_repos_button_mouse_state: MouseStateHandle::default(),
             empty_state_local_repos_button_mouse_state: MouseStateHandle::default(),
-            pending_save_env_id: None,
-            pending_create_client_id: None,
-            pending_delete_env_id: None,
-            pending_share_server_id: None,
             delete_confirmation_dialog,
             agent_assisted_environment_modal,
             new_env_button,
@@ -591,12 +580,6 @@ impl EnvironmentsPageView {
         });
     }
 
-    fn show_success_toast(&self, message: String, ctx: &mut ViewContext<Self>) {
-        let window_id = ctx.window_id();
-        ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
-            toast_stack.add_ephemeral_toast(DismissibleToast::success(message), window_id, ctx);
-        });
-    }
 
     fn delete_environment(&mut self, _env_id: SyncId, ctx: &mut ViewContext<Self>) {
         // Navigate back to list
@@ -1886,12 +1869,6 @@ impl BackingView for EnvironmentsPageView {
         // Use a lower minimum width when used as a pane to allow narrow layouts.
         // This affects when the SettingsPage switches into horizontal-scroll mode.
         self.page.set_min_page_width(260.);
-    }
-}
-
-impl From<ViewHandle<EnvironmentsPageView>> for SettingsPageViewHandle {
-    fn from(view_handle: ViewHandle<EnvironmentsPageView>) -> Self {
-        SettingsPageViewHandle::CloudEnvironments(view_handle)
     }
 }
 

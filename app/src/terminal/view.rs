@@ -332,7 +332,7 @@ use crate::context_chips::prompt::Prompt;
 use crate::context_chips::prompt::PromptSelection;
 use crate::context_chips::prompt_type::PromptType;
 use crate::context_chips::ContextChipKind;
-use crate::cloud_stub_types::settings::WarpDriveSettings;
+use crate::cloud_stub_types::settings::CuteDriveSettings;
 use crate::cloud_stub_types::sharing::ShareableObject;
 use crate::cloud_stub_types::CloudObjectTypeAndId;
 use crate::editor::{AutosuggestionType, CrdtOperation, EditorAction};
@@ -365,7 +365,8 @@ use crate::server::telemetry::{
     TelemetryEvent, ToggleBlockFilterSource, WorkflowTelemetryMetadata,
 };
 use crate::cloud_stub_types::sharing::dialog::SharingDialogSource;
-use crate::session_management::{CommandContext, SessionNavigationPromptElements};
+// Session navigation types are now exported from crate root
+use crate::{CommandContext, SessionNavigationPromptElements};
 use crate::settings::ai::FocusedTerminalInfo;
 #[cfg(feature = "local_fs")]
 use crate::settings::import::model::ImportedConfigModel;
@@ -15398,7 +15399,7 @@ impl TerminalView {
                         .into_item(),
                 ];
 
-                if WarpDriveSettings::is_warp_drive_enabled(ctx) {
+                if CuteDriveSettings::is_cute_drive_enabled(ctx) {
                     items.push(MenuItem::Separator);
                     items.push(
                         MenuItemFields::new("Save as workflow")
@@ -16098,7 +16099,7 @@ impl TerminalView {
         }
 
         // Section 3: Teams related
-        if !all_current_input_text.is_empty() && WarpDriveSettings::is_warp_drive_enabled(ctx) {
+        if !all_current_input_text.is_empty() && CuteDriveSettings::is_cute_drive_enabled(ctx) {
             items.extend([
                 MenuItem::Separator,
                 MenuItemFields::new("Save as workflow")
@@ -17580,7 +17581,7 @@ impl TerminalView {
                 let mins_since_completion = last_block.completed_ts().map(|completed_ts| {
                     let now = chrono::Local::now();
                     let diff = now.signed_duration_since(*completed_ts);
-                    diff.num_minutes()
+                    diff.num_minutes() as u64
                 });
                 CommandContext::LastRunCommand {
                     last_run_command,
@@ -19431,30 +19432,6 @@ impl TerminalView {
                 _ => {}
             }
         }
-    }
-
-    fn restore_followup_prompt_after_failed_submission(
-        &mut self,
-        prompt: &str,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        self.pending_cloud_followup_task_id = None;
-        self.input.update(ctx, |input, ctx| {
-            input.reset_after_cloud_followup_submission(ctx);
-            input.replace_buffer_content(prompt, ctx);
-            input.set_input_mode_agent(true, ctx);
-        });
-        self.update_pane_configuration(ctx);
-        self.focus_input_box(ctx);
-        ctx.notify();
-    }
-
-    fn try_submit_pending_cloud_followup(
-        &mut self,
-        _prompt: String,
-        _ctx: &mut ViewContext<Self>,
-    ) -> bool {
-        false
     }
 
     fn handle_input_event(&mut self, event: &InputEvent, ctx: &mut ViewContext<Self>) {

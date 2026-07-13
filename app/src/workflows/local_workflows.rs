@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use cute_util::path::ShellFamily;
-use warp_workflows::workflows as global_workflows;
+use cute_workflows::workflows as global_workflows;
 #[cfg(not(target_family = "wasm"))]
 use cuteui::platform::OperatingSystem;
 use cuteui::{AppContext, Entity, ModelContext, SingletonEntity};

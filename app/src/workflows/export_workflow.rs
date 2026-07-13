@@ -330,7 +330,7 @@ where
                 (SourceUrl, "source_url", source_url, Option<String>, true),
                 (Author, "author", author, Option<String>, true),
                 (AuthorUrl, "author_url", author_url, Option<String>, true),
-                (Shells, "shells", shells, Vec<warp_workflows::Shell>, true),
+                (Shells, "shells", shells, Vec<cute_workflows::Shell>, true),
                 (EnvironmentVariables, "environment_variables", environment_variables, Option<SyncId>, true),
             );
 

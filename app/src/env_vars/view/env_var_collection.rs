@@ -22,7 +22,7 @@ use crate::ai::blocklist::block::secret_redaction::find_secrets_in_text_with_lev
 use crate::cloud_stub_types::breadcrumbs::ContainingObject;
 use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
 use crate::cloud_stub_types::{CloudObjectEventEntrypoint, Owner};
-use crate::WarpDriveItemId;
+use crate::CuteDriveItemId;
 use crate::cloud_stub_types::sharing::{ContentEditability, ShareableObject};
 use crate::editor::EditorView;
 use crate::env_vars::active_env_var_collection_data::{
@@ -41,7 +41,7 @@ use crate::pane_group::pane::view;
 use crate::pane_group::{BackingView, PaneConfiguration, PaneEvent};
 use crate::search::external_secrets::view::ExternalSecretsMenu;
 // DELETED: 云端功能 UpdateManager 相关导入已移除
-// use crate::server::cloud_objects::update_manager::{FetchSingleObjectOption, UpdateManager};
+// 云端同步功能已禁用，仅保留本地管理
 use crate::server::ids::{ServerId, SyncId};
 use crate::terminal::model::secrets::SecretLevel;
 use crate::terminal::safe_mode_settings::get_secret_obfuscation_mode;
@@ -304,7 +304,7 @@ pub struct EnvVarCollectionView {
 pub enum EnvVarCollectionEvent {
     Pane(PaneEvent),
     UpdatedEnvVarCollection(SyncId),
-    ViewInWarpDrive(WarpDriveItemId),
+    ViewInCuteDrive(CuteDriveItemId),
     Invoke(EnvVarCollectionType),
 }
 #[derive(Debug, Clone)]
@@ -340,7 +340,7 @@ pub enum EnvVarCollectionAction {
     ForceClose,
     CloseUnsavedChangesDialog,
     // Breadcrumbs action
-    ViewInWarpDrive(WarpDriveItemId),
+    ViewInCuteDrive(CuteDriveItemId),
 }
 
 /// Defines the view for a collection of environment variables
@@ -593,14 +593,7 @@ impl EnvVarCollectionView {
         window_id: WindowId,
         ctx: &mut ViewContext<Self>,
     ) {
-        // let initial_load_complete = UpdateManager::handle(ctx).update(ctx, |update_manager, _| {
-        //     update_manager.initial_load_complete()
-        // });
-        //
-        // // Since initial_load_complete() returns a bool, not a future,
-        // // we directly check the result instead of spawning a future
-        // if initial_load_complete {
-        // Simplified: directly try to load env var collection without waiting for cloud
+        // 本地版本：直接尝试从本地加载
         let env_var_collection = CloudModel::as_ref(ctx)
             .get_env_var_collection(&env_var_collection_id)
             .cloned();
@@ -616,7 +609,7 @@ impl EnvVarCollectionView {
                     ctx,
                 );
             });
-            log::warn!("Tried to open unknown env var collection {env_var_collection_id:?}");
+            log::warn!("尝试加载未知的环境变量集合 {:?}", env_var_collection_id);
         }
     }
 
@@ -626,33 +619,11 @@ impl EnvVarCollectionView {
         window_id: WindowId,
         ctx: &mut ViewContext<Self>,
     ) {
-        // let fetch_cloud_object_rx =
-        //     UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-        //         update_manager.fetch_single_cloud_object(
-        //             &env_var_collection_id,
-        //             FetchSingleObjectOption::None,
-        //             ctx,
-        //         )
-        //     });
-        // ctx.spawn(fetch_cloud_object_rx, move |me, _, ctx| {
-        //     if let Some(env_var_collection) = CloudModel::as_ref(ctx)
-        //         .get_env_var_collection(&SyncId::ServerId(env_var_collection_id))
-        //         .cloned()
-        //     {
-        //         me.load(env_var_collection, ctx);
-        //     } else {
-        //         ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
-        //             toast_stack.add_ephemeral_toast_by_type(ToastType::CloudObjectNotFound, window_id, ctx);
-        //         });
-        //         log::warn!("Tried to open unknown env var collection {env_var_collection_id:?} after fetching");
-        //     }
-        // });
-
-        // 本地版本：直接显示错误
+        // 本地版本：无法从云端加载
         ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
             toast_stack.add_ephemeral_toast_by_type(ToastType::CloudObjectNotFound, window_id, ctx);
         });
-        log::warn!("Tried to open unknown env var collection {env_var_collection_id:?} - cloud fetch disabled");
+        log::warn!("无法加载环境变量集合 {:?} - 云端同步功能已禁用", env_var_collection_id);
     }
 
     pub fn load(&mut self, env_var_collection: CloudEnvVarCollection, ctx: &mut ViewContext<Self>) {
@@ -821,9 +792,6 @@ impl EnvVarCollectionView {
             })
             .collect();
 
-        // Validation errors should prevent saving - this is now handled by should_disable_save()
-        // The UI will show inline validation errors instead of toast messages
-
         let new_env_var_collection = EnvVarCollection::new(title, description, vars);
 
         let active_env_var_collection = self
@@ -832,51 +800,14 @@ impl EnvVarCollectionView {
             .active_env_var_collection();
 
         match active_env_var_collection {
-            // If the EVC has already been committed, then update the local
-            // memory and server data via update manager
-            ActiveEnvVarCollection::CommittedEnvVarCollection(id) => {
-                // UpdateManager::handle(ctx)
-                //     .update(ctx, |update_manager, ctx| {
-                //         let revision = self.active_env_var_collection_data
-                //             .update(ctx, |data, _| data.revision_ts.clone())
-                //             .map(|r| r.timestamp_micros().to_string())
-                //             .unwrap_or_default();
-                //         update_manager.update_env_var_collection(
-                //             new_env_var_collection,
-                //             id,
-                //             revision,
-                //             ctx,
-                //         );
-                //     });
-                log::warn!("云端更新功能已禁用 - 无法保存已提交的环境变量集合");
+            ActiveEnvVarCollection::CommittedEnvVarCollection(_id) => {
+                log::warn!("本地保存已禁用 - 无法更新环境变量集合");
             }
-            // If the EVC hasn't been committed yet, create the EVC through update
-            // manager, and update the active EVC
-            ActiveEnvVarCollection::NewEnvVarCollection(env_var_collection) => {
-                // if let Some(client_id) = env_var_collection.id.into_client() {
-                //     UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-                //         update_manager.create_env_var_collection(
-                //             client_id,
-                //             env_var_collection.permissions.owner,
-                //             env_var_collection.metadata.folder_id,
-                //             CloudEnvVarCollectionModel::new(new_env_var_collection),
-                //             CloudObjectEventEntrypoint::Unknown,
-                //             true,
-                //             ctx,
-                //         );
-                //     });
-                //
-                //     self.active_env_var_collection_data.update(ctx, |data, _| {
-                //         data.active_env_var_collection =
-                //             ActiveEnvVarCollection::CommittedEnvVarCollection(SyncId::ClientId(
-                //                 client_id,
-                //             ))
-                //     });
-                // }
-                log::warn!("云端创建功能已禁用 - 无法保存新环境变量集合");
+            ActiveEnvVarCollection::NewEnvVarCollection(_env_var_collection) => {
+                log::warn!("本地保存已禁用 - 无法创建新环境变量集合");
             }
             ActiveEnvVarCollection::None => {
-                log::error!("Tried to save EVC, but none were active")
+                log::error!("尝试保存环境变量集合，但没有活跃的集合")
             }
         }
     }
@@ -1109,8 +1040,8 @@ impl EnvVarCollectionView {
             });
     }
 
-    fn view_in_warp_drive(&mut self, id: WarpDriveItemId, ctx: &mut ViewContext<Self>) {
-        ctx.emit(EnvVarCollectionEvent::ViewInWarpDrive(id));
+    fn view_in_cute_drive(&mut self, id: CuteDriveItemId, ctx: &mut ViewContext<Self>) {
+        ctx.emit(EnvVarCollectionEvent::ViewInCuteDrive(id));
     }
 
     // This is a public re-export of close since it's a trait method
@@ -1321,7 +1252,7 @@ impl View for EnvVarCollectionView {
                             self.breadcrumbs.clone(),
                             appearance,
                             |ctx, _, breadcrumb| {
-                                ctx.dispatch_typed_action(EnvVarCollectionAction::ViewInWarpDrive(
+                                ctx.dispatch_typed_action(EnvVarCollectionAction::ViewInCuteDrive(
                                     breadcrumb.kind.clone().into_item_id(),
                                 ));
                             },
@@ -1547,7 +1478,7 @@ impl TypedActionView for EnvVarCollectionView {
                 self.update_open_modal_state(ctx);
                 ctx.notify();
             }
-            EnvVarCollectionAction::ViewInWarpDrive(id) => self.view_in_warp_drive(id.clone(), ctx),
+            EnvVarCollectionAction::ViewInCuteDrive(id) => self.view_in_cute_drive(id.clone(), ctx),
         }
     }
 }

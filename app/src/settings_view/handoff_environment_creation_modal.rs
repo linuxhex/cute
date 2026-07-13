@@ -10,11 +10,9 @@ use cuteui::{
 };
 
 use crate::ai::ambient_agent_types::github_auth_url::{AuthSource, GithubAuthRedirectTarget};
-use crate::ai::cloud_environments::{self, CloudAmbientAgentEnvironmentModel};
 use crate::appearance::Appearance;
 use crate::modal::MODAL_BACKDROP_OPACITY;
 
-// use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::ids::{ClientId, SyncId};
 use crate::settings_view::update_environment_form::{
     EnvironmentFormInitArgs, UpdateEnvironmentForm, UpdateEnvironmentFormEvent,
@@ -35,7 +33,6 @@ enum HandoffEnvironmentCreationModalContext {
 pub(crate) enum HandoffEnvironmentCreationModalEvent {
     Created { env_id: SyncId },
     Cancelled,
-    CreationFailed { error_message: String },
 }
 
 #[derive(Debug, Clone)]
@@ -104,47 +101,9 @@ impl HandoffEnvironmentCreationModal {
     ) {
         match event {
             UpdateEnvironmentFormEvent::Created {
-                environment,
-                share_with_team,
+                environment: _,
+                share_with_team: _,
             } => {
-                let owner = if *share_with_team {
-                    cloud_environments::owner_for_new_environment(ctx)
-                } else {
-                    cloud_environments::owner_for_new_personal_environment(ctx)
-                };
-
-                let Some(owner) = owner else {
-                    log::error!("Unable to create environment: not logged in");
-                    ctx.emit(HandoffEnvironmentCreationModalEvent::CreationFailed {
-                        error_message: "Not logged in".to_string(),
-                    });
-                    return;
-                };
-
-                // let client_id = ClientId::default();
-                // let create_future =
-                //     UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
-                //         update_manager.create_ambient_agent_environment_online(
-                //             CloudAmbientAgentEnvironmentModel::new(environment.clone()),
-                //             client_id,
-                //             owner,
-                //             ctx,
-                //         )
-                //     });
-
-                // ctx.spawn(create_future, |_me, result, ctx| match result {
-                //     Ok(server_id) => {
-                //         let env_id = SyncId::ServerId(server_id);
-                //         ctx.emit(HandoffEnvironmentCreationModalEvent::Created { env_id });
-                //     }
-                //     Err(err) => {
-                //         log::error!("Failed to create environment for handoff: {err:#}");
-                //         ctx.emit(HandoffEnvironmentCreationModalEvent::CreationFailed {
-                //             error_message: err.to_string(),
-                //         });
-                //     }
-                // });
-
                 // 本地模式：直接发出创建成功事件
                 let client_id = ClientId::default();
                 let env_id = SyncId::ClientId(client_id);

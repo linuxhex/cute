@@ -55,10 +55,8 @@ pub struct DataSourceArgs {
 struct ActiveCommandsContext {
     session_context: Availability,
     is_orchestration_enabled: bool,
-    is_cloud_handoff_enabled: bool,
     #[cfg(not(target_family = "wasm"))]
     active_conversation_is_cloud_oz: bool,
-    has_default_host: bool,
     is_cli_agent_input: bool,
 }
 
@@ -294,31 +292,19 @@ impl SlashCommandDataSource {
         }
 
         if self.is_cloud_mode_v2 && false {
-            session_context |= Availability::CLOUD_AGENT_V2;
+            // Availability::CLOUD_AGENT_V2 disabled
         }
 
         if !self.is_cloud_mode(ctx) {
-            session_context |= Availability::NOT_CLOUD_AGENT;
+            // Availability::NOT_CLOUD_AGENT disabled
         }
-
-        // Hide /host when no default host is configured (env var or workspace setting).
-        let has_default_host = std::env::var("WARP_CLOUD_MODE_DEFAULT_HOST")
-            .ok()
-            .filter(|s| !s.is_empty())
-            .is_some()
-            // Cloud feature: default host slug is a cloud-only feature
-            // In local version, this always returns None
-            || UserWorkspaces::as_ref(ctx).default_host_slug().is_some();
 
         let ai_settings = AISettings::as_ref(ctx);
         ActiveCommandsContext {
             session_context,
             is_orchestration_enabled: ai_settings.is_orchestration_enabled(ctx),
-            is_cloud_handoff_enabled: ai_settings
-                .is_cloud_handoff_enabled_for_terminal_view(self.terminal_view_id, ctx),
             #[cfg(not(target_family = "wasm"))]
             active_conversation_is_cloud_oz: self.active_conversation_is_cloud_oz(ctx),
-            has_default_host,
             is_cli_agent_input,
         }
     }
@@ -334,9 +320,6 @@ impl SlashCommandDataSource {
         if command.name == commands::ORCHESTRATE_NAME && !context.is_orchestration_enabled {
             return false;
         }
-        if command.name == commands::MOVE_TO_CLOUD.name && !context.is_cloud_handoff_enabled {
-            return false;
-        }
         // /continue-locally only applies to cloud Oz conversations. Local conversations
         // and non-Oz cloud runs (Claude, Gemini) are filtered out so the slash menu
         // doesn't surface a no-op command.
@@ -344,10 +327,6 @@ impl SlashCommandDataSource {
         if command.name == commands::CONTINUE_LOCALLY.name
             && !context.active_conversation_is_cloud_oz
         {
-            return false;
-        }
-        // /host is only useful when a default self-hosted host is configured.
-        if command.name == commands::HOST.name && !context.has_default_host {
             return false;
         }
         // When CLI agent input is open, restrict to the explicit allowlist.

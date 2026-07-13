@@ -60,12 +60,9 @@ mod prompt;
 mod quit_warning;
 mod remote_server;
 mod resource_limits;
-// #[allow(dead_code)]
-// mod reward_view; // Removed: referral feature
 mod safe_triangle;
 mod search_bar;
 mod server;
-mod session_management;
 mod shell_indicator;
 mod suggestions;
 mod system;
@@ -85,7 +82,6 @@ mod cute_managed_paths_watcher;
 #[cfg(target_family = "wasm")]
 mod wasm_nux_dialog;
 mod window_settings;
-mod word_block_editor;
 
 // PLEASE DO NOT ADD MORE PUBLIC MODULES!
 //
@@ -93,12 +89,6 @@ mod word_block_editor;
 // checking support, as the compiler cannot make any assumptions about whether
 // or not the function/type is used by another crate that pulls in this one as
 // a dependency.
-//
-// If you feel the need to export a module so that a type or function within it
-// can be used by an integration test, you should define a new assertion function
-// in the warp::integration_testing::assertions module (or a sub-module).  These
-// functions will allow us to keep types internal to this crate and expose a
-// simpler API for integration tests to consume.
 pub mod ai_assistant;
 pub mod appearance;
 pub mod channel;
@@ -179,8 +169,6 @@ use appearance::{Appearance, AppearanceManager};
 use channel::ChannelState;
 use interval_timer::IntervalTimer;
 use itertools::Itertools;
-#[cfg(feature = "integration_tests")]
-pub use persistence::testing as sqlite_testing;
 #[cfg(feature = "plugin_host")]
 pub use plugin::{run_plugin_host, PLUGIN_HOST_FLAG};
 use server::server_api::ServerApiProvider;
@@ -237,7 +225,6 @@ use crate::env_vars::manager::EnvVarCollectionManager;
 pub use crate::global_resource_handles::{GlobalResourceHandles, GlobalResourceHandlesProvider};
 pub use crate::cloud_stub_types::CloudObjectTypeAndId;
 pub use crate::cloud_stub_types::CuteDriveItem;
-pub use crate::cloud_stub_types::CuteDriveItemId;
 pub use crate::cloud_stub_types::models::CloudFolder;
 pub use crate::cloud_stub_types::models::CloudFolderModel;
 pub use crate::cloud_stub_types::ContentEditability;
@@ -247,19 +234,25 @@ pub use crate::cloud_stub_types::UserWorkspacesEvent;
 pub use crate::cloud_stub_types::SharedSessionStatus;
 pub use crate::cloud_stub_types::IsSharedSessionCreator;
 pub use crate::cloud_stub_types::SharedSessionSource;
-pub use session_sharing_protocol::sharer::SessionSourceType;
+// Cute: session-sharing-protocol已删除，SessionSourceType类型已在cloud_stub_types中定义
+pub use crate::cloud_stub_types::SessionSourceType;
 pub use crate::cloud_stub_types::UserProfiles;
 pub use crate::cloud_stub_types::UserProfile;
 pub use crate::cloud_stub_types::ObjectIdType;
 pub use crate::cloud_stub_types::WorkspaceUid;
 pub use crate::settings::AdminEnablementSetting;
-pub use crate::cloud_stub_types::WarpDriveItemId;
 pub use crate::cloud_stub_types::WorkspaceMetadata;
 pub use crate::cloud_stub_types::TeamMember;
 pub use crate::cloud_stub_types::OpenCuteDriveObjectSettings;
 pub use crate::cloud_stub_types::GenericStringObjectId;
 pub use crate::cloud_stub_types::GENERIC_STRING_OBJECT_PREFIX;
 pub use crate::cloud_stub_types::NotebookId;
+
+// Session navigation types (moved from session_management module)
+pub use crate::cloud_stub_types::{
+    SessionNavigationData, TabNavigationData, RunningSessionSummary, SessionSource, CommandContext,
+    CuteDriveItemId, WarpDriveItemId, SessionNavigationPromptElements, PromptGrid, PromptChipSnapshot,
+};
 pub use crate::cloud_stub_types::models::CloudWorkflow;
 pub use crate::cloud_stub_types::models::CloudNotebook;
 pub use cute_server_client::cloud_object::Owner;
@@ -284,12 +277,8 @@ use crate::projects::ProjectManagementModel;
 use crate::root_view::{
     quake_mode_window_id, quake_mode_window_is_open, OpenFromRestoredArg, OpenPath,
 };
-// use crate::server::cloud_objects::listener::Listener; // Removed: cloud_objects module deleted
-// use crate::server::cloud_objects::update_manager::UpdateManager; // Removed: cloud_objects module deleted
+
 use crate::server::sync_queue::SyncQueue;
-// #[cfg(not(target_family = "wasm"))]
-// use crate::server::iap::IapManager;
-use crate::session_management::{RunningSessionSummary, SessionNavigationData};
 use crate::settings::cloud_preferences_syncer::initialize_cloud_preferences_syncer;
 use crate::settings::manager::SettingsManager;
 use crate::settings::{AISettings, AccessibilitySettings, ScrollSettings, SelectionSettings};
@@ -524,29 +513,7 @@ pub fn run() -> Result<()> {
     // Parse command-line arguments.
     let args = cute_cli::Args::from_env();
 
-    // Server URL overrides are only honored on internal dev channels. Release channels silently
-    // ignore `--server-root-url` / `--ws-server-url` / `--session-sharing-server-url` (and their
-    // `WARP_*` env-var equivalents) so shipped builds can't be redirected away from their
-    // baked-in server URLs. See `Channel::allows_server_url_overrides`.
-    if ChannelState::channel().allows_server_url_overrides() {
-        if let Some(url) = args.server_root_url() {
-            if let Err(e) = ChannelState::override_server_root_url(url.to_owned()) {
-                log::error!("Invalid server root URL: {e:#}");
-            }
-        }
-
-        if let Some(url) = args.ws_server_url() {
-            if let Err(e) = ChannelState::override_ws_server_url(url.to_owned()) {
-                log::error!("Invalid websocket server URL: {e:#}");
-            }
-        }
-
-        if let Some(url) = args.session_sharing_server_url() {
-            if let Err(e) = ChannelState::override_session_sharing_server_url(url.to_owned()) {
-                log::error!("Invalid session sharing server URL: {e:#}");
-            }
-        }
-    }
+    // OSS version does not support server URL overrides.
 
     if let Some(command) = args.command() {
         #[cfg(windows)]
@@ -653,16 +620,6 @@ pub fn run() -> Result<()> {
     })
 }
 
-/// Runs an integration test using the provided test driver.
-pub fn run_integration_test(driver: TestDriver) -> Result<()> {
-    let is_integration_test = std::env::var("WARP_INTEGRATION").is_ok();
-    let launch = LaunchMode::Test {
-        driver: Box::new(Some(driver)),
-        is_integration_test,
-    };
-    run_internal(launch)
-}
-
 /// Runs the app (or CLI / daemon).
 fn run_internal(mut launch_mode: LaunchMode) -> Result<()> {
     let mut timer = IntervalTimer::new();
@@ -683,14 +640,6 @@ fn run_internal(mut launch_mode: LaunchMode) -> Result<()> {
     features::init_feature_flags();
 
     // Sentry initialization disabled - telemetry simplified
-    // #[cfg(feature = "crash_reporting")]
-    // if launch_mode.needs_crash_reporting() {
-    //     // Ensure that the main/root Sentry hub is initialized on the main
-    //     // thread.  PtySpawner creates a background thread to receive logs from
-    //     // the terminal server process, and we don't want it to be the host of
-    //     // the primary sentry::Hub.
-    //     sentry::Hub::main();
-    // }
 
     if launch_mode.needs_profiling() {
         tracing::init()?;
@@ -1015,35 +964,16 @@ pub(crate) fn initialize_app(
         LaunchMode::App { api_key, .. } if ChannelState::channel().is_dogfood() => api_key.clone(),
         _ => None,
     };
-    let api_key = if FeatureFlag::APIKeyAuthentication.is_enabled() {
-        api_key
-    } else {
-        None
-    };
 
     let auth_state = Arc::new(AuthState::initialize(ctx, api_key));
     timer.mark_interval_end("AUTH_MANAGER_SET_USER");
 
     let agent_source = determine_agent_source(launch_mode);
 
-
-    // // Create a shared IAP state for staging builds. The same `Arc<IapState>`
-    // // is handed to both `ServerApi` (for sync reads on the request path) and
-    // // `IapManager` (which owns refresh logic on the main thread).
-    // #[cfg(not(target_family = "wasm"))]
-    // let iap_state =
-    //     ChannelState::iap_config().map(|cfg| Arc::new(crate::server::iap::IapState::new(&cfg)));
-    // #[cfg(target_family = "wasm")]
-    // let iap_state: Option<Arc<crate::server::iap::IapState>> = None;
-
     let server_api_provider = ctx.add_singleton_model({
         let auth_state = auth_state.clone();
-        // let iap_state = iap_state.clone();
         move |ctx| ServerApiProvider::new(auth_state, agent_source, None, ctx)
     });
-
-    // #[cfg(not(target_family = "wasm"))]
-    // ctx.add_singleton_model(move |ctx| IapManager::new(iap_state, ctx));
     let server_api = server_api_provider.as_ref(ctx).get();
     let ai_client = server_api_provider.as_ref(ctx).get_ai_client();
 
@@ -1183,16 +1113,6 @@ pub(crate) fn initialize_app(
     // Register UserWorkspaces stub for local version
     ctx.add_singleton_model(|_ctx| UserWorkspaces::default());
 
-    // ctx.add_singleton_model(|ctx| {
-    //     UserWorkspaces::new(
-    //         server_api_provider.as_ref(ctx).get_team_client(),
-    //         server_api_provider.as_ref(ctx).get_workspace_client(),
-    //         cached_workspaces,
-    //         current_workspace_uid,
-    //         ctx,
-    //     )
-    // });
-
     // Initialize ApiKeyManager after UserWorkspaces so it can subscribe to workspace/settings changes
     ctx.add_singleton_model(|ctx| {
         #[cfg_attr(target_family = "wasm", allow(unused_mut))]
@@ -1213,10 +1133,6 @@ pub(crate) fn initialize_app(
     }
     // Send buffered pre-init errors to Sentry now that the client is ready.
     // Sentry error reporting disabled - telemetry simplified
-    // #[cfg(feature = "crash_reporting")]
-    // for err in _pre_sentry_errors {
-    //     sentry::integrations::anyhow::capture_anyhow(&err);
-    // }
     timer.mark_interval_end("INIT_CRASH_REPORTING");
 
     ctx.set_fallback_font_source_provider(|url| ::asset_cache::url_source(url));
@@ -1426,9 +1342,6 @@ pub(crate) fn initialize_app(
     tab_configs::params_modal::init(ctx);
     ai::blocklist::init(ctx);
     ai::blocklist::block::status_bar::init(ctx);
-    // Cute OMJF-11111: 移除 Warp Drive UI 初始化
-    // drive::index::init(ctx);
-    // drive::sharing::dialog::init(ctx);
     ai_assistant::panel::init(ctx);
     settings_view::update_environment_form::init(ctx);
     env_vars::env_var_collection_block::init(ctx);
@@ -1448,12 +1361,9 @@ pub(crate) fn initialize_app(
     let display_count = ctx.windows().display_count();
     ctx.add_singleton_model(|_| DisplayCount(display_count));
 
-    // ctx.add_singleton_model(|_| ChangelogModel::new(server_api.clone()));
     ctx.add_singleton_model(|_| GitHubAuthNotifier::new());
     ctx.add_singleton_model(|_| NetworkStatus::new());
     ctx.add_singleton_model(|_| SystemStats::new());
-    // Cute OMJF-11111: 移除 cloud handoff
-    // workspace::auto_handoff::init(ctx);
     ctx.add_singleton_model(|_| KeybindingChangedNotifier::new());
     ctx.add_singleton_model(|_| search::command_palette::SelectedItems::new());
     ctx.add_singleton_model(search::files::model::FileSearchModel::new);
@@ -1541,32 +1451,9 @@ pub(crate) fn initialize_app(
         )
     });
 
-    // ctx.add_singleton_model(|_| UserProfiles::new(restored_user_profiles));
-
-    // 删除：云端功能已禁用 - ObjectActions::new(object_actions)
     ctx.add_singleton_model(|_| ObjectActions::new(Default::default()));
 
     ctx.add_singleton_model(|_| AudibleBell::new());
-
-    // This model has to be registered after the user workspaces model because it relies on it,
-    // // and before the UpdateManager models because they rely on the TeamTester model.
-    // ctx.add_singleton_model(TeamTesterStatus::new);
-    //
-    // ctx.add_singleton_model(|ctx| {
-    //     TeamUpdateManager::new(
-    //         server_api_provider.as_ref(ctx).get_team_client(),
-    //         persistence_writer.sender(),
-    //         ctx,
-    //     )
-    // });
-    //
-    // ctx.add_singleton_model(|ctx| {
-    //     UpdateManager::new(
-    //         persistence_writer.sender(),
-    //         server_api_provider.as_ref(ctx).get_cloud_objects_client(),
-    //         ctx,
-    //     )
-    // });
 
     let toml_file_path = settings::user_preferences_toml_file_path();
     // Cute OMJF-11111: 注册 stub syncer（不向云端同步，仅满足订阅方 InitialLoadCompleted）
@@ -1649,10 +1536,6 @@ pub(crate) fn initialize_app(
     ctx.add_singleton_model(EnvVarCollectionManager::new);
     ctx.add_singleton_model(WorkflowManager::new);
 
-    // if FeatureFlag::ScheduledAmbientAgents.is_enabled() {
-    //     ctx.add_singleton_model(ScheduledAgentManager::new);
-    // }
-
     ctx.add_singleton_model(LocalWorkflows::new);
 
     ctx.add_singleton_model(LLMPreferences::new);
@@ -1671,17 +1554,6 @@ pub(crate) fn initialize_app(
                 model.revalidate_tips(ctx);
             });
         });
-        // Also revalidate when workspace/team data changes (e.g. voice toggled at
-        // the org level). Billing metadata — including `warp_ai_policy.is_voice_enabled`
-        // — lives inside the team data, so `TeamsChanged` covers all policy updates.
-        let tip_model_handle_for_teams = tip_model_handle.clone();
-        // ctx.subscribe_to_model(&UserWorkspaces::handle(ctx), move |_, event, ctx| {
-        //     if matches!(event, UserWorkspacesEvent::TeamsChanged) {
-        //         tip_model_handle_for_teams.update(ctx, |model, ctx| {
-        //             model.revalidate_tips(ctx);
-        //         });
-        //     }
-        // });
         // Revalidate when any keybinding changes so tips with `<keybinding>`
         // placeholders are hidden/shown when the referenced binding is cleared
         // or reassigned.
@@ -1754,12 +1626,6 @@ pub(crate) fn initialize_app(
     ctx.add_singleton_model(input_classifier::InputClassifierModel::new);
 
     ctx.add_singleton_model(move |_| IgnoredSuggestionsModel::new(persisted_ignored_suggestions));
-
-    // Subscribe WorkflowAliases to the UpdateManager so that it can be notified when objects are
-    // trashed.
-    WorkflowAliases::handle(ctx).update(ctx, |aliases, ctx| {
-        aliases.connect(ctx);
-    });
 
     // When running natively, add the http server singleton to the application.
     #[cfg(not(target_family = "wasm"))]
@@ -2054,113 +1920,18 @@ pub(crate) fn app_callbacks(is_integration_test: bool) -> cuteui::platform::AppC
     }
 }
 
-/// Focuses the active window or if there isn't one then a window with a running process
-/// and then shows the native modal.
-fn focus_running_window_and_show_native_modal(
-    sessions_summary: RunningSessionSummary,
-    dialog_with_callbacks: AlertDialogWithCallbacks<AppModalCallback>,
-    ctx: &mut AppContext,
-) {
-    let windowing_model = ctx.windows();
-    let active_window_id = windowing_model.active_window();
-    // Show the nav palette in the active window. If there is no active window,
-    // arbitrarily pick one of the windows having a running process.
-    let window_id_to_focus = active_window_id.unwrap_or_else(|| {
-        *sessions_summary
-            .windows_running()
-            .iter()
-            .next()
-            .expect("already checked len > 0")
-    });
-    ctx.windows().show_window_and_focus_app(window_id_to_focus);
-    if let Some(workspaces) = ctx.views_of_type::<Workspace>(window_id_to_focus) {
-        if let Some(handle) = workspaces.first() {
-            handle.update(ctx, |view, ctx| {
-                view.show_native_modal(dialog_with_callbacks, ctx);
-            });
-        }
-    }
-}
 
-fn on_close_app_cancelled(open_navigation_palette: bool, ctx: &mut AppContext) {
 
-    let sessions = SessionNavigationData::all_sessions(ctx).collect_vec();
-    let sessions_summary = RunningSessionSummary::new(&sessions);
-
-    // If open_navigation_palette is false, return early. Otherwise, we honor the open_navigation_palette
-    // param which is true if the user clicked the modal button for that. However, if the running
-    // processes in this window have finished since the modal popped, there is nothing to do now and we
-    // can return early
-    if !open_navigation_palette || sessions_summary.long_running_cmds.is_empty() {
-        return;
-    }
-
-    let windowing_model = ctx.windows();
-    let active_window_id = windowing_model.active_window();
-    // show the nav palette in the active window. if there is no active window,
-    // arbitrarily pick one of the windows having a running process
-    let window_id_to_focus = active_window_id.unwrap_or_else(|| {
-        *sessions_summary
-            .windows_running()
-            .iter()
-            .next()
-            .expect("already checked len > 0")
-    });
-
-    windowing_model.show_window_and_focus_app(window_id_to_focus);
-
-    // open the nav palette in the selected window
-    if let Some(workspaces) = ctx.views_of_type::<Workspace>(window_id_to_focus) {
-        if let Some(handle) = workspaces.first() {
-            ctx.dispatch_typed_action_for_view(
-                window_id_to_focus,
-                handle.id(),
-                &WorkspaceAction::OpenPalette {
-                    mode: PaletteMode::Navigation,
-                    source: PaletteSource::QuitModal,
-                    query: Some("running".to_owned()),
-                },
-            );
-        }
-    }
+fn on_close_app_cancelled(_open_navigation_palette: bool, _ctx: &mut AppContext) {
+    // RunningSessionSummary disabled
 }
 
 fn on_close_window_cancelled(
-    window_id: WindowId,
-    open_navigation_palette: bool,
-    ctx: &mut AppContext,
+    _window_id: WindowId,
+    _open_navigation_palette: bool,
+    _ctx: &mut AppContext,
 ) {
-
-    let sessions = SessionNavigationData::all_sessions(ctx).collect_vec();
-    let sessions_summary = RunningSessionSummary::new(&sessions);
-    let num_processes_in_window = sessions_summary.processes_in_window(&window_id).len();
-
-    // If open_navigation_palette is false, return early. Otherwise, we honor the
-    // open_navigation_palette param which is true if the user clicked the modal
-    // button for that. However, if the running processes in this window have finished
-    // since the modal popped, there is nothing to do now and we can return early
-    if !open_navigation_palette || num_processes_in_window == 0 {
-        return;
-    }
-
-    ctx.windows().show_window_and_focus_app(window_id);
-
-    // if we haven't returned early, it means open_navigation_palette is true as the
-    // user pressed the modal button for opening the navigation palette to show their
-    // running processes
-    if let Some(workspaces) = ctx.views_of_type::<Workspace>(window_id) {
-        if let Some(handle) = workspaces.first() {
-            ctx.dispatch_typed_action_for_view(
-                window_id,
-                handle.id(),
-                &WorkspaceAction::OpenPalette {
-                    mode: PaletteMode::Navigation,
-                    source: PaletteSource::QuitModal,
-                    query: Some("running".to_owned()),
-                },
-            );
-        }
-    }
+    // RunningSessionSummary disabled
 }
 
 fn is_cloud_agent_web_home_launch_url(url: &Url) -> bool {

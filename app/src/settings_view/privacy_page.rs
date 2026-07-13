@@ -224,7 +224,6 @@ impl PrivacyPageView {
             Box::new(SecretRedactionWidget::default()),
             Box::new(AppAnalyticsWidget::default()),
             Box::new(CrashReportsWidget::default()),
-            Box::new(CloudConversationStorageWidget::default()),
         ];
         widgets.push(Box::new(DataManagementWidget::default()));
         widgets.push(Box::new(PrivacyPolicyWidget::default()));
@@ -303,16 +302,7 @@ impl PrivacyPageView {
         ctx.notify();
     }
 
-    fn toggle_cloud_conversation_storage(&mut self, ctx: &mut ViewContext<Self>) {
-        let privacy_settings_handle = PrivacySettings::handle(ctx);
-        let old_value = privacy_settings_handle
-            .as_ref(ctx)
-            .is_cloud_conversation_storage_enabled;
-        ctx.update_model(&privacy_settings_handle, |privacy_settings, ctx| {
-            privacy_settings.set_is_cloud_conversation_storage_enabled(!old_value, ctx);
-        });
-        ctx.notify();
-    }
+
 
     fn queue_regex_removal(&mut self, idx: usize, ctx: &mut ViewContext<Self>) {
         // Check if this removal is already pending
@@ -475,7 +465,6 @@ pub enum PrivacyPageAction {
     SetSecretDisplayMode(SecretDisplayMode),
     ToggleTelemetry,
     ToggleCrashReporting,
-    ToggleCloudConversationStorage,
     RemoveCustomRegex(usize),
     OpenDataManagementWebpage,
     AddAllRecommendedRegexes,
@@ -554,9 +543,6 @@ impl TypedActionView for PrivacyPageView {
             }
             PrivacyPageAction::ToggleTelemetry => self.toggle_telemetry(ctx),
             PrivacyPageAction::ToggleCrashReporting => self.toggle_crash_reporting(ctx),
-            PrivacyPageAction::ToggleCloudConversationStorage => {
-                self.toggle_cloud_conversation_storage(ctx)
-            }
             PrivacyPageAction::RemoveCustomRegex(idx) => {
                 self.queue_regex_removal(*idx, ctx);
             }
@@ -622,8 +608,6 @@ struct SecretRedactionWidget {
     add_regex_button_mouse_state: MouseStateHandle,
     add_recommended_button_mouse_states: RefCell<Vec<MouseStateHandle>>,
     add_all_button_mouse_state: MouseStateHandle,
-    personal_tab_mouse_state: MouseStateHandle,
-    enterprise_tab_mouse_state: MouseStateHandle,
 }
 
 impl SecretRedactionWidget {
@@ -634,85 +618,6 @@ impl SecretRedactionWidget {
                 .borrow_mut()
                 .push(Default::default());
         }
-    }
-
-    fn render_tab(
-        &self,
-        label: String,
-        count: usize,
-        tab_type: SecretRedactionTab,
-        is_active: bool,
-        mouse_state: MouseStateHandle,
-        appearance: &Appearance,
-    ) -> Box<dyn Element> {
-        let theme = appearance.theme();
-        let (background_fill, text_color, count_color) = if is_active {
-            (
-                Some(theme.surface_overlay_1()),
-                theme.active_ui_text_color().into(),
-                theme.sub_text_color(theme.surface_2()).into(),
-            )
-        } else {
-            (
-                None,
-                theme.sub_text_color(theme.background()).into(),
-                theme
-                    .sub_text_color(theme.background())
-                    .with_opacity(56)
-                    .into(),
-            )
-        };
-
-        let hover_background = if !is_active {
-            Some(appearance.theme().surface_overlay_2())
-        } else {
-            None
-        };
-
-        Hoverable::new(mouse_state, move |mouse_state| {
-            let is_hovered = mouse_state.is_hovered();
-
-            let tab_content = Flex::row()
-                .with_child(
-                    Text::new_inline(label.clone(), appearance.ui_font_family(), FONT_SIZE)
-                        .with_color(text_color)
-                        .finish(),
-                )
-                .with_child(
-                    Container::new(
-                        Text::new_inline(
-                            format!(" {count}"),
-                            appearance.ui_font_family(),
-                            FONT_SIZE,
-                        )
-                        .with_color(count_color)
-                        .finish(),
-                    )
-                    .finish(),
-                )
-                .finish();
-
-            let mut container = Container::new(tab_content)
-                .with_vertical_padding(9.)
-                .with_horizontal_padding(12.)
-                .with_corner_radius(CornerRadius::with_all(Radius::Pixels(6.)));
-
-            // Apply background based on hover state
-            if is_hovered && !is_active {
-                if let Some(hover_bg) = hover_background {
-                    container = container.with_background(hover_bg);
-                }
-            } else if let Some(bg) = background_fill {
-                container = container.with_background(bg);
-            }
-
-            container.finish()
-        })
-        .on_click(move |ctx, _, _| {
-            ctx.dispatch_typed_action(PrivacyPageAction::SwitchSecretRedactionTab(tab_type));
-        })
-        .with_cursor(Cursor::PointingHand)
-        .finish()
     }
 
     /// Renders the tab bar for switching between Personal and Enterprise views
@@ -1649,112 +1554,7 @@ impl SettingsWidget for CrashReportsWidget {
     }
 }
 
-#[derive(Default)]
-struct CloudConversationStorageWidget {
-    switch_state: SwitchStateHandle,
-}
 
-impl SettingsWidget for CloudConversationStorageWidget {
-    type View = PrivacyPageView;
-
-    fn search_terms(&self) -> &str {
-        "sync cloud conversation store storage ai agent"
-    }
-
-    fn should_render(&self, _app: &AppContext) -> bool {
-        // Simplified: local version has no cloud conversation storage
-        false
-    }
-
-    fn render(
-        &self,
-        _view: &Self::View,
-        appearance: &Appearance,
-        app: &AppContext,
-    ) -> Box<dyn Element> {
-        let ui_builder = appearance.ui_builder();
-        let privacy_settings = PrivacySettings::as_ref(app);
-        // 删除：UserWorkspaces 云端设置获取已禁用，云端功能已移除
-        // let org_setting =
-        //     UserWorkspaces::as_ref(app).get_cloud_conversation_storage_enablement_setting();
-
-        // 删除：AdminEnablementSetting match 已禁用，云端功能已移除
-        // 直接设置为禁用状态
-        let (toggle_state, is_checked) = (ToggleState::Disabled, false);
-        // let (toggle_state, is_checked) = match org_setting {
-        //     AdminEnablementSetting::Enable => (ToggleState::Disabled, true),
-        //     AdminEnablementSetting::Disable => (ToggleState::Disabled, false),
-        //     AdminEnablementSetting::RespectUserSetting => (
-        //         ToggleState::Enabled,
-        //         privacy_settings.is_cloud_conversation_storage_enabled,
-        //     ),
-        // };
-
-        let switch = ui_builder
-            .switch(self.switch_state.clone())
-            .check(is_checked);
-        let switch = if matches!(toggle_state, ToggleState::Enabled) {
-            switch
-                .build()
-                .on_click(move |ctx, _, _| {
-                    ctx.dispatch_typed_action(PrivacyPageAction::ToggleCloudConversationStorage)
-                })
-                .finish()
-        } else {
-            switch
-                .with_tooltip(TooltipConfig {
-                    text: "This setting is managed by your organization.".to_string(),
-                    styles: ui_builder.default_tool_tip_styles(),
-                })
-                .disable()
-                .build()
-                .finish()
-        };
-
-        Flex::column()
-            .with_child(render_body_item::<PrivacyPageAction>(
-                "Store AI conversations in the cloud".into(),
-                None,
-                LocalOnlyIconState::Hidden,
-                toggle_state,
-                appearance,
-                switch,
-                None,
-            ))
-            .with_child(
-                ui_builder
-                    .paragraph(
-                        if is_checked {
-                            "Agent conversations can be shared with others and are retained \
-                            when you log in on different devices. This data is only stored \
-                            for product functionality, and Warp will not use it for analytics."
-                        } else {
-                            "Agent conversations are only stored locally on your machine, are \
-                            lost upon logout, and cannot be shared. Note: conversation data \
-                            for ambient agents are still stored in the cloud."
-                        }
-                        .to_owned(),
-                    )
-                    .with_style(UiComponentStyles {
-                        font_color: Some(
-                            appearance
-                                .theme()
-                                .sub_text_color(appearance.theme().surface_2())
-                                .into_solid(),
-                        ),
-                        margin: Some(
-                            Coords::default()
-                                .top(styles::DESCRIPTION_NEGATIVE_MARGIN_OFFSET)
-                                .bottom(styles::DESCRIPTION_MARGIN_BOTTOM),
-                        ),
-                        ..Default::default()
-                    })
-                    .build()
-                    .finish(),
-            )
-            .finish()
-    }
-}
 
 #[derive(Default)]
 struct DataManagementWidget {
@@ -1915,20 +1715,6 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
         context,
         flags::SAFE_MODE_FLAG,
     ));
-
-    toggle_binding_pairs.push(
-        ToggleSettingActionPair::new(
-            "cloud AI conversation storage",
-            builder(SettingsAction::PrivacyPageToggle(
-                PrivacyPageAction::ToggleCloudConversationStorage,
-            )),
-            &(context.clone()
-                & id!(flags::IS_ANY_AI_ENABLED)
-                & id!(flags::CLOUD_CONVERSATION_STORAGE_EDITABLE_FLAG)),
-            flags::CLOUD_CONVERSATION_STORAGE_FLAG,
-        )
-        .with_enabled(|| false),
-    );
 
     ToggleSettingActionPair::add_toggle_setting_action_pairs_as_bindings(toggle_binding_pairs, app);
 }

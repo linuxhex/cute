@@ -1337,10 +1337,6 @@ use crate::cloud_stub_types::SharedSessionStatus;
         self.ordered_terminal_events_for_shared_session_tx = None;
     }
 
-    fn ai_metadata_to_protocol(_metadata: &AgentInteractionMetadata) -> AICommandMetadata {
-        AICommandMetadata {}
-    }
-
     pub fn set_write_to_pty_events_for_shared_session_tx(&mut self, tx: Sender<Vec<u8>>) {
         self.write_to_pty_events_for_shared_session_tx = Some(tx);
     }
@@ -3578,13 +3574,6 @@ impl ModeProvider for TerminalModel {
     fn is_term_mode_set(&self, mode: TermMode) -> bool {
         self.is_term_mode_set(mode)
     }
-}
-
-fn encode_agent_response_event(
-    _response: &cute_multi_agent_api::ResponseEvent,
-) -> String {
-    log::debug!("encode_agent_response_event called (stub)");
-    String::new()
 }
 
 /// Validates and decodes in-band command output sent via `warp_send_generator_output_osc_message`.

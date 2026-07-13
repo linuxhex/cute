@@ -316,7 +316,7 @@ impl CustomizeUISlide {
 
             chips.push(ChipSpec {
                 label: "Warp Drive",
-                is_enabled: ui.show_warp_drive,
+                is_enabled: ui.show_cute_drive,
                 mouse_state: self.chip_warp_drive_mouse.clone(),
                 on_click: Box::new(|ctx, _, _| {
                     ctx.dispatch_typed_action(CustomizeSlideAction::ToggleToolsSubSetting {
@@ -791,8 +791,8 @@ impl TypedActionView for CustomizeUISlide {
                             model.set_show_global_search(!current, ctx);
                         }
                         ToolsPanelSubSetting::WarpDrive => {
-                            let current = model.ui_customization().show_warp_drive;
-                            model.set_show_warp_drive(!current, ctx);
+                            let current = model.ui_customization().show_cute_drive;
+                            model.set_show_cute_drive(!current, ctx);
                         }
                     });
                 ctx.notify();

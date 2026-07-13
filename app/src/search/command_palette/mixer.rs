@@ -24,12 +24,6 @@ pub enum CommandPaletteItemAction {
     ExecuteWorkflow {
         id: SyncId,
     },
-    OpenNotebook {
-        id: SyncId,
-    },
-    ViewInWarpDrive {
-        id: String,
-    },
     InvokeEnvironmentVariables {
         id: SyncId,
     },
@@ -90,7 +84,6 @@ impl CommandPaletteItemAction {
             CommandPaletteItemAction::AcceptBinding { binding } => ItemSummary::Action {
                 binding_id: binding.id,
             },
-            CommandPaletteItemAction::OpenNotebook { id } => ItemSummary::Notebook { id: *id },
             CommandPaletteItemAction::ExecuteWorkflow { id } => ItemSummary::Workflow { id: *id },
             CommandPaletteItemAction::InvokeEnvironmentVariables { id } => {
                 ItemSummary::EnvVarCollection { id: *id }
@@ -115,7 +108,6 @@ impl CommandPaletteItemAction {
             CommandPaletteItemAction::OpenLaunchConfiguration { .. } => {
                 ItemSummary::LaunchConfiguration
             }
-            CommandPaletteItemAction::ViewInWarpDrive { .. } => ItemSummary::CloudObject,
             CommandPaletteItemAction::OpenFile {
                 path,
                 project_directory,
@@ -165,9 +157,6 @@ pub enum ItemSummary {
         id: SyncId,
     },
     EnvVarCollection {
-        id: SyncId,
-    },
-    Notebook {
         id: SyncId,
     },
     Session {

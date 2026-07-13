@@ -29,7 +29,6 @@ query GetUser($requestContext: RequestContext!) {
         profile {
           displayName
           email
-          needsSsoLink
           photoUrl
           uid
         }
@@ -140,15 +139,14 @@ pub struct User {
     pub global_skills: Vec<String>,
     pub is_onboarded: bool,
     pub is_on_work_domain: bool,
-    pub profile: FirebaseProfile,
+    pub profile: UserProfile,
     pub llms: FeatureModelChoice,
 }
 
 #[derive(cynic::QueryFragment, Debug)]
-pub struct FirebaseProfile {
+pub struct UserProfile {
     pub display_name: Option<String>,
     pub email: Option<String>,
-    pub needs_sso_link: bool,
     pub photo_url: Option<String>,
     pub uid: String,
 }

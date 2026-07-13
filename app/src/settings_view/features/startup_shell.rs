@@ -39,25 +39,7 @@ pub enum NewSessionShellAction {
     ShowCustomPathInput,
 }
 
-impl NewSessionShellAction {
-    /// Produces a [`TelemetryEvent`] that corresponds to this UI action.
-    ///
-    /// This tracks both high-level information about which shells users select
-    /// and when they switch to the custom path UI (so we can see if they're
-    /// trying to use a custom shell but are unable to).
-    fn telemetry_event(&self) -> TelemetryEvent {
-        match self {
-            NewSessionShellAction::Set(option) => TelemetryEvent::FeaturesPageAction {
-                action: "NewSessionShellOverride".to_string(),
-                value: option.telemetry_value(),
-            },
-            NewSessionShellAction::ShowCustomPathInput => TelemetryEvent::FeaturesPageAction {
-                action: "ShowCustomPathInput".to_string(),
-                value: String::new(),
-            },
-        }
-    }
-}
+impl NewSessionShellAction {}
 
 impl StartupShellView {
     /// Creates a new `StartupShellView`. The UI is initialized with the user's

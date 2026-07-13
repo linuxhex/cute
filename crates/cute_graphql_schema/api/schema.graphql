@@ -1318,13 +1318,12 @@ type FileArtifact {
 }
 
 """
-A user's own Firebase profile. This includes information that should not be exposed to other users - see
+A user's own profile. This includes information that should not be exposed to other users - see
 PublicUserProfile for a public-facing equivalent.
 """
-type FirebaseProfile {
+type UserProfile {
   displayName: String
   email: String
-  needsSsoLink: Boolean!
   photoUrl: String
   uid: String!
 }
@@ -4114,7 +4113,7 @@ type User {
   llms: FeatureModelChoice!
   managedSecrets: ManagedSecretConfig
   onboardingSurveyStatus: OnboardingSurveyStatus
-  profile: FirebaseProfile!
+  profile: UserProfile!
   referrals: ReferralInfo!
   requestLimitInfo: RequestLimitInfo!
 

@@ -13,7 +13,7 @@ use crate::cloud_stub_types::{
     CloudObjectUuid, GenericStringObjectFormat, GenericStringObjectUniqueKey, JsonObjectType,
     Revision, StringModel,
 };
-use crate::cloud_stub_types::items::mcp_server::WarpDriveMCPServer;
+use crate::cloud_stub_types::items::mcp_server::CuteDriveMCPServer;
 use crate::cloud_stub_types::CuteDriveItem;
 use crate::cloud_stub_types::CloudObjectTypeAndId;
 #[cfg(not(target_family = "wasm"))]
@@ -118,24 +118,7 @@ impl StringModel for MCPServer {
         None
     }
 
-    fn renders_in_warp_drive(&self) -> bool {
-        false
-    }
 
-    fn to_warp_drive_item(
-        &self,
-        id: SyncId,
-        _appearance: &Appearance,
-        mcp_server: &CloudMCPServer,
-    ) -> Option<Box<dyn CuteDriveItem>> {
-        Some(Box::new(WarpDriveMCPServer::new(
-            CloudObjectTypeAndId::from_generic_string_object(
-                GenericStringObjectFormat::Json(JsonObjectType::MCPServer),
-                id,
-            ),
-            mcp_server.model().string_model.name.clone(),
-        )))
-    }
 }
 
 

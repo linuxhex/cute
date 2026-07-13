@@ -33,14 +33,6 @@ impl CreateEnvironmentModal {
             HandoffEnvironmentCreationModalEvent::Cancelled => {
                 me.cancel(ctx);
             }
-            HandoffEnvironmentCreationModalEvent::CreationFailed { error_message } => {
-                me.visible = false;
-                me.show_error_toast(
-                    format!("Failed to create environment: {error_message}"),
-                    ctx,
-                );
-                ctx.notify();
-            }
         });
 
         Self {

@@ -55,11 +55,7 @@ use cute_graphql::mutations::generate_metadata_for_command::{
 use cute_graphql::mutations::populate_merkle_tree_cache::{
     PopulateMerkleTreeCache, PopulateMerkleTreeCacheResult, PopulateMerkleTreeCacheVariables,
 };
-use cute_graphql::mutations::request_bonus::{
-    ProvideNegativeFeedbackResponseForAiConversation,
-    ProvideNegativeFeedbackResponseForAiConversationInput,
-    ProvideNegativeFeedbackResponseForAiConversationVariables, RequestsRefundedResult,
-};
+// Note: request_bonus mutation has been removed
 use cute_graphql::mutations::update_agent_task::{
     AgentTaskStatusMessageInput, UpdateAgentTask, UpdateAgentTaskInput, UpdateAgentTaskResult,
     UpdateAgentTaskVariables,
@@ -156,7 +152,7 @@ use crate::{
     // workspaces::{gql_convert::PLACEHOLDER_WORKSPACE_UID, workspace::WorkspaceUid}, // Cute: 已注释，清理 workspaces 模块
 };
 
-const AI_ASSISTANT_REQUEST_TIMEOUT_SECONDS: u64 = 30;
+
 
 /// A status update for a task, optionally including a platform error code.
 pub struct TaskStatusUpdate {
@@ -292,12 +288,7 @@ pub struct UploadLocalHandoffSnapshotResponse {
     pub uploads: Vec<UploadTarget>,
 }
 
-/// Request body for `POST /agent/conversations/{conversation_id}/fork`.
-#[derive(Debug, Clone, serde::Serialize)]
-pub(crate) struct ForkConversationRequest {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    title: Option<String>,
-}
+
 
 /// Response body for `POST /agent/conversations/{conversation_id}/fork`. The returned id is sent
 /// on the subsequent `POST /agent/runs` request under `conversation_id` (resume semantics).
@@ -567,15 +558,7 @@ pub struct AttachmentFileInfo {
     pub mime_type: String,
 }
 
-#[derive(Debug, Clone, serde::Serialize)]
-pub struct PrepareAttachmentUploadsRequest {
-    pub files: Vec<AttachmentFileInfo>,
-}
 
-#[derive(Debug, Clone, serde::Serialize)]
-pub struct DownloadAttachmentsRequest {
-    pub attachment_ids: Vec<String>,
-}
 
 #[derive(Debug, Clone, serde::Deserialize)]
 pub struct AttachmentDownloadInfo {
@@ -588,18 +571,7 @@ pub struct DownloadAttachmentsResponse {
     pub attachments: Vec<AttachmentDownloadInfo>,
 }
 
-#[derive(Debug, Clone, serde::Deserialize)]
-pub struct HandoffSnapshotAttachmentInfo {
-    pub attachment_id: String,
-    pub filename: String,
-    pub download_url: String,
-    pub mime_type: Option<String>,
-}
 
-#[derive(Debug, Clone, serde::Deserialize)]
-pub struct ListHandoffSnapshotAttachmentsResponse {
-    pub attachments: Vec<HandoffSnapshotAttachmentInfo>,
-}
 
 #[derive(Debug, Clone, serde::Deserialize)]
 pub struct AttachmentUploadInfo {
@@ -841,36 +813,7 @@ pub(crate) fn build_fork_conversation_url(conversation_id: &str) -> String {
     )
 }
 
-struct ListRunsResponse {
-    runs: Vec<AmbientAgentTask>,
-}
 
-impl<'de> serde::Deserialize<'de> for ListRunsResponse {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        #[derive(serde::Deserialize)]
-        struct RawResponse {
-            runs: Vec<serde_json::Value>,
-        }
-
-        let raw = RawResponse::deserialize(deserializer)?;
-        let mut runs = Vec::with_capacity(raw.runs.len());
-
-        for task_value in raw.runs.into_iter() {
-            match serde_json::from_value::<AmbientAgentTask>(task_value) {
-                Ok(task) => runs.push(task),
-                Err(e) => {
-                    // Log the error and skip this task instead of failing the entire request
-                    report_error!(anyhow!("Failed to deserialize ambient agent task: {}", e));
-                }
-            }
-        }
-
-        Ok(ListRunsResponse { runs })
-    }
-}
 
 /// Source information for an agent skill.
 #[derive(Clone, serde::Deserialize, Debug, PartialEq)]
@@ -904,10 +847,7 @@ pub struct AgentSkillItem {
     pub variants: Vec<AgentSkillVariant>,
 }
 
-#[derive(serde::Deserialize)]
-struct ListSkillsResponse {
-    agents: Vec<AgentSkillItem>,
-}
+
 
 /// Reference to a managed secret by name.
 #[derive(Clone, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq)]
@@ -963,13 +903,7 @@ pub struct AgentResponse {
     pub environment_id: Option<String>,
 }
 
-#[derive(serde::Deserialize)]
-struct ListAgentsResponse {
-    agents: Vec<AgentResponse>,
-}
-fn build_agent_url(uid: &str) -> String {
-    format!("agent/identities/{}", urlencoding::encode(uid))
-}
+
 
 #[derive(Clone, serde::Deserialize, Debug, PartialEq, Eq)]
 pub struct ConnectedSelfHostedWorker {
@@ -984,7 +918,7 @@ pub struct ListConnectedSelfHostedWorkersResponse {
     pub workers: Vec<ConnectedSelfHostedWorker>,
 }
 
-pub(crate) const CONNECTED_SELF_HOSTED_WORKERS_PATH: &str = "agent/connected-self-hosted-workers";
+
 
 #[cfg_attr(test, automock)]
 #[cfg_attr(not(target_family = "wasm"), async_trait)]
@@ -1401,132 +1335,26 @@ fn convert_upload_field(
 impl AIClient for ServerApi {
     async fn generate_commands_from_natural_language(
         &self,
-        prompt: String,
-        // TODO: use relevant context from RequestContext and deprecate usage of ai_execution_context
+        _prompt: String,
         _ai_execution_context: Option<WarpAiExecutionContext>,
     ) -> Result<Vec<AIGeneratedCommand>, GenerateCommandsFromNaturalLanguageError> {
-        let default_err = GenerateCommandsFromNaturalLanguageError::Other;
-
-        let variables = GenerateCommandsVariables {
-            input: GenerateCommandsInput { prompt },
-            request_context: get_request_context(),
-        };
-
-        let operation = GenerateCommands::build(variables);
-        let response = self
-            .send_graphql_request(
-                operation,
-                Some(Duration::from_secs(AI_ASSISTANT_REQUEST_TIMEOUT_SECONDS)),
-            )
-            .await
-            .map_err(|_| default_err)?;
-
-        match response.generate_commands {
-            GenerateCommandsResult::GenerateCommandsOutput(output) => match output.status {
-                GenerateCommandsStatus::GenerateCommandsSuccess(success) => {
-                    Ok(success.commands.into_iter().map(Into::into).collect_vec())
-                }
-                GenerateCommandsStatus::GenerateCommandsFailure(failure) => {
-                    Err(failure.type_.into())
-                }
-                GenerateCommandsStatus::Unknown => {
-                    Err(GenerateCommandsFromNaturalLanguageError::Other)
-                }
-            },
-            _ => Err(GenerateCommandsFromNaturalLanguageError::Other),
-        }
+        Err(GenerateCommandsFromNaturalLanguageError::Other)
     }
 
     async fn generate_dialogue_answer(
         &self,
-        transcript: Vec<TranscriptPart>,
-        prompt: String,
-        // TODO: use relevant context from RequestContext and deprecate usage of ai_execution_context
+        _transcript: Vec<TranscriptPart>,
+        _prompt: String,
         _ai_execution_context: Option<WarpAiExecutionContext>,
     ) -> anyhow::Result<GenerateDialogueResult> {
-        let graphql_transcript: Vec<TranscriptPartGraphql> = transcript
-            .into_iter()
-            .map(|part| TranscriptPartGraphql {
-                user: part.raw_user_prompt().to_string(),
-                assistant: part.raw_assistant_answer().to_string(),
-            })
-            .collect();
-        let variables = GenerateDialogueVariables {
-            input: GenerateDialogueInput {
-                transcript: graphql_transcript,
-                prompt,
-            },
-            request_context: get_request_context(),
-        };
-
-        let operation = GenerateDialogue::build(variables);
-        let response = self
-            .send_graphql_request(
-                operation,
-                Some(Duration::from_secs(AI_ASSISTANT_REQUEST_TIMEOUT_SECONDS)),
-            )
-            .await?;
-        match response.generate_dialogue {
-            GenerateDialogueResultGraphql::GenerateDialogueOutput(output) => match output.status {
-                GenerateDialogueStatus::GenerateDialogueSuccess(success) => {
-                    Ok(GenerateDialogueResult::Success {
-                        answer: success.answer,
-                        truncated: success.truncated,
-                        request_limit_info: success.request_limit_info.into(),
-                        transcript_summarized: success.transcript_summarized,
-                    })
-                }
-                GenerateDialogueStatus::GenerateDialogueFailure(failure) => {
-                    Ok(GenerateDialogueResult::Failure {
-                        request_limit_info: failure.request_limit_info.into(),
-                    })
-                }
-                GenerateDialogueStatus::Unknown => Err(anyhow!("failed to generate AI dialogue")),
-            },
-            GenerateDialogueResultGraphql::UserFacingError(e) => {
-                Err(anyhow!(get_user_facing_error_message(e)))
-            }
-            GenerateDialogueResultGraphql::Unknown => {
-                Err(anyhow!("failed to generate AI dialogue"))
-            }
-        }
+        Err(anyhow!("AI dialogue generation not supported in local version"))
     }
 
     async fn generate_metadata_for_command(
         &self,
-        command: String,
+        _command: String,
     ) -> Result<GeneratedCommandMetadata, GeneratedCommandMetadataError> {
-        let default_err = GeneratedCommandMetadataError::ParsingError;
-        let variables = GenerateMetadataForCommandVariables {
-            input: GenerateMetadataForCommandInput { command },
-            request_context: get_request_context(),
-        };
-
-        let operation = GenerateMetadataForCommand::build(variables);
-        let response = self
-            .send_graphql_request(
-                operation,
-                Some(Duration::from_secs(AI_ASSISTANT_REQUEST_TIMEOUT_SECONDS)),
-            )
-            .await
-            .map_err(|_| default_err)?;
-
-        match response.generate_metadata_for_command {
-            GenerateMetadataForCommandResult::GenerateMetadataForCommandOutput(output) => {
-                match output.status {
-                    GenerateMetadataForCommandStatus::GenerateMetadataForCommandSuccess(
-                        success,
-                    ) => Ok(success.into()),
-                    GenerateMetadataForCommandStatus::GenerateMetadataForCommandFailure(
-                        failure,
-                    ) => Err(failure.type_.into()),
-                    GenerateMetadataForCommandStatus::Unknown => {
-                        Err(GeneratedCommandMetadataError::ParsingError)
-                    }
-                }
-            }
-            _ => Err(GeneratedCommandMetadataError::ParsingError),
-        }
+        Err(GeneratedCommandMetadataError::ParsingError)
     }
 
     #[cfg(feature = "agent_mode_evals")]
@@ -1539,462 +1367,149 @@ impl AIClient for ServerApi {
 
     #[cfg(not(feature = "agent_mode_evals"))]
     async fn get_request_limit_info(&self) -> Result<RequestUsageInfo, anyhow::Error> {
-        let variables = GetRequestLimitInfoVariables {
-            request_context: get_request_context(),
-        };
-        let operation = GetRequestLimitInfo::build(variables);
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.user {
-            cute_graphql::queries::get_request_limit_info::UserResult::UserOutput(user_output) => {
-                let request_limit_info = user_output.user.request_limit_info.into();
-
-                // Cloud bonus grants removed for local version - empty list
-                let bonus_grants: Vec<BonusGrant> = Vec::new();
-
-                Ok(RequestUsageInfo {
-                    request_limit_info,
-                    bonus_grants,
-                })
-            }
-            cute_graphql::queries::get_request_limit_info::UserResult::UserFacingError(e) => {
-                Err(anyhow!(get_user_facing_error_message(e)))
-            }
-            cute_graphql::queries::get_request_limit_info::UserResult::Unknown => {
-                Err(anyhow!("failed to get request limit info"))
-            }
-        }
+        Err(anyhow!("Request limit info not supported in local version"))
     }
 
     async fn get_feature_model_choices(&self) -> Result<ModelsByFeature, anyhow::Error> {
-        let variables = GetFeatureModelChoicesVariables {
-            request_context: get_request_context(),
-        };
-        let operation = GetFeatureModelChoices::build(variables);
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.user {
-            cute_graphql::queries::get_feature_model_choices::UserResult::UserOutput(
-                cute_graphql::queries::get_feature_model_choices::UserOutput {
-                    user: cute_graphql::queries::get_feature_model_choices::User { mut workspaces },
-                },
-            ) if !workspaces.is_empty() => {
-                // This is safe (`remove()` can panic) because we ensure workspaces is non-empty
-                // above.
-                workspaces.remove(0).feature_model_choice.try_into()
-            }
-            _ => Err(anyhow!("Failed to get available feature model choices")),
-        }
+        Ok(ModelsByFeature::default())
     }
 
     async fn get_available_harnesses(&self) -> Result<Vec<HarnessAvailability>, anyhow::Error> {
-        let variables = GetAvailableHarnessesVariables {
-            request_context: get_request_context(),
-        };
-        let operation = GetAvailableHarnesses::build(variables);
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.user {
-            cute_graphql::queries::get_available_harnesses::UserResult::UserOutput(output) => {
-                Ok(output
-                    .user
-                    .available_harnesses
-                    .harnesses
-                    .into_iter()
-                    .map(|h| HarnessAvailability {
-                        harness: convert_harness(h.harness).into(),
-                        display_name: h.display_name,
-                        enabled: h.enabled,
-                        available_models: h
-                            .available_models
-                            .into_iter()
-                            .map(|m| crate::ai::harness_availability::HarnessModelInfo {
-                                id: m.id.into_inner(),
-                                display_name: m.display_name,
-                                reasoning_level: m.reasoning_level,
-                            })
-                            .collect(),
-                    })
-                    .collect())
-            }
-            cute_graphql::queries::get_available_harnesses::UserResult::Unknown => {
-                Err(anyhow!("Failed to get available harnesses"))
-            }
-        }
+        Ok(Vec::new())
     }
 
     async fn get_free_available_models(
         &self,
-        referrer: Option<String>,
+        _referrer: Option<String>,
     ) -> Result<ModelsByFeature, anyhow::Error> {
-        // This resolver is public; it does not require an auth token. We must NOT go through
-        // `send_graphql_request`, which awaits `get_or_refresh_access_token()`
-        let variables = FreeAvailableModelsVariables {
-            input: FreeAvailableModelsInput { referrer },
-            request_context: get_request_context(),
-        };
-        let operation = FreeAvailableModels::build(variables);
-
-        // Best-effort: if the user has a valid token (e.g. anonymous Firebase), include it;
-        // otherwise send unauthenticated. Either is acceptable for this resolver.
-        let auth_token = self
-            .get_or_refresh_access_token()
-            .await
-            .ok()
-            .and_then(|token| token.bearer_token());
-
-        let response = operation
-            .send_request(
-                self.client.clone(),
-                cute_graphql::client::RequestOptions {
-                    auth_token,
-                    ..default_request_options()
-                },
-            )
-            .await?
-            .data
-            .ok_or_else(|| anyhow!("Missing data in freeAvailableModels response"))?;
-
-        match response.free_available_models {
-            FreeAvailableModelsResult::FreeAvailableModelsOutput(output) => {
-                output.feature_model_choice.try_into()
-            }
-            FreeAvailableModelsResult::Unknown => {
-                Err(anyhow!("Unexpected freeAvailableModels response variant"))
-            }
-        }
+        Ok(ModelsByFeature::default())
     }
 
     async fn update_merkle_tree(
         &self,
-        embedding_config: EmbeddingConfig,
-        nodes: Vec<IntermediateNode>,
+        _embedding_config: EmbeddingConfig,
+        _nodes: Vec<IntermediateNode>,
     ) -> anyhow::Result<HashMap<NodeHash, bool>> {
-        let nodes = nodes
-            .into_iter()
-            .map(|node| MerkleTreeNode {
-                hash: node.hash.into(),
-                children: node.children.into_iter().map(Into::into).collect(),
-            })
-            .collect_vec();
-        let variables = UpdateMerkleTreeVariables {
-            input: UpdateMerkleTreeInput {
-                embedding_config: embedding_config.into(),
-                nodes,
-            },
-            request_context: get_request_context(),
-        };
-        let operation = UpdateMerkleTree::build(variables);
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.update_merkle_tree {
-            UpdateMerkleTreeResult::UpdateMerkleTreeOutput(output) => {
-                let mut node_results = HashMap::with_capacity(output.results.len());
-                for result in output.results {
-                    node_results.insert(result.hash.try_into()?, result.success);
-                }
-                Ok(node_results)
-            }
-            UpdateMerkleTreeResult::UpdateMerkleTreeError(e) => Err(anyhow!(e.error)),
-            UpdateMerkleTreeResult::UserFacingError(e) => {
-                Err(anyhow!(get_user_facing_error_message(e)))
-            }
-            UpdateMerkleTreeResult::Unknown => Err(anyhow!("failed to update merkle tree")),
-        }
+        Err(anyhow!("Merkle tree operations not supported in local version"))
     }
 
     async fn generate_code_embeddings(
         &self,
-        embedding_config: EmbeddingConfig,
-        fragments: Vec<full_source_code_embedding::Fragment>,
-        root_hash: NodeHash,
-        repo_metadata: RepoMetadata,
+        _embedding_config: EmbeddingConfig,
+        _fragments: Vec<full_source_code_embedding::Fragment>,
+        _root_hash: NodeHash,
+        _repo_metadata: RepoMetadata,
     ) -> anyhow::Result<HashMap<ContentHash, bool>> {
-        let variables = GenerateCodeEmbeddingsVariables {
-            input: GenerateCodeEmbeddingsInput {
-                embedding_config: embedding_config.into(),
-                fragments: fragments.into_iter().map(Into::into).collect(),
-                repo_metadata: repo_metadata.into(),
-                root_hash: root_hash.into(),
-            },
-            request_context: get_request_context(),
-        };
-
-        let operation = GenerateCodeEmbeddings::build(variables);
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.generate_code_embeddings {
-            GenerateCodeEmbeddingsResult::GenerateCodeEmbeddingsOutput(output) => {
-                let mut results = HashMap::with_capacity(output.embedding_results.len());
-                for result in output.embedding_results {
-                    results.insert(result.hash.try_into()?, result.success);
-                }
-                Ok(results)
-            }
-            GenerateCodeEmbeddingsResult::GenerateCodeEmbeddingsError(e) => Err(anyhow!(e.error)),
-            GenerateCodeEmbeddingsResult::UserFacingError(e) => {
-                Err(anyhow!(get_user_facing_error_message(e)))
-            }
-            GenerateCodeEmbeddingsResult::Unknown => {
-                Err(anyhow!("failed to generate code embeddings"))
-            }
-        }
+        Err(anyhow!("Code embeddings generation not supported in local version"))
     }
 
     async fn provide_negative_feedback_response_for_ai_conversation(
         &self,
-        conversation_id: String,
-        request_ids: Vec<String>,
+        _conversation_id: String,
+        _request_ids: Vec<String>,
     ) -> anyhow::Result<i32, anyhow::Error> {
-        let variables = ProvideNegativeFeedbackResponseForAiConversationVariables {
-            input: ProvideNegativeFeedbackResponseForAiConversationInput {
-                conversation_id: conversation_id.into(),
-                request_ids: request_ids.into_iter().map(Into::into).collect(),
-            },
-            request_context: get_request_context(),
-        };
-
-        let operation = ProvideNegativeFeedbackResponseForAiConversation::build(variables);
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.provide_negative_feedback_response_for_ai_conversation {
-            RequestsRefundedResult::RequestsRefundedOutput(output) => Ok(output.requests_refunded),
-            RequestsRefundedResult::UserFacingError(e) => {
-                Err(anyhow!(get_user_facing_error_message(e)))
-            }
-            RequestsRefundedResult::Unknown => Err(anyhow!(
-                "failed to provide negative feedback response for ai conversation"
-            )),
-        }
+        Err(anyhow!("Negative feedback operations not supported in local version"))
     }
 
     async fn create_agent_task(
         &self,
-        prompt: String,
-        environment_uid: Option<String>,
-        parent_run_id: Option<String>,
-        config: Option<AgentConfigSnapshot>,
+        _prompt: String,
+        _environment_uid: Option<String>,
+        _parent_run_id: Option<String>,
+        _config: Option<AgentConfigSnapshot>,
     ) -> anyhow::Result<AmbientAgentTaskId, anyhow::Error> {
-        // Serialize the config to JSON if provided
-        let agent_config_snapshot = config
-            .map(|c| serde_json::to_string(&c))
-            .transpose()
-            .map_err(|e| anyhow!("Failed to serialize agent config: {e}"))?;
-
-        let variables = CreateAgentTaskVariables {
-            input: CreateAgentTaskInput {
-                prompt,
-                environment_uid: environment_uid.map(|uid| uid.into()),
-                parent_run_id: parent_run_id.map(|run_id| run_id.into()),
-                agent_config_snapshot,
-            },
-            request_context: get_request_context(),
-        };
-
-        let operation = CreateAgentTask::build(variables);
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.create_agent_task {
-            CreateAgentTaskResult::CreateAgentTaskOutput(output) => output
-                .task_id
-                .into_inner()
-                .parse()
-                .map_err(|e| anyhow!("Failed to parse task ID from server: {e}")),
-            CreateAgentTaskResult::UserFacingError(e) => {
-                Err(anyhow!(get_user_facing_error_message(e)))
-            }
-            CreateAgentTaskResult::Unknown => Err(anyhow!("failed to create agent task")),
-        }
+        Err(anyhow!("Agent task creation not supported in local version"))
     }
 
     async fn update_agent_task(
         &self,
-        task_id: AmbientAgentTaskId,
-        task_state: Option<AgentTaskState>,
-        session_id: Option<session_sharing_protocol::common::SessionId>,
-        conversation_id: Option<String>,
-        status_message: Option<TaskStatusUpdate>,
+        _task_id: AmbientAgentTaskId,
+        _task_state: Option<AgentTaskState>,
+        _session_id: Option<session_sharing_protocol::common::SessionId>,
+        _conversation_id: Option<String>,
+        _status_message: Option<TaskStatusUpdate>,
     ) -> anyhow::Result<(), anyhow::Error> {
-        let variables = UpdateAgentTaskVariables {
-            input: UpdateAgentTaskInput {
-                task_id: task_id.into(),
-                task_state,
-                session_id: session_id.map(|id| id.to_string().into()),
-                conversation_id: conversation_id.map(|id| id.into()),
-                status_message: status_message.map(|update| AgentTaskStatusMessageInput {
-                    message: update.message,
-                    error_code: update.error_code,
-                }),
-            },
-            request_context: get_request_context(),
-        };
-
-        let operation = UpdateAgentTask::build(variables);
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.update_agent_task {
-            UpdateAgentTaskResult::UpdateAgentTaskOutput(_) => Ok(()),
-            UpdateAgentTaskResult::UserFacingError(e) => {
-                Err(anyhow!(get_user_facing_error_message(e)))
-            }
-            UpdateAgentTaskResult::Unknown => Err(anyhow!("failed to update agent task")),
-        }
+        Err(anyhow!("Agent task update not supported in local version"))
     }
 
     async fn spawn_agent(
         &self,
-        request: SpawnAgentRequest,
+        _request: SpawnAgentRequest,
     ) -> anyhow::Result<SpawnAgentResponse, anyhow::Error> {
-        let response: SpawnAgentResponse = self.post_public_api("agent/run", &request).await?;
-        Ok(response)
+        Err(anyhow!("Agent spawning not supported in local version"))
     }
 
     async fn list_connected_self_hosted_workers(
         &self,
     ) -> anyhow::Result<ListConnectedSelfHostedWorkersResponse, anyhow::Error> {
-        self.get_public_api(CONNECTED_SELF_HOSTED_WORKERS_PATH)
-            .await
+        Err(anyhow!("Self-hosted workers not supported in local version"))
     }
 
     async fn upload_local_handoff_snapshot(
         &self,
-        request: UploadLocalHandoffSnapshotRequest,
+        _request: UploadLocalHandoffSnapshotRequest,
     ) -> anyhow::Result<UploadLocalHandoffSnapshotResponse, anyhow::Error> {
-        let response: UploadLocalHandoffSnapshotResponse = self
-            .post_public_api("agent/handoff/upload-snapshot", &request)
-            .await?;
-        Ok(response)
+        Err(anyhow!("Handoff snapshot upload not supported in local version"))
     }
 
     async fn fork_conversation(
         &self,
-        conversation_id: String,
-        title: Option<String>,
+        _conversation_id: String,
+        _title: Option<String>,
     ) -> anyhow::Result<ForkConversationResponse, anyhow::Error> {
-        let request = ForkConversationRequest { title };
-        let response: ForkConversationResponse = self
-            .post_public_api(&build_fork_conversation_url(&conversation_id), &request)
-            .await?;
-        Ok(response)
+        Err(anyhow!("Conversation fork not supported in local version"))
     }
 
     async fn list_ambient_agent_tasks(
         &self,
-        limit: i32,
-        filter: TaskListFilter,
+        _limit: i32,
+        _filter: TaskListFilter,
     ) -> anyhow::Result<Vec<AmbientAgentTask>, anyhow::Error> {
-        let url = build_list_agent_runs_url(limit, &filter);
-        let response: ListRunsResponse = self.get_public_api(&url).await?;
-        Ok(response.runs)
+        Ok(Vec::new())
     }
 
     async fn list_agent_runs_raw(
         &self,
-        limit: i32,
-        filter: TaskListFilter,
+        _limit: i32,
+        _filter: TaskListFilter,
     ) -> anyhow::Result<serde_json::Value, anyhow::Error> {
-        let url = build_list_agent_runs_url(limit, &filter);
-        let response: serde_json::Value = self.get_public_api(&url).await?;
-        Ok(response)
+        Ok(serde_json::json!({"runs": []}))
     }
 
     async fn get_ambient_agent_task(
         &self,
-        task_id: &AmbientAgentTaskId,
+        _task_id: &AmbientAgentTaskId,
     ) -> anyhow::Result<AmbientAgentTask, anyhow::Error> {
-        let response: AmbientAgentTask = self
-            .get_public_api(&format!("agent/runs/{task_id}"))
-            .await?;
-        Ok(response)
+        Err(anyhow!("Agent task retrieval not supported in local version"))
     }
 
     async fn get_agent_run_raw(
         &self,
-        task_id: &AmbientAgentTaskId,
+        _task_id: &AmbientAgentTaskId,
     ) -> anyhow::Result<serde_json::Value, anyhow::Error> {
-        let response: serde_json::Value = self
-            .get_public_api(&format!("agent/runs/{task_id}"))
-            .await?;
-        Ok(response)
+        Err(anyhow!("Agent run retrieval not supported in local version"))
     }
 
     async fn submit_run_followup(
         &self,
-        run_id: &AmbientAgentTaskId,
-        request: RunFollowupRequest,
+        _run_id: &AmbientAgentTaskId,
+        _request: RunFollowupRequest,
     ) -> anyhow::Result<(), anyhow::Error> {
-        self.post_public_api_unit(&build_run_followup_url(run_id), &request)
-            .await
+        Err(anyhow!("Run followup not supported in local version"))
     }
 
     async fn get_scheduled_agent_history(
         &self,
-        schedule_id: &str,
+        _schedule_id: &str,
     ) -> anyhow::Result<ScheduledAgentHistory, anyhow::Error> {
-        let variables = GetScheduledAgentHistoryVariables {
-            request_context: get_request_context(),
-            input: ScheduledAgentHistoryInput {
-                schedule_id: schedule_id.to_string().into(),
-            },
-        };
-
-        let operation = GetScheduledAgentHistory::build(variables);
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.scheduled_agent_history {
-            ScheduledAgentHistoryResult::ScheduledAgentHistoryOutput(output) => Ok(output.history),
-            ScheduledAgentHistoryResult::UserFacingError(e) => {
-                Err(anyhow!(get_user_facing_error_message(e)))
-            }
-            ScheduledAgentHistoryResult::Unknown => {
-                Err(anyhow!("failed to get scheduled agent history"))
-            }
-        }
+        Err(anyhow!("Scheduled agent history not supported in local version"))
     }
 
     async fn get_ai_conversation(
         &self,
-        server_conversation_token: ServerConversationToken,
+        _server_conversation_token: ServerConversationToken,
     ) -> anyhow::Result<(ConversationData, ServerAIConversationMetadata), anyhow::Error> {
-        use cute_graphql::queries::list_ai_conversations::{
-            ListAIConversations, ListAIConversationsInput, ListAIConversationsResult,
-            ListAIConversationsVariables,
-        };
-
-        let conversation_id = server_conversation_token.as_str().to_string();
-        let operation = ListAIConversations::build(ListAIConversationsVariables {
-            input: ListAIConversationsInput {
-                conversation_ids: Some(vec![cynic::Id::new(conversation_id)]),
-            },
-            request_context: get_request_context(),
-        });
-        let response = self.send_graphql_request(operation, None).await?;
-
-        let gql_conversation = match response.list_ai_conversations {
-            ListAIConversationsResult::ListAIConversationsOutput(output) => output
-                .conversations
-                .into_iter()
-                .next()
-                .ok_or_else(|| anyhow!("Conversation not found"))?,
-            ListAIConversationsResult::UserFacingError(e) => {
-                return Err(anyhow!(get_user_facing_error_message(e)));
-            }
-            ListAIConversationsResult::Unknown => {
-                return Err(anyhow!("Failed to get AI conversation"));
-            }
-        };
-
-        let conversation_data_bytes = base64::engine::general_purpose::STANDARD
-            .decode(&gql_conversation.final_task_list)
-            .map_err(|e| anyhow!("Failed to decode base64 conversation data: {e}"))?;
-
-        let conversation_data = ConversationData::decode(conversation_data_bytes.as_slice())
-            .map_err(|e| anyhow!("Failed to decode proto ConversationData: {e}"))?;
-
-        // Build AIConversationMetadata from GraphQL response
-        let metadata = gql_conversation.try_into()?;
-
-        Ok((conversation_data, metadata))
+        Err(anyhow!("AI conversation retrieval not supported in local version"))
     }
 
     async fn list_ai_conversation_metadata(
@@ -2006,503 +1521,219 @@ impl AIClient for ServerApi {
 
     async fn get_ai_conversation_format(
         &self,
-        server_conversation_token: ServerConversationToken,
+        _server_conversation_token: ServerConversationToken,
     ) -> anyhow::Result<AIAgentConversationFormat, anyhow::Error> {
-        use cute_graphql::queries::get_ai_conversation_format::{
-            GetAIConversationFormat, GetAIConversationFormatResult,
-            GetAIConversationFormatVariables,
-        };
-        use cute_graphql::queries::list_ai_conversations::ListAIConversationsInput;
-
-        let conversation_id = server_conversation_token.as_str().to_string();
-        let operation = GetAIConversationFormat::build(GetAIConversationFormatVariables {
-            input: ListAIConversationsInput {
-                conversation_ids: Some(vec![cynic::Id::new(conversation_id)]),
-            },
-            request_context: get_request_context(),
-        });
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.list_ai_conversations {
-            GetAIConversationFormatResult::ListAIConversationsOutput(output) => {
-                let conversation = output
-                    .conversations
-                    .into_iter()
-                    .next()
-                    .ok_or_else(|| anyhow!("Conversation not found"))?;
-                Ok(convert_conversation_format(conversation.format))
-            }
-            GetAIConversationFormatResult::UserFacingError(e) => {
-                Err(anyhow!(get_user_facing_error_message(e)))
-            }
-            GetAIConversationFormatResult::Unknown => {
-                Err(anyhow!("Failed to get AI conversation format"))
-            }
-        }
+        Err(anyhow!("AI conversation format retrieval not supported in local version"))
     }
 
     async fn get_block_snapshot(
         &self,
-        server_conversation_token: ServerConversationToken,
+        _server_conversation_token: ServerConversationToken,
     ) -> anyhow::Result<SerializedBlock, anyhow::Error> {
-        let conversation_id = server_conversation_token.as_str();
-        // Make sure to use `SerializedBlock::from_json` to correctly handle the serialized
-        // command and output grid contents.
-        let response = self
-            .get_public_api_response(&format!(
-                "agent/conversations/{conversation_id}/block-snapshot"
-            ))
-            .await?;
-        let json_bytes = response
-            .bytes()
-            .await
-            .map_err(|e| anyhow!("Failed to read block snapshot for {conversation_id}: {e}"))?;
-        SerializedBlock::from_json(&json_bytes)
+        Err(anyhow!("Block snapshot retrieval not supported in local version"))
     }
 
     async fn delete_ai_conversation(
         &self,
-        server_conversation_token: String,
+        _server_conversation_token: String,
     ) -> anyhow::Result<(), anyhow::Error> {
-        let variables = DeleteAIConversationVariables {
-            input: DeleteConversationInput {
-                conversation_id: server_conversation_token.into(),
-            },
-            request_context: get_request_context(),
-        };
-
-        let operation = DeleteAIConversation::build(variables);
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.delete_conversation {
-            DeleteConversationResult::DeleteConversationOutput(_) => Ok(()),
-            DeleteConversationResult::UserFacingError(e) => {
-                Err(anyhow!(get_user_facing_error_message(e)))
-            }
-            DeleteConversationResult::Unknown => Err(anyhow!("Failed to delete AI conversation")),
-        }
+        Err(anyhow!("AI conversation deletion not supported in local version"))
     }
 
     async fn list_skills(
         &self,
-        repo: Option<String>,
+        _repo: Option<String>,
     ) -> anyhow::Result<Vec<AgentSkillItem>, anyhow::Error> {
-        let path = match repo {
-            Some(repo) => format!("agent?repo={}", urlencoding::encode(&repo)),
-            None => "agent".to_string(),
-        };
-        let response: ListSkillsResponse = self.get_public_api(&path).await?;
-        Ok(response.agents)
+        Ok(Vec::new())
     }
 
     async fn list_agents(&self) -> anyhow::Result<Vec<AgentResponse>, anyhow::Error> {
-        let response: ListAgentsResponse = self.get_public_api("agent/identities").await?;
-        Ok(response.agents)
+        Ok(Vec::new())
     }
 
     async fn list_agents_raw(&self) -> anyhow::Result<serde_json::Value, anyhow::Error> {
-        self.get_public_api("agent/identities").await
+        Ok(serde_json::json!({"agents": []}))
     }
 
-    async fn get_agent(&self, uid: &str) -> anyhow::Result<AgentResponse, anyhow::Error> {
-        self.get_public_api(&build_agent_url(uid)).await
+    async fn get_agent(&self, _uid: &str) -> anyhow::Result<AgentResponse, anyhow::Error> {
+        Err(anyhow!("Agent retrieval not supported in local version"))
     }
 
-    async fn get_agent_raw(&self, uid: &str) -> anyhow::Result<serde_json::Value, anyhow::Error> {
-        self.get_public_api(&build_agent_url(uid)).await
+    async fn get_agent_raw(&self, _uid: &str) -> anyhow::Result<serde_json::Value, anyhow::Error> {
+        Err(anyhow!("Agent retrieval not supported in local version"))
     }
 
     async fn create_agent(
         &self,
-        request: CreateAgentRequest,
+        _request: CreateAgentRequest,
     ) -> anyhow::Result<AgentResponse, anyhow::Error> {
-        self.post_public_api("agent/identities", &request).await
+        Err(anyhow!("Agent creation not supported in local version"))
     }
 
     async fn create_agent_raw(
         &self,
-        request: CreateAgentRequest,
+        _request: CreateAgentRequest,
     ) -> anyhow::Result<serde_json::Value, anyhow::Error> {
-        self.post_public_api("agent/identities", &request).await
+        Err(anyhow!("Agent creation not supported in local version"))
     }
 
     async fn update_agent(
         &self,
-        uid: &str,
-        request: UpdateAgentRequest,
+        _uid: &str,
+        _request: UpdateAgentRequest,
     ) -> anyhow::Result<AgentResponse, anyhow::Error> {
-        self.put_public_api(&build_agent_url(uid), &request).await
+        Err(anyhow!("Agent update not supported in local version"))
     }
 
     async fn update_agent_raw(
         &self,
-        uid: &str,
-        request: UpdateAgentRequest,
+        _uid: &str,
+        _request: UpdateAgentRequest,
     ) -> anyhow::Result<serde_json::Value, anyhow::Error> {
-        self.put_public_api(&build_agent_url(uid), &request).await
+        Err(anyhow!("Agent update not supported in local version"))
     }
 
-    async fn delete_agent(&self, uid: &str) -> anyhow::Result<(), anyhow::Error> {
-        self.delete_public_api_unit(&build_agent_url(uid)).await
+    async fn delete_agent(&self, _uid: &str) -> anyhow::Result<(), anyhow::Error> {
+        Err(anyhow!("Agent deletion not supported in local version"))
     }
 
     async fn cancel_ambient_agent_task(
         &self,
-        task_id: &AmbientAgentTaskId,
+        _task_id: &AmbientAgentTaskId,
     ) -> anyhow::Result<(), anyhow::Error> {
-        let _: String = self
-            .post_public_api(&format!("agent/tasks/{task_id}/cancel"), &())
-            .await?;
-        Ok(())
+        Err(anyhow!("Agent task cancellation not supported in local version"))
     }
 
     async fn get_task_git_credentials(
         &self,
-        task_id: String,
-        workload_token: String,
+        _task_id: String,
+        _workload_token: String,
     ) -> anyhow::Result<Vec<GitCredential>, anyhow::Error> {
-        let variables = TaskGitCredentialsVariables {
-            input: TaskGitCredentialsInput {
-                task_id: cynic::Id::new(task_id),
-                workload_token,
-            },
-            request_context: get_request_context(),
-        };
-        let operation = TaskGitCredentials::build(variables);
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.task_git_credentials {
-            TaskGitCredentialsResult::TaskGitCredentialsOutput(output) => {
-                let credentials = output
-                    .credentials
-                    .into_iter()
-                    .map(|c| GitCredential {
-                        token: c.token,
-                        username: c.username,
-                        email: c.email,
-                        host: c.host,
-                    })
-                    .collect();
-                Ok(credentials)
-            }
-            TaskGitCredentialsResult::UserFacingError(error) => {
-                Err(anyhow!(get_user_facing_error_message(error)))
-            }
-            TaskGitCredentialsResult::Unknown => {
-                Err(anyhow!("Failed to fetch task git credentials"))
-            }
-        }
+        Err(anyhow!("Task git credentials not supported in local version"))
     }
 
     async fn get_task_attachments(
         &self,
-        task_id: String,
+        _task_id: String,
     ) -> anyhow::Result<Vec<TaskAttachment>, anyhow::Error> {
-        let variables = TaskVariables {
-            input: TaskInput {
-                task_id: cynic::Id::new(task_id),
-            },
-            request_context: get_request_context(),
-        };
-        let operation = TaskAttachmentsQuery::build(variables);
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.task {
-            TaskResult::TaskOutput(output) => {
-                let attachments = output
-                    .task
-                    .attachments
-                    .into_iter()
-                    .map(|att| TaskAttachment {
-                        file_id: att.file_id.into_inner(),
-                        filename: att.filename,
-                        download_url: att.download_url,
-                        mime_type: att.mime_type,
-                    })
-                    .collect();
-                Ok(attachments)
-            }
-            TaskResult::UserFacingError(error) => {
-                Err(anyhow!(get_user_facing_error_message(error)))
-            }
-            TaskResult::Unknown => Err(anyhow!("Failed to fetch task attachments")),
-        }
+        Err(anyhow!("Task attachments not supported in local version"))
     }
 
     async fn create_file_artifact_upload_target(
         &self,
-        request: CreateFileArtifactUploadRequest,
+        _request: CreateFileArtifactUploadRequest,
     ) -> anyhow::Result<CreateFileArtifactUploadResponse, anyhow::Error> {
-        let variables = CreateFileArtifactUploadTargetVariables {
-            input: CreateFileArtifactUploadTargetInput {
-                conversation_id: request.conversation_id.map(cynic::Id::new),
-                run_id: request.run_id.map(cynic::Id::new),
-                filepath: request.filepath,
-                description: request.description,
-                mime_type: request.mime_type,
-                size_bytes: request.size_bytes,
-            },
-            request_context: get_request_context(),
-        };
-        let operation = CreateFileArtifactUploadTarget::build(variables);
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.create_file_artifact_upload_target {
-            CreateFileArtifactUploadTargetResult::CreateFileArtifactUploadTargetOutput(output) => {
-                let headers = output
-                    .upload_target
-                    .headers
-                    .into_iter()
-                    .map(|header| FileArtifactUploadHeaderInfo {
-                        name: header.name,
-                        value: header.value,
-                    })
-                    .collect();
-                let fields = output
-                    .upload_target
-                    .fields
-                    .into_iter()
-                    .map(convert_upload_field)
-                    .collect::<anyhow::Result<Vec<_>>>()?;
-                Ok(CreateFileArtifactUploadResponse {
-                    artifact: into_file_artifact_record(output.artifact),
-                    upload_target: FileArtifactUploadTargetInfo {
-                        url: output.upload_target.url,
-                        method: output.upload_target.method,
-                        headers,
-                        fields,
-                    },
-                })
-            }
-            CreateFileArtifactUploadTargetResult::UserFacingError(error) => {
-                Err(anyhow!(get_user_facing_error_message(error)))
-            }
-            CreateFileArtifactUploadTargetResult::Unknown => {
-                Err(anyhow!("Failed to create file artifact upload target"))
-            }
-        }
+        Err(anyhow!("File artifact upload not supported in local version"))
     }
 
     async fn confirm_file_artifact_upload(
         &self,
-        artifact_uid: String,
-        checksum: String,
+        _artifact_uid: String,
+        _checksum: String,
     ) -> anyhow::Result<FileArtifactRecord, anyhow::Error> {
-        let variables = ConfirmFileArtifactUploadVariables {
-            input: ConfirmFileArtifactUploadInput {
-                artifact_uid: cynic::Id::new(artifact_uid),
-                checksum,
-            },
-            request_context: get_request_context(),
-        };
-        let operation = ConfirmFileArtifactUpload::build(variables);
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.confirm_file_artifact_upload {
-            ConfirmFileArtifactUploadResult::ConfirmFileArtifactUploadOutput(output) => {
-                Ok(into_file_artifact_record(output.artifact))
-            }
-            ConfirmFileArtifactUploadResult::UserFacingError(error) => {
-                Err(anyhow!(get_user_facing_error_message(error)))
-            }
-            ConfirmFileArtifactUploadResult::Unknown => {
-                Err(anyhow!("Failed to confirm file artifact upload"))
-            }
-        }
+        Err(anyhow!("File artifact upload confirmation not supported in local version"))
     }
 
     async fn get_artifact_download(
         &self,
-        artifact_uid: &str,
+        _artifact_uid: &str,
     ) -> anyhow::Result<ArtifactDownloadResponse, anyhow::Error> {
-        let response: ArtifactDownloadResponse = self
-            .get_public_api(&format!("agent/artifacts/{artifact_uid}"))
-            .await?;
-        Ok(response)
+        Err(anyhow!("Artifact download not supported in local version"))
     }
 
     async fn prepare_attachments_for_upload(
         &self,
-        task_id: &AmbientAgentTaskId,
-        files: &[AttachmentFileInfo],
+        _task_id: &AmbientAgentTaskId,
+        _files: &[AttachmentFileInfo],
     ) -> anyhow::Result<PrepareAttachmentUploadsResponse, anyhow::Error> {
-        let request = PrepareAttachmentUploadsRequest {
-            files: files.to_vec(),
-        };
-        let response: PrepareAttachmentUploadsResponse = self
-            .post_public_api(
-                &format!("agent/runs/{task_id}/attachments/prepare"),
-                &request,
-            )
-            .await?;
-        Ok(response)
+        Err(anyhow!("Attachment upload preparation not supported in local version"))
     }
 
     async fn download_task_attachments(
         &self,
-        task_id: &AmbientAgentTaskId,
-        attachment_ids: &[String],
+        _task_id: &AmbientAgentTaskId,
+        _attachment_ids: &[String],
     ) -> anyhow::Result<DownloadAttachmentsResponse, anyhow::Error> {
-        let request = DownloadAttachmentsRequest {
-            attachment_ids: attachment_ids.to_vec(),
-        };
-        let response: DownloadAttachmentsResponse = self
-            .post_public_api(
-                &format!("agent/runs/{task_id}/attachments/download"),
-                &request,
-            )
-            .await?;
-        Ok(response)
+        Err(anyhow!("Task attachment download not supported in local version"))
     }
 
     async fn get_handoff_snapshot_attachments(
         &self,
-        task_id: &AmbientAgentTaskId,
+        _task_id: &AmbientAgentTaskId,
     ) -> anyhow::Result<Vec<TaskAttachment>, anyhow::Error> {
-        let response: ListHandoffSnapshotAttachmentsResponse = self
-            .get_public_api(&format!("agent/runs/{task_id}/handoff/attachments"))
-            .await?;
-
-        Ok(response
-            .attachments
-            .into_iter()
-            .map(|attachment| TaskAttachment {
-                file_id: attachment.attachment_id,
-                filename: attachment.filename,
-                download_url: attachment.download_url,
-                mime_type: attachment
-                    .mime_type
-                    .unwrap_or_else(|| "application/octet-stream".to_string()),
-            })
-            .collect())
+        Err(anyhow!("Handoff snapshot attachments not supported in local version"))
     }
 
     // --- Orchestrations V2 messaging ---
 
     async fn send_agent_message(
         &self,
-        request: SendAgentMessageRequest,
+        _request: SendAgentMessageRequest,
     ) -> anyhow::Result<SendAgentMessageResponse, anyhow::Error> {
-        let response: SendAgentMessageResponse =
-            self.post_public_api("agent/messages", &request).await?;
-        Ok(response)
+        Err(anyhow!("Agent messaging not supported in local version"))
     }
 
     async fn list_agent_messages(
         &self,
-        run_id: &str,
-        request: ListAgentMessagesRequest,
+        _run_id: &str,
+        _request: ListAgentMessagesRequest,
     ) -> anyhow::Result<Vec<AgentMessageHeader>, anyhow::Error> {
-        let mut params = vec![format!("limit={}", request.limit)];
-        if request.unread_only {
-            params.push("unread=true".to_string());
-        }
-        if let Some(since) = request.since {
-            params.push(format!("since={}", urlencoding::encode(&since)));
-        }
-
-        let path = format!("agent/messages/{run_id}?{}", params.join("&"));
-        let response: Vec<AgentMessageHeader> = self.get_public_api(&path).await?;
-        Ok(response)
+        Ok(Vec::new())
     }
 
     async fn update_event_sequence_on_server(
         &self,
-        run_id: &str,
-        sequence: i64,
+        _run_id: &str,
+        _sequence: i64,
     ) -> anyhow::Result<(), anyhow::Error> {
-        #[derive(serde::Serialize)]
-        struct UpdateBody {
-            sequence: i64,
-        }
-
-        self.patch_public_api_unit(
-            &format!("agent/runs/{run_id}/event-sequence"),
-            &UpdateBody { sequence },
-        )
-        .await
+        Err(anyhow!("Event sequence update not supported in local version"))
     }
 
     async fn report_agent_event(
         &self,
-        run_id: &str,
-        request: ReportAgentEventRequest,
+        _run_id: &str,
+        _request: ReportAgentEventRequest,
     ) -> anyhow::Result<ReportAgentEventResponse, anyhow::Error> {
-        let response: ReportAgentEventResponse = self
-            .post_public_api(&format!("agent/events/{run_id}"), &request)
-            .await?;
-        Ok(response)
+        Err(anyhow!("Agent event reporting not supported in local version"))
     }
     async fn post_agent_run_client_event(
         &self,
-        run_id: &AmbientAgentTaskId,
-        request: AgentRunClientEventRequest,
+        _run_id: &AmbientAgentTaskId,
+        _request: AgentRunClientEventRequest,
     ) -> anyhow::Result<(), anyhow::Error> {
-        self.post_public_api_response_for_task(
-            run_id,
-            &format!("agent/runs/{run_id}/client-events"),
-            &request,
-        )
-        .await?;
-        Ok(())
+        Err(anyhow!("Agent run client event not supported in local version"))
     }
 
-    async fn mark_message_delivered(&self, message_id: &str) -> anyhow::Result<(), anyhow::Error> {
-        self.post_public_api_unit(&format!("agent/messages/{message_id}/delivered"), &())
-            .await
+    async fn mark_message_delivered(&self, _message_id: &str) -> anyhow::Result<(), anyhow::Error> {
+        Err(anyhow!("Message delivery marking not supported in local version"))
     }
 
     async fn read_agent_message(
         &self,
-        message_id: &str,
+        _message_id: &str,
     ) -> anyhow::Result<ReadAgentMessageResponse, anyhow::Error> {
-        let response: ReadAgentMessageResponse = self
-            .post_public_api(&format!("agent/messages/{message_id}/read"), &())
-            .await?;
-        Ok(response)
+        Err(anyhow!("Message reading not supported in local version"))
     }
 
     async fn get_public_conversation(
         &self,
-        conversation_id: &str,
+        _conversation_id: &str,
     ) -> anyhow::Result<serde_json::Value, anyhow::Error> {
-        let response: serde_json::Value = self
-            .get_public_api(&format!("agent/conversations/{conversation_id}"))
-            .await?;
-        Ok(response)
+        Err(anyhow!("Public conversation retrieval not supported in local version"))
     }
 
     async fn get_run_conversation(
         &self,
-        run_id: &str,
+        _run_id: &str,
     ) -> anyhow::Result<serde_json::Value, anyhow::Error> {
-        let response: serde_json::Value = self
-            .get_public_api(&format!("agent/runs/{run_id}/conversation"))
-            .await?;
-        Ok(response)
+        Err(anyhow!("Run conversation retrieval not supported in local version"))
     }
 
     async fn generate_code_review_content(
         &self,
-        request: GenerateCodeReviewContentRequest,
+        _request: GenerateCodeReviewContentRequest,
     ) -> Result<GenerateCodeReviewContentResponse, anyhow::Error> {
-        let auth_token = self.get_or_refresh_access_token().await?;
-        let request_builder = self.client.post(format!(
-            "{}/ai/generate_code_review_content",
-            ChannelState::server_root_url()
-        ));
-        let response = if let Some(token) = auth_token.as_bearer_token() {
-            request_builder.bearer_auth(token)
-        } else {
-            request_builder
-        }
-        .json(&request)
-        .send()
-        .await?
-        .error_for_status()?
-        .json()
-        .await?;
-        Ok(response)
+        Err(anyhow!("Code review content generation not supported in local version"))
     }
 
 }
@@ -2983,151 +2214,43 @@ impl StoreClient for ServerApi {
 
     async fn populate_merkle_tree_cache(
         &self,
-        embedding_config: EmbeddingConfig,
-        root_hash: NodeHash,
-        repo_metadata: RepoMetadata,
+        _embedding_config: EmbeddingConfig,
+        _root_hash: NodeHash,
+        _repo_metadata: RepoMetadata,
     ) -> Result<bool, full_source_code_embedding::Error> {
-        let variables = PopulateMerkleTreeCacheVariables {
-            embedding_config: embedding_config.into(),
-            root_hash: root_hash.into(),
-            repo_metadata: repo_metadata.into(),
-            request_context: get_request_context(),
-        };
-        let operation = PopulateMerkleTreeCache::build(variables);
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.populate_merkle_tree_cache {
-            PopulateMerkleTreeCacheResult::PopulateMerkleTreeCacheOutput(output) => {
-                Ok(output.success)
-            }
-            PopulateMerkleTreeCacheResult::UserFacingError(e) => {
-                Err(anyhow!(get_user_facing_error_message(e)).into())
-            }
-            PopulateMerkleTreeCacheResult::Unknown => {
-                Err(anyhow!("failed to populate merkle tree cache").into())
-            }
-        }
+        Err(anyhow!("Merkle tree cache population not supported in local version").into())
     }
 
     async fn sync_merkle_tree(
         &self,
-        nodes: Vec<NodeHash>,
-        embedding_config: EmbeddingConfig,
+        _nodes: Vec<NodeHash>,
+        _embedding_config: EmbeddingConfig,
     ) -> Result<HashSet<NodeHash>, full_source_code_embedding::Error> {
-        let input = SyncMerkleTreeInput {
-            hashed_nodes: nodes.into_iter().map(Into::into).collect(),
-            embedding_config: embedding_config.into(),
-        };
-
-        let variables = SyncMerkleTreeVariables {
-            input,
-            request_context: get_request_context(),
-        };
-
-        let operation = SyncMerkleTree::build(variables);
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.sync_merkle_tree {
-            SyncMerkleTreeResult::SyncMerkleTreeOutput(output) => {
-                let mut node_results = HashSet::with_capacity(output.changed_nodes.len());
-                for hash in output.changed_nodes {
-                    node_results.insert(hash.try_into()?);
-                }
-                Ok(node_results)
-            }
-            SyncMerkleTreeResult::SyncMerkleTreeError(e) => Err(anyhow!(e.error).into()),
-            SyncMerkleTreeResult::UserFacingError(e) => {
-                Err(anyhow!(get_user_facing_error_message(e)).into())
-            }
-            SyncMerkleTreeResult::Unknown => Err(anyhow!("failed to sync merkle tree").into()),
-        }
+        Err(anyhow!("Merkle tree sync not supported in local version").into())
     }
 
     async fn rerank_fragments(
         &self,
-        query: String,
-        fragments: Vec<full_source_code_embedding::Fragment>,
+        _query: String,
+        _fragments: Vec<full_source_code_embedding::Fragment>,
     ) -> Result<Vec<full_source_code_embedding::Fragment>, full_source_code_embedding::Error> {
-        let variables = RerankFragmentsVariables {
-            query,
-            fragments: fragments.into_iter().map(Into::into).collect(),
-            request_context: get_request_context(),
-        };
-        let operation = RerankFragments::build(variables);
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.rerank_fragments {
-            RerankFragmentsResult::RerankFragmentsOutput(output) => Ok(output
-                .ranked_fragments
-                .into_iter()
-                .map(|fragment| fragment.try_into())
-                .collect::<Result<Vec<_>, _>>()?),
-            RerankFragmentsResult::RerankFragmentsError(e) => Err(anyhow!(e.error).into()),
-            RerankFragmentsResult::UserFacingError(e) => {
-                Err(anyhow!(get_user_facing_error_message(e)).into())
-            }
-            RerankFragmentsResult::Unknown => Err(anyhow!("failed to rerank fragments").into()),
-        }
+        Err(anyhow!("Fragment reranking not supported in local version").into())
     }
 
     async fn get_relevant_fragments(
         &self,
-        embedding_config: EmbeddingConfig,
-        query: String,
-        root_hash: NodeHash,
-        repo_metadata: RepoMetadata,
+        _embedding_config: EmbeddingConfig,
+        _query: String,
+        _root_hash: NodeHash,
+        _repo_metadata: RepoMetadata,
     ) -> Result<Vec<ContentHash>, full_source_code_embedding::Error> {
-        let variables = GetRelevantFragmentsVariables {
-            query,
-            root_hash: root_hash.into(),
-            embedding_config: embedding_config.into(),
-            request_context: get_request_context(),
-            repo_metadata: repo_metadata.into(),
-        };
-        let operation = GetRelevantFragmentsQuery::build(variables);
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.get_relevant_fragments {
-            GetRelevantFragmentsResult::GetRelevantFragmentsOutput(output) => Ok(output
-                .candidate_hashes
-                .into_iter()
-                .map(|hash| hash.try_into())
-                .collect::<Result<Vec<_>, _>>()?),
-            GetRelevantFragmentsResult::UserFacingError(e) => {
-                Err(anyhow!(get_user_facing_error_message(e)).into())
-            }
-            GetRelevantFragmentsResult::GetRelevantFragmentsError(e) => {
-                Err(anyhow!(e.error).into())
-            }
-            GetRelevantFragmentsResult::Unknown => {
-                Err(anyhow!("failed to get relevant fragments").into())
-            }
-        }
+        Err(anyhow!("Relevant fragments retrieval not supported in local version").into())
     }
 
     async fn codebase_context_config(
         &self,
     ) -> Result<CodebaseContextConfig, full_source_code_embedding::Error> {
-        let variables = CodebaseContextConfigVariables {
-            request_context: get_request_context(),
-        };
-        let operation = CodebaseContextConfigQuery::build(variables);
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.codebase_context_config {
-            CodebaseContextConfigResult::CodebaseContextConfigOutput(output) => {
-                Ok(CodebaseContextConfig {
-                    embedding_config: output.embedding_config.try_into()?,
-                    embedding_cadence: Duration::from_secs(output.embedding_cadence as u64),
-                })
-            }
-            CodebaseContextConfigResult::UserFacingError(e) => {
-                Err(anyhow!(get_user_facing_error_message(e)).into())
-            }
-            CodebaseContextConfigResult::Unknown => {
-                Err(anyhow!("failed to retrieve codebase context config").into())
-            }
-        }
+        Err(anyhow!("Codebase context config not supported in local version").into())
     }
 }
 
@@ -3137,14 +2260,14 @@ impl ServerApi {
         _task_id: &AmbientAgentTaskId,
         _request: ResolvePromptRequest,
     ) -> anyhow::Result<ResolvedHarnessPrompt> {
-        anyhow::bail!("resolve_prompt_for_task not implemented")
+        Err(anyhow!("Prompt resolution not supported in local version"))
     }
 
     pub async fn fetch_transcript_for_task(
         &self,
         _task_id: &AmbientAgentTaskId,
     ) -> anyhow::Result<Vec<u8>> {
-        anyhow::bail!("fetch_transcript_for_task not implemented")
+        Err(anyhow!("Transcript fetch not supported in local version"))
     }
 }
 

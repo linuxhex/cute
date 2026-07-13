@@ -110,7 +110,7 @@ pub enum AIDocumentAction {
 pub enum AIDocumentEvent {
     Pane(PaneEvent),
     CloseRequested,
-    ViewInWarpDrive(WarpDriveItemId),
+    ViewInCuteDrive(WarpDriveItemId),
     #[cfg(feature = "local_fs")]
     OpenCodeInWarp {
         source: CodeSource,
@@ -993,12 +993,12 @@ impl AIDocumentView {
         });
     }
 
-    fn create_warp_drive_notebook(&self, ctx: &mut ViewContext<Self>) {
+    fn create_cute_drive_notebook(&self, ctx: &mut ViewContext<Self>) {
         let success = AIDocumentModel::handle(ctx).update(ctx, |model, ctx| {
-            model.sync_to_warp_drive(self.document_id, ctx)
+            model.sync_to_cute_drive(self.document_id, ctx)
         });
         if !success {
-            log::error!("Failed to create Warp Drive notebook");
+            log::error!("Failed to create Cute Drive notebook");
         }
     }
 
@@ -1129,7 +1129,6 @@ impl TypedActionView for AIDocumentView {
                 self.refresh(ctx);
             }
             AIDocumentAction::Export => self.export(ctx),
-            AIDocumentAction::CreateWarpDriveNotebook => self.create_warp_drive_notebook(ctx),
             AIDocumentAction::CopyLink(link) => {
                 ctx.clipboard()
                     .write(ClipboardContent::plain_text(link.to_owned()));
@@ -1247,11 +1246,15 @@ impl TypedActionView for AIDocumentView {
                     AIDocumentModel::as_ref(ctx).get_current_document(&self.document_id)
                 {
                     if let Some(sync_id) = document.sync_id {
-                        ctx.emit(AIDocumentEvent::ViewInWarpDrive(WarpDriveItemId::Object(
+                        ctx.emit(AIDocumentEvent::ViewInCuteDrive(WarpDriveItemId::Object(
                             CloudObjectTypeAndId::Notebook(sync_id),
                         )));
                     }
                 }
+            }
+            #[allow(unreachable_patterns)]
+            AIDocumentAction::CreateWarpDriveNotebook => {
+                // CreateWarpDriveNotebook variant disabled
             }
             AIDocumentAction::AttachToActiveSession => {
                 ctx.emit(AIDocumentEvent::AttachPlanAsContext(self.document_id));
@@ -1295,9 +1298,9 @@ impl BackingView for AIDocumentView {
     ) -> Vec<MenuItem<Self::PaneHeaderOverflowMenuAction>> {
         let mut menu_items = vec![];
 
-        // Only show shareable link when the document is synced to Warp Drive
+        // Only show shareable link when the document is synced to Cute Drive
         if let Some(link) =
-            AIDocumentModel::as_ref(ctx).get_document_warp_drive_object_link(&self.document_id, ctx)
+            AIDocumentModel::as_ref(ctx).get_document_cute_drive_object_link(&self.document_id, ctx)
         {
             menu_items.push(
                 MenuItemFields::new("Copy link")

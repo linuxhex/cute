@@ -206,6 +206,8 @@ pub enum EnablementState {
     ChannelSpecific {
         channels: Vec<Channel>,
     },
+    /// The telemetry event is disabled and should never be sent.
+    Disabled,
 }
 
 impl EnablementState {
@@ -217,6 +219,7 @@ impl EnablementState {
                 let app_channel = ChannelState::channel();
                 channels.contains(&app_channel)
             }
+            EnablementState::Disabled => false,
         }
     }
 }

@@ -6,7 +6,7 @@ use crate::cloud_stub_types::model::json_model::JsonModel;
 use crate::cloud_stub_types::{
     GenericStringObjectFormat, GenericStringObjectUniqueKey, JsonObjectType, Revision,
 };
-use crate::cloud_stub_types::items::ai_fact::WarpDriveAIFact;
+use crate::cloud_stub_types::items::ai_fact::CuteDriveAIFact;
 use crate::cloud_stub_types::CuteDriveItem;
 use crate::cloud_stub_types::CloudObjectTypeAndId;
 use crate::server::ids::SyncId;
@@ -57,17 +57,17 @@ impl StringModel for AIFact {
         None
     }
 
-    fn renders_in_warp_drive(&self) -> bool {
+    fn renders_in_cute_drive(&self) -> bool {
         false
     }
 
-    fn to_warp_drive_item(
+    fn to_cute_drive_item(
         &self,
         id: SyncId,
         _appearance: &Appearance,
         ai_fact: &CloudAIFact,
     ) -> Option<Box<dyn CuteDriveItem>> {
-        Some(Box::new(WarpDriveAIFact::new(
+        Some(Box::new(CuteDriveAIFact::new(
             CloudObjectTypeAndId::GenericStringObject {
                 object_type: GenericStringObjectFormat::Json(JsonObjectType::AIFact),
                 id,

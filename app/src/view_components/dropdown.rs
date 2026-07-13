@@ -111,7 +111,7 @@ pub struct Dropdown<A: DropdownItemAction = ()> {
     selected_item: Option<MenuItem<DropdownAction>>,
     // Function for overriding the default closed-state text (the selected item)
     menu_header_text_override: Option<MenuHeaderTextFormatter>,
-    self_handle: WeakViewHandle<Self>,
+
     style: DropdownStyle,
     use_drop_shadow: bool,
     font_color: Option<ColorU>,
@@ -284,7 +284,6 @@ where
             top_bar_max_width: TOP_MENU_BAR_MAX_WIDTH,
             selected_item: None,
             menu_header_text_override: None,
-            self_handle: ctx.handle(),
             style: Default::default(),
             element_anchor: PositionedElementAnchor::BottomLeft,
             child_anchor: ChildAnchor::TopLeft,
@@ -420,21 +419,7 @@ where
         ctx.notify();
     }
 
-    pub fn is_focused(&self, ctx: &AppContext) -> bool {
-        let Some(handle) = self.self_handle.upgrade(ctx) else {
-            return false;
-        };
 
-        if handle.is_focused(ctx) {
-            return true;
-        }
-
-        if self.dropdown.is_focused(ctx) {
-            return true;
-        }
-
-        false
-    }
 
     pub fn set_items(&mut self, items: Vec<DropdownItem<A>>, ctx: &mut ViewContext<Self>) {
         self.dropdown.update(ctx, |dropdown, ctx| {
@@ -507,10 +492,7 @@ where
         ctx.notify();
     }
 
-    pub fn set_selected_to_none(&mut self, ctx: &mut ViewContext<Self>) {
-        self.selected_item = None;
-        ctx.notify();
-    }
+
 
     pub fn set_top_bar_max_width(&mut self, max_width: f32) {
         self.top_bar_max_width = max_width;

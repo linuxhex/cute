@@ -15,7 +15,7 @@ use crate::model::{
 };
 use crate::slides::{
     AgentSlide, AgentSlideEvent, CustomizeUISlide, FreeUserNoAiSlide, IntentionSlide, IntroSlide,
-    IntroSlideEvent, OnboardingModelInfo, OnboardingSlide, ProjectSlide, ThemePickerSlide,
+    OnboardingModelInfo, OnboardingSlide, ProjectSlide, ThemePickerSlide,
     ThemePickerSlideEvent, ThirdPartySlide,
 };
 use crate::telemetry::OnboardingEvent;
@@ -48,7 +48,6 @@ pub enum AgentOnboardingEvent {
     },
     OnboardingCompleted(SelectedSettings),
     OnboardingSkipped,
-    LoginFromWelcomeRequested,
     /// Emitted when the user clicks the "Privacy Settings" link on the terminal
     /// intention theme slide. The variant name encodes that the event is only
     /// emitted from the terminal-intention theme slide; consumers (e.g. a
@@ -57,7 +56,6 @@ pub enum AgentOnboardingEvent {
     PrivacySettingsFromTerminalThemeSlideRequested,
     UpgradeRequested,
     UpgradeCopyUrlRequested,
-    UpgradePasteTokenFromClipboardRequested,
     /// Emitted when the app regains focus (e.g. user returns from the browser).
     /// The parent should refresh any stale data: available models, workspace/billing metadata, etc.
     AppBecameActive,
@@ -156,12 +154,6 @@ impl AgentOnboardingView {
             ctx.add_typed_action_view(move |_| IntroSlide::new(onboarding_state))
         };
 
-        ctx.subscribe_to_view(&intro_slide, |_me, _view, event, ctx| match event {
-            IntroSlideEvent::LoginRequested => {
-                ctx.emit(AgentOnboardingEvent::LoginFromWelcomeRequested);
-            }
-        });
-
         let theme_picker_slide = {
             let themes = theme_picker_themes.clone();
             let onboarding_state = onboarding_state.clone();
@@ -196,9 +188,6 @@ impl AgentOnboardingView {
         ctx.subscribe_to_view(&agent_slide, |_me, _view, event, ctx| match event {
             AgentSlideEvent::CopyUpgradeUrlRequested => {
                 ctx.emit(AgentOnboardingEvent::UpgradeCopyUrlRequested);
-            }
-            AgentSlideEvent::PasteAuthTokenFromClipboardRequested => {
-                ctx.emit(AgentOnboardingEvent::UpgradePasteTokenFromClipboardRequested);
             }
         });
 

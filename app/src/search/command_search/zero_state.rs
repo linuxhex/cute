@@ -10,7 +10,7 @@ use cuteui::platform::Cursor;
 use cuteui::{AppContext, Element, Entity, SingletonEntity, TypedActionView, View, ViewContext};
 
 use crate::appearance::Appearance;
-use crate::cloud_stub_types::settings::{WarpDriveSettings, WarpDriveSettingsChangedEvent};
+use crate::cloud_stub_types::settings::{WarpDriveSettings, CuteDriveSettingsChangedEvent};
 use crate::search::{FilterChipRenderer, QueryFilter};
 use crate::settings::{AISettings, AISettingsChangedEvent};
 
@@ -26,8 +26,8 @@ lazy_static! {
             QueryFilter::NaturalLanguage
         ),
         (
-            "notebooks: deploy production server",
-            QueryFilter::Notebooks
+            "workflows: deploy production server",
+            QueryFilter::Workflows
         ),
     ]);
 }
@@ -57,7 +57,7 @@ impl CommandSearchZeroStateView {
         });
 
         ctx.subscribe_to_model(&WarpDriveSettings::handle(ctx), |_, _, event, ctx| {
-            if let WarpDriveSettingsChangedEvent::EnableWarpDrive { .. } = event {
+            if let CuteDriveSettingsChangedEvent::EnableWarpDrive { .. } = event {
                 ctx.notify();
             }
         });
@@ -295,11 +295,9 @@ fn valid_query_filters(app: &AppContext) -> Vec<QueryFilter> {
         filters.push(QueryFilter::PromptHistory);
     }
 
-    if WarpDriveSettings::is_warp_drive_enabled(app) {
-        filters.extend([QueryFilter::Workflows, QueryFilter::Notebooks]);
-
-        filters.push(QueryFilter::EnvironmentVariables);
-    }
+    // WarpDriveSettings::is_warp_drive_enabled disabled
+    filters.extend([QueryFilter::Workflows]);
+    filters.push(QueryFilter::EnvironmentVariables);
 
     filters
 }

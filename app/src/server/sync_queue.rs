@@ -95,64 +95,14 @@ impl QueueItem {
     }
 }
 
-/// Reason for object creation failure (stub for local version).
-#[derive(Debug)]
-pub enum CreationFailureReason {
-    UniqueKeyConflict {
-        id: String,
-        initiated_by: InitiatedBy,
-    },
-    Other {
-        id: String,
-        initiated_by: InitiatedBy,
-    },
-    Denied {
-        message: String,
-        client_id: ClientId,
-        initiated_by: InitiatedBy,
-    },
-}
 
-/// Event from the sync queue (stub for local version).
-#[derive(Debug)]
-pub enum SyncQueueEvent {
-    ObjectCreationSuccessful {
-        server_creation_info: crate::cloud_stub_types::ServerCreationInfo,
-        client_id: ClientId,
-        revision_and_editor: crate::cloud_stub_types::RevisionAndLastEditor,
-        metadata_ts: cute_graphql::scalars::time::ServerTimestamp,
-        initiated_by: InitiatedBy,
-    },
-    ObjectUpdateSuccessful {
-        server_id: ServerId,
-        revision_and_editor: crate::cloud_stub_types::RevisionAndLastEditor,
-    },
-    ObjectCreationFailure {
-        reason: CreationFailureReason,
-    },
-    ObjectUpdateFailure {
-        id: SyncId,
-    },
-    ObjectUpdateRejected {
-        id: String,
-        object: Arc<crate::cloud_stub_types::ServerCloudObject>,
-    },
-    ObjectUpdateFeatureNotAvailable {
-        id: String,
-    },
-    ReportObjectActionFailed {
-        uid: String,
-        action_timestamp: DateTime<Utc>,
-    },
-    ReportObjectActionSucceeded {
-        uid: String,
-        action_timestamp: DateTime<Utc>,
-        action_history: crate::cloud_stub_types::model::actions::ObjectActionHistory,
-    },
-}
 
 /// Sync queue for cloud object operations (stub for local version).
 pub struct SyncQueue;
+
+/// Empty event type for SyncQueue stub (never emits events).
+#[derive(Debug)]
+pub enum SyncQueueStubEvent {}
 
 impl SyncQueue {
     pub fn new(
@@ -162,21 +112,13 @@ impl SyncQueue {
         Self
     }
 
-    pub fn enqueue(&mut self, _item: QueueItem, _ctx: &mut AppContext) {
-        // No-op for local version
-    }
-
-    pub fn clear(&mut self) {
-        // No-op for local version
-    }
-
     pub fn is_dequeueing(&self) -> bool {
         false
     }
 }
 
 impl cuteui::Entity for SyncQueue {
-    type Event = SyncQueueEvent;
+    type Event = SyncQueueStubEvent;
 }
 
 impl cuteui::SingletonEntity for SyncQueue {}

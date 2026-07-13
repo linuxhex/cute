@@ -15,7 +15,7 @@ pub struct UICustomizationSettings {
     pub show_conversation_history: bool,
     pub show_project_explorer: bool,
     pub show_global_search: bool,
-    pub show_warp_drive: bool,
+    pub show_cute_drive: bool,
     pub show_code_review_button: bool,
 }
 
@@ -27,7 +27,7 @@ impl UICustomizationSettings {
             show_conversation_history: true,
             show_project_explorer: true,
             show_global_search: true,
-            show_warp_drive: true,
+            show_cute_drive: true,
             show_code_review_button: true,
         }
     }
@@ -39,7 +39,7 @@ impl UICustomizationSettings {
             show_conversation_history: false,
             show_project_explorer: false,
             show_global_search: false,
-            show_warp_drive: false,
+            show_cute_drive: false,
             show_code_review_button: false,
         }
     }
@@ -52,13 +52,12 @@ impl UICustomizationSettings {
         (conversation_visible && self.show_conversation_history)
             || self.show_project_explorer
             || self.show_global_search
-            || self.show_warp_drive
+            || self.show_cute_drive
     }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum OnboardingAuthState {
-    LoggedOut,
     FreeUser,
     PayingUser,
 }
@@ -93,19 +92,19 @@ impl SelectedSettings {
         }
     }
 
-    pub fn is_warp_drive_enabled(&self) -> bool {
+    pub fn is_cute_drive_enabled(&self) -> bool {
         match self {
             SelectedSettings::AgentDrivenDevelopment {
                 ui_customization, ..
             } => ui_customization
                 .as_ref()
-                .map(|ui| ui.show_warp_drive)
+                .map(|ui| ui.show_cute_drive)
                 .unwrap_or(true),
             SelectedSettings::Terminal {
                 ui_customization, ..
             } => ui_customization
                 .as_ref()
-                .map(|ui| ui.show_warp_drive)
+                .map(|ui| ui.show_cute_drive)
                 .unwrap_or(false),
         }
     }
@@ -287,7 +286,7 @@ impl OnboardingStateModel {
         self.ui_customization.show_conversation_history = enabled;
         self.ui_customization.show_project_explorer = enabled;
         self.ui_customization.show_global_search = enabled;
-        self.ui_customization.show_warp_drive = enabled;
+        self.ui_customization.show_cute_drive = enabled;
         ctx.notify();
     }
 
@@ -362,18 +361,18 @@ impl OnboardingStateModel {
         ctx.notify();
     }
 
-    pub(crate) fn set_show_warp_drive(&mut self, value: bool, ctx: &mut ModelContext<Self>) {
-        if self.ui_customization.show_warp_drive == value {
+    pub(crate) fn set_show_cute_drive(&mut self, value: bool, ctx: &mut ModelContext<Self>) {
+        if self.ui_customization.show_cute_drive == value {
             return;
         }
         send_telemetry_from_ctx!(
             OnboardingEvent::SettingChanged {
-                setting: "warp_drive".to_string(),
+                setting: "cute_drive".to_string(),
                 value: value.to_string(),
             },
             ctx
         );
-        self.ui_customization.show_warp_drive = value;
+        self.ui_customization.show_cute_drive = value;
         ctx.notify();
     }
 

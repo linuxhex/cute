@@ -213,8 +213,8 @@ pub trait ObjectClient: 'static + Send + Sync {
         notebook_id: crate::cloud_stub_types::models::NotebookId,
     ) -> Result<crate::cloud_stub_types::ServerMetadata>;
 
-    /// Gets updates for all Warp Drive actions.
-    async fn get_warp_drive_updates(
+    /// Gets updates for all Cute Drive actions.
+    async fn get_cute_drive_updates(
         &self,
         message_sender: Sender<ObjectUpdateMessage>,
         stream_ready_sender: Sender<()>,
@@ -394,7 +394,7 @@ impl ObjectClient for ServerApi {
         Err(anyhow!("Cloud objects not supported in local version"))
     }
 
-    async fn get_warp_drive_updates(
+    async fn get_cute_drive_updates(
         &self,
         _message_sender: Sender<ObjectUpdateMessage>,
         _stream_ready_sender: Sender<()>,

@@ -87,7 +87,7 @@ use crate::code_review::comments::{AttachedReviewComment, PendingImportedReviewC
 use crate::code_review::diff_state::DiffMode;
 // Warp Drive imports enabled for local version
 use crate::cloud_stub_types::items::WarpDriveItemId;
-use crate::cloud_stub_types::OpenWarpDriveObjectArgs;
+use crate::cloud_stub_types::OpenCuteDriveObjectArgs;
 use crate::CloudObjectTypeAndId;
 use crate::env_vars::EnvVarCollectionType;
 use crate::features::FeatureFlag;
@@ -115,7 +115,8 @@ use crate::server::telemetry::{
     AnonymousUserSignupEntrypoint, PaletteSource,
 };
 use crate::cloud_stub_types::sharing::dialog::SharingDialogSource;
-use crate::session_management::SessionNavigationData;
+// Session navigation types are now exported from crate root
+use crate::SessionNavigationData;
 use crate::settings::{AISettings, DefaultSessionMode, PaneSettings};
 use crate::settings_view::mcp_servers_page::MCPServersSettingsPage;
 use crate::settings_view::SettingsSection;
@@ -532,7 +533,7 @@ pub enum Event {
         session: Arc<Session>,
     },
     OpenWarpDriveLink {
-        open_warp_drive_args: OpenWarpDriveObjectArgs,
+        open_warp_drive_args: OpenCuteDriveObjectArgs,
     },
     #[cfg(feature = "local_fs")]
     OpenCodeInWarp {
@@ -579,7 +580,7 @@ pub enum Event {
     FocusPaneInWorkspace {
         locator: PaneViewLocator,
     },
-    ViewInWarpDrive(WarpDriveItemId),
+    ViewInCuteDrive(WarpDriveItemId),
     MoveToSpace {
         cloud_object_type_and_id: CloudObjectTypeAndId,
         space: Space,
@@ -3096,115 +3097,6 @@ impl PaneGroup {
     /// `Event::EnsureSharedSessionViewerChildPane`, which
     /// `OrchestrationViewerModel` emits on the parent's view the first
     /// time it observes a `session_id` for a child. The new pane gets its
-    /// own `BlocklistAIController` and viewer-side `Network` so child
-    /// traffic doesn't cross the parent's single-stream state.
-    fn ensure_shared_session_viewer_child_pane(
-        &mut self,
-        child_conversation_id: AIConversationId,
-        child_session_id: SessionId,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        // Race recovery: a pill click before materialization had a
-        // `session_id` falls through to `create_hidden_child_agent_pane`,
-        // which leaves a loading placeholder in `child_agent_panes`. The
-        // emission gate in `OrchestrationViewerModel` guarantees this
-        // helper runs at most once per child per model lifetime, so any
-        // existing entry must be that fallback — safe to discard.
-        let fallback_was_swapped_anchor = if let Some(prior_pane_id) = self
-            .child_agent_panes
-            .get(&child_conversation_id)
-            .copied()
-            .filter(|pane_id| self.has_pane_id(*pane_id))
-        {
-            let anchor = self.panes.original_pane_for_replacement(prior_pane_id);
-            self.discard_child_agent_pane_for_conversation(child_conversation_id, ctx);
-            anchor
-        } else {
-            None
-        };
-
-        let Some(child_conversation) = BlocklistAIHistoryModel::as_ref(ctx)
-            .conversation(&child_conversation_id)
-            .cloned()
-        else {
-            log::warn!(
-                "ensure_shared_session_viewer_child_pane: no local conversation {child_conversation_id:?}"
-            );
-            return;
-        };
-        let _child_task_id = child_conversation.task_id();
-
-        let resources = TerminalViewResources {
-            tips_completed: self.tips_completed.clone(),
-            server_api: self.server_api.clone(),
-            model_event_sender: self.model_event_sender.clone(),
-        };
-        let view_size = Self::estimated_view_bounds(ctx).size();
-        let (new_terminal_view, terminal_manager) = Self::create_shared_session_viewer(
-            child_session_id,
-            resources,
-            view_size,
-            // Per-child viewer: parent's model already discovers descendants.
-            false,
-            ctx,
-        );
-
-        let pane_data = TerminalPane::new(
-            Uuid::new_v4().as_bytes().to_vec(),
-            terminal_manager,
-            new_terminal_view.clone(),
-            self.model_event_sender.clone(),
-            ctx,
-        );
-        let new_pane_id = pane_data.terminal_pane_id();
-        if self
-            .attach_child_pane_off_tree(Box::new(pane_data), ctx)
-            .is_none()
-        {
-            log::error!(
-                "ensure_shared_session_viewer_child_pane: failed to attach pane for conv={child_conversation_id:?}"
-            );
-            return;
-        }
-
-        new_terminal_view.update(ctx, |terminal_view, ctx| {
-            terminal_view.suppress_initial_conversation_details_panel_auto_open();
-            terminal_view.restore_conversation_after_view_creation(
-                RestoredAIConversation::new(child_conversation),
-                true,
-                RestoreConversationEntryBehavior::PreserveAgentViewState,
-                ctx,
-            );
-            terminal_view.enter_agent_view(
-                None,
-                Some(child_conversation_id),
-                AgentViewEntryOrigin::SharedSessionSelection,
-                ctx,
-            );
-            // Shared-session viewer is `is_cloud_mode=false`, so
-            // `ambient_agent_view_model()` is typically `None`. Update
-            // opportunistically; the network's `JoinedSuccessfully` is the
-            // authoritative source for ambient agent state.
-            if let Some(ambient_agent_view_model) = terminal_view
-                .ambient_agent_view_model()
-                .into_optional_handle()
-                .cloned()
-            {
-                ambient_agent_view_model.update(ctx, |model, _ctx| {
-                    model.set_conversation_id(Some(child_conversation_id));
-                });
-            }
-        });
-
-        self.child_agent_panes
-            .insert(child_conversation_id, new_pane_id.into());
-        // If the discarded fallback was occupying a tree slot via temporary
-        // replacement, re-swap so the user lands on the new pane.
-        if let Some(anchor) = fallback_was_swapped_anchor {
-            self.swap_active_pane_to_conversation(anchor, child_conversation_id, ctx);
-        }
-    }
-
     /// Helper that creates the initial [`PaneData`] and [`InitialFocus`] given a terminal view.
     /// This is a common case in creating a new pane group with a single terminal session.
     fn terminal_pane_data(
@@ -4149,32 +4041,6 @@ impl PaneGroup {
     /// shared from `host_pane_id`. Only called from a non-wasm dispatch arm
     /// (`Event::StopSharingCurrentSession`), so the definition mirrors that
     /// cfg gate to keep wasm builds warning-clean.
-    #[cfg(not(target_family = "wasm"))]
-    fn stop_transitively_shared_child_shares(
-        &mut self,
-        host_pane_id: PaneId,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        let Some(child_pane_ids) = self.transitively_shared_child_panes.remove(&host_pane_id)
-        else {
-            return;
-        };
-        for child_pane_id in child_pane_ids {
-            let Some(terminal_view) = self.terminal_view_from_pane_id(child_pane_id, ctx) else {
-                continue;
-            };
-            let is_sharing = terminal_view
-                .as_ref(ctx)
-                .model
-                .lock()
-                .shared_session_status()
-                .is_sharer();
-            if !is_sharing {
-                continue;
-            }
-        }
-    }
-
     /// Removes `pane_id` from the transitive-share tracking map.
     fn forget_transitively_shared_pane(&mut self, pane_id: PaneId) {
         // The pane may be a host (key) or a transitively-shared child (value).
@@ -5490,144 +5356,6 @@ impl PaneGroup {
         }
     }
 
-    fn replace_loading_pane_with_restored_ambient_cloud_mode_pane(
-        &mut self,
-        loading_pane_id: PaneId,
-        cloud_conversation: CloudConversationData,
-        task_id: AmbientAgentTaskId,
-        ctx: &mut ViewContext<Self>,
-    ) -> bool {
-        let resources = TerminalViewResources {
-            tips_completed: self.tips_completed.clone(),
-            server_api: self.server_api.clone(),
-            model_event_sender: self.model_event_sender.clone(),
-        };
-        let view_bounds = Self::estimated_view_bounds(ctx);
-        let (terminal_view, terminal_manager) =
-            Self::create_cloud_mode_terminal(resources, view_bounds.size(), true, ctx);
-        let terminal_view_id = terminal_view.id();
-
-        Self::load_data_into_restored_ambient_cloud_mode_view(
-            terminal_view.clone(),
-            cloud_conversation,
-            task_id,
-            ctx,
-        );
-
-        let pane_data = TerminalPane::new(
-            Uuid::new_v4().as_bytes().to_vec(),
-            terminal_manager,
-            terminal_view,
-            self.model_event_sender.clone(),
-            ctx,
-        );
-
-        let success = self.replace_pane(loading_pane_id, pane_data, false, ctx);
-        if success {
-            let new_pane_id = self
-                .find_pane_id_for_terminal_view(terminal_view_id, ctx)
-                .unwrap_or(loading_pane_id);
-            self.restore_missing_child_agent_panes_for_terminal_pane_if_needed(new_pane_id, ctx);
-        }
-
-        success
-    }
-
-    fn load_data_into_restored_ambient_cloud_mode_view(
-        terminal_view: ViewHandle<TerminalView>,
-        cloud_conversation: CloudConversationData,
-        task_id: AmbientAgentTaskId,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        // URL-loaded conversation transcripts (e.g. Warp-on-Web deep links)
-        // restore from conversation data before the ambient task cache is
-        // guaranteed to contain this task. Native continuation usually reaches
-        // this path after task-backed navigation, but the restored cloud-mode
-        // pane still needs task ownership/harness data to resolve the correct
-        // inline follow-up or tombstone CTA. Request the task and let
-        // TerminalView's TasksUpdated subscription re-resolve once it arrives.
-        AgentConversationsModel::handle(ctx).update(ctx, |model, ctx| {
-            model.get_or_async_fetch_task_data(&task_id, ctx);
-        });
-        let mut conversation_id = None;
-        terminal_view.update(ctx, |view, ctx| {
-            // The cloud-mode terminal model starts with
-            // `is_executing_oz_environment_startup_commands = true`. Clear it
-            // before restoring so that `maybe_insert_setup_command_blocks`
-            // doesn't wrap restored command blocks in a "Running setup
-            // commands..." group.
-            view.model
-                .lock()
-                .block_list_mut()
-                .set_is_executing_oz_environment_startup_commands(false);
-
-            match cloud_conversation {
-                CloudConversationData::Oz(mut conversation) => {
-                    let id = conversation.id();
-                    conversation.set_is_viewing_shared_session(true);
-                    view.restore_conversation_after_view_creation(
-                        RestoredAIConversation::new(*conversation),
-                        true,
-                        RestoreConversationEntryBehavior::PreserveAgentViewState,
-                        ctx,
-                    );
-                    view.enter_agent_view(None, Some(id), AgentViewEntryOrigin::CloudAgent, ctx);
-                    conversation_id = Some(id);
-                }
-                CloudConversationData::CLIAgent(cli_conversation) => {
-                    if !FeatureFlag::AgentHarness.is_enabled() {
-                        log::warn!(
-                            "AgentHarness flag is disabled; ignoring CLI agent conversation"
-                        );
-                        return;
-                    }
-                    let harness = match cli_conversation.metadata.harness {
-                        AIAgentHarness::ClaudeCode => Some(Harness::Claude),
-                        AIAgentHarness::Gemini => Some(Harness::Gemini),
-                        AIAgentHarness::Codex => Some(Harness::Codex),
-                        AIAgentHarness::Oz => None,
-                        AIAgentHarness::Unknown => Some(Harness::Unknown),
-                    };
-                    let fallback_title = cli_conversation.metadata.title.clone();
-                    view.restore_conversation_and_directory_context(
-                        CloudConversationData::CLIAgent(cli_conversation),
-                        true,
-                        RestoreConversationEntryBehavior::PreserveAgentViewState,
-                        |_, _| {},
-                        ctx,
-                    );
-                    if let Some(harness) = harness {
-                        if let Some(ambient_agent_view_model) =
-                            view.ambient_agent_view_model().cloned()
-                        {
-                            ambient_agent_view_model.update(ctx, |model, _| {
-                                model.set_harness(harness);
-                            });
-                        }
-                    }
-                    if let Some(vehicle_conversation_id) =
-                        view.enter_agent_view_for_restored_cli_agent(fallback_title, ctx)
-                    {
-                        view.model
-                            .lock()
-                            .block_list_mut()
-                            .attach_non_startup_blocks_to_conversation(vehicle_conversation_id);
-                    }
-                }
-            }
-
-            if let Some(ambient_agent_view_model) = view.ambient_agent_view_model().cloned() {
-                ambient_agent_view_model.update(ctx, |model, _ctx| {
-                    model.set_conversation_id(conversation_id);
-                });
-            }
-        });
-
-        ActiveAgentViewsModel::handle(ctx).update(ctx, |active_views, ctx| {
-            active_views.register_ambient_session(terminal_view.id(), task_id, ctx);
-        });
-    }
-
     /// Clear all panes that were hidden due to being closed (for undo functionality)
     /// This is typically called when starting pane rearrangement operations
     fn clear_hidden_closed_panes(&mut self, ctx: &mut ViewContext<Self>) {
@@ -6914,16 +6642,6 @@ impl PaneGroup {
                 self.update_browser_url(ctx);
             }
         }
-    }
-
-    fn handle_pane_link_updated(&self, pane_id: PaneId, url: Option<Url>, ctx: &AppContext) {
-        log::debug!("Url for pane should be updated pane_id: {pane_id:?}, url: {url:?}");
-        #[cfg(target_family = "wasm")]
-        if pane_id == self.focused_pane_id(ctx) {
-            update_browser_url(url, false);
-        }
-
-        let _ = ctx;
     }
 
     // Simplified: browser URL update does not need to wait for cloud load in local version

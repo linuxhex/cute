@@ -177,12 +177,6 @@ fn dispatch_command(
             }
             secret::run(ctx, global_options, secret_cmd)
         }
-        // CliCommand::Federate(federate_cmd) => {
-        //     if !FeatureFlag::OzIdentityFederation.is_enabled() {
-        //         return Err(anyhow::anyhow!("invalid value 'federate'"));
-        //     }
-        //     federate::run(ctx, global_options, federate_cmd)
-        // }
         CliCommand::Federate(_) => {
             return Err(anyhow::anyhow!("Identity federation is disabled in this version"));
         }
@@ -199,10 +193,12 @@ fn dispatch_command(
             artifact::run(ctx, global_options, artifact_cmd)
         }
         CliCommand::ApiKey(api_key_cmd) => {
-            if !FeatureFlag::APIKeyManagement.is_enabled() {
-                return Err(anyhow::anyhow!("invalid value 'api-key'"));
-            }
-            api_key::run(ctx, global_options, api_key_cmd)
+            // Cute: APIKeyManagement feature removed
+            // if !FeatureFlag::APIKeyManagement.is_enabled() {
+            //     return Err(anyhow::anyhow!("invalid value 'api-key'"));
+            // }
+            return Err(anyhow::anyhow!("invalid value 'api-key' - feature disabled"));
+            // api_key::run(ctx, global_options, api_key_cmd)
         }
     }
 }
@@ -557,22 +553,17 @@ fn run_task(
         TaskCommand::List(args) => ambient::list_ambient_agent_tasks(ctx, global_options, args),
         TaskCommand::Get(args) => {
             if args.conversation {
-                if !FeatureFlag::ConversationApi.is_enabled() {
-                    return Err(anyhow::anyhow!(
-                        "The --conversation flag is not available in this build"
-                    ));
-                }
-                ambient::get_run_conversation(ctx, args.task_id)
+                return Err(anyhow::anyhow!(
+                    "The --conversation flag is not available in this build"
+                ));
             } else {
                 ambient::get_ambient_agent_task_status(ctx, global_options, args)
             }
         }
         TaskCommand::Conversation(conv_cmd) => {
-            if !FeatureFlag::ConversationApi.is_enabled() {
-                return Err(anyhow::anyhow!(
-                    "The 'conversation' subcommand is not available in this build"
-                ));
-            }
+            return Err(anyhow::anyhow!(
+                "The 'conversation' subcommand is not available in this build"
+            ));
             match conv_cmd {
                 cute_cli::task::ConversationCommand::Get(args) => {
                     ambient::get_conversation(ctx, args.conversation_id)
@@ -1092,19 +1083,21 @@ impl AgentDriverRunner {
         let handoff_snapshot_server_api = server_api.clone();
         let handoff_snapshot_download_dir = attachments_download_dir.clone();
         let handoff_snapshot = async move {
-            if !FeatureFlag::OzHandoff.is_enabled() {
-                return Ok(None);
-            }
-            let Some(task_id_parsed) = parsed_task_id else {
-                return Ok(None);
-            };
-            driver::attachments::fetch_and_download_handoff_snapshot_attachments(
-                handoff_snapshot_ai_client,
-                handoff_snapshot_server_api.http_client(),
-                task_id_parsed,
-                handoff_snapshot_download_dir,
-            )
-            .await
+            // Cute: OzHandoff feature removed
+            // if !FeatureFlag::OzHandoff.is_enabled() {
+            //     return Ok(None);
+            // }
+            return Ok::<_, anyhow::Error>(None);  // OzHandoff disabled
+            // let Some(task_id_parsed) = parsed_task_id else {
+            //     return Ok(None);
+            // };
+            // driver::attachments::fetch_and_download_handoff_snapshot_attachments(
+            //     handoff_snapshot_ai_client,
+            //     handoff_snapshot_server_api.http_client(),
+            //     task_id_parsed,
+            //     handoff_snapshot_download_dir,
+            // )
+            // .await
         };
 
         // Fetch a fresh GitHub token from the server so the driver can configure git

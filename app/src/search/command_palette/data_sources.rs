@@ -9,13 +9,15 @@ use cuteui::{AppContext, Entity, ModelContext, ModelHandle, SingletonEntity};
 use crate::search::action::CommandBindingDataSource;
 use crate::search::binding_source::BindingSource;
 use crate::search::command_palette::mixer::{CommandPaletteItemAction, ItemSummary};
+use crate::search::command_palette::mixer::CommandPaletteMixer;
+use crate::search::command_palette::{launch_config, navigation, tabs};
 use crate::search::command_palette::new_session::NewSessionDataSource;
-use crate::search::command_palette::{files, launch_config, navigation, tabs, CommandPaletteMixer};
 use crate::search::data_source::QueryResult;
 use crate::search::files::model::FileSearchModel;
 use crate::search::mixer::AddAsyncSourceOptions;
 use crate::search::QueryFilter;
-use crate::session_management::SessionSource;
+// Session navigation types are now exported from crate root
+use crate::{SessionSource, TabNavigationData};
 
 /// Store of all of the [`crate::search::DataSource`]s for the command palette.
 pub struct DataSourceStore {
@@ -92,9 +94,9 @@ impl DataSourceStore {
                 let is_in_git_repo = file_search_model.repo_root_location(ctx).is_some();
 
                 let files_data_source = if is_in_git_repo {
-                    ctx.add_model(|_| files::data_source::FileDataSource::new())
+                    ctx.add_model(|_| crate::search::command_palette::files::data_source::FileDataSource::new())
                 } else {
-                    ctx.add_model(|ctx| files::data_source::FileDataSource::new_current_folder(ctx))
+                    ctx.add_model(|ctx| crate::search::command_palette::files::data_source::FileDataSource::new_current_folder(ctx))
                 };
                 mixer.add_async_source(
                     files_data_source,
@@ -117,7 +119,7 @@ impl DataSourceStore {
     pub fn reset_ctrl_tab_mixer(
         &mut self,
         mixer: ModelHandle<CommandPaletteMixer>,
-        tabs: Vec<crate::session_management::TabNavigationData>,
+        tabs: Vec<TabNavigationData>,
         ctx: &mut ModelContext<Self>,
     ) {
         if self.tabs_data_source.is_none() {
@@ -163,7 +165,7 @@ impl DataSourceStore {
                 .actions_data_source
                 .as_ref(app)
                 .query_result(*binding_id),
-            ItemSummary::Workflow { .. } | ItemSummary::EnvVarCollection { .. } | ItemSummary::Notebook { .. } => None,
+            ItemSummary::Workflow { .. } | ItemSummary::EnvVarCollection { .. } => None,
             ItemSummary::Session { pane_view_locator } => self
                 .sessions_data_source
                 .as_ref(app)
