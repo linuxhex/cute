@@ -259,14 +259,6 @@ pub fn init(app: &mut AppContext) {
         "root_view:add_session_at_path",
         RootView::add_session_at_path,
     );
-    // app.add_action(
-    //     "root_view:handle_team_intent_link_action",
-    //     RootView::handle_team_intent_link_action,
-    // );
-    // app.add_action(
-    //     "root_view:open_team_settings_page",
-    //     RootView::open_team_settings_page,
-    // );
     app.add_action(
         "root_view:handle_notification_click",
         RootView::handle_notification_click,
@@ -1615,34 +1607,7 @@ impl RootView {
         );
 
         // Subscribe to workspace changes to update autonomy enforcement state and detect upgrades.
-        // TeamsChanged fires whenever the workspace/billing metadata poll returns, which is also
-        // when a free→paid upgrade would be reflected (customer_type changes).
-        // let onboarding_view_for_workspaces = onboarding_view.clone();
-        // ctx.subscribe_to_model(
-        //     &UserWorkspaces::handle(ctx),
-        //     move |_, user_workspaces, event, ctx| {
-        //         match event {
-        //             UserWorkspacesEvent::UpdateWorkspaceSettingsSuccess => {
-        //                 let workspace_enforces_autonomy = user_workspaces
-        //                     .as_ref(ctx)
-        //                     .ai_autonomy_settings()
-        //                     .has_any_overrides();
-        //                 onboarding_view_for_workspaces.update(ctx, |onboarding_view, ctx| {
-        //                     onboarding_view
-        //                         .set_workspace_enforces_autonomy(workspace_enforces_autonomy, ctx);
-        //                 });
-        //             }
-        //             UserWorkspacesEvent::TeamsChanged => {
-        //                 // Experiments removed - no free user experiment check
-        //             }
-        //             _ => {}
-        //         }
-        //         let auth_state = current_onboarding_auth_state(ctx);
-        //         onboarding_view_for_workspaces.update(ctx, |onboarding_view, ctx| {
-        //             onboarding_view.set_auth_state(auth_state, ctx);
-        //         });
-        //     },
-        // );
+        // Removed: UserWorkspaces/TeamsChanged subscription (team features not needed in local version)
 
         let onboarding_view_for_auth = onboarding_view.clone();
         ctx.subscribe_to_model(
@@ -1660,9 +1625,6 @@ impl RootView {
                         LLMPreferences::handle(ctx).update(ctx, |prefs, ctx| {
                             prefs.refresh_available_models(ctx);
                         });
-                        // TeamUpdateManager::handle(ctx).update(ctx, |manager, ctx| {
-                        //     drop(manager.refresh_workspace_metadata(ctx));
-                        // });
                     }
                 }
             },
@@ -1779,14 +1741,11 @@ impl RootView {
             AgentOnboardingEvent::PrivacySettingsFromTerminalThemeSlideRequested => {
             }
             AgentOnboardingEvent::AppBecameActive => {
-                // fetch the models / workspace metadata when the user tabs/intents back
+                // fetch the models when the user tabs/intents back
                 // into the app during onboarding after potentially upgrading
                 LLMPreferences::handle(ctx).update(ctx, |prefs, ctx| {
                     prefs.refresh_available_models(ctx);
                 });
-                // TeamUpdateManager::handle(ctx).update(ctx, |manager, ctx| {
-                //     drop(manager.refresh_workspace_metadata(ctx));
-                // });
             }
         }
     }
@@ -2084,44 +2043,6 @@ impl RootView {
         }
         true
     }
-
-    // /// Shows the user the settings view of their newly joined team
-    // /// within the app.
-    // pub fn handle_team_intent_link_action(&mut self, _: &(), ctx: &mut ViewContext<Self>) -> bool {
-    //     // Force-open warp drive.
-    //     let window_id = ctx.window_id();
-    //     if let AuthOnboardingState::Terminal(handle) = &self.auth_onboarding_state {
-    //         ctx.dispatch_typed_action_for_view(
-    //             window_id,
-    //             handle.id(),
-    //             &WorkspaceAction::OpenWarpDrive,
-    //         );
-    //         ctx.windows().show_window_and_focus_app(window_id);
-    //     } else {
-    //         log::error!("Auth not complete before trying to open warp drive");
-    //     }
-    //
-    //     // Use the team tester model to notify relevant subscribers to refresh their data.
-    //     TeamTesterStatus::handle(ctx).update(ctx, |model, ctx| {
-    //         model.initiate_data_pollers(true, ctx);
-    //     });
-    //     true
-    // }
-
-    // pub fn open_team_settings_page(&mut self, _: &(), ctx: &mut ViewContext<Self>) -> bool {
-    //     let window_id = ctx.window_id();
-    //     if let AuthOnboardingState::Terminal(handle) = &self.auth_onboarding_state {
-    //         ctx.dispatch_typed_action_for_view(
-    //             window_id,
-    //             handle.id(),
-    //             &WorkspaceAction::ShowSettingsPage(SettingsSection::Teams),
-    //         );
-    //         ctx.windows().show_window_and_focus_app(window_id);
-    //     } else {
-    //         log::error!("Auth not complete before trying to open team settings page");
-    //     }
-    //     true
-    // }
 
     pub fn open_settings_page_in_existing_window(
         &mut self,

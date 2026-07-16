@@ -1649,13 +1649,7 @@ impl ServerApiProvider {
         self.server_api.clone()
     }
 
-    pub fn get_workspace_client(&self) -> Arc<dyn WorkspaceClient> {
-        self.server_api.clone()
-    }
-
-    pub fn get_team_client(&self) -> Arc<dyn std::any::Any> {
-        self.server_api.clone()
-    }
+    // Removed: get_workspace_client and get_team_client (team/workspace features not needed in local version)
 
     pub fn get_ai_client(&self) -> Arc<dyn AIClient> {
         self.server_api.clone()

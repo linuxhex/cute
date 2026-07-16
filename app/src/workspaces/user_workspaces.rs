@@ -1,5 +1,6 @@
 // Minimal stub for user workspaces functionality
 // This module provides stub definitions for workspace-related types
+// Team and sharing features are removed for the local version.
 
 use serde::{Deserialize, Serialize};
 
@@ -7,7 +8,6 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct WorkspacesMetadataResponse {
     pub workspaces: Vec<WorkspaceMetadata>,
-    pub joinable_teams: Vec<TeamMetadata>,
     pub feature_model_choices: Option<FeatureModelChoices>,
 }
 
@@ -16,15 +16,13 @@ pub struct WorkspacesMetadataResponse {
 pub struct WorkspaceMetadata {
     pub uid: String,
     pub name: String,
-    pub teams: Vec<TeamMetadata>,
 }
 
-/// Minimal stub for TeamMetadata
+/// Minimal stub for TeamMetadata (kept for persistence/sqlite.rs compatibility)
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct TeamMetadata {
     pub uid: String,
     pub name: String,
-    pub billing_metadata: Option<BillingMetadata>,
 }
 
 /// Minimal stub for BillingMetadata

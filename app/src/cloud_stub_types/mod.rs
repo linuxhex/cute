@@ -1297,14 +1297,11 @@ pub enum DriveIndexVariant {
     Shared,
 }
 
-/// Minimal stub for TeamMetadata
-#[derive(Clone, Debug, Default)]
+/// Minimal stub for TeamMetadata (simplified for local version - no team features)
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct TeamMetadata {
-    pub name: String,
     pub uid: crate::server::ids::ServerId,
-    pub billing_metadata: Option<BillingMetadata>,
-    pub members: Vec<TeamMember>,
-    pub organization_settings: Option<OrganizationSettings>,
+    pub name: String,
 }
 
 /// Minimal stub for BillingMetadata
@@ -1324,10 +1321,8 @@ impl TeamMetadata {
         &self.uid
     }
 
-    pub fn has_admin_permissions(&self, email: &str) -> bool {
-        self.members.iter().any(|member| {
-            member.email == email && (member.role == MembershipRole::Admin || member.role == MembershipRole::Owner)
-        })
+    pub fn has_admin_permissions(&self, _email: &str) -> bool {
+        false
     }
 }
 
@@ -2670,12 +2665,11 @@ impl std::fmt::Display for WorkspaceUid {
     }
 }
 
-/// Minimal stub for WorkspaceMetadata
+/// Minimal stub for WorkspaceMetadata (simplified for local version - no team fields)
 #[derive(Clone, Debug, Default)]
 pub struct WorkspaceMetadata {
     pub uid: WorkspaceUid,
     pub name: String,
-    pub teams: Vec<TeamMetadata>, // Changed from Vec<String> to Vec<TeamMetadata>
 }
 
 impl WorkspaceMetadata {
@@ -2683,15 +2677,13 @@ impl WorkspaceMetadata {
         Self {
             uid,
             name,
-            teams: Vec::new(),
         }
     }
 
-    pub fn from_local_cache(_uid: WorkspaceUid, _name: String, _teams: Vec<TeamMetadata>) -> Self {
+    pub fn from_local_cache(uid: WorkspaceUid, name: String) -> Self {
         Self {
-            uid: _uid,
-            name: _name,
-            teams: _teams,
+            uid,
+            name,
         }
     }
 
