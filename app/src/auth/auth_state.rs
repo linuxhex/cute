@@ -54,7 +54,6 @@ impl AuthState {
 
         if Self::should_use_test_user() {
             state.set_user(Some(User::test()));
-            #[cfg(any(test, feature = "integration_tests", feature = "skip_login"))]
             state.set_credentials(Some(Credentials::Test));
             return state;
         }
@@ -72,7 +71,7 @@ impl AuthState {
     }
 
     fn should_use_test_user() -> bool {
-        cfg!(any(test, feature = "skip_login"))
+        true
     }
 
     pub(super) fn set_user(&self, user: Option<User>) {

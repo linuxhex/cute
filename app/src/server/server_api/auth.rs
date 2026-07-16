@@ -77,21 +77,7 @@ pub trait AuthClient: 'static + Send + Sync {
 
 impl ServerApi {
     pub(super) async fn access_token(&self) -> Result<AuthToken> {
-        if cfg!(feature = "skip_login") {
-            bail!("skip_login enabled; failing all authenticated requests");
-        }
-
-        let Some(credentials) = self.auth_state.credentials() else {
-            bail!("missing authentication credentials");
-        };
-
-        match credentials {
-            Credentials::ApiKey { key, .. } => Ok(AuthToken::ApiKey(key)),
-            Credentials::Bearer(token) => Ok(AuthToken::Bearer(token)),
-            Credentials::SessionCookie => Ok(AuthToken::NoAuth),
-            #[cfg(any(test, feature = "integration_tests", feature = "skip_login"))]
-            Credentials::Test => Ok(AuthToken::NoAuth),
-        }
+        bail!("skip_login enabled; failing all authenticated requests");
     }
 }
 

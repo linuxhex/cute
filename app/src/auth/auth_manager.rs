@@ -71,22 +71,14 @@ impl AuthManager {
         // Cute: In skip_login mode, there is no device authorization flow.
         // Emit AuthComplete immediately so subscribers (launch_command, login, etc.)
         // can proceed without waiting for a server response that will never come.
-        #[cfg(feature = "skip_login")]
-        {
-            ctx.emit(AuthManagerEvent::AuthComplete);
-        }
-        let _ = ctx; // suppress unused warning when skip_login is not enabled
+        ctx.emit(AuthManagerEvent::AuthComplete);
     }
 
     pub fn refresh_user(&mut self, ctx: &mut ModelContext<Self>) {
         // Cute: In skip_login mode, there is no server to refresh from.
         // Emit AuthComplete immediately so subscribers (launch_command, etc.)
         // can proceed without waiting for a server response that will never come.
-        #[cfg(feature = "skip_login")]
-        {
-            ctx.emit(AuthManagerEvent::AuthComplete);
-        }
-        let _ = ctx; // suppress unused warning when skip_login is not enabled
+        ctx.emit(AuthManagerEvent::AuthComplete);
     }
 
     pub fn open_url_maybe_with_anonymous_token(

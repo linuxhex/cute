@@ -50,21 +50,7 @@ impl OneTimeModalModel {
             // Simplified: Assume existing user for local mode
             let is_existing_user = true;
             if is_existing_user {
-                if cfg!(feature = "skip_login") {
-                    me.check_and_trigger_all_modals(ctx);
-                } else {
-                    // Settings modals settings are synced to the cloud, not respecting the user's sync setting, so they
-                    // must all await initial load to be triggered, else we risk reading a stale triggered value.
-                    ctx.subscribe_to_model(
-                        &CloudPreferencesSyncer::handle(ctx),
-                        move |me, event, ctx| {
-                            if let CloudPreferencesSyncerEvent::InitialLoadCompleted = event {
-                                ctx.unsubscribe_from_model(&CloudPreferencesSyncer::handle(ctx));
-                                me.check_and_trigger_all_modals(ctx);
-                            }
-                        },
-                    );
-                }
+                me.check_and_trigger_all_modals(ctx);
             } else {
                 AISettings::handle(ctx).update(ctx, |settings, ctx| {
                     if let Err(e) = settings
@@ -92,7 +78,7 @@ impl OneTimeModalModel {
         });
 
         // Cute OMJF-11111: 本地模式启动时标记云弹窗已处理，避免后续误触发
-        if cfg!(feature = "skip_login") {
+        {
             AISettings::handle(ctx).update(ctx, |settings, ctx| {
                 let _ = settings.did_check_to_trigger_oz_launch_modal.set_value(true, ctx);
                 let _ = settings
@@ -228,9 +214,7 @@ impl OneTimeModalModel {
 
     fn check_and_trigger_all_modals(&mut self, ctx: &mut ModelContext<Self>) {
         // Cute OMJF-11111: 本地模式不展示云相关一次性弹窗
-        if cfg!(feature = "skip_login") {
-            return;
-        }
+        return;
 
         // Never show one-time modals on WASM.
         if cfg!(target_family = "wasm") {

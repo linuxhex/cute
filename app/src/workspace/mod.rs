@@ -1012,7 +1012,6 @@ pub fn init(app: &mut AppContext) {
 
     // Register a debug-only action for writing the user's access token to the system clipboard
     // to aid debugging and development.
-    #[cfg(not(feature = "skip_login"))]
     if ChannelState::enable_debug_features() {
         app.register_editable_bindings([EditableBinding::new(
             "workspace:copy_access_token_to_clipboard",

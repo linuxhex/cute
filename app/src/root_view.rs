@@ -1465,13 +1465,13 @@ impl RootView {
 
         let has_completed_local_onboarding = FeatureFlag::OpenWarpNewSettingsModes.is_enabled()
             && has_completed_local_onboarding(ctx);
-        let should_show_pre_login_onboarding = !cfg!(feature = "skip_login")
+        let should_show_pre_login_onboarding = false
             && FeatureFlag::OpenWarpNewSettingsModes.is_enabled()
             && FeatureFlag::AgentOnboarding.is_enabled()
             && !has_completed_local_onboarding;
 
         // Cute OMJF-11111: 本地模式跳过登录前引导，直接进入 workspace
-        if cfg!(feature = "skip_login") {
+        {
             mark_local_onboarding_completed(ctx);
         }
 

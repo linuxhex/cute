@@ -45,50 +45,38 @@ pub struct HarnessAvailability {
 }
 
 fn default_harnesses() -> Vec<HarnessAvailability> {
-    #[cfg(feature = "skip_login")]
-    {
-        vec![
-            HarnessAvailability {
-                harness: Harness::Oz,
-                display_name: "Warp".to_string(),
-                enabled: true,
-                available_models: vec![],
-            },
-            HarnessAvailability {
-                harness: Harness::Claude,
-                display_name: "Claude".to_string(),
-                enabled: true,
-                available_models: vec![],
-            },
-            HarnessAvailability {
-                harness: Harness::Gemini,
-                display_name: "Gemini".to_string(),
-                enabled: true,
-                available_models: vec![],
-            },
-            HarnessAvailability {
-                harness: Harness::Codex,
-                display_name: "Codex".to_string(),
-                enabled: true,
-                available_models: vec![],
-            },
-            HarnessAvailability {
-                harness: Harness::OpenCode,
-                display_name: "Qoder".to_string(),
-                enabled: true,
-                available_models: vec![],
-            },
-        ]
-    }
-    #[cfg(not(feature = "skip_login"))]
-    {
-        vec![HarnessAvailability {
+    vec![
+        HarnessAvailability {
             harness: Harness::Oz,
             display_name: "Warp".to_string(),
             enabled: true,
             available_models: vec![],
-        }]
-    }
+        },
+        HarnessAvailability {
+            harness: Harness::Claude,
+            display_name: "Claude".to_string(),
+            enabled: true,
+            available_models: vec![],
+        },
+        HarnessAvailability {
+            harness: Harness::Gemini,
+            display_name: "Gemini".to_string(),
+            enabled: true,
+            available_models: vec![],
+        },
+        HarnessAvailability {
+            harness: Harness::Codex,
+            display_name: "Codex".to_string(),
+            enabled: true,
+            available_models: vec![],
+        },
+        HarnessAvailability {
+            harness: Harness::OpenCode,
+            display_name: "Qoder".to_string(),
+            enabled: true,
+            available_models: vec![],
+        },
+    ]
 }
 
 #[derive(Debug, Clone)]
@@ -379,7 +367,6 @@ impl HarnessAvailabilityModel {
     }
 
     pub fn refresh(&self, ctx: &mut ModelContext<Self>) {
-        #[cfg(feature = "skip_login")]
         {
             let default_harnesses = default_harnesses();
             if default_harnesses != self.harnesses {

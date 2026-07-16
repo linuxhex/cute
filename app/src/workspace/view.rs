@@ -3703,7 +3703,7 @@ impl Workspace {
                     });
 
                 // 本地模式跳过云 pane 后，若 tab 无有效 pane 则补一个终端 tab
-                if cfg!(feature = "skip_login") {
+                {
                     let any_empty_tab = self.tabs.iter().any(|tab| {
                         tab.pane_group.read(ctx, |pane_group, _| pane_group.pane_count() == 0)
                     });
@@ -3985,8 +3985,7 @@ impl Workspace {
         shell: Option<AvailableShell>,
         ctx: &mut ViewContext<Self>,
     ) {
-        let show_warp_home = !ContextFlag::CreateNewSession.is_enabled()
-            && !cfg!(feature = "skip_login");
+        let show_warp_home = false;
         let mut placeholder_pane = None;
         let open_warp_drive = if !show_warp_home {
             if self.should_trigger_get_started_onboarding(ctx) {
@@ -4016,7 +4015,7 @@ impl Workspace {
         };
         let initial_tab = self.active_tab_pane_group().clone();
 
-        if open_warp_drive && !cfg!(feature = "skip_login") {
+        if open_warp_drive && false {
             // // We open Warp Drive automatically in two cases:
             // // * The user is new to Warp, and went through the overall onboarding flow
             // // * The user is on the web, so we can't open a terminal session.
@@ -6635,40 +6634,8 @@ impl Workspace {
 
     /// Opens the Cute Drive object identified by `uid` in a new pane
     /// if it has a pane representation.
-    fn open_cute_drive_object_in_new_pane(&mut self, uid: &ObjectUid, ctx: &mut ViewContext<Self>) {
-        if cfg!(feature = "skip_login") {
-            return;
-        }
-        let Some(object) = CloudModel::as_ref(ctx).get_by_uid(uid) else {
-            return;
-        };
-
-        let sync_id = object.sync_id();
-        match object.object_type() {
-            ObjectType::Workflow => {
-                self.open_workflow_in_pane(
-                    &WorkflowOpenSource::Existing(sync_id),
-                    &OpenWarpDriveObjectSettings::default(),
-                    WorkflowViewMode::View,
-                    ctx,
-                );
-            }
-            ObjectType::GenericStringObject(GenericStringObjectFormat::Json(
-                JsonObjectType::EnvVarCollection,
-            )) => {
-                self.open_env_var_collection(
-                    &EnvVarCollectionSource::Existing(sync_id),
-                    false,
-                    ctx,
-                );
-            }
-            ObjectType::GenericStringObject(GenericStringObjectFormat::Json(
-                JsonObjectType::AIFact,
-            )) => {
-                self.open_ai_fact_collection_pane(None, None, ctx);
-            }
-            _ => {}
-        }
+    fn open_cute_drive_object_in_new_pane(&mut self, _uid: &ObjectUid, _ctx: &mut ViewContext<Self>) {
+        // Cute: 本地模式不支持云对象打开
     }
 
     /// Open the notebook identified by `source`. If the notebook is already open in another pane,
@@ -6676,226 +6643,41 @@ impl Workspace {
     /// pane if default_to_new_pane is true; otherwise, it'll be opened in a new tab.
     pub fn open_notebook(
         &mut self,
-        source: &NotebookSource,
-        settings: &OpenWarpDriveObjectSettings,
-        ctx: &mut ViewContext<Self>,
-        default_to_new_pane: bool,
+        _source: &NotebookSource,
+        _settings: &OpenWarpDriveObjectSettings,
+        _ctx: &mut ViewContext<Self>,
+        _default_to_new_pane: bool,
     ) {
         // Cute OMJF-11111: 本地模式不支持云 Notebook
-        if cfg!(feature = "skip_login") {
-            return;
-        }
-        let notebook_manager = NotebookManager::handle(ctx);
-        let mut notebook_already_open = false;
-        if let Some((window_id, locator)) = notebook_manager.as_ref(ctx).find_pane(source) {
-            // If the notebook is already open in _this_ workspace, we can switch to it directly.
-            // Otherwise, dispatch an action to the appropriate window. We can't unconditionally
-            // dispatch an action, because that will cause a circular view update.
-            notebook_already_open = true;
-            if window_id == ctx.window_id() {
-                self.focus_pane(locator, ctx);
-            } else if let Some(root_view) = ctx.root_view_id(window_id) {
-                ctx.dispatch_action_for_view(
-                    window_id,
-                    root_view,
-                    "root_view:handle_pane_navigation_event",
-                    &locator,
-                );
-            }
-            // If the was an invitee email, open the share dialog as well after focusing the pane.
-            // if let Some(invitee_email) = settings.invitee_email.clone() {
-            //     if let NotebookSource::Existing(sync_id) = source {
-            //         self.open_object_sharing_settings(
-            //             CloudObjectTypeAndId::from_id_and_type(*sync_id, ObjectType::Notebook),
-            //             Some(invitee_email),
-            //             SharingDialogSource::InviteeRequest,
-            //             ctx,
-            //         );
-            //     }
-            // }
-        } else if default_to_new_pane {
-            let window_id = ctx.window_id();
-            notebook_manager.update(ctx, |manager, ctx| {
-                manager.create_pane(source, settings, window_id, ctx)
-            });
-            // Note: pane creation is stubbed, no pane to add to group
-        }
-
-        // Get notebook ID to set Warp drive index selected state
-        if let NotebookSource::Existing(notebook_id) = source {
-            let focused_folder_id = settings.focused_folder_id.map(SyncId::ServerId);
-            if !notebook_already_open && !default_to_new_pane {
-                self.add_tab_for_cloud_notebook(*notebook_id, settings, ctx);
-            }
-
-            if let Some(focused_folder_id) = focused_folder_id {
-                // Only focus the notebook if we don't want to focus a parent folder instead
-                self.open_or_toggle_warp_drive(false, false, ctx);
-                self.set_selected_object(
-                    Some(WarpDriveItemId::Object(
-                        CloudObjectTypeAndId::from_id_and_type(
-                            focused_folder_id,
-                            ObjectType::Folder,
-                        ),
-                    )),
-                    ctx,
-                );
-            } else {
-                self.set_selected_object(
-                    Some(WarpDriveItemId::Object(
-                        CloudObjectTypeAndId::from_id_and_type(*notebook_id, ObjectType::Notebook),
-                    )),
-                    ctx,
-                );
-            }
-        }
     }
 
     /// Open a Warp Drive workflow in response to an intent URL.
     pub fn open_workflow_from_intent(
         &mut self,
-        workflow_id: SyncId,
-        settings: &OpenWarpDriveObjectSettings,
-        ctx: &mut ViewContext<Self>,
+        _workflow_id: SyncId,
+        _settings: &OpenWarpDriveObjectSettings,
+        _ctx: &mut ViewContext<Self>,
     ) {
-        if cfg!(feature = "skip_login") {
-            return;
-        }
-        // If running workflows is supported, do so. Otherwise, or if the workflow isn't in memory,
-        // fall back to the workflow pane.
-        // We don't want to run the workflow if the invitee email is set, as we want to open the share dialog instead with the
-        // workflow open in a pane.
-        // if ContextFlag::RunWorkflow.is_enabled() && settings.invitee_email.is_none() {
-        if ContextFlag::RunWorkflow.is_enabled() {
-            match CloudModel::as_ref(ctx).get_workflow(&workflow_id).cloned() {
-                Some(workflow) => {
-                    self.open_or_toggle_warp_drive(false, false, ctx);
-                    self.run_cloud_workflow_in_active_input(
-                        workflow,
-                        WorkflowSelectionSource::Undefined,
-                        TerminalSessionFallbackBehavior::OpenIfNeeded,
-                        ctx,
-                    );
-
-                    // If there's a parent folder to focus, do so after running the workflow, as
-                    // that will focus the workflow instead.
-                    if let Some(focused_folder) = settings.focused_folder_id.map(SyncId::ServerId) {
-                        self.set_selected_object(
-                            Some(WarpDriveItemId::Object(
-                                CloudObjectTypeAndId::from_id_and_type(
-                                    focused_folder,
-                                    ObjectType::Folder,
-                                ),
-                            )),
-                            ctx,
-                        );
-                    }
-                }
-                None => self.add_tab_for_cloud_workflow(workflow_id, settings, ctx),
-            }
-        } else {
-            self.add_tab_for_cloud_workflow(workflow_id, settings, ctx);
-        }
+        // Cute: 本地模式不支持云 Workflow
     }
 
     pub fn open_workflow_in_pane(
         &mut self,
-        source: &WorkflowOpenSource,
-        settings: &OpenWarpDriveObjectSettings,
-        mode: WorkflowViewMode,
-        ctx: &mut ViewContext<Self>,
+        _source: &WorkflowOpenSource,
+        _settings: &OpenWarpDriveObjectSettings,
+        _mode: WorkflowViewMode,
+        _ctx: &mut ViewContext<Self>,
     ) {
-        if cfg!(feature = "skip_login") {
-            return;
-        }
-        let workflow_manager = WorkflowManager::handle(ctx);
-
-        if let Some((window_id, locator)) = workflow_manager.as_ref(ctx).find_pane(source) {
-            if window_id == ctx.window_id() {
-                self.focus_pane(locator, ctx);
-            } else if let Some(root_view) = ctx.root_view_id(window_id) {
-                ctx.dispatch_action_for_view(
-                    window_id,
-                    root_view,
-                    "root_view:handle_pane_navigation_event",
-                    &locator,
-                );
-            }
-        } else {
-            let window_id = ctx.window_id();
-            let pane = workflow_manager.update(ctx, |manager, ctx| {
-                manager.create_pane(source, settings, mode, window_id, ctx)
-            });
-            self.active_tab_pane_group().update(ctx, |pane_group, ctx| {
-                let smart_split_direction =
-                    pane_group.smart_split_direction(ctx, WORKFLOW_AND_ENV_VAR_SPLIT_RATIO);
-                pane_group.add_pane_with_direction(
-                    smart_split_direction,
-                    pane,
-                    true, /* focus_new_pane */
-                    ctx,
-                );
-            });
-        }
+        // Cute: 本地模式不支持云 Workflow
     }
 
     pub fn open_env_var_collection(
         &mut self,
-        source: &EnvVarCollectionSource,
-        reload: bool,
-        ctx: &mut ViewContext<Self>,
+        _source: &EnvVarCollectionSource,
+        _reload: bool,
+        _ctx: &mut ViewContext<Self>,
     ) {
-        if cfg!(feature = "skip_login") {
-            return;
-        }
-        let env_var_collection_manager = EnvVarCollectionManager::handle(ctx);
-
-        if let Some((window_id, locator)) = env_var_collection_manager.as_ref(ctx).find_pane(source)
-        {
-            if reload {
-                env_var_collection_manager
-                    .update(ctx, |manager, ctx| manager.reload_collection(source, ctx));
-            }
-            if window_id == ctx.window_id() {
-                self.focus_pane(locator, ctx);
-            } else if let Some(root_view) = ctx.root_view_id(window_id) {
-                ctx.dispatch_action_for_view(
-                    window_id,
-                    root_view,
-                    "root_view:handle_pane_navigation_event",
-                    &locator,
-                );
-            }
-        } else {
-            let window_id = ctx.window_id();
-            let pane = env_var_collection_manager.update(ctx, |manager, ctx| {
-                manager.create_pane(source, window_id, ctx)
-            });
-            self.active_tab_pane_group().update(ctx, |pane_group, ctx| {
-                let smart_split_direction =
-                    pane_group.smart_split_direction(ctx, WORKFLOW_AND_ENV_VAR_SPLIT_RATIO);
-                pane_group.add_pane_with_direction(
-                    smart_split_direction,
-                    pane,
-                    true, /* focus_new_pane */
-                    ctx,
-                );
-            });
-        }
-
-        if let EnvVarCollectionSource::Existing(env_var_collection_id) = source {
-            self.set_selected_object(
-                Some(WarpDriveItemId::Object(
-                    CloudObjectTypeAndId::from_generic_string_object(
-                        GenericStringObjectFormat::Json(
-                            crate::cloud_stub_types::JsonObjectType::EnvVarCollection,
-                        ),
-                        *env_var_collection_id,
-                    ),
-                )),
-                ctx,
-            );
-        }
+        // Cute: 本地模式不支持云环境变量集合
     }
 
     /// Create a pane from a cloud object. Returns `None` if the object cannot be opened in a
@@ -7351,25 +7133,11 @@ impl Workspace {
     /// Open the Environment Management pane in a split pane (default direction is right).
     pub fn open_environment_management_pane(
         &mut self,
-        direction: Option<Direction>,
-        mode: EnvironmentsPage,
-        ctx: &mut ViewContext<Self>,
+        _direction: Option<Direction>,
+        _mode: EnvironmentsPage,
+        _ctx: &mut ViewContext<Self>,
     ) {
-        if cfg!(feature = "skip_login") {
-            return;
-        }
-        let direction = direction.unwrap_or(Direction::Right);
-        let environments_page_view = self.active_tab_pane_group().update(ctx, |pane_group, ctx| {
-            let pane = EnvironmentManagementPane::new(ctx);
-            let view = pane.environments_page_view(ctx);
-            pane_group
-                .add_pane_with_direction(direction, pane, true /* focus_new_pane */, ctx);
-            view
-        });
-        // Update page after the pane is added so focus works correctly
-        environments_page_view.update(ctx, |view, ctx| {
-            view.update_page(mode, ctx);
-        });
+        // Cute: 本地模式不支持云环境页面
     }
 
     pub(super) fn active_session_view(
@@ -7554,49 +7322,11 @@ impl Workspace {
 
     pub fn open_or_toggle_warp_drive(
         &mut self,
-        toggle: bool,
-        explicit_user_action: bool,
-        ctx: &mut ViewContext<Self>,
+        _toggle: bool,
+        _explicit_user_action: bool,
+        _ctx: &mut ViewContext<Self>,
     ) {
-        if cfg!(feature = "skip_login") {
-            return;
-        }
-        // Closing all left panels will also close warp drive so we need to retrieve
-        // whether warp drive was open first, and toggle based on the initial value.
-        let was_warp_drive_open = self.current_workspace_state.is_warp_drive_open;
-        self.current_workspace_state.close_all_left_panels();
-        self.current_workspace_state.is_warp_drive_open =
-            if toggle { !was_warp_drive_open } else { true };
-
-        // Set selected object to None upon toggle close of Warp Drive
-        if !self.current_workspace_state.is_warp_drive_open {
-            self.set_selected_object(None, ctx);
-            self.focus_active_tab(ctx);
-        }
-
-        // Reset focused index when opening/toggling Warp Drive open
-        if self.current_workspace_state.is_warp_drive_open {
-            self.reset_focused_index_in_cute_drive(true, ctx);
-        }
-
-        ctx.notify();
-
-        // Telemetry and welcome tip logic is only for when the user explicitly opens Warp Drive
-        // AND warp drive wasn't open before. There are other scenarios where we open Warp Drive like:
-        // new user onboarding, user joins a team, etc so we want to avoid counting those.
-        if explicit_user_action
-            && !was_warp_drive_open
-            && self.current_workspace_state.is_warp_drive_open
-        {
-            self.tips_completed.update(ctx, |tips_completed, ctx| {
-                mark_feature_used_and_write_to_user_defaults(
-                    Tip::Action(TipAction::OpenWarpDrive),
-                    tips_completed,
-                    ctx,
-                );
-                ctx.notify();
-            });
-        }
+        // Cute: 本地模式不支持 Warp Drive
     }
 
     // Cute: 禁用云端资源中心 - 本地版本不启用 launchpad/dashboard

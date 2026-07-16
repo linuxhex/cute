@@ -54,14 +54,10 @@ pub fn init(app: &mut AppContext) {
     // TeamUpdateManager) listen for AuthComplete to trigger model refreshes.
     // Without AuthComplete, AI/agent features including CLI agent integration
     // never load available models or harness secrets.
-    #[cfg(feature = "skip_login")]
-    {
-        AuthManager::handle(app).update(app, |_auth_manager, ctx| {
-            ctx.emit(auth_manager::AuthManagerEvent::SkippedLogin);
-            ctx.emit(auth_manager::AuthManagerEvent::AuthComplete);
-        });
-    }
-    let _ = app; // suppress unused warning when skip_login is not enabled
+    AuthManager::handle(app).update(app, |_auth_manager, ctx| {
+        ctx.emit(auth_manager::AuthManagerEvent::SkippedLogin);
+        ctx.emit(auth_manager::AuthManagerEvent::AuthComplete);
+    });
 }
 
 pub fn maybe_log_out(app: &mut AppContext) {

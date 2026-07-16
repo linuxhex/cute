@@ -1929,7 +1929,7 @@ fn launch(ctx: &mut cuteui::AppContext, app_state: Option<AppState>, launch_mode
                 .urls
                 .iter()
                 .any(is_cloud_agent_web_home_launch_url)
-                || cfg!(feature = "skip_login");
+                || true;
             let app_state = if should_skip_restore { None } else { app_state };
             // Attempt to restore windows from the persisted application state.
             let arg = OpenFromRestoredArg { app_state };
@@ -1952,7 +1952,6 @@ fn launch(ctx: &mut cuteui::AppContext, app_state: Option<AppState>, launch_mode
             });
 
             // Cute OMJF-11111: 本地模式不注册系统登录项
-            #[cfg(not(feature = "skip_login"))]
             {
                 use crate::login_item::maybe_register_app_as_login_item;
                 use crate::terminal::general_settings::GeneralSettingsChangedEvent;

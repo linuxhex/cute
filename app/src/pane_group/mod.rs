@@ -1602,7 +1602,7 @@ impl PaneGroup {
         deferred_panes: &mut Vec<(PaneId, LeafSnapshot)>,
         pending_ambient_restorations: &mut Vec<(AmbientAgentTaskId, PaneId)>,
     ) -> anyhow::Result<(PaneData, InitialFocus)> {
-        if cfg!(feature = "skip_login") && Self::should_skip_cloud_pane_restoration(&leaf.contents)
+        if Self::should_skip_cloud_pane_restoration(&leaf.contents)
         {
             return Err(anyhow::anyhow!(
                 "Skipping cloud-only pane restoration in local mode"
@@ -3489,27 +3489,16 @@ impl PaneGroup {
                     ctx,
                 ),
                 PanesLayout::AmbientAgent => {
-                    if cfg!(feature = "skip_login") {
-                        Self::initial_single_terminal_pane(
-                            NewTerminalOptions::default(),
-                            resources,
-                            unsupported_banner_model_handle,
-                            view_bounds,
-                            model_event_sender_clone,
-                            pane_contents,
-                            pane_history,
-                            ctx,
-                        )
-                    } else {
-                        Self::initial_ambient_agent_pane(
-                            resources,
-                            view_bounds,
-                            model_event_sender_clone,
-                            pane_contents,
-                            pane_history,
-                            ctx,
-                        )
-                    }
+                    Self::initial_single_terminal_pane(
+                        NewTerminalOptions::default(),
+                        resources,
+                        unsupported_banner_model_handle,
+                        view_bounds,
+                        model_event_sender_clone,
+                        pane_contents,
+                        pane_history,
+                        ctx,
+                    )
                 }
             }
         };

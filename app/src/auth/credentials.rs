@@ -8,7 +8,6 @@ pub enum Credentials {
     },
     Bearer(String),
     SessionCookie,
-    #[cfg(any(test, feature = "integration_tests", feature = "skip_login"))]
     Test,
 }
 
@@ -18,7 +17,6 @@ impl Credentials {
             Credentials::ApiKey { key, .. } => Some(key),
             Credentials::Bearer(_) => None,
             Credentials::SessionCookie => None,
-            #[cfg(any(test, feature = "integration_tests", feature = "skip_login"))]
             Credentials::Test => None,
         }
     }
@@ -36,7 +34,6 @@ impl Credentials {
             Credentials::ApiKey { key, .. } => AuthToken::ApiKey(key.clone()),
             Credentials::Bearer(token) => AuthToken::Bearer(token.clone()),
             Credentials::SessionCookie => AuthToken::NoAuth,
-            #[cfg(any(test, feature = "integration_tests", feature = "skip_login"))]
             Credentials::Test => AuthToken::NoAuth,
         }
     }
@@ -46,10 +43,6 @@ impl Credentials {
 pub enum AuthToken {
     ApiKey(String),
     Bearer(String),
-    #[cfg_attr(
-        not(any(test, feature = "integration_tests", feature = "skip_login")),
-        allow(dead_code)
-    )]
     NoAuth,
 }
 
