@@ -23,8 +23,6 @@ mod completer;
 mod context_chips;
 #[cfg(enable_crash_recovery)]
 mod crash_recovery;
-#[cfg(feature = "crash_reporting")]
-mod crash_reporting;
 mod debug_dump;
 mod default_terminal;
 mod download_method;
@@ -431,14 +429,6 @@ impl LaunchMode {
         }
     }
 
-    /// Whether Sentry / crash reporting should be initialized.
-    #[cfg_attr(not(feature = "crash_reporting"), allow(dead_code))]
-    pub(crate) fn needs_crash_reporting(&self) -> bool {
-        match self {
-            LaunchMode::App { .. } | LaunchMode::CommandLine { .. } | LaunchMode::Test { .. } => true,
-        }
-    }
-
     /// Whether profiling and tracing should be initialized.
     pub(crate) fn needs_profiling(&self) -> bool {
         match self {
@@ -538,14 +528,8 @@ pub fn run() -> Result<()> {
             }
             #[cfg(feature = "local_tty")]
             cute_cli::Command::Worker(cute_cli::WorkerCommand::MinidumpServer { socket_name }) => {
-                cfg_if::cfg_if! {
-                    if #[cfg(all(linux_or_windows, feature = "crash_reporting"))] {
-                        return crate::crash_reporting::run_minidump_server(socket_name);
-                    } else {
-                        let _ = socket_name;
-                        panic!("The minidump server is not supported on this platform");
-                    }
-                }
+                let _ = socket_name;
+                panic!("The minidump server is not supported on this platform");
             }
             #[cfg(not(target_family = "wasm"))]
             cute_cli::Command::Worker(cute_cli::WorkerCommand::RipgrepSearch {
@@ -638,8 +622,6 @@ fn run_internal(mut launch_mode: LaunchMode) -> Result<()> {
     // The `run` function already initializes feature flags, but ensure they're initialized here
     // for other entrypoints.
     features::init_feature_flags();
-
-    // Sentry initialization disabled - telemetry simplified
 
     if launch_mode.needs_profiling() {
         tracing::init()?;
@@ -886,9 +868,6 @@ fn run_internal(mut launch_mode: LaunchMode) -> Result<()> {
                 ctx,
             )
         });
-        #[cfg(feature = "crash_reporting")]
-        crate::crash_reporting::set_client_type_tag(launch_mode.execution_mode().client_id());
-
         // Add the terminal server singleton to the application.
         #[cfg(feature = "local_tty")]
         ctx.add_singleton_model(move |_ctx| pty_spawner);
@@ -1124,15 +1103,8 @@ pub(crate) fn initialize_app(
 
     ctx.add_singleton_model(AntivirusInfo::new);
 
-    cfg_if::cfg_if! {
-        if #[cfg(feature = "crash_reporting")] {
-            let is_crash_reporting_enabled = crash_reporting::init(ctx);
-        } else {
-            let _is_crash_reporting_enabled = false;
-        }
-    }
-    // Send buffered pre-init errors to Sentry now that the client is ready.
-    // Sentry error reporting disabled - telemetry simplified
+    // Crash reporting has been removed; skip initialization.
+    let _is_crash_reporting_enabled = false;
     timer.mark_interval_end("INIT_CRASH_REPORTING");
 
     ctx.set_fallback_font_source_provider(|url| ::asset_cache::url_source(url));
@@ -1755,11 +1727,6 @@ pub(crate) fn app_callbacks(is_integration_test: bool) -> cuteui::platform::AppC
             crash_recovery::CrashRecovery::handle(ctx).update(ctx, |crash_recovery, _ctx| {
                 crash_recovery.teardown();
             });
-
-            // Tear down crash reporting as the last thing we do before the application
-            // terminates.
-            #[cfg(feature = "crash_reporting")]
-            crash_reporting::uninit_sentry();
         })),
         on_should_close_window: Some(Box::new(move |window_id, ctx| {
             let general_settings = GeneralSettings::as_ref(ctx);

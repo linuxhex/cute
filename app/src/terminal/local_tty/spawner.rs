@@ -87,16 +87,8 @@ fn invoke_without_crash_reporting<T>(
     // we lose all Cocoa crash reports from now until when the session is successfully spawned,
     // which is not ideal but allows us to fully ensure that we don't improperly leak any Sentry state
     // into the child processes.
-    #[cfg(feature = "crash_reporting")]
-    crate::crash_reporting::uninit_cocoa_sentry();
 
     let retval = func();
-
-    // Now that the child has spawned--reinitialize cocoa sentry.
-    if is_crash_reporting_enabled {
-        #[cfg(feature = "crash_reporting")]
-        crate::crash_reporting::init_cocoa_sentry();
-    }
 
     retval
 }

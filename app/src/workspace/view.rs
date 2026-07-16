@@ -24,7 +24,6 @@ use std::convert::TryFrom;
 #[cfg(target_os = "macos")]
 use std::env;
 use std::fmt::Write;
-#[cfg(all(target_os = "macos", feature = "crash_reporting"))]
 use std::fs;
 use std::path::{Path, PathBuf};
 #[cfg(target_os = "macos")]
@@ -50,8 +49,6 @@ use pathfinder_geometry::rect::RectF;
 use repo_metadata::repositories::DetectedRepositories;
 #[cfg(feature = "local_fs")]
 use repo_metadata::RemoteRepositoryIdentifier;
-#[cfg(all(target_os = "macos", feature = "crash_reporting"))]
-use sentry::protocol::{Attachment, AttachmentType};
 use serde_json;
 use session_sharing_protocol::common::SessionId as SharedSessionId;
 #[cfg(target_family = "wasm")]
@@ -22074,8 +22071,7 @@ impl TypedActionView for Workspace {
                 self.dismiss_ai_assistant_warm_welcome(ctx);
             }
             Crash => {
-                #[cfg(feature = "crash_reporting")]
-                crate::crash_reporting::crash();
+                // Crash reporting has been removed
             }
             Panic => {
                 panic!("WorkspaceAction::Panic triggered from command palette");
@@ -22822,37 +22818,6 @@ impl TypedActionView for Workspace {
                         let message = match result {
                             Ok(Ok(output)) if output.status.success() => {
                                 ctx.open_file_path_in_explorer(Path::new(&output_path));
-
-                                #[cfg(feature = "crash_reporting")]
-                                if ChannelState::channel().is_dogfood() {
-                                    // For dogfood process samples, we raise a sentry warning with the sample attatched.
-                                    // We do this so that our performance bot can then read through the performance logs
-                                    // in sentry and write up a report of findings/possible optimizations.
-                                    if let Ok(sample_data) = fs::read(&output_path) {
-                                        let filename = Path::new(&output_path)
-                                            .file_name()
-                                            .map(|f| f.to_string_lossy().to_string())
-                                            .unwrap_or_else(|| "process_sample.txt".to_string());
-                                        let attachment = Attachment {
-                                            buffer: sample_data,
-                                            filename,
-                                            ty: Some(AttachmentType::Attachment),
-                                            ..Default::default()
-                                        };
-                                        // Sentry performance reporting disabled - local logging preserved
-                                        // sentry::with_scope(
-                                        //     |scope| {
-                                        //         scope.add_attachment(attachment);
-                                        //     },
-                                        //     || {
-                                        //         sentry::capture_message(
-                                        //             "[FOR PERFORMANCE BOT] Dev took performance sample with results: ",
-                                        //             sentry::Level::Warning,
-                                        //         )
-                                        //     },
-                                        // );
-                                    }
-                                }
 
                                 format!("Process sample saved to {output_path}")
                             }
