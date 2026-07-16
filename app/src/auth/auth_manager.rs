@@ -62,7 +62,7 @@ impl AuthManager {
     pub fn attempt_login_gated_feature(
         &mut self,
         _action: crate::workspace::WorkspaceAction,
-        _auth_view_variant: super::auth_view_modal::AuthViewVariant,
+        _auth_view_variant: super::AuthViewVariant,
         _ctx: &mut ModelContext<Self>,
     ) {
     }
@@ -121,9 +121,9 @@ pub enum AuthManagerEvent {
         verification_uri: String,
     },
     AttemptedLoginGatedFeature {
-        auth_view_variant: super::auth_view_modal::AuthViewVariant,
+        auth_view_variant: super::AuthViewVariant,
     },
-    LoginOverrideDetected(super::auth_view_modal::AuthRedirectPayload),
+    LoginOverrideDetected(super::AuthRedirectPayload),
 }
 
 #[derive(Debug, Clone, Default)]

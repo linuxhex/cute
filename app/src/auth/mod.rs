@@ -1,16 +1,28 @@
 pub mod anonymous_id;
 pub mod auth_manager;
-pub mod auth_override_warning_modal;
 pub mod auth_state;
-pub mod auth_view_modal;
 pub mod credentials;
 pub mod user;
 pub mod user_uid;
 
 pub use auth_manager::AuthManager;
 pub use auth_state::AuthStateProvider;
-pub use auth_view_modal::AuthRedirectPayload;
 pub use user_uid::UserUid;
+
+// Cute: 本地版始终已登录，不需要登录/注册UI。
+// 以下为原 auth_view_modal / auth_override_warning_modal 中的类型 stub，
+// 仅保留被 auth_manager 等模块引用的类型定义。
+
+#[derive(Debug, Clone, Default)]
+pub enum AuthViewVariant {
+    #[default]
+    RequireLogin,
+    RequireLoginCloseable,
+    ShareRequirementCloseable,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct AuthRedirectPayload;
 
 use ai::index::full_source_code_embedding::manager::CodebaseIndexManager;
 use itertools::Itertools;

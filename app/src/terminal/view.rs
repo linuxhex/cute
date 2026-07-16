@@ -298,7 +298,7 @@ use crate::antivirus::AntivirusInfo;
 use crate::appearance::{Appearance, AppearanceEvent};
 use crate::auth::auth_manager::AuthManager;
 use crate::auth::auth_state::AuthState;
-use crate::auth::auth_view_modal::AuthViewVariant;
+use crate::auth::AuthViewVariant;
 use crate::auth::{AuthStateProvider, UserUid};
 use crate::banner::{
     Banner, BannerAction, BannerEvent, BannerState, BannerTextButton, BannerTextContent,

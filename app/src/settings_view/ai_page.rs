@@ -67,7 +67,7 @@ use crate::ai::llms::{LLMContextWindow, LLMId, LLMPreferences, LLMPreferencesEve
 use crate::ai::mcp::TemplatableMCPServerManager;
 use crate::ai::paths::host_native_absolute_path;
 use crate::auth::auth_manager::{AuthManager, LoginGatedFeature};
-use crate::auth::auth_view_modal::AuthViewVariant;
+use crate::auth::AuthViewVariant;
 // use crate::auth::AuthStateProvider;
 use crate::workspace::WorkspaceAction;
 use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};

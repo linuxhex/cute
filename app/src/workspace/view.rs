@@ -191,11 +191,7 @@ use crate::app_state::{
 };
 use crate::appearance::{Appearance, AppearanceManager};
 use crate::auth::auth_manager::{AuthManager, AuthManagerEvent};
-use crate::auth::auth_override_warning_modal::{
-    AuthOverrideWarningModal, AuthOverrideWarningModalEvent, AuthOverrideWarningModalVariant,
-};
 use crate::auth::auth_state::AuthState;
-use crate::auth::auth_view_modal::{AuthRedirectPayload, AuthView, AuthViewEvent, AuthViewVariant};
 use crate::auth::AuthStateProvider;
 use crate::banner::BannerState;
 use crate::changelog_model::{ChangelogModel, ChangelogRequestType, Event as ChangelogEvent};
@@ -898,8 +894,6 @@ pub struct Workspace {
     ai_assistant_panel: ViewHandle<AIAssistantPanelView>,
     should_show_ai_assistant_warm_welcome: bool,
     ai_assistant_close_warm_welcome_mouse_state_handle: MouseStateHandle,
-    auth_override_warning_modal: ViewHandle<AuthOverrideWarningModal>,
-    require_login_modal: ViewHandle<AuthView>,
     workflow_modal: ViewHandle<WorkflowModal>,
     prompt_editor_modal: ViewHandle<PromptEditorModal>,
     agent_toolbar_editor_modal: ViewHandle<AgentToolbarEditorModal>,
@@ -1850,47 +1844,6 @@ impl Workspace {
         });
 
         (settings_pane, theme_chooser_view)
-    }
-
-    fn build_require_login_modal(ctx: &mut ViewContext<Self>) -> ViewHandle<AuthView> {
-        let require_login_modal = ctx.add_view(|ctx| {
-            AuthView::new(AuthViewVariant::RequireLoginCloseable, ctx)
-        });
-        ctx.subscribe_to_view(&require_login_modal, move |me, _, event, ctx| {
-            me.handle_require_login_modal_event(event, ctx);
-        });
-
-        require_login_modal
-    }
-
-    fn build_auth_override_warning_modal(
-        ctx: &mut ViewContext<Self>,
-    ) -> ViewHandle<AuthOverrideWarningModal> {
-        let auth_override_warning_modal = ctx.add_view(|ctx| {
-            AuthOverrideWarningModal::new(ctx, AuthOverrideWarningModalVariant::WorkspaceModal)
-        });
-
-        ctx.subscribe_to_view(&auth_override_warning_modal, |me, _, event, ctx| {
-            me.handle_auth_override_warning_modal_event(event, ctx);
-        });
-
-        auth_override_warning_modal
-    }
-
-    fn handle_auth_override_warning_modal_event(
-        &mut self,
-        event: &AuthOverrideWarningModalEvent,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        match event {
-            AuthOverrideWarningModalEvent::Close => {
-                self.current_workspace_state.is_auth_override_modal_open = false;
-                ctx.notify();
-            }
-            AuthOverrideWarningModalEvent::BulkExport => {
-                self.export_all_cute_drive_objects(ctx);
-            }
-        }
     }
 
     fn build_workflow_modal(
@@ -2887,10 +2840,6 @@ impl Workspace {
             me.handle_codex_modal_event(event, ctx);
         });
 
-        let require_login_modal = Self::build_require_login_modal(ctx);
-
-        let auth_override_warning_modal = Self::build_auth_override_warning_modal(ctx);
-
         let workflow_modal = Self::build_workflow_modal(ai_client.clone(), ctx);
 
         let theme_creator_modal = Self::build_theme_creator_modal(ctx);
@@ -3262,11 +3211,9 @@ impl Workspace {
             ai_assistant_panel,
             should_show_ai_assistant_warm_welcome,
             ai_assistant_close_warm_welcome_mouse_state_handle: Default::default(),
-            auth_override_warning_modal,
             suggested_agent_mode_workflow_modal,
             suggested_rule_modal,
             build_plan_migration_modal,
-            require_login_modal,
             workflow_modal,
             theme_creator_modal,
             theme_deletion_modal,
@@ -9159,19 +9106,6 @@ impl Workspace {
         }
     }
 
-    fn handle_require_login_modal_event(
-        &mut self,
-        event: &AuthViewEvent,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        match event {
-            AuthViewEvent::Close => {
-                self.current_workspace_state.is_require_login_modal_open = false;
-                ctx.notify();
-            }
-        }
-    }
-
     fn handle_theme_creator_modal_event(
         &mut self,
         event: &ThemeCreatorModalEvent,
@@ -9371,11 +9305,11 @@ impl Workspace {
         ctx: &mut ViewContext<Self>,
     ) {
         match event {
-            AuthManagerEvent::AttemptedLoginGatedFeature { auth_view_variant } => {
-                self.open_require_login_modal(auth_view_variant.clone(), ctx)
+            AuthManagerEvent::AttemptedLoginGatedFeature { auth_view_variant: _ } => {
+                // Cute: 本地版始终已登录，忽略登录门控事件
             }
-            AuthManagerEvent::LoginOverrideDetected(interrupted_auth_payload) => {
-                self.open_auth_override_warning_modal(interrupted_auth_payload.clone(), ctx);
+            AuthManagerEvent::LoginOverrideDetected(_interrupted_auth_payload) => {
+                // Cute: 本地版始终已登录，忽略登录覆盖事件
             }
             AuthManagerEvent::AuthComplete => {
                 // Only show the telemetry banner if the user is an existing user. The new user flow
@@ -12046,31 +11980,6 @@ impl Workspace {
                 );
             });
         }
-    }
-
-    fn open_require_login_modal(&mut self, variant: AuthViewVariant, ctx: &mut ViewContext<Self>) {
-        self.require_login_modal.update(ctx, |modal, _ctx| {
-            modal.set_variant(variant);
-        });
-
-        self.close_all_overlays(ctx);
-        self.current_workspace_state.is_require_login_modal_open = true;
-        ctx.focus(&self.require_login_modal);
-        ctx.notify();
-    }
-
-    fn open_auth_override_warning_modal(
-        &mut self,
-        auth_payload: AuthRedirectPayload,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        self.close_all_overlays(ctx);
-        self.auth_override_warning_modal.update(ctx, |modal, _| {
-            modal.set_interrupted_auth_payload(auth_payload);
-        });
-        self.current_workspace_state.is_auth_override_modal_open = true;
-        ctx.focus(&self.auth_override_warning_modal);
-        ctx.notify();
     }
 
     fn open_palette(
@@ -23803,14 +23712,6 @@ impl View for Workspace {
 
         if self.current_workspace_state.is_ctrl_tab_palette_open {
             stack.add_child(ChildView::new(&self.ctrl_tab_palette).finish());
-        }
-
-        if self.current_workspace_state.is_require_login_modal_open {
-            stack.add_child(ChildView::new(&self.require_login_modal).finish());
-        }
-
-        if self.current_workspace_state.is_auth_override_modal_open {
-            stack.add_child(ChildView::new(&self.auth_override_warning_modal).finish());
         }
 
         if self.current_workspace_state.is_theme_creator_modal_open {

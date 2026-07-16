@@ -73,7 +73,7 @@ use crate::app_state::{
 };
 use crate::appearance::Appearance;
 use crate::auth::auth_manager::AuthManager;
-use crate::auth::auth_view_modal::AuthViewVariant;
+use crate::auth::AuthViewVariant;
 use crate::auth::AuthStateProvider;
 use crate::banner::{Banner, BannerEvent, BannerState, BannerTextContent, DismissalType};
 use crate::channel::{Channel, ChannelState};
