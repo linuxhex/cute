@@ -77,8 +77,6 @@ mod view_components;
 mod vim_registers;
 mod voice;
 mod cute_managed_paths_watcher;
-#[cfg(target_family = "wasm")]
-mod wasm_nux_dialog;
 mod window_settings;
 
 // PLEASE DO NOT ADD MORE PUBLIC MODULES!

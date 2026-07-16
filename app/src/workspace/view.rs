@@ -401,8 +401,7 @@ use crate::view_components::callout_bubble::{
 use crate::view_components::{
     AgentToast, AgentToastStack, DismissibleToast, DismissibleToastStack, ToastLink,
 };
-#[cfg(target_family = "wasm")]
-use crate::wasm_nux_dialog::WasmNUXDialog;
+
 use crate::window_settings::{WindowSettings, WindowSettingsChangedEvent, ZoomLevel};
 use crate::workflows::manager::{WorkflowManager, WorkflowOpenSource};
 use crate::workflows::workflow::Workflow;
@@ -930,12 +929,7 @@ pub struct Workspace {
     native_modal: ViewHandle<NativeModal>,
     shown_staging_banner_count: u32,
 
-    // When user's open WEB for the first time, we ask them to select a preference of
-    // always opening in web or opening in native app.
-    #[cfg(target_family = "wasm")]
-    show_wasm_nux_dialog: bool,
-    #[cfg(target_family = "wasm")]
-    wasm_nux_dialog: ViewHandle<WasmNUXDialog>,
+
     #[cfg(target_family = "wasm")]
     open_in_warp_button: ViewHandle<ActionButton>,
     #[cfg(target_family = "wasm")]
@@ -3103,9 +3097,6 @@ impl Workspace {
             ctx.add_typed_action_view(|_| DismissibleToastStack::new(Duration::from_secs(4)));
 
         #[cfg(target_family = "wasm")]
-        let wasm_nux_dialog = Self::build_wasm_nux_dialog(ctx);
-
-        #[cfg(target_family = "wasm")]
         let open_in_warp_button = Self::build_open_in_warp_button(ctx);
 
         #[cfg(target_family = "wasm")]
@@ -3305,10 +3296,7 @@ impl Workspace {
             working_directories_model,
             shown_staging_banner_count: 0,
 
-            #[cfg(target_family = "wasm")]
-            show_wasm_nux_dialog: WasmNUXDialog::should_display(ctx),
-            #[cfg(target_family = "wasm")]
-            wasm_nux_dialog,
+
             #[cfg(target_family = "wasm")]
             open_in_warp_button,
             #[cfg(target_family = "wasm")]
@@ -24298,18 +24286,7 @@ impl View for Workspace {
             }
         }
 
-        #[cfg(target_family = "wasm")]
-        if self.show_wasm_nux_dialog {
-            stack.add_positioned_overlay_child(
-                ChildView::new(&self.wasm_nux_dialog).finish(),
-                OffsetPositioning::offset_from_parent(
-                    vec2f(-10., 67.),
-                    ParentOffsetBounds::WindowByPosition,
-                    ParentAnchor::TopRight,
-                    ChildAnchor::TopRight,
-                ),
-            );
-        }
+
 
         // Add workspace-wide UI event handling.
         let stack = if FeatureFlag::VerticalTabs.is_enabled()
