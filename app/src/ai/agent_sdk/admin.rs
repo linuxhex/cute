@@ -217,16 +217,9 @@ pub fn whoami(ctx: &mut AppContext, output_format: OutputFormat) -> Result<()> {
 }
 
 /// Log out of Warp using the same logic as the app.
+/// Cute: 本地版始终已登录，登出为空操作。
 pub fn logout(ctx: &mut AppContext) -> Result<()> {
-    let auth_state = AuthStateProvider::as_ref(ctx).get();
-    if !auth_state.is_logged_in() {
-        println!("You are not logged in.");
-        ctx.terminate_app(TerminationMode::ForceTerminate, None);
-        return Ok(());
-    }
-
-    crate::auth::log_out(ctx);
-    println!("Logged out successfully.");
+    println!("Logout is not available in local-only mode.");
     ctx.terminate_app(TerminationMode::ForceTerminate, None);
     Ok(())
 }

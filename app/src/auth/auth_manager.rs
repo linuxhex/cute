@@ -44,10 +44,7 @@ impl AuthManager {
         self.auth_state.set_is_onboarded(true);
     }
 
-    pub(super) fn log_out(&mut self, _ctx: &mut ModelContext<Self>) {
-        self.auth_state.set_user(None);
-        self.auth_state.set_credentials(None);
-    }
+    // Cute: 本地版始终已登录，log_out 方法已删除。
 
     pub fn initiate_anonymous_user_linking(&mut self, _entrypoint: crate::server::telemetry::AnonymousUserSignupEntrypoint, _ctx: &mut ModelContext<Self>) {}
 

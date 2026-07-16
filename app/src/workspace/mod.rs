@@ -879,13 +879,7 @@ pub fn init(app: &mut AppContext) {
         ]);
     }
 
-    app.register_editable_bindings([EditableBinding::new(
-        "workspace:log_out",
-        "Log out",
-        WorkspaceAction::LogOut,
-    )
-    .with_group(bindings::BindingGroup::Settings.as_str())
-    .with_context_predicate(id!("Workspace") & !id!("IsAnonymousUser"))]);
+    // Cute: workspace:log_out binding 已删除 - 本地版始终已登录
 
     // Cute: 禁用云端资源中心快捷键 - 但保留action注册（dead_code）
     #[allow(dead_code)]
