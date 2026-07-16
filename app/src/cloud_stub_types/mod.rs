@@ -3786,46 +3786,6 @@ impl UpdateManager {
     }
 }
 
-// ===== IapManager Stub (IAP Authentication) =====
-
-/// Minimal stub for IapManager - IAP authentication manager
-/// This is a cloud feature that's disabled in the local version.
-#[derive(Clone, Debug, Default)]
-pub struct IapManager {}
-
-impl cuteui::Entity for IapManager {
-    type Event = ();
-}
-
-impl cuteui::SingletonEntity for IapManager {}
-
-impl IapManager {
-    pub fn new(_ctx: &mut cuteui::ModelContext<Self>) -> Self {
-        Self::default()
-    }
-
-    pub fn handle(_ctx: &AppContext) -> cuteui::ModelHandle<Self> {
-        <Self as cuteui::SingletonEntity>::handle(_ctx)
-    }
-
-    pub fn as_ref(_ctx: &AppContext) -> &Self {
-        static INSTANCE: std::sync::LazyLock<IapManager> = std::sync::LazyLock::new(IapManager::default);
-        &INSTANCE
-    }
-
-    /// Stub: handle IAP challenge (no-op)
-    pub fn handle_challenge(&mut self, _ctx: &mut cuteui::ModelContext<Self>) {
-        // No-op in local version
-    }
-}
-
-// ===== IapState Stub (IAP State) =====
-
-/// Minimal stub for IapState - IAP authentication state
-/// This is a cloud feature that's disabled in the local version.
-#[derive(Clone, Debug, Default)]
-pub struct IapState {}
-
 // ===== OAuth2Client Stub =====
 
 /// Minimal stub for OAuth2Client - OAuth2 client

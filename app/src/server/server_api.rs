@@ -53,7 +53,7 @@ use crate::auth::auth_manager::AuthManager;
 use crate::auth::auth_state::AuthState;
 use crate::auth::UserUid;
 use crate::server::graphql::default_request_options;
-use crate::cloud_stub_types::{IapManager, IapState, OAuth2Client};
+use crate::cloud_stub_types::OAuth2Client;
 use crate::server::server_api::presigned_upload::HttpStatusError;
 use crate::settings::PrivacySettingsSnapshot;
 use crate::ChannelState;
@@ -388,10 +388,6 @@ pub enum ServerApiEvent {
         #[cfg_attr(target_family = "wasm", allow(dead_code))]
         token: String,
     },
-    /// An IAP (Identity-Aware Proxy) challenge was received, indicating that
-    /// the cached IAP credentials are stale. The UI thread should trigger a
-    /// refresh via [`super::iap::IapManager::start_refresh`].
-    IapChallengeReceived,
 }
 
 impl fmt::Debug for ServerApiEvent {
@@ -404,7 +400,6 @@ impl fmt::Debug for ServerApiEvent {
                 .debug_struct("AccessTokenRefreshed")
                 .field("token", &"<redacted>")
                 .finish(),
-            Self::IapChallengeReceived => f.write_str("IapChallengeReceived"),
         }
     }
 }
@@ -427,8 +422,6 @@ pub struct ServerApi {
     ambient_agent_task_id: Arc<RwLock<Option<AmbientAgentTaskId>>>,
     /// The source of agent runs (e.g. CLI, GitHub Action). Set once at startup and immutable.
     agent_source: Option<ai::AgentSource>,
-    /// IAP credential cache for staging server access. [`None`] on production builds.
-    iap_state: Option<Arc<IapState>>,
 
     #[cfg(feature = "agent_mode_evals")]
     eval_user_id: Option<i32>,
@@ -439,19 +432,13 @@ impl ServerApi {
         auth_state: Arc<AuthState>,
         event_sender: async_channel::Sender<ServerApiEvent>,
         agent_source: Option<ai::AgentSource>,
-        iap_state: Option<Arc<IapState>>,
     ) -> Self {
-        let mut client = http_client::Client::new();
-        // REMOVED: Cloud feature - IAP token provider disabled in local version
-        // if let Some(state) = iap_state.as_ref() {
-        //     client.set_iap_token_provider(state.clone());
-        // }
+        let client = http_client::Client::new();
         Self::new_with_parts(
             Arc::new(client),
             auth_state,
             event_sender,
             agent_source,
-            iap_state,
         )
     }
 
@@ -460,7 +447,6 @@ impl ServerApi {
         auth_state: Arc<AuthState>,
         event_sender: async_channel::Sender<ServerApiEvent>,
         agent_source: Option<ai::AgentSource>,
-        iap_state: Option<Arc<IapState>>,
     ) -> Self {
         // We generate a random user ID for evals so we can run evals in parallel.
         #[cfg(feature = "agent_mode_evals")]
@@ -480,7 +466,6 @@ impl ServerApi {
             ambient_workload_token: Arc::new(Mutex::new(None)),
             ambient_agent_task_id: Arc::new(RwLock::new(None)),
             agent_source,
-            iap_state,
             #[cfg(feature = "agent_mode_evals")]
             eval_user_id,
         }
@@ -492,7 +477,7 @@ impl ServerApi {
         let auth_state = Arc::new(AuthState::new_for_test());
         let client = Arc::new(http_client::Client::new_for_test());
 
-        Self::new_with_parts(client, auth_state, tx, None, None)
+        Self::new_with_parts(client, auth_state, tx, None)
     }
 
     #[cfg(test)]
@@ -508,7 +493,6 @@ impl ServerApi {
             Arc::new(http_client::Client::new_for_test()),
             auth_state,
             event_sender,
-            None,
             None,
         )
     }
@@ -534,74 +518,6 @@ impl ServerApi {
     /// Sets the ambient agent task ID to be sent with all subsequent requests.
     pub fn set_ambient_agent_task_id(&self, task_id: Option<AmbientAgentTaskId>) {
         *self.ambient_agent_task_id.write() = task_id;
-    }
-
-    /// Inspects a response for the IAP challenge header and emits an
-    /// `IapChallengeReceived` event if detected. Returns `true` if the
-    /// response was an IAP challenge.
-    ///
-    /// TODO(isaiah): implement retries on IAP challenge failures so the
-    /// triggering request transparently succeeds after the refresh
-    /// completes instead of bubbling up a one-off error to the caller.
-    fn check_for_iap_challenge(&self, response: &http_client::Response) -> bool {
-        if self.iap_state.is_none() {
-            return false;
-        }
-        if http_client::iap::is_iap_challenge(response.status(), response.headers()) {
-            log::warn!(
-                "Received IAP challenge (status {}); notifying IapManager",
-                response.status()
-            );
-            if let Err(err) = self
-                .event_sender
-                .try_send(ServerApiEvent::IapChallengeReceived)
-            {
-                log::warn!("Failed to enqueue IapChallengeReceived event: {err}");
-            }
-            true
-        } else {
-            false
-        }
-    }
-
-    /// Wraps an eventsource stream so that any `InvalidStatusCode` error
-    /// carrying an IAP challenge header triggers an `IapChallengeReceived`
-    /// event. The original error is passed through unchanged — the
-    /// stream is not transparently reconnected after the refresh.
-    ///
-    /// TODO(isaiah): implement retries on IAP challenge failures so
-    /// streams transparently reconnect after the refresh completes.
-    fn wrap_eventsource_with_iap_detection(
-        &self,
-        stream: http_client::EventSourceStream,
-    ) -> http_client::EventSourceStream {
-        if self.iap_state.is_none() {
-            return stream;
-        }
-        let event_sender = self.event_sender.clone();
-        let wrapped = stream.map(move |event| {
-            if let Err(reqwest_eventsource::Error::InvalidStatusCode(status, ref response)) = event
-            {
-                if http_client::iap::is_iap_challenge(status, response.headers()) {
-                    log::warn!(
-                        "Received IAP challenge on eventsource (status {status}); notifying IapManager"
-                    );
-                    if let Err(err) = event_sender.try_send(ServerApiEvent::IapChallengeReceived) {
-                        log::warn!(
-                            "Failed to enqueue IapChallengeReceived event from eventsource: {err}"
-                        );
-                    }
-                }
-            }
-            event
-        });
-        cfg_if::cfg_if! {
-            if #[cfg(target_family = "wasm")] {
-                wrapped.boxed_local()
-            } else {
-                wrapped.boxed()
-            }
-        }
     }
 
     /// Returns ambient agent headers to attach to requests.
@@ -672,7 +588,6 @@ impl ServerApi {
         if response.status().is_success() {
             Ok(response)
         } else {
-            self.check_for_iap_challenge(&response);
             Err(Self::error_from_response(response).await)
         }
     }
@@ -707,7 +622,6 @@ impl ServerApi {
         if response.status().is_success() {
             Ok(response)
         } else {
-            self.check_for_iap_challenge(&response);
             Err(Self::error_from_response(response).await)
         }
     }
@@ -762,10 +676,6 @@ impl ServerApi {
                 Err(GraphQLError::StagingAccessBlocked) => {
                     let _ = event_sender.try_send(ServerApiEvent::StagingAccessBlocked);
                     anyhow::bail!(GraphQLError::StagingAccessBlocked)
-                }
-                Err(GraphQLError::IapChallengeBlocked) => {
-                    let _ = event_sender.try_send(ServerApiEvent::IapChallengeReceived);
-                    anyhow::bail!(GraphQLError::IapChallengeBlocked)
                 }
                 Err(err) => {
                     if !self.allowed_to_refresh_token() && Self::is_graphql_auth_rejection(&err) {
@@ -884,7 +794,6 @@ impl ServerApi {
         if response.status().is_success() {
             Ok(response)
         } else {
-            self.check_for_iap_challenge(&response);
             // Put `HttpStatusError` in the error chain so shared retry classifiers
             // (`is_transient_http_error`) can distinguish transient 5xx / 408 / 429
             // from permanent 4xx without string-matching the Display output.
@@ -943,7 +852,7 @@ impl ServerApi {
             request = request.header(name, value);
         }
 
-        Ok(self.wrap_eventsource_with_iap_detection(request.eventsource()))
+        Ok(request.eventsource())
     }
 
     /// Opens an SSE stream against the ancestor-scoped endpoint that serves
@@ -1048,7 +957,6 @@ impl ServerApi {
         if response.status().is_success() {
             Ok(response)
         } else {
-            self.check_for_iap_challenge(&response);
             Err(Self::error_from_response(response).await)
         }
     }
@@ -1530,7 +1438,7 @@ impl ServerApi {
             }
         }
 
-        let raw_stream = self.wrap_eventsource_with_iap_detection(request.eventsource());
+        let raw_stream = request.eventsource();
         let output_stream = raw_stream.filter_map(|event| async {
             let result = match event {
                 Ok(reqwest_eventsource::Event::Message(message_event)) => {
@@ -1590,10 +1498,6 @@ impl ServerApi {
         let time_endpoint = format!("{}/current_time", ChannelState::server_root_url());
         log::info!("Sending server time request to {}", &time_endpoint);
         let res = self.client.get(&time_endpoint).send().await?;
-
-        if !res.status().is_success() {
-            self.check_for_iap_challenge(&res);
-        }
 
         match res.status() {
             StatusCode::OK => {
@@ -1664,9 +1568,6 @@ impl ServerApi {
         }
 
         let response = request_builder.send().await?;
-        if !response.status().is_success() {
-            self.check_for_iap_challenge(&response);
-        }
         let versions: ChannelVersions = response.json().await?;
         log::info!("Received channel versions from Warp server: {versions}");
         Ok(versions)
@@ -1685,13 +1586,12 @@ impl ServerApiProvider {
     pub fn new(
         auth_state: Arc<AuthState>,
         agent_source: Option<ai::AgentSource>,
-        iap_state: Option<Arc<IapState>>,
         ctx: &mut ModelContext<Self>,
     ) -> Self {
         let (event_sender, event_receiver) = async_channel::bounded(10);
 
         let server_api =
-            ServerApi::new(auth_state.clone(), event_sender, agent_source, iap_state);
+            ServerApi::new(auth_state.clone(), event_sender, agent_source);
 
         ctx.spawn_stream_local(
             event_receiver,
@@ -1712,10 +1612,6 @@ impl ServerApiProvider {
                         AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
                             auth_manager.set_needs_reauth(true, ctx);
                         });
-                    }
-                    ServerApiEvent::IapChallengeReceived => {
-                        IapManager::handle(ctx)
-                            .update(ctx, |manager, ctx| manager.handle_challenge(ctx));
                     }
                     // Re-emit the event for subscribers.
                     // TODO: we probably want a different type for the event emitted to subscribers
@@ -1808,7 +1704,6 @@ mod tests {
     use futures::executor::block_on;
 
     use super::*;
-use crate::cloud_stub_types::IapManager;
 
     struct FakeGraphqlOperation {
         expected_auth_token: Option<String>,
