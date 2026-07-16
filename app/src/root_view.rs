@@ -905,13 +905,8 @@ fn open_codex_in_new_window(_: &(), ctx: &mut AppContext) {
         if let AuthOnboardingState::Terminal(workspace_view_handle) =
             &root_view.auth_onboarding_state
         {
-            // let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
-            workspace_view_handle.update(ctx, |_, ctx| {
-                // Simplified: directly open Codex modal without waiting
-                // let _ = ctx.spawn(async move { initial_load_complete }, move |workspace, _, ctx| {
-                //     workspace.open_codex_modal(ctx)
-                // });
-            });
+            // Cute: Codex modal removed in local version
+            let _ = workspace_view_handle;
         }
     });
 }
@@ -2178,15 +2173,8 @@ impl RootView {
 
     /// Opens the Codex modal in an existing window.
     pub fn open_codex_in_existing_window(&mut self, _: &(), ctx: &mut ViewContext<Self>) -> bool {
-        let window_id = ctx.window_id();
-        if let AuthOnboardingState::Terminal(handle) = &self.auth_onboarding_state {
-            handle.update(ctx, |workspace, ctx| {
-                workspace.open_codex_modal(ctx);
-            });
-            ctx.windows().show_window_and_focus_app(window_id);
-        } else {
-            log::error!("Auth not complete before trying to open Codex modal");
-        }
+        // Cute: Codex modal removed in local version
+        let _ = ctx;
         true
     }
 

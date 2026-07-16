@@ -180,42 +180,6 @@ pub fn init(app: &mut AppContext) {
                 )
                 .with_context_predicate(id!("Workspace")),
                 EditableBinding::new(
-                    "workspace:open_oz_launch_modal",
-                    "[Debug] Open Oz Launch Modal",
-                    WorkspaceAction::OpenOzLaunchModal,
-                )
-                .with_context_predicate(id!("Workspace")),
-                EditableBinding::new(
-                    "workspace:reset_oz_launch_modal_state",
-                    "[Debug] Reset Oz Launch Modal State",
-                    WorkspaceAction::ResetOzLaunchModalState,
-                )
-                .with_context_predicate(id!("Workspace")),
-                EditableBinding::new(
-                    "workspace:open_openwarp_launch_modal",
-                    "[Debug] Open OpenWarp Launch Modal",
-                    WorkspaceAction::OpenOpenWarpLaunchModal,
-                )
-                .with_context_predicate(id!("Workspace")),
-                EditableBinding::new(
-                    "workspace:reset_openwarp_launch_modal_state",
-                    "[Debug] Reset OpenWarp Launch Modal State",
-                    WorkspaceAction::ResetOpenWarpLaunchModalState,
-                )
-                .with_context_predicate(id!("Workspace")),
-                EditableBinding::new(
-                    "workspace:open_orchestration_launch_modal",
-                    "[Debug] Open Orchestration Launch Modal",
-                    WorkspaceAction::OpenOrchestrationLaunchModal,
-                )
-                .with_context_predicate(id!("Workspace")),
-                EditableBinding::new(
-                    "workspace:reset_orchestration_launch_modal_state",
-                    "[Debug] Reset Orchestration Launch Modal State",
-                    WorkspaceAction::ResetOrchestrationLaunchModalState,
-                )
-                .with_context_predicate(id!("Workspace")),
-                EditableBinding::new(
                     "workspace:install_opencode_warp_plugin",
                     "[Debug] Install OpenCode Warp plugin",
                     WorkspaceAction::InstallOpenCodeWarpPlugin,
