@@ -8,7 +8,6 @@ use std::time::Duration;
 use inquire::{InquireError, Select};
 use cute_cli::agent::Harness;
 use cute_cli::environment::{EnvironmentCreateArgs, EnvironmentUpdateArgs};
-use cuteui::r#async::FutureExt;
 use cuteui::{AppContext, GetSingletonModelHandle, SingletonEntity as _, UpdateModel};
 
 use crate::ai::agent::conversation::ServerAIConversationMetadata;
@@ -17,7 +16,6 @@ use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::ai::cloud_environments::CloudAmbientAgentEnvironment;
 use crate::cloud_stub_types::{CloudObject as _, CloudObjectLookup as _};
 use crate::ai::llms::{LLMId, LLMPreferences};
-use crate::auth::auth_state::AuthStateProvider;
 use crate::cloud_stub_types::Owner;
 // use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::ids::{ServerId, SyncId};
@@ -79,7 +77,7 @@ pub(super) fn set_ambient_task_context_from_run_id(
 /// If `team_flag` is true, attempts to get the current team UID (errors if not on a team).
 /// If `user_flag` is true, gets the current user's UID.
 /// Otherwise, defaults to team if available, falling back to user.
-pub fn resolve_owner(team_flag: bool, user_flag: bool, ctx: &AppContext) -> anyhow::Result<Owner> {
+pub fn resolve_owner(team_flag: bool, user_flag: bool, _ctx: &AppContext) -> anyhow::Result<Owner> {
     // 删除：UserWorkspaces team_uid 获取已禁用，云端功能已移除
     // if team_flag {
     //     let team_id = UserWorkspaces::as_ref(ctx)
@@ -122,7 +120,7 @@ pub fn resolve_owner(team_flag: bool, user_flag: bool, ctx: &AppContext) -> anyh
 /// This ensures that team state is up-to-date before creating cloud objects or performing
 /// other operations that depend on team membership.
 pub fn refresh_workspace_metadata<C>(
-    ctx: &mut C,
+    _ctx: &mut C,
 ) -> impl Future<Output = anyhow::Result<()>> + Send + 'static
 where
     C: GetSingletonModelHandle + UpdateModel,
@@ -145,7 +143,7 @@ where
 /// Simplified: local version always returns success without waiting for cloud load
 /// Refresh Warp Drive before executing an operation.
 pub fn refresh_cute_drive(
-    ctx: &AppContext,
+    _ctx: &AppContext,
 ) -> impl Future<Output = anyhow::Result<()>> + Send + 'static {
     // let load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
     async move {

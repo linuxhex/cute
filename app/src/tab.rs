@@ -812,7 +812,7 @@ impl<'a> TabComponent<'a> {
             .pane_group
             .as_ref(ctx)
             .has_active_code_pane_with_unsaved_changes(ctx);
-        let is_being_shared = tab
+        let _is_being_shared = tab
             .pane_group
             .as_ref(ctx)
             .is_terminal_pane_being_shared(ctx);

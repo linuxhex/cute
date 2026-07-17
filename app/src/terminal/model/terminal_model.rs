@@ -13,7 +13,7 @@ use instant::Instant;
 use itertools::{Either, Itertools};
 use serde::Serialize;
 use session_sharing_protocol::common::{
-    AICommandMetadata, OrderedTerminalEventType, ParticipantId,
+    OrderedTerminalEventType, ParticipantId,
 };
 // Use cloud_stub_types::SessionSourceType instead of session_sharing_protocol::sharer::SessionSourceType
 use crate::cloud_stub_types::{SessionSourceType, SharedSessionSource};
@@ -1356,9 +1356,9 @@ use crate::cloud_stub_types::SharedSessionStatus;
     /// link the new server-assigned token to an existing conversation from historical replay.
     pub fn send_agent_response_for_shared_session(
         &mut self,
-        response: &cute_multi_agent_api::ResponseEvent,
+        _response: &cute_multi_agent_api::ResponseEvent,
         response_initiator: Option<ParticipantId>,
-        forked_from_conversation_token: Option<String>,
+        _forked_from_conversation_token: Option<String>,
     ) {
         // We should always have a response initiator for shared sessions,
         // but if we don't we should still send the response event to the viewers
@@ -2776,8 +2776,8 @@ impl ansi::Handler for TerminalModel {
         let _block_id = data.next_block_id.to_string();
         let is_for_in_band_command = self.block_list().active_block().is_in_band_command_block();
         let finished_block_bootstrap_stage = self.block_list().active_block().bootstrap_stage();
-        let command = self.block_list().active_block().command_with_secrets_unobfuscated(false);
-        let exit_code = data.exit_code.value();
+        let _command = self.block_list().active_block().command_with_secrets_unobfuscated(false);
+        let _exit_code = data.exit_code.value();
         delegate!(self.command_finished(data));
 
         // Cloud functionality removed - command finished sync disabled

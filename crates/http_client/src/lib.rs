@@ -185,7 +185,7 @@ impl Client {
         &self,
         wrapped: reqwest::RequestBuilder,
         include_warp_headers: bool,
-        iap_token: Option<String>,
+        _iap_token: Option<String>,
     ) -> RequestBuilder<'_> {
         let mut builder = RequestBuilder {
             wrapped,

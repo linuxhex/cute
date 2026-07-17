@@ -30,7 +30,7 @@ use super::delete_environment_confirmation_dialog::{
     DeleteEnvironmentConfirmationDialog, DeleteEnvironmentConfirmationDialogEvent,
 };
 use super::settings_page::{
-    MatchData, PageType, SettingsPageEvent, SettingsPageMeta, SettingsPageViewHandle,
+    MatchData, PageType, SettingsPageEvent, SettingsPageMeta,
     SettingsWidget, CONTENT_FONT_SIZE,
 };
 use super::update_environment_form::{
@@ -50,7 +50,7 @@ use crate::editor::{
 };
 use crate::root_view::CreateEnvironmentArg;
 
-use crate::server::ids::{ClientId, ServerId, SyncId};
+use crate::server::ids::SyncId;
 use crate::terminal::view::init_environment::mode_selector::{
     EnvironmentSetupMode, EnvironmentSetupModeSelector, EnvironmentSetupModeSelectorEvent,
 };

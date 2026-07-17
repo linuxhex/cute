@@ -11,7 +11,6 @@ use cuteui::{
 };
 
 use crate::appearance::Appearance;
-use crate::cloud_stub_types::settings::CuteDriveSettings;
 use crate::search::command_palette::FilterChipRenderer;
 use crate::search::QueryFilter;
 use crate::settings::AISettings;

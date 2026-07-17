@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 use std::ops::Deref;
-#[cfg(feature = "local_fs")]
-use std::path::PathBuf;
 use std::sync::Arc;
 
 use fuzzy_match::{match_indices_case_insensitive, FuzzyMatchResult};
@@ -28,7 +26,6 @@ use cuteui::{
 use super::workflow::Workflow;
 use super::WorkflowSource;
 use crate::appearance::Appearance;
-use crate::cloud_stub_types::model::persistence::CloudModel;
 use crate::themes::theme::{self, Blend, WarpTheme};
 use crate::user_config::{WarpConfig, WarpConfigUpdateEvent};
 use crate::workflows::WorkflowType;

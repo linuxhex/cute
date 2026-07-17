@@ -29,7 +29,7 @@ use uuid::Uuid;
 use cute_graphql::scalars::time::ServerTimestamp;
 use cuteui::platform::FullscreenState;
 
-use crate::{WorkspaceMetadata, WorkspaceUid, UserWorkspaces};
+use crate::{WorkspaceMetadata, WorkspaceUid};
 use crate::persistence::{RevisionAndLastEditor, ServerCreationInfo};
 use crate::{CloudWorkflow, CloudNotebook, CloudFolder};
 use cuteui::windowing::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH};
@@ -43,23 +43,21 @@ use super::block_list::{
 use super::model::{
     self, ActiveMCPServer, CurrentUserInformation, MCPEnvironmentVariables, NewActiveMCPServer,
     NewApp, NewCommand, NewFolder, NewNotebook, NewTab,
-    NewWindow, NewWorkflow, NewWorkspace, NewWorkspaceMetadata, ObjectMetadata,
-    ObjectPermissions, Project, Tab, Window, WorkspaceMetadata as WorkspaceMetadataModel,
+    NewWindow, NewWorkflow, NewWorkspace, NewWorkspaceMetadata, ObjectMetadata, Project, Tab, Window, WorkspaceMetadata as WorkspaceMetadataModel,
     AI_DOCUMENT_PANE_KIND, AI_FACT_PANE_KIND, CODE_PANE_KIND, ENV_VAR_COLLECTION_PANE_KIND,
     EXECUTION_PROFILE_EDITOR_PANE_KIND, MCP_SERVER_PANE_KIND, NOTEBOOK_PANE_KIND,
     SETTINGS_PANE_KIND, TERMINAL_PANE_KIND, WELCOME_PANE_KIND, WORKFLOW_PANE_KIND,
 };
 use cute_server_client::cloud_object::{
-    CloudObjectMetadata, CloudObjectPermissions, GenericCloudObject, GenericStringModel,
+    CloudObjectMetadata, CloudObjectPermissions,
     JsonObjectType, ObjectIdType, ObjectType,
 };
 use crate::cloud_stub_types::CloudObject;
 use crate::cloud_stub_types::model::generic_string_model::CloudStringObject;
-use crate::cloud_stub_types::models::ai_fact::{AIFact, CloudAIFact, CloudAIFactModel};
+use crate::cloud_stub_types::models::ai_fact::{CloudAIFact, CloudAIFactModel};
 use crate::cloud_stub_types::models::env_vars::{
-    CloudEnvVarCollection, CloudEnvVarCollectionModel, EnvVarCollection,
+    CloudEnvVarCollection, CloudEnvVarCollectionModel,
 };
-use crate::cloud_stub_types::models::json_model::JsonSerializer;
 use super::{
     schema, BlockCompleted, FinishedCommandMetadata, ModelEvent, PersistedData, PersistenceScope,
     StartedCommandMetadata, WriterHandles,
@@ -89,9 +87,9 @@ use crate::persistence::agent::read_agent_conversations;
 use crate::persistence::block_list::{get_all_restored_blocks, read_ai_queries};
 use crate::persistence::model::{
     NewCloudObjectsRefresh, NewGenericStringObject, NewPersistedObjectAction,
-    ProjectRules, UserProfile, CODE_REVIEW_PANE_KIND, GET_STARTED_PANE_KIND,
+    ProjectRules, CODE_REVIEW_PANE_KIND, GET_STARTED_PANE_KIND,
 };
-use crate::server::ids::{ClientId, HashableId, ServerId, SyncId, ToServerId};
+use crate::server::ids::{ClientId, HashableId, SyncId, ToServerId};
 // 删除云端功能import
 // use crate::cloud_stub_types::NotebookId;
 use crate::workflows::WorkflowId;
@@ -104,9 +102,8 @@ use crate::themes::theme::AnsiColorIdentifier;
 use crate::{report_error, report_if_error, safe_info};
 
 use crate::cloud_stub_types::{
-    NotebookId, OpenCuteDriveObjectSettings, GenericStringObjectId, MembershipRole,
-    TeamMetadata, Revision, CloudObjectSyncStatus, NumInFlightRequests,
-    FolderId, Owner,
+    NotebookId, OpenCuteDriveObjectSettings, GenericStringObjectId,
+    TeamMetadata, Owner,
 };
 // use crate::cloud_stub_types::{
 //     CloudObject, CloudObjectMetadata, CloudObjectPermissions, CloudObjectStatuses,
@@ -626,7 +623,7 @@ fn handle_model_event(event: ModelEvent, connection: &mut SqliteConnection) -> a
         ModelEvent::IncrementRetryCount(id) => {
             increment_retry_count(connection, id).context("error incrementing retry count")
         }
-        ModelEvent::DeleteObjects(ids) => {
+        ModelEvent::DeleteObjects(_ids) => {
             // 云端对象删除功能已禁用
             // delete_objects(connection, ids).context("error deleting objects")
             Ok(())
@@ -652,7 +649,7 @@ fn handle_model_event(event: ModelEvent, connection: &mut SqliteConnection) -> a
         }
         // REMOVED: Cloud features disabled in local version
         // UpsertWorkspace, UpsertWorkspaces, SetCurrentWorkspace variants do not exist
-        ModelEvent::UpdateObjectMetadata { id, metadata } => {
+        ModelEvent::UpdateObjectMetadata { id: _, metadata: _ } => {
             // 云端对象元数据更新功能已禁用
             // update_object_metadata(connection, id, to_cloud_object_metadata(&metadata))
             //     .context("error updating metadata")
@@ -2857,14 +2854,14 @@ fn read_sqlite_data(
     // object_metadata rows + the type-specific tables so they survive restart.
     let cloud_objects = rebuild_cloud_objects(conn, &object_metadata)?;
 
-    let db_teams: Vec<model::Team> = Vec::new(); // schema::teams::dsl::teams.load(conn)?;
-    let members_by_team_id: HashMap<i32, Vec<model::TeamMemberRow>> = HashMap::new();
-    let settings_by_team_id: HashMap<i32, String> = HashMap::new();
+    let _db_teams: Vec<model::Team> = Vec::new(); // schema::teams::dsl::teams.load(conn)?;
+    let _members_by_team_id: HashMap<i32, Vec<model::TeamMemberRow>> = HashMap::new();
+    let _settings_by_team_id: HashMap<i32, String> = HashMap::new();
 
-    let teams: Vec<TeamMetadata> = Vec::new(); // Empty for local version
+    let _teams: Vec<TeamMetadata> = Vec::new(); // Empty for local version
 
-    let workspaces: Vec<WorkspaceMetadata> = Vec::new();
-    let current_workspace_uid: Option<WorkspaceUid> = None;
+    let _workspaces: Vec<WorkspaceMetadata> = Vec::new();
+    let _current_workspace_uid: Option<WorkspaceUid> = None;
 
     let commands = schema::commands::dsl::commands
         // Ensure the commands come into memory sorted chronologically.
@@ -2874,7 +2871,7 @@ fn read_sqlite_data(
         .map(PersistedCommand::from)
         .collect();
 
-    let user_profiles: Vec<crate::cloud_stub_types::UserProfile> = schema::user_profiles::dsl::user_profiles
+    let _user_profiles: Vec<crate::cloud_stub_types::UserProfile> = schema::user_profiles::dsl::user_profiles
         .load_iter::<model::UserProfile, DefaultLoadingMode>(conn)?
         .filter_map(|user_profile| user_profile.ok())
         // .map(user_profile_from_persistence)

@@ -44,7 +44,7 @@ impl ModalSizes {
         let warp_ai_width = window_snapshot
             .warp_ai_width
             .unwrap_or(DEFAULT_WARP_AI_WIDTH);
-        let cute_drive_index_width = window_snapshot
+        let _cute_drive_index_width = window_snapshot
             .cute_drive_index_width
             .unwrap_or(DEFAULT_CUTE_DRIVE_INDEX_WIDTH);
         let settings_panel_width = DEFAULT_SETTINGS_PANEL_WIDTH;

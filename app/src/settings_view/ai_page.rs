@@ -66,10 +66,7 @@ use crate::ai::execution_profiles::{
 use crate::ai::llms::{LLMContextWindow, LLMId, LLMPreferences, LLMPreferencesEvent};
 use crate::ai::mcp::TemplatableMCPServerManager;
 use crate::ai::paths::host_native_absolute_path;
-use crate::auth::auth_manager::{AuthManager, LoginGatedFeature};
-use crate::auth::AuthViewVariant;
 // use crate::auth::AuthStateProvider;
-use crate::workspace::WorkspaceAction;
 use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
 use crate::cloud_stub_types::GenericStringObjectFormat::Json;
 use crate::cloud_stub_types::{JsonObjectType, ObjectType};
@@ -7127,7 +7124,7 @@ struct AwsBedrockWidget {
 impl AwsBedrockWidget {
     fn new(ctx: &mut ViewContext<<Self as SettingsWidget>::View>) -> Self {
         let ai_settings = AISettings::as_ref(ctx);
-        let is_any_ai_enabled = ai_settings.is_any_ai_enabled(ctx);
+        let _is_any_ai_enabled = ai_settings.is_any_ai_enabled(ctx);
 
         let aws_auth_refresh_command = ai_settings.aws_bedrock_auth_refresh_command.value().clone();
         let aws_auth_refresh_profile = ai_settings.aws_bedrock_profile.value().clone();
@@ -7250,7 +7247,7 @@ impl AwsBedrockWidget {
                 AISettingsChangedEvent::IsAnyAIEnabled { .. }
                     | AISettingsChangedEvent::AwsBedrockCredentialsEnabled { .. }
             ) {
-                let is_any_ai_enabled = AISettings::as_ref(ctx).is_any_ai_enabled(ctx);
+                let _is_any_ai_enabled = AISettings::as_ref(ctx).is_any_ai_enabled(ctx);
                 // Cloud credentials removed for local version - always disabled
                 let is_usage_enabled = false;
 
@@ -7277,9 +7274,9 @@ impl AwsBedrockWidget {
         let refresh_credentials_button_clone = refresh_credentials_button.clone();
         ctx.subscribe_to_model(
             &UserWorkspaces::handle(ctx),
-            move |_, workspace, event, ctx| {
+            move |_, _workspace, event, ctx| {
                 if let UserWorkspacesEvent::TeamsChanged = event {
-                    let is_any_ai_enabled = AISettings::as_ref(ctx).is_any_ai_enabled(ctx);
+                    let _is_any_ai_enabled = AISettings::as_ref(ctx).is_any_ai_enabled(ctx);
                     // Cloud credentials removed for local version - always disabled
                     let is_usage_enabled = false;
 

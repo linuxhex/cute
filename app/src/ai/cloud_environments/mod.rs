@@ -9,7 +9,7 @@ use crate::UserWorkspaces;
 // Re-export types from cloud_object::models::cloud_environment
 pub use crate::cloud_stub_types::models::cloud_environment::{
     AmbientAgentEnvironment, AwsProviderConfig, BaseImage, CloudAmbientAgentEnvironment,
-    CloudAmbientAgentEnvironmentModel, GcpProviderConfig, GithubRepo, ProvidersConfig,
+    GcpProviderConfig, GithubRepo, ProvidersConfig,
 };
 
 /// Stub function: Get the owner for a new environment (team preference).

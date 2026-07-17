@@ -4,7 +4,6 @@ use std::path::PathBuf;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use cute_completer::parsers::simple::decompose_command;
-use cute_core::execution_mode::AppExecutionMode;
 use cute_core::features::FeatureFlag;
 use cute_core::settings::Setting;
 use cute_core::user_preferences::GetUserPreferences;
@@ -177,7 +176,7 @@ impl BlocklistAIPermissions {
         let profile = profiles_model
             .get_profile_by_id(profile_id, ctx)
             .unwrap_or_else(|| profiles_model.default_profile(ctx));
-        let profile_data = profile.data();
+        let _profile_data = profile.data();
 
         AIExecutionProfile::default()
     }
@@ -318,7 +317,7 @@ impl BlocklistAIPermissions {
     }
 
     pub fn get_org_execute_commands_denylist(
-        ctx: &AppContext,
+        _ctx: &AppContext,
     ) -> Vec<AgentModeCommandExecutionPredicate> {
         // Modified: Return empty list to fix type mismatch
         Vec::new()
@@ -340,7 +339,7 @@ impl BlocklistAIPermissions {
     pub fn get_write_to_pty_setting_for_profile(
         &self,
         ctx: &AppContext,
-        profile_id: ClientProfileId,
+        _profile_id: ClientProfileId,
     ) -> WriteToPtyPermission {
         let autonomy_settings = Self::workspace_autonomy_settings(ctx);
         let write_to_pty_workspace_setting = autonomy_settings.write_to_pty_setting;
@@ -479,7 +478,7 @@ impl BlocklistAIPermissions {
     pub fn get_computer_use_setting_for_profile(
         &self,
         ctx: &AppContext,
-        profile_id: ClientProfileId,
+        _profile_id: ClientProfileId,
     ) -> crate::ai::execution_profiles::ComputerUsePermission {
         let autonomy_settings = Self::workspace_autonomy_settings(ctx);
         let computer_use_workspace_setting = autonomy_settings.computer_use_setting;

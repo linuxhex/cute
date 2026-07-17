@@ -17,7 +17,7 @@ use cute_completer::parsers::simple::top_level_command;
 use cute_editor::content::buffer::Buffer;
 use cute_editor::content::markdown::MarkdownStyle;
 use cute_util::path::EscapeChar;
-use cuteui::{AppContext, SingletonEntity};
+use cuteui::AppContext;
 
 use crate::ai::agent::{AgentReviewCommentBatch, DiffSetHunk};
 use crate::ai::blocklist::CLAUDE_ORANGE;

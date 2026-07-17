@@ -2145,7 +2145,7 @@ fn render_avatar_disc(
     avatar_color: ColorU,
     glyph: AvatarGlyph,
     size: f32,
-    theme: &WarpTheme,
+    _theme: &WarpTheme,
     appearance: &Appearance,
 ) -> Box<dyn Element> {
     let disc = ConstrainedBox::new(

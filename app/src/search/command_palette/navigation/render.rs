@@ -1,32 +1,16 @@
-use pathfinder_geometry::vector::vec2f;
 use cuteui::elements::{
-    Align, Border, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Flex, Highlight,
-    ParentElement, Radius, Shrinkable, Wrap,
+    Align, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Flex, Highlight,
+    ParentElement, Radius, Shrinkable,
 };
 use cuteui::fonts::{Properties, Weight};
 use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
-use cuteui::units::IntoPixels;
-use cuteui::{AppContext, Element, SingletonEntity};
+use cuteui::{AppContext, Element};
 
 use crate::appearance::Appearance;
-use crate::context_chips::display_chip::{
-    chip_container, render_git_diff_stats_content, render_udi_chip, udi_font_size, GitLineChanges,
-    UdiChipConfig,
-};
-use crate::context_chips::prompt_snapshot::PromptSnapshot;
-use crate::context_chips::{ChipValue, ContextChipKind};
 use crate::search::command_palette::navigation::search::SessionHighlightIndices;
 use crate::search::result_renderer::ItemHighlightState;
 // Session navigation types are now exported from crate root
 use crate::{CommandContext, SessionNavigationData};
-use crate::settings::FontSettings;
-use crate::terminal::blockgrid_element::BlockGridElement;
-use crate::terminal::grid_size_util::grid_cell_dimensions;
-use crate::terminal::ligature_settings::should_use_ligature_rendering;
-use crate::terminal::model::blockgrid::BlockGrid;
-use crate::terminal::model::grid::Dimensions;
-use crate::terminal::safe_mode_settings::get_secret_obfuscation_mode;
-use crate::terminal::SizeInfo;
 
 /// Renders a navigation session.
 pub fn render_navigation_session(
@@ -62,7 +46,7 @@ fn render_session_label(
     item_highlight_state: ItemHighlightState,
     is_active_session: bool,
     highlight_indices: &SessionHighlightIndices,
-    app: &AppContext,
+    _app: &AppContext,
 ) -> Flex {
     let mut navigation_palette_item = Flex::column();
 

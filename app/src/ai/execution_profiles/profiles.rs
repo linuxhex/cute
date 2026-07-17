@@ -272,7 +272,7 @@ impl AIExecutionProfilesModel {
     pub fn create_profile(&mut self, ctx: &mut ModelContext<Self>) -> Option<ClientProfileId> {
         let profile_id = ClientProfileId::new();
 
-        let Some(owner) = UserWorkspaces::as_ref(ctx).personal_drive(ctx) else {
+        let Some(_owner) = UserWorkspaces::as_ref(ctx).personal_drive(ctx) else {
             log::error!("Failed to create AI execution profile: personal drive not available");
             return None;
         };
@@ -304,7 +304,7 @@ impl AIExecutionProfilesModel {
             return;
         }
 
-        let Some(sync_id) = self.profile_id_to_sync_id.get(&profile_id).cloned() else {
+        let Some(_sync_id) = self.profile_id_to_sync_id.get(&profile_id).cloned() else {
             return;
         };
 
@@ -1068,7 +1068,7 @@ impl AIExecutionProfilesModel {
                     return false;
                 }
 
-                if let Some(owner) = UserWorkspaces::as_ref(ctx).personal_drive(ctx) {
+                if let Some(_owner) = UserWorkspaces::as_ref(ctx).personal_drive(ctx) {
                     // let update_manager = UpdateManager::handle(ctx);
                     let client_id = ClientId::default();
                     // update_manager.update(ctx, |update_manager, ctx| {

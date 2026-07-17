@@ -19,7 +19,7 @@ use url::Url;
 use cute_core::context_flag::ContextFlag;
 use cute_core::user_preferences::GetUserPreferences as _;
 use cuteui::elements::{
-    Border, ChildAnchor, OffsetPositioning, ParentAnchor, ParentElement, ParentOffsetBounds, Stack,
+    ChildAnchor, OffsetPositioning, ParentAnchor, ParentElement, ParentOffsetBounds, Stack,
 };
 use cuteui::keymap::{EditableBinding, FixedBinding};
 use cuteui::platform::{WindowBounds, WindowStyle};
@@ -39,29 +39,22 @@ use crate::ai::onboarding::{build_onboarding_models, current_onboarding_auth_sta
 use crate::app_state::{AppState, PaneUuid, WindowSnapshot};
 use crate::appearance::Appearance;
 use crate::auth::auth_manager::{AuthManager, AuthManagerEvent};
-use crate::auth::AuthStateProvider;
-use crate::changelog_model::ChangelogRequestType;
 // Cloud model and drive object imports enabled for local version
-use crate::cloud_stub_types::model::persistence::CloudModel;
-use crate::cloud_stub_types::{GenericStringObjectFormat, JsonObjectType, ObjectType};
-use crate::cloud_stub_types::items::WarpDriveItemId;
-use crate::cloud_stub_types::{CloudObjectTypeAndId, OpenCuteDriveObjectArgs, OpenWarpDriveObjectSettings};
+use crate::cloud_stub_types::OpenWarpDriveObjectSettings;
 use crate::features::FeatureFlag;
 use crate::interval_timer::IntervalTimer;
 use crate::launch_configs::launch_config;
 use crate::linear::LinearIssueWork;
-use crate::cloud_stub_types::NotebookSource;
 use crate::pane_group::{NewTerminalOptions, PanesLayout};
 use crate::persistence::ModelEvent;
 // use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::ids::SyncId;
-use crate::server::server_api::{ServerApi, ServerApiProvider, ServerTime};
+use crate::server::server_api::{ServerApi, ServerApiProvider};
 use crate::server::telemetry::LaunchConfigUiLocation;
 use crate::settings::cloud_preferences_syncer::{
     CloudPreferencesSyncer, CloudPreferencesSyncerEvent,
 };
 use crate::settings::{apply_onboarding_settings, AISettings, QuakeModeSettings, ThemeSettings};
-use crate::settings_view::mcp_servers_page::MCPServersSettingsPage;
 use crate::settings_view::{flags, SettingsSection};
 use crate::terminal::available_shells::AvailableShell;
 use crate::terminal::general_settings::GeneralSettings;
@@ -69,11 +62,10 @@ use crate::terminal::keys_settings::KeysSettings;
 use crate::terminal::shell::ShellType;
 use crate::terminal::view::{cell_size_and_padding, TerminalAction};
 use crate::themes::onboarding_theme_picker_themes;
-use crate::themes::theme::{AnsiColorIdentifier, Blend, Fill, ThemeKind, WarpThemeConfig};
+use crate::themes::theme::{AnsiColorIdentifier, ThemeKind, WarpThemeConfig};
 use crate::uri::OpenMCPSettingsArgs;
 use crate::util::bindings::{self, is_binding_pty_compliant};
 use crate::util::traffic_lights::{traffic_light_data, TrafficLightData, TrafficLightMouseStates};
-use crate::view_components::DismissibleToast;
 use crate::window_settings::WindowSettings;
 use crate::workspace::hoa_onboarding::mark_hoa_onboarding_completed;
 use crate::workspace::view::OnboardingTutorial;
@@ -868,14 +860,14 @@ fn open_settings_page_in_new_window(section: &SettingsSection, ctx: &mut AppCont
 /// MCP servers need to wait for initial load to complete, so we have this action in addition
 /// to the general-purpose [`open_settings_page_in_new_window`].
 fn open_mcp_settings_in_new_window(args: &OpenMCPSettingsArgs, ctx: &mut AppContext) {
-    let autoinstall = args.autoinstall.clone();
+    let _autoinstall = args.autoinstall.clone();
     let root_handle = open_new_window_get_handles(None, ctx).1;
     root_handle.update(ctx, |root_view, ctx| {
         if let AuthOnboardingState::Terminal(workspace_view_handle) =
             &root_view.auth_onboarding_state
         {
             // let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
-            workspace_view_handle.update(ctx, |_, ctx| {
+            workspace_view_handle.update(ctx, |_, _ctx| {
                 // Simplified: directly open MCP servers page without waiting
                 // let _ = ctx.spawn(async move { initial_load_complete }, move |workspace, _, ctx| {
                 //     workspace.open_mcp_servers_page(
@@ -893,7 +885,7 @@ fn open_mcp_settings_in_new_window(args: &OpenMCPSettingsArgs, ctx: &mut AppCont
 /// Opens a new window and shows the Codex modal.
 fn open_codex_in_new_window(_: &(), ctx: &mut AppContext) {
     let root_handle = open_new_window_get_handles(None, ctx).1;
-    root_handle.update(ctx, |root_view, ctx| {
+    root_handle.update(ctx, |root_view, _ctx| {
         if let AuthOnboardingState::Terminal(workspace_view_handle) =
             &root_view.auth_onboarding_state
         {
@@ -1637,7 +1629,7 @@ impl RootView {
     }
 
     /// Debug method to enter the onboarding state.
-    fn debug_enter_onboarding_state(&mut self, _: &(), ctx: &mut ViewContext<Self>) -> bool {
+    fn debug_enter_onboarding_state(&mut self, _: &(), _ctx: &mut ViewContext<Self>) -> bool {
         if !ChannelState::enable_debug_features() {
             log::warn!("Attempted to enter onboarding state in release build");
             return false;
@@ -2072,9 +2064,9 @@ impl RootView {
         ctx: &mut ViewContext<Self>,
     ) -> bool {
         if let AuthOnboardingState::Terminal(handle) = &self.auth_onboarding_state {
-            let autoinstall = args.autoinstall.clone();
+            let _autoinstall = args.autoinstall.clone();
             // let initial_load_complete = UpdateManager::as_ref(ctx).initial_load_complete();
-            handle.update(ctx, |_, ctx| {
+            handle.update(ctx, |_, _ctx| {
                 // Simplified: directly open MCP servers page without waiting
                 // let _ = ctx.spawn(async move { initial_load_complete }, move |workspace, _, ctx| {
                 //     workspace.open_mcp_servers_page(
@@ -2279,7 +2271,7 @@ impl View for RootView {
 
     fn render(&self, app: &AppContext) -> Box<dyn Element> {
         // Helper to get workspace from terminal state or return a placeholder
-        let get_workspace_view = || -> ViewHandle<Workspace> {
+        let _get_workspace_view = || -> ViewHandle<Workspace> {
             if let AuthOnboardingState::Terminal(workspace) = &self.auth_onboarding_state {
                 workspace.clone()
             } else {

@@ -1,5 +1,4 @@
 use std::collections::{HashMap, HashSet};
-use std::time::Duration;
 
 use ai::index::full_source_code_embedding::store_client::{IntermediateNode, StoreClient};
 use ai::index::full_source_code_embedding::{
@@ -7,93 +6,21 @@ use ai::index::full_source_code_embedding::{
 };
 use anyhow::anyhow;
 use async_trait::async_trait;
-use base64::Engine;
 use chrono::{DateTime, Utc};
 
-use itertools::Itertools;
 #[cfg(test)]
 use mockall::automock;
-use prost::Message;
-use cute_core::channel::ChannelState;
 use cute_core::report_error;
 use cute_graphql::ai::{AgentTaskState, PlatformErrorCode};
-use cute_graphql::client::Operation;
-use cute_graphql::mutations::confirm_file_artifact_upload::{
-    ConfirmFileArtifactUpload, ConfirmFileArtifactUploadInput, ConfirmFileArtifactUploadResult,
-    ConfirmFileArtifactUploadVariables,
-};
-use cute_graphql::mutations::create_agent_task::{
-    CreateAgentTask, CreateAgentTaskInput, CreateAgentTaskResult, CreateAgentTaskVariables,
-};
-use cute_graphql::mutations::create_file_artifact_upload_target::{
-    CreateFileArtifactUploadTarget, CreateFileArtifactUploadTargetInput,
-    CreateFileArtifactUploadTargetResult, CreateFileArtifactUploadTargetVariables,
-};
-use cute_graphql::mutations::delete_ai_conversation::{
-    DeleteAIConversation, DeleteAIConversationVariables, DeleteConversationInput,
-    DeleteConversationResult,
-};
-use cute_graphql::mutations::generate_code_embeddings::{
-    GenerateCodeEmbeddings, GenerateCodeEmbeddingsInput, GenerateCodeEmbeddingsResult,
-    GenerateCodeEmbeddingsVariables,
-};
-use cute_graphql::mutations::generate_commands::{
-    GenerateCommands, GenerateCommandsInput, GenerateCommandsResult, GenerateCommandsStatus,
-    GenerateCommandsVariables,
-};
-use cute_graphql::mutations::generate_dialogue::{
-    GenerateDialogue, GenerateDialogueInput,
-    GenerateDialogueResult as GenerateDialogueResultGraphql, GenerateDialogueStatus,
-    GenerateDialogueVariables, TranscriptPart as TranscriptPartGraphql,
-};
 use cute_graphql::mutations::generate_metadata_for_command::{
-    GenerateMetadataForCommand, GenerateMetadataForCommandFailureType,
-    GenerateMetadataForCommandInput, GenerateMetadataForCommandResult,
-    GenerateMetadataForCommandStatus, GenerateMetadataForCommandSuccess,
-    GenerateMetadataForCommandVariables,
+    GenerateMetadataForCommandFailureType, GenerateMetadataForCommandSuccess,
 };
 // Note: request_bonus mutation has been removed
-use cute_graphql::mutations::update_agent_task::{
-    AgentTaskStatusMessageInput, UpdateAgentTask, UpdateAgentTaskInput, UpdateAgentTaskResult,
-    UpdateAgentTaskVariables,
-};
-use cute_graphql::mutations::update_merkle_tree::{
-    MerkleTreeNode, UpdateMerkleTree, UpdateMerkleTreeInput, UpdateMerkleTreeResult,
-    UpdateMerkleTreeVariables,
-};
-use cute_graphql::queries::codebase_context_config::{
-    CodebaseContextConfigQuery, CodebaseContextConfigResult, CodebaseContextConfigVariables,
-};
-use cute_graphql::queries::free_available_models::{
-    FreeAvailableModels, FreeAvailableModelsInput, FreeAvailableModelsResult,
-    FreeAvailableModelsVariables,
-};
-use cute_graphql::queries::get_available_harnesses::{
-    GetAvailableHarnesses, GetAvailableHarnessesVariables,
-};
-use cute_graphql::queries::get_feature_model_choices::{
-    GetFeatureModelChoices, GetFeatureModelChoicesVariables,
-};
 
-#[cfg(not(feature = "agent_mode_evals"))]
-use cute_graphql::queries::get_request_limit_info::{
-    GetRequestLimitInfo, GetRequestLimitInfoVariables,
-};
-use cute_graphql::queries::get_scheduled_agent_history::{
-    GetScheduledAgentHistory, GetScheduledAgentHistoryVariables, ScheduledAgentHistory,
-    ScheduledAgentHistoryInput, ScheduledAgentHistoryResult,
-};
+use cute_graphql::queries::get_scheduled_agent_history::ScheduledAgentHistory;
 
-use cute_graphql::queries::task_attachments::{
-    Task as TaskAttachmentsQuery, TaskInput, TaskResult, TaskVariables,
-};
-use cute_graphql::queries::task_git_credentials::{
-    TaskGitCredentials, TaskGitCredentialsInput, TaskGitCredentialsResult,
-    TaskGitCredentialsVariables,
-};
 use cute_multi_agent_api::ConversationData;
 
-use super::auth::AuthClient;
 use super::harness_support::{ResolvePromptRequest, ResolvedHarnessPrompt, UploadField, UploadFieldValue, UploadTarget};
 use super::ServerApi;
 use crate::ai::agent::api::ServerConversationToken;
@@ -119,8 +46,6 @@ use crate::ai::llms::{
 };
 #[cfg(feature = "agent_mode_evals")]
 use crate::ai::request_usage_model::RequestLimitInfo;
-#[cfg(not(feature = "agent_mode_evals"))]
-use crate::ai::BonusGrant;
 use crate::ai::RequestUsageInfo;
 use crate::ai_assistant::execution_context::WarpAiExecutionContext;
 use crate::ai_assistant::requests::GenerateDialogueResult;
@@ -131,16 +56,7 @@ use crate::cloud_stub_types::workflows::ai_assist::{
 };
 use crate::workflows::workflow::Argument;
 use crate::persistence::model::ConversationUsageMetadata;
-use crate::server::graphql::{
-    default_request_options, get_request_context, get_user_facing_error_message,
-};
 use crate::terminal::model::block::SerializedBlock;
-#[cfg(not(feature = "agent_mode_evals"))]
-use crate::{
-    ai::request_usage_model::BonusGrantScope,
-    server::ids::ServerId,
-    // workspaces::{gql_convert::PLACEHOLDER_WORKSPACE_UID, workspace::WorkspaceUid}, // Cute: 已注释，清理 workspaces 模块
-};
 
 
 

@@ -5,7 +5,7 @@ use settings::ToggleableSetting as _;
 use cuteui::modals::{AlertDialogWithCallbacks, AppModalCallback, ModalButton};
 use cuteui::{AppContext, EntityId, SingletonEntity, ViewContext, WeakViewHandle, WindowId};
 
-use crate::code::editor_management::{CodeEditorStatus, CodeEditorSummary};
+use crate::code::editor_management::CodeEditorStatus;
 use crate::pane_group::{CodePane, PaneGroup, PaneId, TerminalPane};
 use crate::server::telemetry::CloseTarget;
 // Session navigation types are now exported from crate root
@@ -395,7 +395,7 @@ impl<'a> QuitWarningDialog<'a> {
     /// the current platform doesn't support showing a modal.
     pub fn show(self, ctx: &mut AppContext) -> bool {
 
-        let session_summary = self.state.running_sessions();
+        let _session_summary = self.state.running_sessions();
         let dialog = self.build();
         // We don't support showing a modal on all platforms.
         let mut shown = false;

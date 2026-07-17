@@ -102,8 +102,7 @@ use crate::ai::blocklist::view_util::format_credits;
 use crate::ai::blocklist::{AIBlockResponseRating, BlocklistAIActionModel, SuggestionChipView};
 use crate::ai::paths::shell_native_absolute_path;
 use crate::ai::skills::{
-    icon_override_for_skill_name, render_skill_button, skill_path_from_file_path, SkillManager,
-    SkillOpenOrigin,
+    skill_path_from_file_path, SkillManager,
 };
 use crate::appearance::Appearance;
 use crate::code::diff_viewer::DisplayMode;
@@ -1654,7 +1653,7 @@ fn render_read_files(
     id: &AIAgentActionId,
     file_names: impl IntoIterator<Item = impl AsRef<str>>,
     app: &AppContext,
-    parsed_skill: Option<&ai::skills::ParsedSkill>,
+    _parsed_skill: Option<&ai::skills::ParsedSkill>,
     action_index: usize,
 ) -> Box<dyn Element> {
     let status = props.action_model.as_ref(app).get_action_status(id);

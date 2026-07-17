@@ -3,7 +3,7 @@ use cute_core::features::FeatureFlag;
 use cuteui::ViewContext;
 
 use super::{
-    ContentItem, ContentSectionData, FeatureItem, FeatureSection, FeatureSectionData,
+    FeatureItem, FeatureSection, FeatureSectionData,
     ResourceCenterMainView, Section, Tip, TipAction, TipHint,
 };
 

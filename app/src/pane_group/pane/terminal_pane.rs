@@ -5,7 +5,6 @@ use std::sync::mpsc::SyncSender;
 
 use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
 use base64::Engine as _;
-use url::Url;
 use cute_cli::agent::Harness;
 use cute_core::execution_mode::AppExecutionMode;
 use cute_multi_agent_api as multi_agent_api;
@@ -57,7 +56,7 @@ use crate::terminal::view::Event;
 use crate::terminal::{TerminalManager, TerminalView};
 use crate::view_components::ToastFlavor;
 use crate::workspace::sync_inputs::SyncedInputState;
-use crate::workspace::{PaneViewLocator, WorkspaceRegistry};
+use crate::workspace::WorkspaceRegistry;
 use crate::AIExecutionProfilesModel;
 // Imports below are only consumed by the non-wasm `launch_local_*_child`
 // dispatch helpers; gating them keeps the wasm build warning-clean.
@@ -2004,8 +2003,8 @@ fn handle_ai_history_event(
     use crate::ai::blocklist::{
         AIQueryHistoryOutputStatus, PersistedAIInput, PersistedAIInputType,
     };
-    use crate::IsSharedSessionCreator;
-    use crate::cloud_stub_types::SharedSessionStatus;
+    
+    
 
     if event
         .terminal_view_id()

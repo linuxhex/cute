@@ -189,11 +189,10 @@ use crate::ai::AIRequestUsageModel;
 use crate::ai_assistant::execution_context::WarpAiExecutionContext;
 use crate::appearance::{Appearance, AppearanceEvent};
 use crate::channel::ChannelState;
-use crate::cloud_stub_types::model::actions::ObjectActionType;
 use crate::cloud_stub_types::model::generic_string_model::StringModel;
 use crate::cloud_stub_types::model::persistence::CloudModel;
 use crate::cloud_stub_types::model::view::CloudViewModel;
-use crate::cloud_stub_types::{CloudObject, CloudObjectLookup as _, UpdateManager, UserWorkspaces};
+use crate::cloud_stub_types::CloudObjectLookup as _;
 #[cfg(feature = "local_fs")]
 use crate::code::editor_management::CodeSource;
 use crate::code_review::diff_state::DiffMode;
@@ -209,7 +208,7 @@ use crate::editor::{
     CursorColors, DisplayPoint, EditOrigin, EditorAction, EditorDecoratorElements, EditorOptions,
     EditorSnapshot, EditorView, Event as EditorEvent, ImageContextOptions, InteractionState,
     PathTransformerFn, PlainTextEditorViewAction, Point as BufferPoint, PropagateAndNoOpEscapeKey,
-    PropagateAndNoOpNavigationKeys, PropagateHorizontalNavigationKeys, ReplicaId, TextColors,
+    PropagateAndNoOpNavigationKeys, PropagateHorizontalNavigationKeys, TextColors,
     TextRun, MAX_IMAGES_PER_CONVERSATION,
 };
 use crate::env_vars::EnvVarCollectionExt;
@@ -3573,43 +3572,43 @@ impl Input {
     }
 
     #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-    fn maybe_launch_cloud_handoff_request(&mut self, ctx: &mut ViewContext<Self>) -> bool {
+    fn maybe_launch_cloud_handoff_request(&mut self, _ctx: &mut ViewContext<Self>) -> bool {
         use crate::cloud_stub_types::CloudObjectLookup as _;
 
         // if !FeatureFlag::OzHandoff.is_enabled()
         //     || !FeatureFlag::HandoffLocalCloud.is_enabled()
         //     || !cfg!(all(feature = "local_fs", not(target_family = "wasm")))
-        //     || self.prefix_mode(ctx) != InputPrefixMode::CloudHandoff
+        //     || self.prefix_mode(_ctx) != InputPrefixMode::CloudHandoff
         // {
         //     return false;
         // }
         return false;
 
-        let prompt = self.editor.as_ref(ctx).buffer_text(ctx).trim().to_owned();
+        let prompt = self.editor.as_ref(_ctx).buffer_text(_ctx).trim().to_owned();
         if prompt.is_empty() {
             return true;
         }
 
-        if CloudAmbientAgentEnvironment::get_all(ctx).is_empty() {
-            ctx.emit(Event::OpenHandoffEnvironmentCreationModal);
+        if CloudAmbientAgentEnvironment::get_all(_ctx).is_empty() {
+            _ctx.emit(Event::OpenHandoffEnvironmentCreationModal);
             return true;
         }
 
-        let attachments = self.collect_cloud_launch_attachments(ctx);
+        let attachments = self.collect_cloud_launch_attachments(_ctx);
         let environment_id = self
             .handoff_compose_state
-            .as_ref(ctx)
+            .as_ref(_ctx)
             .selected_environment_id()
             .cloned();
-        let entry_point = self.handoff_compose_state.as_ref(ctx).entry_point();
+        let entry_point = self.handoff_compose_state.as_ref(_ctx).entry_point();
         let launch = PendingCloudLaunch {
             prompt,
             attachments,
         };
 
-        self.exit_cloud_handoff_compose_and_clear(ctx);
+        self.exit_cloud_handoff_compose_and_clear(_ctx);
 
-        ctx.dispatch_typed_action_deferred(WorkspaceAction::OpenLocalToCloudHandoffPane {
+        _ctx.dispatch_typed_action_deferred(WorkspaceAction::OpenLocalToCloudHandoffPane {
             launch: Some(launch),
             environment_id,
             entry_point,
@@ -12451,7 +12450,7 @@ impl Input {
         ctx.emit(Event::ExecuteAIQuery);
 
         if let Some(workflow_state) = self.workflows_state.selected_workflow_state.as_ref() {
-            if let WorkflowType::Cloud(workflow) = &workflow_state.workflow_type {
+            if let WorkflowType::Cloud(_workflow) = &workflow_state.workflow_type {
 
                 // REMOVED: record_object_action - cloud feature disabled
                 // UpdateManager::handle(ctx).update(ctx, move |update_manager: ModelHandle<UpdateManager>, ctx| {

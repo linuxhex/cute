@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::vec2f;
-use settings::Setting;
 use cute_core::ui::color::blend::Blend;
 use cute_core::ui::theme::Fill;
 use cuteui::elements::{
@@ -15,7 +14,7 @@ use cuteui::{
 };
 
 use super::{AgentInputButtonTheme, AmbientAgentViewModel};
-use crate::cloud_stub_types::CloudAgentSettings; // Import from cloud_stub_types
+ // Import from cloud_stub_types
 // use crate::ai::cloud_agent_settings::CloudAgentSettings; // Cute: 已注释，清理云端 Agent 设置
 use crate::ai::cloud_environments::CloudAmbientAgentEnvironment;
 use crate::appearance::Appearance;
@@ -25,7 +24,6 @@ use crate::cloud_stub_types::CloudObjectLookup as _;
 use crate::context_chips::display_menu::{
     ChipMenuType, DisplayChipMenu, FixedFooter, GenericMenuItem, PromptDisplayMenuEvent,
 };
-use crate::report_if_error;
 use crate::server::ids::SyncId;
 use crate::terminal::input::{
     HandoffComposeState, HandoffComposeStateEvent, MenuPositioning, MenuPositioningProvider,

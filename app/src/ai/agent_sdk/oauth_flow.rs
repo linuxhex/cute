@@ -1,9 +1,7 @@
 use std::sync::Arc;
-use std::time::Duration;
 
 use anyhow::{anyhow, Result};
 use cute_graphql::queries::get_oauth_connect_tx_status::OauthConnectTxStatus;
-use cuteui::r#async::Timer;
 
 use crate::server::server_api::integrations::IntegrationsClient;
 

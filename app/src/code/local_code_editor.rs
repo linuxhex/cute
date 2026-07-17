@@ -2283,8 +2283,8 @@ impl TypedActionView for LocalCodeEditorView {
                     // clear has_remote_conflict and update base_content_version.
                     // If the re-open fails, has_remote_conflict stays true and
                     // the banner remains visible so the user can retry.
-                    if let Some(file_id) = self.file_id() {
-                        GlobalBufferModel::handle(ctx).update(ctx, |model, ctx| {
+                    if let Some(_file_id) = self.file_id() {
+                        GlobalBufferModel::handle(ctx).update(ctx, |_model, _ctx| {
                             // model.reopen_remote_buffer(file_id, ctx);
                         });
                     }

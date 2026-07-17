@@ -3,7 +3,6 @@
 //! This is tightly coupled to the pane header so that different overlays (context menus, the
 //! sharing dialog, and so on) are correctly displayed.
 
-use cute_core::features::FeatureFlag;
 use cute_core::ui::appearance::Appearance;
 use cute_core::ui::theme::Fill;
 use cuteui::elements::{ConstrainedBox, MouseStateHandle, ParentElement};

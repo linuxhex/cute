@@ -2128,9 +2128,9 @@ impl TypedActionView for ProfileModelSelector {
             }
             ProfileModelSelectorAction::SelectHarnessModel {
                 model_id,
-                reasoning_level,
+                reasoning_level: _,
             } => {
-                let is_default = model_id.is_empty();
+                let _is_default = model_id.is_empty();
                 // Cute: 已注释，清理云端 Agent 模型选择和持久化逻辑
                 // 本地 Agent 的模型选择由 LLMPreferences 管理，不需要 CloudAgentSettings
                 // if let Some(ambient_agent_model) = self.ambient_agent_view_model.clone() {

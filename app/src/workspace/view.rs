@@ -21,7 +21,6 @@ use std::convert::TryFrom;
 #[cfg(target_os = "macos")]
 use std::env;
 use std::fmt::Write;
-use std::fs;
 use std::path::{Path, PathBuf};
 #[cfg(target_os = "macos")]
 use std::process;
@@ -154,7 +153,7 @@ use crate::ai::blocklist::agent_view::agent_input_footer::editor::AgentToolbarEd
 use crate::ai::blocklist::agent_view::editor::{AgentToolbarEditorEvent, AgentToolbarEditorModal};
 use crate::ai::blocklist::agent_view::AgentViewEntryOrigin;
 #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-use crate::ai::blocklist::{HandoffLaunchAttachments, PendingCloudLaunch};
+use crate::ai::blocklist::PendingCloudLaunch;
 use crate::ai::blocklist::history_model::{load_conversation_from_server, CloudConversationData};
 use crate::ai::blocklist::inline_action::code_diff_view::CodeDiffView;
 use crate::ai::blocklist::suggested_agent_mode_workflow_modal::{
@@ -215,7 +214,7 @@ use crate::cloud_stub_types::settings::{CuteDriveSettings, CuteDriveSettingsChan
 use crate::cloud_stub_types::workflows::arguments::ArgumentsState;
 use crate::cloud_stub_types::workflows::modal::{WorkflowModal, WorkflowModalEvent};
 use crate::cloud_stub_types::{
-    CloudObjectTypeAndId, DriveObjectType, DrivePanel, DrivePanelEvent, OpenWarpDriveObjectSettings,
+    CloudObjectTypeAndId, DrivePanel, DrivePanelEvent, OpenWarpDriveObjectSettings,
 };
 use crate::editor::{
     EditorView, Event as EditorEvent, PropagateAndNoOpNavigationKeys, SingleLineEditorOptions,
@@ -229,7 +228,6 @@ use crate::menu::{Event as MenuEvent, Menu, MenuItem, MenuItemFields, MenuSelect
 use crate::modal::{Modal, ModalEvent, ModalViewState};
 use crate::network::{NetworkStatus, NetworkStatusEvent};
 use crate::cloud_stub_types::{NotebookManager, NotebookSource};
-use crate::cloud_stub_types::CloudNotebook;
 use crate::notification::NotificationContext;
 use crate::palette::PaletteMode;
 use crate::pane_group::pane::ActionOrigin;
@@ -237,7 +235,7 @@ use crate::pane_group::pane::ActionOrigin;
 use crate::pane_group::FilePane;
 use crate::pane_group::{
     self, AIFactPane, AnyPaneContent, ChildAgentOrigin, CodeDiffPane, CodePane, CodeReviewPanelArg,
-    Direction as PaneGroupDirection, Direction, EnvironmentManagementPane,
+    Direction as PaneGroupDirection, Direction,
     ExecutionProfileEditorPane, NewTerminalOptions, PaneGroup, PaneId, PanesLayout,
     TabBarHoverIndex, TerminalPaneId,
 };
@@ -250,7 +248,7 @@ use crate::prompt::editor_modal::{
 use crate::quit_warning::UnsavedStateSummary;
 use crate::resource_center::{
     mark_feature_used_and_write_to_user_defaults, skip_tips_and_write_to_user_defaults,
-    ResourceCenterEvent, ResourceCenterPage, ResourceCenterView, Tip, TipAction, TipsCompleted,
+    ResourceCenterEvent, ResourceCenterView, Tip, TipAction, TipsCompleted,
 };
 use crate::root_view::{quake_mode_window_id, NewWorkspaceSource, OpenLaunchConfigArg};
 use crate::search::command_palette::view::{
@@ -3955,7 +3953,7 @@ impl Workspace {
             // placeholder along with Warp Drive.
             true
         };
-        let initial_tab = self.active_tab_pane_group().clone();
+        let _initial_tab = self.active_tab_pane_group().clone();
 
         if open_warp_drive && false {
             // // We open Warp Drive automatically in two cases:
@@ -11568,22 +11566,22 @@ impl Workspace {
         source: PaletteSource,
         ctx: &mut ViewContext<Self>,
     ) {
-        let active_pane_id = self
+        let _active_pane_id = self
             .active_tab_pane_group()
             .as_ref(ctx)
             .focused_pane_id(ctx);
-        let active_tab_id = self
+        let _active_tab_id = self
             .tabs
             .get(self.active_tab_index)
             .map(|tab| tab.pane_group.id());
-        let active_window_id = ctx.window_id();
+        let _active_window_id = ctx.window_id();
 
         let active_palette_handle = if matches!(source, PaletteSource::CtrlTab { .. }) {
             &self.ctrl_tab_palette
         } else {
             &self.palette
         };
-        active_palette_handle.update(ctx, |view, ctx| {
+        active_palette_handle.update(ctx, |_view, ctx| {
             // Removed: session_management module deleted
             // if let Some(active_tab_id) = active_tab_id {
             //     view.set_session_source(SessionSource::Set { ... }, ctx);
@@ -15501,7 +15499,7 @@ impl Workspace {
                     ctx,
                 );
             }
-            pane_group::Event::OpenAddPromptPane { initial_content } => {
+            pane_group::Event::OpenAddPromptPane { initial_content: _ } => {
                 // 注释掉云端个人存储功能 - 本地版本不支持
                 // if UserWorkspaces::as_ref(ctx).personal_drive(ctx).is_some() {
                 //     self.update_warp_drive_view(ctx, |drive_view, ctx| {

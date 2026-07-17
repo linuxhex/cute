@@ -14,7 +14,6 @@ use ai::agent::orchestration_config::OrchestrationConfig;
 use ai::skills::SkillReference;
 use futures::future::BoxFuture;
 use futures::FutureExt;
-use settings::Setting;
 use cute_cli::agent::Harness;
 use cute_core::execution_mode::AppExecutionMode;
 use cuteui::{Entity, EntityId, ModelContext, ModelHandle, SingletonEntity};
@@ -29,7 +28,7 @@ use crate::ai::agent::{
 use crate::ai::auth_secret_types::auth_secret_types_for_harness;
 use crate::ai::blocklist::inline_action::orchestration_controls::OrchestrationEditState;
 use crate::ai::blocklist::{BlocklistAIHistoryModel, BlocklistAIPermissions};
-use crate::cloud_stub_types::CloudAgentSettings; // Import from cloud_stub_types
+ // Import from cloud_stub_types
 use crate::ai::local_harness_setup::local_harness_product_disabled_message;
 // use crate::ai::cloud_agent_settings::CloudAgentSettings; // Cute: 已注释，清理云端 Agent 设置
 
@@ -582,7 +581,7 @@ fn can_execute_with_auth_secret(
 
 fn default_auth_secret_name_for_harness(
     harness_type: &str,
-    ctx: &ModelContext<RunAgentsExecutor>,
+    _ctx: &ModelContext<RunAgentsExecutor>,
 ) -> Option<String> {
     let harness = Harness::parse_orchestration_harness(harness_type)?;
     if harness == Harness::Oz {

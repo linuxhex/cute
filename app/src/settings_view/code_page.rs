@@ -2627,7 +2627,7 @@ impl SettingsPageMeta for CodeSettingsPageView {
             || FeatureFlag::OpenWarpNewSettingsModes.is_enabled()
     }
 
-    fn on_page_selected(&mut self, _: bool, ctx: &mut ViewContext<Self>) {
+    fn on_page_selected(&mut self, _: bool, _ctx: &mut ViewContext<Self>) {
         // We want to immediately see if the user is part of a workspace rather than wait for the next poll.
         // std::mem::drop(
         //     TeamUpdateManager::handle(ctx)

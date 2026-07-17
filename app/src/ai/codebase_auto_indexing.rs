@@ -23,7 +23,7 @@ impl CodebaseAutoIndexingSurface {
 
 pub(crate) fn should_use_codebase_indexing(
     surface: CodebaseAutoIndexingSurface,
-    ctx: &AppContext,
+    _ctx: &AppContext,
 ) -> bool {
     // 删除：UserWorkspaces is_codebase_context_enabled 检查已禁用，云端功能已移除
     // 改为启用本地代码库上下文

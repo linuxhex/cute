@@ -4,10 +4,9 @@ use ai::LLMId;
 use onboarding::slides::OnboardingModelInfo;
 use onboarding::OnboardingAuthState;
 use cute_core::ui::icons::Icon;
-use cuteui::{AppContext, SingletonEntity};
+use cuteui::AppContext;
 
 use super::llms::{DisableReason, LLMInfo, LLMPreferences};
-use crate::auth::AuthStateProvider;
 
 impl From<&LLMInfo> for OnboardingModelInfo {
     fn from(llm: &LLMInfo) -> Self {

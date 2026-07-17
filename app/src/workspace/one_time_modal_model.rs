@@ -3,15 +3,10 @@ use cute_core::features::FeatureFlag;
 use cuteui::{Entity, ModelContext, SingletonEntity, WindowId};
 
 use super::hoa_onboarding;
-use crate::ai::blocklist::agent_view::toolbar_item::AgentToolbarItemKind;
 use crate::auth::auth_manager::AuthManagerEvent;
 use crate::auth::AuthManager;
-use crate::settings::cloud_preferences_syncer::{
-    CloudPreferencesSyncer, CloudPreferencesSyncerEvent,
-};
 use crate::settings::{AISettings, CodeSettings};
 use crate::terminal::general_settings::GeneralSettings;
-use crate::terminal::session_settings::{AgentToolbarChipSelection, SessionSettings};
 
 /// A generic model for managing one-time modals that should be shown to users only once.
 ///
@@ -99,7 +94,7 @@ impl OneTimeModalModel {
         }
     }
 
-    fn check_and_trigger_all_modals(&mut self, ctx: &mut ModelContext<Self>) {
+    fn check_and_trigger_all_modals(&mut self, _ctx: &mut ModelContext<Self>) {
         // Cute OMJF-11111: 本地模式不展示云相关一次性弹窗
         return;
 
@@ -109,7 +104,7 @@ impl OneTimeModalModel {
         }
 
         // Existing users should never see the code toolbelt new feature popup.
-        CodeSettings::handle(ctx).update(ctx, |settings, ctx| {
+        CodeSettings::handle(_ctx).update(_ctx, |settings, ctx| {
             if let Err(e) = settings
                 .dismissed_code_toolbelt_new_feature_popup
                 .set_value(true, ctx)
@@ -118,11 +113,11 @@ impl OneTimeModalModel {
             }
         });
 
-        if self.check_and_trigger_hoa_onboarding(ctx) {
+        if self.check_and_trigger_hoa_onboarding(_ctx) {
             return;
         }
 
-        self.check_and_trigger_build_plan_migration_modal(ctx);
+        self.check_and_trigger_build_plan_migration_modal(_ctx);
     }
 
     fn set_hoa_onboarding_open(&mut self, is_open: bool, ctx: &mut ModelContext<Self>) -> bool {

@@ -7,10 +7,9 @@ use cuteui::elements::{
     Border, Container, CornerRadius, Flex, MouseStateHandle, ParentElement, Radius, Text,
 };
 use cuteui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
-use cuteui::{AppContext, Element, EventContext, SingletonEntity};
+use cuteui::{AppContext, Element, EventContext};
 
 use crate::appearance::Appearance;
-use crate::settings::PrivacySettings;
 use crate::terminal::model::secrets::SecretLevel;
 use crate::ui_components::blended_colors;
 
@@ -62,7 +61,7 @@ pub fn render_tooltip<OnClick>(
     tooltip_links: impl IntoIterator<Item = TooltipLink<OnClick>>,
     redaction: TooltipRedaction,
     appearance: &Appearance,
-    app: &AppContext,
+    _app: &AppContext,
 ) -> Box<dyn Element>
 where
     OnClick: 'static + Fn(&mut EventContext),
@@ -186,7 +185,7 @@ where
         }
     }
 
-    let is_secret = matches!(
+    let _is_secret = matches!(
         redaction,
         TooltipRedaction::SecretNotSentToLLMMessaging { .. }
             | TooltipRedaction::SecretWillNotBeSentToLLMMessaging { .. }

@@ -81,7 +81,7 @@ use block_onboarding::onboarding_agentic_suggestions_block::{
     OnboardingAgenticSuggestionsBlock, OnboardingAgenticSuggestionsBlockEvent, OnboardingChipType,
 };
 use bookmarks::render_floating_block_snapshot;
-use chrono::{DateTime, Local, NaiveDateTime};
+use chrono::{Local, NaiveDateTime};
 use command_corrections::rules::generic::history::History as CommandCorrectionsHistoryRule;
 use command_corrections::rules::{Rule, RuleId as CommandCorrectionsRuleId};
 use command_corrections::{correct_command, Command, Correction, HistoryItem, SessionMetadata};
@@ -117,7 +117,6 @@ use serde_json::json;
 use session_sharing_protocol::common::{
     AgentAttachment, LongRunningCommandAgentInteractionState,
     ServerConversationToken as SessionSharingServerConversationToken,
-    WindowSize as SessionSharingWindowSize,
 };
 use settings::{Setting, ToggleableSetting};
 use ssh_file_upload::{FileUpload, FileUploadEvent};
@@ -232,9 +231,7 @@ use crate::ai::agent::{
 #[cfg(feature = "local_fs")]
 use crate::ai::agent::{CurrentHead, DiffBase};
 use crate::ai::agent_conversations_model::{AgentConversationsModel, AgentConversationsModelEvent};
-use crate::ai::ambient_agent_types::{
-    conversation_output_status_from_conversation, AmbientAgentTaskId,
-};
+use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::ai::blocklist::agent_view::agent_input_footer::toolbar_item::AgentToolbarItemKind;
 use crate::ai::blocklist::agent_view::{
     agent_view_bg_fill, fork_from_last_known_good_state_exchange_id,
@@ -296,15 +293,12 @@ use crate::ai::predict::prompt_suggestions::{
 use crate::ai_assistant::{AskAIType, ASK_AI_ASSISTANT_TEXT};
 use crate::antivirus::AntivirusInfo;
 use crate::appearance::{Appearance, AppearanceEvent};
-use crate::auth::auth_manager::AuthManager;
 use crate::auth::auth_state::AuthState;
-use crate::auth::AuthViewVariant;
-use crate::auth::{AuthStateProvider, UserUid};
+use crate::auth::AuthStateProvider;
 use crate::banner::{
     Banner, BannerAction, BannerEvent, BannerState, BannerTextButton, BannerTextContent,
     DismissalType,
 };
-use crate::cloud_stub_types::model::actions::ObjectActionType;
 use crate::cloud_stub_types::model::persistence::CloudModel;
 use crate::cloud_stub_types::{CloudObject, GenericStringObjectFormat, JsonObjectType};
 #[cfg(feature = "local_fs")]
@@ -5407,7 +5401,7 @@ impl TerminalView {
                 // conversation completes.
                 // We only insert the tombstone once per session (when the conversation finishes).
                 // Skip during historical replay to avoid premature tombstone insertion.
-                let should_insert_tombstone = if self.conversation_ended_tombstone_view_id.is_none()
+                let _should_insert_tombstone = if self.conversation_ended_tombstone_view_id.is_none()
                     && !self.model.lock().is_receiving_agent_conversation_replay()
                 {
                     #[cfg(target_family = "wasm")]
@@ -6400,7 +6394,7 @@ impl TerminalView {
 
                 // We use the basic AI source when this is a non-shared
                 // command originating from the agent.
-                let mut source = CommandExecutionSource::AI {
+                let source = CommandExecutionSource::AI {
                     metadata: agent_metadata.clone(),
                 };
 
@@ -9559,7 +9553,7 @@ impl TerminalView {
     /// The banner is shown when the user could be using AWS Bedrock to save on warp AI spend, but isn't.
     fn maybe_insert_aws_bedrock_login_banner(
         &mut self,
-        model_id: &LLMId,
+        _model_id: &LLMId,
         ctx: &mut ViewContext<Self>,
     ) {
         // Don't show if already displayed
@@ -9579,7 +9573,7 @@ impl TerminalView {
 
         // Check if the model supports AWS Bedrock routing
         let llm_prefs = LLMPreferences::as_ref(ctx);
-        let Some(llm_info) = llm_prefs.get_llm_info(model_id) else {
+        let Some(llm_info) = llm_prefs.get_llm_info(_model_id) else {
             return;
         };
 
@@ -11160,13 +11154,13 @@ impl TerminalView {
                         self.update_agent_view_pane_header(ctx);
                     }
 
-                    let exit_code_data =
+                    let _exit_code_data =
                         &json!({"exit_code": block_completed.serialized_block.as_ref().exit_code})
                             .to_string();
 
                     // If the block was a cloud workflow, record the workflow execution as an object action.
                     if let Some(cloud_workflow_id) = cloud_workflow_id {
-                        let id_and_type = CloudObjectTypeAndId::Workflow(*cloud_workflow_id);
+                        let _id_and_type = CloudObjectTypeAndId::Workflow(*cloud_workflow_id);
                         // UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
                         //     update_manager.record_object_action(
                         //         id_and_type,
@@ -11178,7 +11172,7 @@ impl TerminalView {
                     }
 
                     if let Some(cloud_env_var_collection_id) = cloud_env_var_collection_id {
-                        let id_and_type = CloudObjectTypeAndId::GenericStringObject {
+                        let _id_and_type = CloudObjectTypeAndId::GenericStringObject {
                             object_type: GenericStringObjectFormat::Json(
                                 JsonObjectType::EnvVarCollection,
                             ),
@@ -15339,10 +15333,10 @@ impl TerminalView {
                 };
 
                 let is_single_selection = self.selected_blocks.is_singleton();
-                let is_active_block_selected = self
+                let _is_active_block_selected = self
                     .selected_blocks
                     .is_selected(model.block_list().active_block_index());
-                let is_active_block_running = model
+                let _is_active_block_running = model
                     .block_list()
                     .active_block()
                     .is_active_and_long_running();
@@ -21548,7 +21542,7 @@ impl TerminalView {
         &self,
         appearance: &Appearance,
         app: &AppContext,
-        model: &TerminalModel,
+        _model: &TerminalModel,
     ) -> HashMap<usize, Box<dyn Element>> {
         let mut inline_banners = HashMap::new();
 
@@ -21738,7 +21732,7 @@ impl TerminalView {
 
         let required_terminal_width = self.size_info.cell_width_px.as_f32() * (columns as f32)
             + 2. * self.size_info.padding_x_px().as_f32();
-        let pane_width = self.content_element_width_px(app);
+        let _pane_width = self.content_element_width_px(app);
 
         // If this is a shared session viewer and the height required to display the entire
         // terminal is larger than the height of the pane, we should make it vertically scrollable.
@@ -22050,7 +22044,7 @@ impl TerminalView {
         let required_terminal_width = self.size_info.cell_width_px.as_f32()
             * (columns_needed as f32)
             + 2. * self.size_info.padding_x_px().as_f32();
-        let pane_width = self.content_element_width_px(app);
+        let _pane_width = self.content_element_width_px(app);
 
         let should_be_vertical_scrollable =
             heights_approx_gt(total_height, visible_rows) && is_scrollable;
@@ -23110,7 +23104,7 @@ impl TerminalView {
         });
         env_var_collection_block.update(ctx, |block, ctx| block.focus(ctx));
 
-        let cloud_object_type_and_id = cloud_object_type_and_id.clone();
+        let _cloud_object_type_and_id = cloud_object_type_and_id.clone();
         ctx.subscribe_to_view(&env_var_collection_block, move |me, block, event, ctx| {
             let event = event.clone();
             match event {

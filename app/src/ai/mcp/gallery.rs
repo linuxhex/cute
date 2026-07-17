@@ -119,7 +119,7 @@ pub struct MCPGalleryManager {
 }
 
 impl MCPGalleryManager {
-    pub fn new(ctx: &mut ModelContext<Self>) -> Self {
+    pub fn new(_ctx: &mut ModelContext<Self>) -> Self {
         let gallery_manager = Self {
             gallery_items: Default::default(),
             templatable_mcp_servers: Default::default(),

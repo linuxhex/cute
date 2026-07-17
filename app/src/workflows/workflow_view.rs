@@ -15,7 +15,7 @@ use cute_editor::editor::NavigationKey;
 use cuteui::clipboard::ClipboardContent;
 use cuteui::elements::{
     Align, Border, ChildAnchor, ChildView, Clipped, ClippedScrollStateHandle, ClippedScrollable,
-    ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Empty, Flex, Hoverable,
+    ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Empty, Flex,
     MainAxisAlignment, MainAxisSize, MouseStateHandle, OffsetPositioning, ParentAnchor,
     ParentElement, ParentOffsetBounds, Radius, Rect, ScrollbarWidth, Shrinkable, Stack,
 };
@@ -70,7 +70,6 @@ use crate::server::ids::{ClientId, ServerId, SyncId};
 use crate::server::server_api::ai::AIClient;
 use crate::server::server_api::ServerApiProvider;
 use crate::server::telemetry::CloudObjectTelemetryMetadata;
-use crate::cloud_stub_types::sharing::dialog::SharingDialogSource;
 use crate::settings::app_installation_detection::{
     UserAppInstallDetectionSettings, UserAppInstallStatus,
 };
@@ -86,8 +85,8 @@ use crate::util::bindings::CustomAction;
 use crate::view_components::{DismissibleToast, ToastLink, ToastType};
 use crate::workflows::workflow::{Argument, Workflow};
 use crate::workflows::CloudWorkflow;
-use crate::workspace::{ToastStack, WorkspaceAction};
-use crate::{FeatureFlag, UserWorkspaces};
+use crate::workspace::ToastStack;
+use crate::FeatureFlag;
 
 pub(crate) mod argument_editor;
 pub mod env_var_selector;
@@ -2359,8 +2358,8 @@ impl WorkflowView {
     #[allow(dead_code)]
     fn display_upgrade_error(
         &mut self,
-        team_uid: Option<ServerId>,
-        user_id: UserUid,
+        _team_uid: Option<ServerId>,
+        _user_id: UserUid,
         ctx: &mut ViewContext<Self>,
     ) {
         // let upgrade_link = team_uid

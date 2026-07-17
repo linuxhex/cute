@@ -112,7 +112,6 @@ pub use ai::agent::todos::AIAgentTodoList;
 pub use ai::agent::{AIAgentActionResultType, FileEdit, TodoOperation};
 use ai::agent_conversations_model::AgentConversationsModel;
 use ai::agent_management::AgentNotificationsModel;
-use ai::ambient_agent_types::scheduled::ScheduledAgentManager;
 use ai::blocklist::{BlocklistAIHistoryModel, BlocklistAIPermissions};
 use ai::execution_profiles::editor::ExecutionProfileEditorManager;
 use ai::execution_profiles::profiles::AIExecutionProfilesModel;
@@ -184,7 +183,6 @@ use cute_files::FileModel;
 use cute_logging::LogDestination;
 use cute_managed_secrets::ManagedSecretManager;
 use cuteui::integration::TestDriver;
-use cuteui::modals::{AlertDialogWithCallbacks, AppModalCallback};
 use cuteui::platform::app::ApproveTerminateResult;
 use cuteui::platform::TerminationMode;
 use cuteui::windowing::state::ApplicationStage;
@@ -265,8 +263,6 @@ use crate::network::NetworkStatus;
 use crate::cloud_stub_types::keys::NotebookKeybindings;
 use crate::cloud_stub_types::NotebookManager;
 use crate::notification::NotificationContext;
-use crate::palette::PaletteMode;
-use crate::server::telemetry::PaletteSource;
 use crate::persistence::model::AgentConversationData;
 use crate::persistence::PersistenceWriter;
 use crate::projects::ProjectManagementModel;
@@ -292,10 +288,9 @@ use crate::user_config::WarpConfig;
 use crate::util::bindings::is_binding_cross_platform;
 use crate::vim_registers::VimRegisters;
 use crate::cute_managed_paths_watcher::{ensure_cute_watch_roots_exist, CuteManagedPathsWatcher};
-use crate::workflows::aliases::WorkflowAliases;
 use crate::workflows::local_workflows::LocalWorkflows;
 use crate::workspace::{
-    ActiveSession, OneTimeModalModel, PaneViewLocator, ToastStack, Workspace, WorkspaceAction,
+    ActiveSession, OneTimeModalModel, PaneViewLocator, ToastStack, WorkspaceAction,
 };
 
 /// Our embedded application assets.

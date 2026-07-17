@@ -1,7 +1,5 @@
 use std::fmt::Debug;
-use std::sync::Arc;
 
-use anyhow::Result;
 use async_trait::async_trait;
 use cute_server_client::cloud_object::{CloudObjectUpsertParams, SerializedModel};
 // Re-exported from cloud_objects.
@@ -10,15 +8,13 @@ pub use cute_server_client::ids::GenericStringObjectId;
 
 use crate::appearance::Appearance;
 use crate::cloud_stub_types::{
-    CloudModelType, CloudObject, CreateCloudObjectResult,
-    CreateObjectRequest, GenericCloudObject, GenericServerObject, GenericStringObjectFormat,
-    GenericStringObjectUniqueKey, ObjectType, Revision, UpdateCloudObjectResult,
+    CloudModelType, CloudObject, GenericCloudObject, GenericStringObjectFormat,
+    GenericStringObjectUniqueKey, ObjectType, Revision,
 };
 // Import cloud stub types for removed WarpDrive functionality
 use crate::{CuteDriveItem, CloudObjectTypeAndId};
 use crate::persistence::ModelEvent;
-use crate::server::ids::{ServerId, SyncId};
-use crate::server::server_api::object::ObjectClient;
+use crate::server::ids::SyncId;
 
 /// A trait that generic string-based objects should implement.
 pub trait CloudStringObject: CloudObject + Send + Sync {

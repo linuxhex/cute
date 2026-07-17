@@ -7,7 +7,6 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard};
 
 use enum_iterator::Sequence;
-use itertools::Itertools;
 use parking_lot::FairMutex;
 use pathfinder_color::ColorU;
 use vec1::Vec1;
@@ -59,11 +58,10 @@ use crate::ai::blocklist::agent_view::{agent_view_bg_fill, AgentViewState};
 use crate::ai::blocklist::{ai_brand_color, ATTACH_AS_AGENT_MODE_CONTEXT_TEXT};
 use crate::ai_assistant::{AI_ASSISTANT_SVG_PATH, ASK_AI_ASSISTANT_TEXT};
 use crate::appearance::Appearance;
-use crate::cloud_stub_types::settings::CuteDriveSettings;
 use crate::features::FeatureFlag;
 use crate::pane_group::SplitPaneState;
 use crate::settings::{
-    AISettings, DebugSettings, EnforceMinimumContrast, PrivacySettings, TerminalSpacing,
+    AISettings, DebugSettings, EnforceMinimumContrast, TerminalSpacing,
 };
 use crate::terminal::alt_screen::{should_intercept_mouse, should_intercept_scroll};
 use crate::terminal::block_list_viewport::AutoscrollBehavior;
@@ -83,8 +81,8 @@ use crate::terminal::safe_mode_settings::get_secret_obfuscation_mode;
 use crate::terminal::view::TerminalAction;
 use crate::terminal::warpify::SubshellSource;
 use crate::terminal::{grid_renderer, SizeInfo};
-use crate::themes::theme::{Fill, WarpTheme};
-use crate::ui_components::{self, icons as UIIcon};
+use crate::themes::theme::WarpTheme;
+use crate::ui_components::icons as UIIcon;
 use crate::util::color::Opacity;
 
 /// The number of pixels at the bottom of padding where selection scrolling is performed.
@@ -1933,7 +1931,7 @@ impl BlockListElement {
         origin: Vector2F,
         block_list: &BlockList,
         color: ColorU,
-        selection_cursor_render_location: SelectionCursorRenderLocation,
+        _selection_cursor_render_location: SelectionCursorRenderLocation,
         ctx: &mut PaintContext,
     ) {
         let total_block_heights = block_list.block_heights().summary().height;

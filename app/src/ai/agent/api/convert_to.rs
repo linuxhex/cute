@@ -1,14 +1,12 @@
 //! Conversions from application types to MAA API types.
 
 use ai::agent::convert::ConvertToAPITypeError;
-use anyhow::anyhow;
-use chrono::{DateTime, Local, Timelike};
+use chrono::{DateTime, Local};
 use cute_multi_agent_api as api;
 
 use crate::ai::agent::{
-    AIAgentActionResult, AIAgentActionResultType, AIAgentAttachment, AIAgentContext, AIAgentInput,
-    DriveObjectPayload, MCPContext, PassiveSuggestionResultType, PassiveSuggestionTrigger,
-    RunningCommand, StaticQueryType, Suggestions, UserQueryMode,
+    AIAgentActionResult, AIAgentActionResultType, AIAgentAttachment,
+    DriveObjectPayload, MCPContext, PassiveSuggestionTrigger, StaticQueryType, Suggestions, UserQueryMode,
 };
 use crate::ai::block_context::BlockContext;
 

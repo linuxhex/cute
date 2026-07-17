@@ -1,16 +1,13 @@
-use futures::future;
 use cute_cli::integration::{CreateIntegrationArgs, IntegrationCommand, UpdateIntegrationArgs};
 use cute_cli::provider::ProviderType;
 use cute_cli::GlobalOptions;
 use cute_graphql::mutations::create_simple_integration::CreateSimpleIntegrationOutput;
-use cute_graphql::queries::get_oauth_connect_tx_status::OauthConnectTxStatus;
 use cute_graphql::queries::get_simple_integrations::SimpleIntegrationsOutput;
 use cuteui::platform::TerminationMode;
 use cuteui::{AppContext, ModelContext, SingletonEntity};
 
 use super::common::{EnvironmentChoice, ResolveConfigurationError};
 use super::integration_output;
-use super::oauth_flow::poll_oauth_until_terminal;
 use crate::server::server_api::ServerApiProvider;
 
 pub fn run(
@@ -205,7 +202,7 @@ impl IntegrationCommandRunner {
         attempt: u32,
     ) {
         const MAX_CREATE_ATTEMPTS: u32 = 8;
-        let action = if is_update { "update" } else { "creation" };
+        let _action = if is_update { "update" } else { "creation" };
 
         if attempt > MAX_CREATE_ATTEMPTS {
             ctx.terminate_app(

@@ -32,7 +32,6 @@ use std::collections::{HashMap, HashSet};
 
 use common::get_highlight_ranges_for_find_matches;
 use itertools::Itertools;
-use pathfinder_color::ColorU;
 use settings::Setting as _;
 use cute_core::features::FeatureFlag;
 use cute_core::semantic_selection::SemanticSelection;
@@ -40,7 +39,7 @@ use cute_core::ui::color::contrast::{
     foreground_color_with_minimum_contrast, MinimumAllowedContrast,
 };
 use cute_core::ui::color::Rgb;
-use cute_core::ui::theme::{Fill, WarpTheme};
+use cute_core::ui::theme::WarpTheme;
 use cuteui::elements::{
     Align, Border, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Empty, Expanded,
     Flex, FormattedTextElement, Highlight, HighlightedRange, Hoverable, MainAxisAlignment,
@@ -68,7 +67,6 @@ use crate::ai::blocklist::history_model::BlocklistAIHistoryModel;
 use crate::ai::blocklist::inline_action::inline_action_icons::icon_size;
 use crate::ai::blocklist::model::AIBlockModelHelper;
 use crate::appearance::Appearance;
-use crate::cloud_stub_types::model::persistence::CloudModel;
 use crate::settings::{AISettings, InputModeSettings, InputSettings};
 use crate::settings_view::SettingsSection;
 use crate::terminal::block_list_element::BlockListMenuSource;
@@ -79,7 +77,6 @@ use crate::terminal::model::ObfuscateSecrets;
 use crate::terminal::safe_mode_settings::get_secret_obfuscation_mode;
 use crate::terminal::view::ambient_agent::is_cloud_agent_pre_first_exchange;
 use crate::terminal::view::TerminalAction;
-use crate::terminal::TerminalView;
 use crate::ui_components::blended_colors;
 use crate::ui_components::icons::Icon;
 use crate::util::link_detection::DetectedLinkType;
@@ -655,7 +652,7 @@ pub fn render_citation(
     let theme = appearance.theme();
 
     let (icon, name) = match citation {
-        AIAgentCitation::WarpDriveObject { uid } => {
+        AIAgentCitation::WarpDriveObject { uid: _ } => {
             // WarpDrive item disabled
             let name = String::from("Untitled");
             (None, name)

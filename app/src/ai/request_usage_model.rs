@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use ai::api_keys::ApiKeyManager;
 use chrono::{DateTime, Local, Utc};
 use instant::Instant;
 use serde::{Deserialize, Serialize};
@@ -450,7 +449,7 @@ impl AIRequestUsageModel {
     }
 
     #[allow(dead_code)]
-    pub fn total_current_workspace_bonus_credits_remaining(&self, ctx: &AppContext) -> i32 {
+    pub fn total_current_workspace_bonus_credits_remaining(&self, _ctx: &AppContext) -> i32 {
         0 // UserWorkspaces::as_ref(ctx)
         //     .current_workspace()
         //     .map(|workspace| self.total_workspace_bonus_credits_remaining(workspace.uid))

@@ -3,7 +3,7 @@
 
 use std::collections::HashMap;
 
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use async_trait::async_trait;
 #[cfg(feature = "local_fs")]
 pub use super::presigned_upload::FileUploadBody;

@@ -85,7 +85,7 @@ impl SuggestedAgentModeWorkflowModal {
         ctx: &mut ViewContext<Self>,
     ) {
         let workflow_view = ctx.add_typed_action_view(|ctx| {
-            let mut workflow_view = WorkflowView::new_in_suggestion_dialog(ctx);
+            let workflow_view = WorkflowView::new_in_suggestion_dialog(ctx);
             // 删除：UserWorkspaces 的 owner 获取已禁用，云端功能已移除
             // if let Some(owner) = UserWorkspaces::as_ref(ctx)
             //     .space_to_owner(crate::cloud_stub_types::Space::Personal, ctx)

@@ -39,7 +39,6 @@ use cute_core::errors::{register_error, AnyhowErrorExt, ErrorExt};
 use cute_managed_secrets::client::ManagedSecretsClient;
 use cuteui::r#async::BoxFuture;
 use cuteui::{Entity, ModelContext, SingletonEntity};
-use workspace::WorkspaceClient;
 
 use super::graphql::GraphQLError;
 use crate::ai::ambient_agent_types::AmbientAgentTaskId;

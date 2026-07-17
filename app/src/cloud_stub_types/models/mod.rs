@@ -26,7 +26,5 @@ pub use mcp::*;
 pub use notebook::*;
 pub use preference::*;
 pub use scheduled_ambient_agent::*;
-pub use server_cloud_object::*;
-pub use user_profile::*;
 pub use workflow::*;
 pub use workflow_enum::*;

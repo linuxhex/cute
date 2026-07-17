@@ -6,7 +6,6 @@ use cute_files::{FileModel, FileModelEvent};
 use cute_util::file::FileId;
 #[cfg(not(target_family = "wasm"))]
 use cute_util::file::FileSaveError;
-use cute_util::remote_path::RemotePath;
 use cute_util::standardized_path::StandardizedPath;
 use cuteui::elements::ChildView;
 #[cfg(not(target_family = "wasm"))]

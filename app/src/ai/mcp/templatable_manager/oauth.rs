@@ -1,21 +1,18 @@
 use std::collections::HashMap;
 
-use anyhow::{anyhow, bail};
 use oauth2::{RefreshToken, TokenResponse as _};
 use rmcp::transport::auth::{
-    AuthClient, AuthorizationManager, CredentialStore, InMemoryCredentialStore, OAuthClientConfig,
-    OAuthState, StoredCredentials,
+    AuthClient, AuthorizationManager, CredentialStore, InMemoryCredentialStore, StoredCredentials,
 };
-use rmcp::transport::{AuthError, AuthorizationSession};
+use rmcp::transport::AuthError;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use url::Url;
 use uuid::Uuid;
-use cute_core::channel::ChannelState;
 use cuteui::{ModelSpawner, SingletonEntity};
 use cuteui_extras::secure_storage::AppContextExt as _;
 
-use super::{MCPServerState, TemplatableMCPServerManager};
+use super::TemplatableMCPServerManager;
 use crate::ai::mcp::FileBasedMCPManager;
 
 pub(crate) const TEMPLATABLE_MCP_CREDENTIALS_KEY: &str = "TemplatableMcpCredentials";

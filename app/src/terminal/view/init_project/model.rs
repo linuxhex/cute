@@ -365,7 +365,7 @@ impl InitProjectModel {
         }
     }
 
-    fn compute_codebase_context_step(&mut self, pwd_path: &Path, ctx: &mut ModelContext<Self>) {
+    fn compute_codebase_context_step(&mut self, _pwd_path: &Path, _ctx: &mut ModelContext<Self>) {
         // if !UserWorkspaces::as_ref(ctx).is_codebase_context_enabled(ctx) {
         //     // Feature disabled, leave as None
         //     return;
@@ -373,10 +373,10 @@ impl InitProjectModel {
         // Feature disabled for local version - skip codebase context
         return;
 
-        let codebase_index_manager = CodebaseIndexManager::handle(ctx);
+        let codebase_index_manager = CodebaseIndexManager::handle(_ctx);
         let is_indexed = codebase_index_manager
-            .as_ref(ctx)
-            .get_codebase_index_status_for_path(pwd_path, ctx)
+            .as_ref(_ctx)
+            .get_codebase_index_status_for_path(_pwd_path, _ctx)
             .is_some();
 
         if is_indexed {
@@ -395,7 +395,7 @@ impl InitProjectModel {
                 Some(InitStep::new_ready(
                     InitStepKind::CodebaseContext,
                     InitStepData::CodebaseContext {
-                        pwd_path: pwd_path.to_path_buf(),
+                        pwd_path: _pwd_path.to_path_buf(),
                     },
                 )),
             );

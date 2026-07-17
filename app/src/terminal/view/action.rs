@@ -6,8 +6,6 @@ use ai::skills::SkillReference;
 use command_corrections::Correction;
 pub use onboarding::OnboardingIntention;
 use pathfinder_geometry::vector::Vector2F;
-use session_sharing_protocol::common::Role;
-use session_sharing_protocol::sharer::RoleUpdateReason;
 use cute_util::user_input::UserInput;
 use cuteui::elements::HyperlinkUrl;
 use cuteui::event::ModifiersState;

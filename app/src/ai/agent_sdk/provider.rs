@@ -3,7 +3,6 @@ use comfy_table::Cell;
 use serde::Serialize;
 use cute_cli::provider::{ProviderCommand, ProviderType};
 use cute_cli::GlobalOptions;
-use cute_core::channel::ChannelState;
 use cuteui::platform::TerminationMode;
 use cuteui::{AppContext, ModelContext, SingletonEntity};
 
@@ -32,8 +31,8 @@ impl ProviderCommandRunner {
     fn setup(
         &self,
         provider_type: ProviderType,
-        team: bool,
-        personal: bool,
+        _team: bool,
+        _personal: bool,
         ctx: &mut ModelContext<Self>,
     ) -> anyhow::Result<()> {
         // 注释掉 OAuth URL 生成和打开流程 - 本地版本不支持

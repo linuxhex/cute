@@ -9,15 +9,14 @@ use std::time::Duration;
 
 use futures::channel::oneshot;
 use session_sharing_protocol::common::{Role, SessionId};
-use cute_cli::share::{ShareAccessLevel, ShareRequest, ShareSubject};
+use cute_cli::share::{ShareAccessLevel, ShareRequest};
 use cute_completer::completer::CommandOutput;
 use cute_core::command::ExitCode;
-use cute_core::features::FeatureFlag;
 use cute_terminal::model::grid::Dimensions;
 use cute_util::path::ShellFamily;
 use cute_util::sync::Condition;
 use cuteui::r#async::FutureExt;
-use cuteui::{AppContext, Entity, ModelContext, ModelHandle, SingletonEntity as _, ViewHandle};
+use cuteui::{AppContext, Entity, ModelContext, ModelHandle, ViewHandle};
 
 use super::AgentDriverError;
 use crate::ai::ambient_agent_types::AmbientAgentTaskId;
@@ -276,7 +275,7 @@ impl TerminalDriver {
     }
 
     /// Apply pending session-sharing guest requests.
-    fn apply_share_requests(&mut self, ctx: &mut ModelContext<Self>) {
+    fn apply_share_requests(&mut self, _ctx: &mut ModelContext<Self>) {
         if self.pending_share_requests.is_empty() {
             return;
         }
@@ -597,7 +596,7 @@ impl TerminalDriver {
     fn handle_terminal_view_event(
         &mut self,
         event: &crate::terminal::view::Event,
-        session_share_tx: &mut Option<oneshot::Sender<Result<(), ShareSessionError>>>,
+        _session_share_tx: &mut Option<oneshot::Sender<Result<(), ShareSessionError>>>,
         ctx: &mut ModelContext<Self>,
     ) {
         match event {

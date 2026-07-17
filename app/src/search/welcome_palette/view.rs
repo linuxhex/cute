@@ -45,7 +45,6 @@ use crate::search::search_bar::{
 use crate::search::QueryFilter;
 use crate::server::ids::SyncId;
 use crate::server::telemetry::TelemetryEvent;
-use crate::settings::AISettings;
 use crate::terminal::History;
 use crate::themes::theme::WarpTheme;
 use crate::ui_components::icons::Icon;
@@ -236,7 +235,7 @@ impl WelcomePalette {
                 .with_allowed_kinds(AllowedSessionKinds::tabs_only())
         });
 
-        let mixer = ctx.add_model(|ctx| {
+        let mixer = ctx.add_model(|_ctx| {
             let mut mixer = CommandPaletteMixer::new();
             mixer.add_sync_source(actions_data_source.clone(), HashSet::new());
             mixer.add_sync_source(project_data_source.clone(), HashSet::new());

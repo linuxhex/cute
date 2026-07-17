@@ -420,7 +420,7 @@ impl EnvVarCollectionView {
     }
 
     pub(super) fn untrash_env_var_collection(&self, ctx: &mut ViewContext<Self>) {
-        if let Some(env_var_collection_id) = self.active_env_var_collection_data.as_ref(ctx).id() {
+        if let Some(_env_var_collection_id) = self.active_env_var_collection_data.as_ref(ctx).id() {
             if has_feature_gated_anonymous_user_reached_env_var_limit(ctx) {
                 return;
             }
@@ -442,7 +442,7 @@ impl EnvVarCollectionView {
     }
 
     pub(super) fn trash_env_var_collection(&mut self, ctx: &mut ViewContext<Self>) {
-        if let Some(env_var_collection_id) = self.env_var_collection_id(ctx) {
+        if let Some(_env_var_collection_id) = self.env_var_collection_id(ctx) {
             self.close_env_var_collection(ctx);
 
             // UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
@@ -462,7 +462,7 @@ impl EnvVarCollectionView {
     }
 
     pub(super) fn duplicate_env_var_collection(&self, ctx: &mut ViewContext<Self>) {
-        if let Some(env_var_collection_id) = self.env_var_collection_id(ctx) {
+        if let Some(_env_var_collection_id) = self.env_var_collection_id(ctx) {
             // UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
             //     update_manager.duplicate_object(
             //         &CloudObjectTypeAndId::from_generic_string_object(

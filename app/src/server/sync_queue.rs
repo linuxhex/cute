@@ -9,7 +9,7 @@ use cuteui::AppContext;
 
 use crate::cloud_stub_types::ObjectType;
 use crate::cloud_stub_types::CloudObjectTypeAndId;
-use crate::server::ids::{ClientId, ServerId, SyncId};
+use crate::server::ids::{ClientId, SyncId};
 use crate::workflows::workflow::Workflow;
 
 #[derive(Clone, Debug, PartialEq, Eq)]

@@ -47,7 +47,7 @@ impl DiffStateModelMap {
         &mut self,
         path: PathBuf,
         model: ModelHandle<DiffStateModel>,
-        ctx: &AppContext,
+        _ctx: &AppContext,
     ) {
         self.models.insert(LocalOrRemotePath::Local(path), model);
     }

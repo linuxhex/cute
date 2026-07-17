@@ -79,7 +79,7 @@ impl PtyHandle for DirectPtyHandle {
 }
 /// Invokes the provided callback function without crash reporting enabled.
 fn invoke_without_crash_reporting<T>(
-    is_crash_reporting_enabled: bool,
+    _is_crash_reporting_enabled: bool,
     func: impl FnOnce() -> T,
 ) -> T {
     // Uninitialize cocoa-sentry before spawning the shell process to avoid passing any custom state

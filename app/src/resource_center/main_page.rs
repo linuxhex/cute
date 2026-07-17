@@ -21,7 +21,6 @@ use super::{
     FeatureSectionData, FeatureSectionView, Section, TipsCompleted,
 };
 use crate::appearance::Appearance;
-use crate::auth::AuthStateProvider;
 use crate::changelog_model::ChangelogModel;
 use crate::channel::ChannelState;
 use crate::features::FeatureFlag;

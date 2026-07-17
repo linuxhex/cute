@@ -22,7 +22,6 @@ use toolbar_item::AgentToolbarItemKind;
 #[cfg(feature = "voice_input")]
 use voice_input::{StartListeningError, VoiceSessionResult};
 use cute_cli::agent::Harness;
-use cute_core::context_flag::ContextFlag;
 use cute_core::report_if_error;
 use cute_core::ui::color::blend::Blend;
 use cute_core::ui::theme::color::internal_colors;
@@ -57,7 +56,7 @@ use crate::ai::execution_profiles::profiles::AIExecutionProfilesModel;
 use crate::ai::harness_availability::HarnessAvailabilityModel;
 use crate::ai::AIRequestUsageModel;
 use crate::appearance::Appearance;
-use crate::auth::{AuthManager, AuthStateProvider};
+use crate::auth::AuthManager;
 use crate::completer::SessionContext;
 use crate::context_chips::display_chip::{DisplayChip, DisplayChipConfig};
 use crate::context_chips::prompt_type::PromptType;
@@ -1973,7 +1972,7 @@ impl AgentInputFooter {
         item: &AgentToolbarItemKind,
         shared_status: &SharedSessionStatus,
         is_cloud_context: bool,
-        is_conversation_transcript_context: bool,
+        _is_conversation_transcript_context: bool,
         app: &AppContext,
     ) -> Option<Box<dyn Element>> {
         let is_cloud_mode = false

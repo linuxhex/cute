@@ -10,7 +10,6 @@ use lsp::{LspManagerModel, LspServerLogLevel, LspServerModel};
 use string_offset::{ByteOffset, CharOffset};
 use vec1::vec1;
 use cute_core::features::FeatureFlag;
-use cute_core::safe_error;
 use cute_editor::content::buffer::{Buffer, ToBufferCharOffset};
 use cute_editor::content::diff::{text_diff, TextDiff};
 use cute_editor::content::edit::PreciseDelta;

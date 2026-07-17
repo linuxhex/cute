@@ -1,5 +1,4 @@
 use cute_core::settings::Setting;
-use crate::UserWorkspaces;
 use cute_core::ui::theme::color::internal_colors;
 use cuteui::elements::{
     Align, AnchorPair, Border, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment,

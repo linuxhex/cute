@@ -12,7 +12,6 @@ use ai::agent::action::RunAgentsExecutionMode;
 use ai::agent::orchestration_config::{OrchestrationConfig, OrchestrationExecutionMode};
 use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::{vec2f, Vector2F};
-use settings::Setting;
 use cute_cli::agent::Harness;
 use cute_core::ui::theme::Fill;
 use cuteui::elements::{
@@ -51,7 +50,7 @@ use crate::view_components::dropdown::{
     Dropdown, DropdownAction, DropdownItemAction, DropdownStyle,
 };
 use crate::view_components::FilterableDropdown;
-use crate::{report_if_error, LLMPreferences};
+use crate::LLMPreferences;
 use crate::UserWorkspaces;
 
 /// Env var override for the workspace default host (developer testing).
@@ -960,7 +959,7 @@ pub fn resolve_recent_host_slug(_ctx: &AppContext) -> Option<String> {
 /// Persists the user's most-recent host selection to
 /// `CloudAgentSettings.last_selected_host`. Skipped for `"warp"` and
 /// empty values (those don't represent a custom slug worth remembering).
-pub fn persist_host_selection<V: View>(worker_host: &str, ctx: &mut ViewContext<V>) {
+pub fn persist_host_selection<V: View>(_worker_host: &str, _ctx: &mut ViewContext<V>) {
     // Cute: 已注释，清理云端 host 保存逻辑
     // 本地 Agent 不需要保存云端 host 选择
     // let trimmed = worker_host.trim();
@@ -999,7 +998,7 @@ pub fn resolve_default_environment_id(_ctx: &AppContext) -> Option<String> {
 /// Persists the user's environment selection to settings so it can
 /// be restored as the default next time. Shared by both the plan
 /// card and confirmation card `EnvironmentChanged` handlers.
-pub fn persist_environment_selection<V: View>(environment_id: &str, ctx: &mut ViewContext<V>) {
+pub fn persist_environment_selection<V: View>(environment_id: &str, _ctx: &mut ViewContext<V>) {
     if environment_id.is_empty() {
         return;
     }

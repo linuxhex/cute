@@ -1,4 +1,3 @@
-use cute_core::context_flag::ContextFlag;
 use cuteui::keymap::{
     BindingDescription, ContextPredicate, EditableBinding, FixedBinding, PerPlatformKeystroke,
 };

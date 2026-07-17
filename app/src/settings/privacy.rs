@@ -1,26 +1,16 @@
 use std::fmt::Display;
-use std::sync::Arc;
 
-use anyhow::Result;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use settings::macros::{define_settings_group, maybe_define_setting, register_settings_events};
 use settings::{RespectUserSyncSetting, Setting, SupportedPlatforms, SyncToCloud};
 use cute_core::features::FeatureFlag;
-use cute_core::report_if_error;
-use cuteui::{AppContext, Entity, ModelContext, SingletonEntity, UpdateModel};
+use cuteui::{AppContext, Entity, ModelContext, SingletonEntity};
 
-use super::cloud_preferences_syncer::CloudPreferencesSyncer;
 use crate::ai::blocklist::telemetry_banner::should_collect_ai_ugc_telemetry;
-use crate::auth::auth_state::AuthState;
-use crate::auth::AuthStateProvider;
 // use crate::cloud_stub_types::model::persistence::CloudModel;
-use crate::report_error;
 
-use crate::server::server_api::auth::AuthClient;
 // use crate::server::cloud_objects::update_manager::UpdateManager;
-use crate::server::server_api::ServerApiProvider;
-use crate::terminal::safe_mode_settings::SafeModeSettings;
 
 pub trait RegexDisplayInfo {
     fn pattern(&self) -> &str;

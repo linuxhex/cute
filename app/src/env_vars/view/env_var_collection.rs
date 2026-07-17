@@ -21,7 +21,7 @@ use super::menus::Menus;
 use crate::ai::blocklist::block::secret_redaction::find_secrets_in_text_with_levels;
 use crate::cloud_stub_types::breadcrumbs::ContainingObject;
 use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
-use crate::cloud_stub_types::{CloudObjectEventEntrypoint, Owner};
+use crate::cloud_stub_types::Owner;
 use crate::CuteDriveItemId;
 use crate::cloud_stub_types::sharing::{ContentEditability, ShareableObject};
 use crate::editor::EditorView;
@@ -30,7 +30,7 @@ use crate::env_vars::active_env_var_collection_data::{
     SavingStatus, TrashStatus,
 };
 use crate::env_vars::{
-    CloudEnvVarCollection, CloudEnvVarCollectionModel, EnvVar, EnvVarCollection,
+    CloudEnvVarCollection, EnvVar, EnvVarCollection,
     EnvVarCollectionType, EnvVarValue,
 };
 use crate::external_secrets::SecretManager;
@@ -792,7 +792,7 @@ impl EnvVarCollectionView {
             })
             .collect();
 
-        let new_env_var_collection = EnvVarCollection::new(title, description, vars);
+        let _new_env_var_collection = EnvVarCollection::new(title, description, vars);
 
         let active_env_var_collection = self
             .active_env_var_collection_data

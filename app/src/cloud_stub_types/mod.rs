@@ -50,7 +50,7 @@ pub const GENERIC_STRING_OBJECT_PREFIX: &str = "GENERIC_STRING_";
 
 /// Re-export items module (was crate::drive::items)
 pub mod items {
-    pub use crate::cloud_stub_types::{CuteDriveItemId, CuteDriveWorkflow, CuteDriveEnvVarCollection, CuteDriveAIFact, CuteDriveMCPServer, DriveObjectType};
+    pub use crate::cloud_stub_types::CuteDriveItemId;
 
     /// Type alias for backward compatibility
     pub type WarpDriveItemId = CuteDriveItemId;
@@ -62,23 +62,23 @@ pub mod items {
 
     /// Re-export mcp_server submodule
     pub mod mcp_server {
-        pub use crate::cloud_stub_types::CuteDriveMCPServer;
+        
     }
 
     /// Re-export workflow submodule
     pub mod workflow {
-        pub use crate::cloud_stub_types::CuteDriveWorkflow;
+        
     }
 
     /// Re-export env_var_collection submodule
     pub mod env_var_collection {
-        pub use crate::cloud_stub_types::CuteDriveEnvVarCollection;
+        
     }
 }
 
 /// Re-export sharing module (was crate::drive::sharing)
 pub mod sharing {
-    pub use crate::cloud_stub_types::{ShareableObject, SharingAccessLevel, SharingDialogSource, ContentEditability, SharingDialog, SharingDialogEvent};
+    pub use crate::cloud_stub_types::{ShareableObject, SharingAccessLevel, ContentEditability};
 
     /// Re-export dialog submodule
     pub mod dialog {
@@ -94,7 +94,7 @@ pub mod export {
 /// Re-export folders module (was crate::drive::folders)
 pub mod folders {
     pub use crate::cloud_stub_types::models::CloudFolder;
-    pub use crate::cloud_stub_types::models::CloudFolderModel;
+    
     pub use crate::cloud_stub_types::FolderId;
 }
 
@@ -110,7 +110,7 @@ pub mod settings {
 
 /// Re-export workflows module (was crate::drive::workflows)
 pub mod workflows {
-    pub use crate::cloud_stub_types::{ArgumentsState, WorkflowModal, WorkflowModalEvent, WorkflowArgSelector, WorkflowArgSelectorEvent, WorkflowArgSelectorStyles, EnumCreationDialog, EnumCreationDialogEvent, EnumData, WorkflowEnumData, GeneratedCommandMetadata, GeneratedCommandMetadataError, ArgumentEditorRowIndex, ArgumentTypeEditor, AliasArgumentSelector, AliasArgumentSelectorEvent};
+    
 
     /// Re-export arguments submodule
     pub mod arguments {
@@ -129,7 +129,7 @@ pub mod workflows {
 
     /// Re-export enum_creation_dialog submodule
     pub mod enum_creation_dialog {
-        pub use crate::cloud_stub_types::{EnumCreationDialog, EnumCreationDialogEvent, WorkflowEnumData, EnumData};
+        pub use crate::cloud_stub_types::{EnumCreationDialog, EnumCreationDialogEvent, WorkflowEnumData};
     }
 
     /// Re-export workflow_arg_selector submodule
@@ -144,7 +144,7 @@ pub mod workflows {
 /// Re-export cloud_object_styling module
 pub mod cloud_object_styling {
     // pub use crate::cloud_stub_types::{cute_drive_icon_color, cute_drive_icon_color, DriveObjectType};
-    pub use crate::cloud_stub_types::{cute_drive_icon_color, DriveObjectType};
+    pub use crate::cloud_stub_types::cute_drive_icon_color;
 }
 
 /// Re-export drive_helpers module
@@ -168,7 +168,7 @@ pub mod import {
 /// Re-export keys module (was crate::drive::keys / crate::notebooks::keys)
 pub mod keys {
     use cuteui::{Entity, ModelContext, SingletonEntity};
-    use crate::settings_view::keybindings::KeybindingChangedNotifier;
+    
 
     /// Stub for notebook keybindings cache
     pub struct NotebookKeybindings {}
@@ -195,8 +195,7 @@ pub use cute_server_client::cloud_object::*;
 // with the real enum from cute_server_client::drive
 pub use cute_server_client::drive::CloudObjectTypeAndId;
 pub use models::{
-    ServerCloudObject, ServerFolder, ServerNotebook, ServerWorkflow,
-    CloudFolder, CloudFolderModel, CloudNotebook, CloudNotebookModel, NotebookId,
+    ServerFolder, ServerNotebook, ServerWorkflow, NotebookId,
 };
 
 // ===== Minimal Stub Types for Cloud Object Operations =====
@@ -673,7 +672,7 @@ impl NotebooksEditorModel {
     }
 
     /// Update operation (ModelHandle compatible)
-    pub fn update(&self, ctx: &cuteui::AppContext, f: impl FnOnce(&mut Self, &cuteui::AppContext)) {
+    pub fn update(&self, _ctx: &cuteui::AppContext, _f: impl FnOnce(&mut Self, &cuteui::AppContext)) {
         // This is called via ModelHandle::update which provides ModelContext, so this
         // method shouldn't normally be used. Kept for compatibility.
     }
@@ -1050,7 +1049,7 @@ pub fn rich_text_styles(appearance: &cute_core::ui::appearance::Appearance, _fon
     let theme = appearance.theme();
     let bg_fill = theme.background();
     let text_color: pathfinder_color::ColorU = theme.main_text_color(bg_fill).into_solid();
-    let bg_color: pathfinder_color::ColorU = bg_fill.into_solid();
+    let _bg_color: pathfinder_color::ColorU = bg_fill.into_solid();
     let ui_font_size = appearance.ui_font_size();
     let line_height = Pixels::new(ui_font_size * appearance.line_height_ratio());
     let base_text = ParagraphStyles {
@@ -2940,7 +2939,7 @@ pub trait CloudObject: Debug {
         None
     }
 
-    fn space(&self, app: &AppContext) -> Space {
+    fn space(&self, _app: &AppContext) -> Space {
         Space::Personal // UserWorkspaces::as_ref(app).owner_to_space(self.permissions().owner, app)
     }
 
@@ -4156,7 +4155,7 @@ impl SessionNavigationData {
         pane_id: crate::pane_group::PaneId,
         pane_group_id: cuteui::EntityId,
         session_source: SessionSource,
-        ctx: &AppContext,
+        _ctx: &AppContext,
     ) -> Self {
         Self {
             window_id,
@@ -4168,7 +4167,7 @@ impl SessionNavigationData {
     }
 
     /// Returns all sessions in the app as an iterator
-    pub fn all_sessions(ctx: &AppContext) -> impl Iterator<Item = SessionNavigationData> + '_ {
+    pub fn all_sessions(_ctx: &AppContext) -> impl Iterator<Item = SessionNavigationData> + '_ {
         // Stub implementation - returns empty iterator
         std::iter::empty()
     }

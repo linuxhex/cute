@@ -15,7 +15,7 @@ use cuteui::ui_components::button::{ButtonVariant, TextAndIcon, TextAndIconAlign
 use cuteui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
 use cuteui::{
     Action, AppContext, BlurContext, Entity, SingletonEntity, TypedActionView, View, ViewContext,
-    ViewHandle, WeakViewHandle,
+    ViewHandle,
 };
 
 use crate::appearance::Appearance;

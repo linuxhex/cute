@@ -6,22 +6,17 @@ use std::path::{Path, PathBuf};
 use diesel::{QueryDsl, RunQueryDsl, SqliteConnection};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
-use cute_core::ui::appearance::Appearance;
 use cute_core::ui::Icon;
 
 use crate::cloud_stub_types::{
     CloudObjectUuid, GenericStringObjectFormat, GenericStringObjectUniqueKey, JsonObjectType,
     Revision, StringModel,
 };
-use crate::cloud_stub_types::items::mcp_server::CuteDriveMCPServer;
-use crate::cloud_stub_types::CuteDriveItem;
-use crate::cloud_stub_types::CloudObjectTypeAndId;
 #[cfg(not(target_family = "wasm"))]
 use crate::persistence::model::MCPEnvironmentVariables;
 #[cfg(not(target_family = "wasm"))]
 #[cfg(not(target_family = "wasm"))]
 use crate::server::datetime_ext::DateTimeExt;
-use crate::server::ids::SyncId;
 
 pub mod manager;
 pub mod templatable_manager;

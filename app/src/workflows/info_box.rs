@@ -43,7 +43,6 @@ use crate::ui_components::icons;
 use crate::util::color::coloru_with_opacity;
 use crate::view_components::FilterableDropdownOrientation;
 use crate::workflows::WorkflowType;
-use crate::workspace::WorkspaceAction;
 
 const INFO_BOX_PADDING: f32 = 20.;
 const ARGUMENT_PADDING: f32 = 10.;
@@ -598,7 +597,7 @@ impl WorkflowsMoreInfoView {
                         )
                         .with_centered_text_label(NEW_ENV_VAR_BUTTON_LABEL.to_owned())
                         .build()
-                        .on_click(|ctx, _, _| {
+                        .on_click(|_ctx, _, _| {
                             // Create envvars in personal drive for max extensibility (can be moved
                             // REMOVED: CreatePersonalEnvVarCollection - cloud feature disabled
                         // ctx.dispatch_typed_action(WorkspaceAction::CreatePersonalEnvVarCollection)

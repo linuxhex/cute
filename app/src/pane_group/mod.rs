@@ -14,13 +14,10 @@ use parking_lot::FairMutex;
 use pathfinder_geometry::rect::RectF;
 use pathfinder_geometry::vector::{vec2f, Vector2F};
 use serde::{Deserialize, Serialize};
-use session_sharing_protocol::common::{
-    ParticipantId, Role, RoleRequestId, RoleRequestRejectedReason, RoleRequestResponse, SessionId,
-};
+use session_sharing_protocol::common::SessionId;
 use settings::Setting as _;
 use tree::DEFAULT_FLEX_VALUE;
 use typed_path::TypedPath;
-use url::Url;
 use uuid::Uuid;
 use cute_cli::agent::Harness;
 use cute_core::command::ExitCode;
@@ -31,7 +28,7 @@ use cute_util::path::convert_wsl_to_windows_host_path;
 use cute_util::path::LineAndColumnArg;
 use cute_util::remote_path::RemotePath;
 use cuteui::elements::{
-    ChildView, Clipped, CrossAxisAlignment, DispatchEventResult, Element, EventHandler, Flex,
+    ChildView, CrossAxisAlignment, DispatchEventResult, Element, EventHandler, Flex,
     MainAxisSize, ParentElement, Shrinkable, Stack,
 };
 use cuteui::keymap::{Context, EditableBinding, FixedBinding};
@@ -67,14 +64,11 @@ use crate::ai_assistant::AskAIType;
 #[cfg(feature = "local_fs")]
 use crate::app_state::CodePaneSnapShot;
 use crate::app_state::{
-    self, AIFactPaneSnapshot, BranchSnapshot, EnvVarCollectionPaneSnapshot, FilePaneSnapshot,
+    self, AIFactPaneSnapshot, BranchSnapshot, EnvVarCollectionPaneSnapshot,
     LeafContents, LeafSnapshot, NotebookPaneSnapshot, PaneNodeSnapshot, PaneUuid, SettingsPaneSnapshot,
     TerminalPaneSnapshot, WorkflowPaneSnapshot,
 };
 use crate::appearance::Appearance;
-use crate::auth::auth_manager::AuthManager;
-use crate::auth::AuthViewVariant;
-use crate::auth::AuthStateProvider;
 use crate::banner::{Banner, BannerEvent, BannerState, BannerTextContent, DismissalType};
 use crate::channel::{Channel, ChannelState};
 use crate::cloud_stub_types::Space;
@@ -110,11 +104,10 @@ use crate::resource_center::{
 // #[cfg(target_family = "wasm")]
 // use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::ids::{ObjectUid, SyncId};
-use crate::server::server_api::{ServerApi, ServerApiProvider};
+use crate::server::server_api::ServerApi;
 use crate::server::telemetry::{
     AnonymousUserSignupEntrypoint, PaletteSource,
 };
-use crate::cloud_stub_types::sharing::dialog::SharingDialogSource;
 // Session navigation types are now exported from crate root
 use crate::SessionNavigationData;
 use crate::settings::{AISettings, DefaultSessionMode, PaneSettings};

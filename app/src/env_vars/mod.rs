@@ -14,11 +14,7 @@ use crate::cloud_stub_types::model::json_model::JsonModel;
 use crate::cloud_stub_types::{
     GenericStringObjectFormat, GenericStringObjectUniqueKey, JsonObjectType, Revision,
 };
-use crate::cloud_stub_types::items::env_var_collection::CuteDriveEnvVarCollection;
-use crate::cloud_stub_types::CuteDriveItem;
-use crate::server::ids::SyncId;
 use crate::terminal::shell::ShellType;
-use crate::{Appearance, CloudObjectTypeAndId};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum EnvVarCollectionType {

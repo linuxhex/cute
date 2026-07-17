@@ -27,14 +27,13 @@ use crate::cloud_stub_types::workflows::workflow_arg_selector::{
 use crate::cloud_stub_types::workflows::workflow_arg_type_helpers::{self, ArgumentTypeEditor};
 use crate::cloud_stub_types::{AliasArgumentSelector, AliasArgumentSelectorEvent}; // Added: stub types for alias argument selector
 use crate::editor::{
-    EditOrigin, EditorView, Event as EditorEvent, InteractionState,
+    EditorView, Event as EditorEvent, InteractionState,
     PlainTextEditorViewAction as EditorAction,
 };
 use crate::pane_group::PaneEvent;
 use crate::ui_components::buttons::icon_button;
 use crate::ui_components::icons::Icon;
 use crate::workflows::workflow::Workflow;
-use crate::workspace::WorkspaceAction;
 // use crate::workflows::workflow_view::argument_editor::AliasArgumentSelector; // Cute: 已禁用别名参数选择器
 // use crate::workflows::workflow_view::argument_editor::AliasArgumentSelectorEvent; // Cute: 已禁用别名参数选择器事件
 
@@ -420,7 +419,7 @@ impl WorkflowView {
                         }
                     });
             }
-            EditorEvent::Edited(origin) => {
+            EditorEvent::Edited(_origin) => {
                 self.arguments_rows.iter().for_each(|row| {
                     if row.argument_editor == handle {
                         let mut updated_args = handle.as_ref(ctx).buffer_text(ctx);
@@ -723,7 +722,7 @@ impl WorkflowView {
                 )
                 .with_centered_text_label("Add environment variables".to_string())
                 .build()
-                .on_click(|ctx, _, _| {
+                .on_click(|_ctx, _, _| {
                     // REMOVED: CreatePersonalEnvVarCollection - cloud feature disabled
                     // ctx.dispatch_typed_action(WorkspaceAction::CreatePersonalEnvVarCollection);
                 })

@@ -9,7 +9,6 @@ use futures::TryStreamExt as _;
 use mime_guess::from_path;
 use tokio::fs;
 use tokio_util::io::StreamReader;
-use cute_core::features::FeatureFlag;
 
 use crate::ai::agent_sdk::retry::with_bounded_retry;
 use crate::ai::ambient_agent_types::task::{AttachmentInput, TaskAttachment};
@@ -32,16 +31,16 @@ pub const MAX_ATTACHMENT_COUNT_FOR_CLOUD_QUERY: usize = 25;
 /// Makes a best-effort attempt to download all attachments.
 /// Individual download failures are logged but don't cause the entire function to fail.
 pub(crate) async fn fetch_and_download_attachments(
-    ai_client: Arc<dyn AIClient>,
-    http_client: Arc<ServerApi>,
-    task_id: String,
-    attachments_dir: PathBuf,
+    _ai_client: Arc<dyn AIClient>,
+    _http_client: Arc<ServerApi>,
+    _task_id: String,
+    _attachments_dir: PathBuf,
 ) -> anyhow::Result<Option<String>> {
     // Image upload is disabled as cloud feature is removed.
     return Ok(None);
 
-    let attachments = ai_client
-        .get_task_attachments(task_id.clone())
+    let attachments = _ai_client
+        .get_task_attachments(_task_id.clone())
         .await
         .context("Failed to fetch task attachments")?;
 
@@ -51,9 +50,9 @@ pub(crate) async fn fetch_and_download_attachments(
         return Ok(None);
     }
 
-    download_and_write_attachments(attachments, &attachments_dir, &http_client).await?;
+    download_and_write_attachments(attachments, &_attachments_dir, &_http_client).await?;
 
-    Ok(Some(attachments_dir.to_string_lossy().into_owned()))
+    Ok(Some(_attachments_dir.to_string_lossy().into_owned()))
 }
 
 /// Fetches handoff snapshot attachments for the active execution and downloads
@@ -66,10 +65,10 @@ pub(crate) async fn fetch_and_download_attachments(
 ///
 /// Fatal failures (listing the attachments, creating the handoff dir) return `Err`.
 pub(crate) async fn fetch_and_download_handoff_snapshot_attachments(
-    ai_client: Arc<dyn AIClient>,
-    http_client: &http_client::Client,
-    task_id: AmbientAgentTaskId,
-    attachments_dir: PathBuf,
+    _ai_client: Arc<dyn AIClient>,
+    _http_client: &http_client::Client,
+    _task_id: AmbientAgentTaskId,
+    _attachments_dir: PathBuf,
 ) -> anyhow::Result<Option<String>> {
     // Cloud handoff feature has been removed in local version.
     // This function should not be called anymore.

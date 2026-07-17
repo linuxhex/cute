@@ -370,7 +370,7 @@ impl HarnessAvailabilityModel {
         {
             let default_harnesses = default_harnesses();
             if default_harnesses != self.harnesses {
-                let mut me = Self::handle(ctx);
+                let me = Self::handle(ctx);
                 me.update(ctx, |me, ctx| {
                     me.harnesses = default_harnesses;
                     me.cache(ctx);

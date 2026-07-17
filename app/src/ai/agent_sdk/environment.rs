@@ -1,38 +1,29 @@
 use std::collections::HashSet;
 
 use comfy_table::Cell;
-use cynic::QueryBuilder;
 use inquire::error::InquireError;
-use inquire::{Confirm, Select};
+use inquire::Confirm;
 use serde::Serialize;
 use cute_cli::agent::OutputFormat;
 use cute_cli::environment::{EnvironmentCommand, ImageCommand};
 use cute_cli::scope::ObjectScope;
 use cute_cli::GlobalOptions;
-use cute_graphql::queries::get_oauth_connect_tx_status::OauthConnectTxStatus;
-use cute_graphql::queries::list_cute_dev_images::{
-    ListWarpDevImages, ListWarpDevImagesResult, ListWarpDevImagesVariables,
-};
 use cute_graphql::queries::user_repo_auth_status::UserRepoAuthStatusEnum;
-use cuteui::r#async::FutureExt;
 use cuteui::{AppContext, ModelContext, SingletonEntity};
 
 use crate::cloud_stub_types::CloudObjectLookup as _;
 use crate::cloud_stub_types::CloudObject as _;
 
-use crate::ai::agent_sdk::driver::WARP_DRIVE_SYNC_TIMEOUT;
-use crate::ai::agent_sdk::oauth_flow::poll_oauth_until_terminal;
 use crate::ai::agent_sdk::output::{self, TableFormat};
 use crate::ai::cloud_environments::{
-    AmbientAgentEnvironment, BaseImage, CloudAmbientAgentEnvironment,
-    CloudAmbientAgentEnvironmentModel, GithubRepo,
+    AmbientAgentEnvironment, BaseImage, CloudAmbientAgentEnvironment, GithubRepo,
 };
 use crate::auth::UserUid;
 // DELETED: 云端功能 UpdateManager 相关导入已移除
 // use crate::server::cloud_objects::{
 //     ObjectOperation, OperationSuccessType, UpdateManager, UpdateManagerEvent,
 // };
-use crate::server::ids::{ClientId, GenericStringObjectId, ServerId, SyncId};
+use crate::server::ids::{ClientId, ServerId, SyncId};
 use crate::server::server_api::ServerApiProvider;
 use crate::util::time_format::format_approx_duration_from_now_utc;
 use crate::CloudObjectTypeAndId;
@@ -441,7 +432,7 @@ impl EnvironmentCommandRunner {
     fn auth_repos_then_execute<F>(
         repos: Vec<GithubRepo>,
         attempt: u32,
-        operation_name: &'static str,
+        _operation_name: &'static str,
         on_success: F,
         ctx: &mut ModelContext<Self>,
     ) where
@@ -674,16 +665,16 @@ impl EnvironmentCommandRunner {
         scope: ObjectScope,
         ctx: &mut ModelContext<Self>,
     ) {
-        let environment = AmbientAgentEnvironment::new(
+        let _environment = AmbientAgentEnvironment::new(
             name,
             description,
             github_repos,
             docker_image,
             setup_commands,
         );
-        let client_id = ClientId::default();
+        let _client_id = ClientId::default();
 
-        let owner = match super::common::resolve_owner(scope.team, scope.personal, ctx) {
+        let _owner = match super::common::resolve_owner(scope.team, scope.personal, ctx) {
             Ok(owner) => owner,
             Err(e) => {
                 super::report_fatal_error(e, ctx);
@@ -876,7 +867,7 @@ impl EnvironmentCommandRunner {
     #[allow(clippy::too_many_arguments)]
     fn update_environment_after_auth_check(
         environment: &CloudAmbientAgentEnvironment,
-        server_id: ServerId,
+        _server_id: ServerId,
         name: Option<String>,
         description: Option<String>,
         remove_description: bool,
@@ -1037,7 +1028,7 @@ impl EnvironmentCommandRunner {
         });
     }
 
-    fn execute_delete(type_and_id: CloudObjectTypeAndId, ctx: &mut ModelContext<Self>) {
+    fn execute_delete(_type_and_id: CloudObjectTypeAndId, ctx: &mut ModelContext<Self>) {
         // UpdateManager::handle(ctx).update(ctx, |update_manager, ctx| {
         //     update_manager.delete_object_by_user(type_and_id, ctx);
         // });

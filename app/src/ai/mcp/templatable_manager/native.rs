@@ -45,7 +45,7 @@ use crate::auth::AuthStateProvider;
 use crate::UserWorkspaces;
 use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
 use crate::cloud_stub_types::{
-    CloudObject, CloudObjectLocation, CloudObjectLookup as _, CloudObjectMetadataExt,
+    CloudObject, CloudObjectLookup as _, CloudObjectMetadataExt,
     CloudObjectUuidLookup as _, GenericStringObjectFormat, JsonObjectType, Space,
 };
 use crate::cloud_stub_types::CloudObjectTypeAndId;
@@ -53,7 +53,7 @@ use crate::persistence::{
     database_file_path_for_scope, establish_ro_connection, ModelEvent, PersistenceScope,
 };
 use crate::server::sync_queue::InitiatedBy;
-use crate::server::ids::{ClientId, ServerId, SyncId};
+use crate::server::ids::{ServerId, SyncId};
 // use crate::server::cloud_objects::UpdateManager; // Removed: cloud sync feature
 use crate::settings::AISettings;
 use crate::view_components::DismissibleToast;
@@ -403,9 +403,9 @@ impl TemplatableMCPServerManager {
     pub fn create_templatable_mcp_server(
         &mut self,
         templatable_mcp_server: TemplatableMCPServer,
-        space: Space,
-        initiated_by: InitiatedBy,
-        ctx: &mut ModelContext<Self>,
+        _space: Space,
+        _initiated_by: InitiatedBy,
+        _ctx: &mut ModelContext<Self>,
     ) {
         // Cloud sync disabled - MCP servers stored locally only
         log::info!("Creating templatable MCP server locally (cloud sync disabled): {}", templatable_mcp_server.name);
@@ -423,7 +423,7 @@ impl TemplatableMCPServerManager {
     pub fn update_templatable_mcp_server(
         &mut self,
         template_server: TemplatableMCPServer,
-        ctx: &mut ModelContext<Self>,
+        _ctx: &mut ModelContext<Self>,
     ) {
         // Cloud sync disabled - MCP servers stored locally only
         log::info!("Updating templatable MCP server locally (cloud sync disabled): {}", template_server.name);
@@ -449,8 +449,8 @@ impl TemplatableMCPServerManager {
     pub fn delete_legacy_mcp_server(
         &mut self,
         sync_id: SyncId,
-        initiated_by: InitiatedBy,
-        ctx: &mut ModelContext<Self>,
+        _initiated_by: InitiatedBy,
+        _ctx: &mut ModelContext<Self>,
     ) {
         // Cloud sync disabled - no cloud object deletion
         log::info!("Deleting legacy MCP server locally (cloud sync disabled): {}", sync_id);
@@ -1343,7 +1343,7 @@ impl TemplatableMCPServerManager {
     pub fn share_templatable_mcp_server(
         &mut self,
         template_uuid: Uuid,
-        ctx: &mut ModelContext<Self>,
+        _ctx: &mut ModelContext<Self>,
     ) {
         // Cloud sync disabled - sharing not supported in local-only mode
         log::info!("Sharing templatable MCP server disabled (cloud sync disabled): {}", template_uuid);
@@ -1365,7 +1365,7 @@ impl TemplatableMCPServerManager {
     pub fn unshare_templatable_mcp_server(
         &mut self,
         template_uuid: Uuid,
-        ctx: &mut ModelContext<Self>,
+        _ctx: &mut ModelContext<Self>,
     ) {
         // Cloud sync disabled - unsharing not supported in local-only mode
         log::info!("Unsharing templatable MCP server disabled (cloud sync disabled): {}", template_uuid);
@@ -1838,10 +1838,10 @@ enum Transport {
 /// server supports the HTTP transport (or needs to use the SSE transport), and if
 /// authentication is required.
 async fn determine_transport(
-    server_name: String,
+    _server_name: String,
     url: &str,
     headers: &std::collections::HashMap<String, String>,
-    auth_context: AuthContext,
+    _auth_context: AuthContext,
 ) -> Result<Transport, rmcp::RmcpError> {
     use reqwest::StatusCode;
 
@@ -1859,10 +1859,10 @@ async fn determine_transport(
                 "Server requires authentication, which is not yet supported.".to_string(),
             ));
 
-            let spawner = auth_context.spawner.clone();
+            let _spawner = _auth_context.spawner.clone();
             // Go through the OAuth flow to get an authenticated client.
             // This will first attempt to use cached credentials before starting interactive OAuth.
-            let (client, did_require_login) = oauth::make_authenticated_client(url, auth_context)
+            let (client, did_require_login) = oauth::make_authenticated_client(url, _auth_context)
                 .boxed()
                 .await
                 .map_err(rmcp::RmcpError::transport_creation::<ReqwestHttpTransport>)?;
@@ -1874,13 +1874,13 @@ async fn determine_transport(
                 other => Err(unexpected_error(other)),
             };
             if transport.is_ok() && did_require_login {
-                let _ = spawner
+                let _ = _spawner
                     .spawn(move |_, ctx| {
                         if let Some(active_window_id) = ctx.windows().active_window() {
                             ToastStack::handle(ctx).update(ctx, |stack, ctx| {
                                 stack.add_ephemeral_toast(
                                     DismissibleToast::default(format!(
-                                        "Successfully authenticated {server_name} MCP server"
+                                        "Successfully authenticated {_server_name} MCP server"
                                     )),
                                     active_window_id,
                                     ctx,

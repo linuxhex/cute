@@ -23,7 +23,7 @@ use cuteui::ui_components::button::{ButtonVariant, TextAndIcon, TextAndIconAlign
 use cuteui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
 use cuteui::ui_components::switch::{SwitchStateHandle, TooltipConfig};
 use cuteui::{
-    id, Action, AppContext, Element, Entity, ModelHandle, SingletonEntity, TypedActionView,
+    Action, AppContext, Element, Entity, ModelHandle, SingletonEntity, TypedActionView,
     UpdateModel, View, ViewContext, ViewHandle,
 };
 
@@ -51,8 +51,6 @@ use crate::ui_components::icons::Icon;
 use crate::util::links::PRIVACY_POLICY_URL;
 use crate::view_components::{Dropdown, DropdownItem};
 use crate::report_if_error;
-use crate::settings::AdminEnablementSetting;
-use crate::settings::UgcCollectionEnablementSetting;
 use crate::UserWorkspaces;
 
 const FONT_SIZE: f32 = 12.;
@@ -623,11 +621,11 @@ impl SecretRedactionWidget {
     /// Renders the tab bar for switching between Personal and Enterprise views
     fn render_tab_bar(
         &self,
-        appearance: &Appearance,
-        privacy_settings: &PrivacySettings,
-        active_tab: SecretRedactionTab,
-        view: &PrivacyPageView,
-        app: &AppContext,
+        _appearance: &Appearance,
+        _privacy_settings: &PrivacySettings,
+        _active_tab: SecretRedactionTab,
+        _view: &PrivacyPageView,
+        _app: &AppContext,
     ) -> Box<dyn Element> {
         // Simplified: local version has no enterprise secret redaction
         // Do not show the tab bar since there's no enterprise tab
@@ -791,7 +789,7 @@ impl SecretRedactionWidget {
     fn render_enterprise_content(
         &self,
         appearance: &Appearance,
-        app: &AppContext,
+        _app: &AppContext,
     ) -> Box<dyn Element> {
         // Local version has no enterprise content
         appearance
@@ -845,7 +843,7 @@ impl SecretRedactionWidget {
     ) -> Box<dyn Element> {
         let privacy_settings = PrivacySettings::as_ref(app);
         let ui_builder = appearance.ui_builder();
-        let workspaces = UserWorkspaces::as_ref(app);
+        let _workspaces = UserWorkspaces::as_ref(app);
 
         let mut column = Flex::column();
 
@@ -1322,7 +1320,7 @@ impl AppAnalyticsWidget {
         .finish()
     }
 
-    fn should_show_zdr_badge(&self, app: &AppContext) -> bool {
+    fn should_show_zdr_badge(&self, _app: &AppContext) -> bool {
         // Cloud UGC collection setting removed for local version - never show ZDR badge
         false
     }

@@ -12,7 +12,6 @@ use cuteui::{AppContext, Entity, EntityId, ModelContext, SingletonEntity};
 
 use super::execution_profiles::profiles::AIExecutionProfilesModel;
 use crate::auth::auth_manager::{AuthManager, AuthManagerEvent};
-use crate::auth::AuthStateProvider;
 use crate::network::{NetworkStatus, NetworkStatusEvent, NetworkStatusKind};
 use crate::report_error;
 use crate::server::server_api::ServerApiProvider;
@@ -20,7 +19,7 @@ use crate::UserWorkspaces;
 
 /// Checks if a user's' API key is being used for the given provider.
 /// Returns `true` if BYO API key is enabled and a key exists for the provider.
-pub fn is_using_api_key_for_provider(provider: &LLMProvider, app: &AppContext) -> bool {
+pub fn is_using_api_key_for_provider(provider: &LLMProvider, _app: &AppContext) -> bool {
     let api_keys = false; // UserWorkspaces::as_ref(app)
         // .is_byo_api_key_enabled(app)
         // .then(|| ApiKeyManager::as_ref(app).keys().clone());
@@ -33,7 +32,7 @@ pub fn is_using_api_key_for_provider(provider: &LLMProvider, app: &AppContext) -
     }
 }
 
-pub fn should_show_bedrock_icon_for_model(llm: &LLMInfo, app: &AppContext) -> bool {
+pub fn should_show_bedrock_icon_for_model(llm: &LLMInfo, _app: &AppContext) -> bool {
     false // UserWorkspaces::as_ref(app).is_aws_bedrock_credentials_enabled(app)
         && llm
             .host_configs

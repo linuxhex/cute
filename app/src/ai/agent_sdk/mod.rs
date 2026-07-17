@@ -135,7 +135,7 @@ fn dispatch_command(
 ) -> anyhow::Result<()> {
     match command {
         CliCommand::Agent(agent_cmd) => run_agent(ctx, global_options, agent_cmd),
-        CliCommand::Environment(environment_cmd) => {
+        CliCommand::Environment(_environment_cmd) => {
             // Cloud environments feature removed
             return Err(anyhow::anyhow!("invalid value 'environment'"));
         }
@@ -192,7 +192,7 @@ fn dispatch_command(
             }
             artifact::run(ctx, global_options, artifact_cmd)
         }
-        CliCommand::ApiKey(api_key_cmd) => {
+        CliCommand::ApiKey(_api_key_cmd) => {
             // Cute: APIKeyManagement feature removed
             // if !FeatureFlag::APIKeyManagement.is_enabled() {
             //     return Err(anyhow::anyhow!("invalid value 'api-key'"));
@@ -560,11 +560,11 @@ fn run_task(
                 ambient::get_ambient_agent_task_status(ctx, global_options, args)
             }
         }
-        TaskCommand::Conversation(conv_cmd) => {
+        TaskCommand::Conversation(_conv_cmd) => {
             return Err(anyhow::anyhow!(
                 "The 'conversation' subcommand is not available in this build"
             ));
-            match conv_cmd {
+            match _conv_cmd {
                 cute_cli::task::ConversationCommand::Get(args) => {
                     ambient::get_conversation(ctx, args.conversation_id)
                 }
@@ -1079,9 +1079,9 @@ impl AgentDriverRunner {
         // Handoff snapshot attachments for follow-up executions are written to
         // {attachments_dir}/handoff/{uuid} so the server-side rehydration prompt
         // references resolve to real files.
-        let handoff_snapshot_ai_client = ai_client.clone();
-        let handoff_snapshot_server_api = server_api.clone();
-        let handoff_snapshot_download_dir = attachments_download_dir.clone();
+        let _handoff_snapshot_ai_client = ai_client.clone();
+        let _handoff_snapshot_server_api = server_api.clone();
+        let _handoff_snapshot_download_dir = attachments_download_dir.clone();
         let handoff_snapshot = async move {
             // Cute: OzHandoff feature removed
             // if !FeatureFlag::OzHandoff.is_enabled() {

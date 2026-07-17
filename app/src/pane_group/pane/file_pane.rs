@@ -78,7 +78,7 @@ impl PaneContent for FilePane {
             .update(ctx, |view, ctx| view.set_focus_handle(focus_handle, ctx));
 
         let pane_id = self.id();
-        let file_view = self.file_view(ctx);
+        let _file_view = self.file_view(ctx);
 
         ctx.subscribe_to_view(
             &self.file_view(ctx),

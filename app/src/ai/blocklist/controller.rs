@@ -63,7 +63,6 @@ use crate::global_resource_handles::GlobalResourceHandlesProvider;
 use crate::network::NetworkStatus;
 use crate::cloud_stub_types::FileLinkResolutionContext;
 use crate::persistence::ModelEvent;
-use crate::server::server_api::AIApiError;
 #[cfg(not(target_family = "wasm"))]
 use crate::server::server_api::ServerApiProvider;
 use crate::terminal::model::block::{
