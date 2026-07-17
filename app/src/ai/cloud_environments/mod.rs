@@ -14,6 +14,7 @@ pub use crate::cloud_stub_types::models::cloud_environment::{
 
 /// Stub function: Get the owner for a new environment (team preference).
 /// Returns None if the user is not logged in or has no team.
+#[allow(dead_code)]
 pub fn owner_for_new_environment(ctx: &AppContext) -> Option<Owner> {
     // TODO: Implement proper owner resolution logic
     log::debug!("owner_for_new_environment called (stub)");
@@ -29,6 +30,7 @@ pub fn owner_for_new_environment(ctx: &AppContext) -> Option<Owner> {
 
 /// Stub function: Get the owner for a new personal environment.
 /// Returns None if the user is not logged in.
+#[allow(dead_code)]
 pub fn owner_for_new_personal_environment(ctx: &AppContext) -> Option<Owner> {
     // TODO: Implement proper owner resolution logic
     log::debug!("owner_for_new_personal_environment called (stub)");

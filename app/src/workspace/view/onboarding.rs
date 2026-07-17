@@ -251,6 +251,7 @@ impl Workspace {
         );
     }
 
+    #[allow(dead_code)]
     pub(crate) fn should_show_agent_onboarding(&self, ctx: &mut ViewContext<Self>) -> bool {
         // Onboarding requires a real user to interact with it; suppress when
         // running in a headless mode like the SDK/CLI.

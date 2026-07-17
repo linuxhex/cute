@@ -197,6 +197,7 @@ pub struct AgentInputFooter {
     nld_button: ViewHandle<ActionButton>,
     file_button: ViewHandle<ActionButton>,
     start_remote_control_button: ViewHandle<ActionButton>,
+    #[allow(dead_code)]
     stop_remote_control_button: ViewHandle<ActionButton>,
     context_window_button: ViewHandle<ActionButton>,
     model_selector: ViewHandle<ProfileModelSelector>,

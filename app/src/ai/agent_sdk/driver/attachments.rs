@@ -37,22 +37,7 @@ pub(crate) async fn fetch_and_download_attachments(
     _attachments_dir: PathBuf,
 ) -> anyhow::Result<Option<String>> {
     // Image upload is disabled as cloud feature is removed.
-    return Ok(None);
-
-    let attachments = _ai_client
-        .get_task_attachments(_task_id.clone())
-        .await
-        .context("Failed to fetch task attachments")?;
-
-    log::info!("Fetched {} task attachments", attachments.len());
-
-    if attachments.is_empty() {
-        return Ok(None);
-    }
-
-    download_and_write_attachments(attachments, &_attachments_dir, &_http_client).await?;
-
-    Ok(Some(_attachments_dir.to_string_lossy().into_owned()))
+    Ok(None)
 }
 
 /// Fetches handoff snapshot attachments for the active execution and downloads
@@ -64,6 +49,7 @@ pub(crate) async fn fetch_and_download_attachments(
 /// logged at WARN level inside this function; per-file errors are not surfaced to callers.
 ///
 /// Fatal failures (listing the attachments, creating the handoff dir) return `Err`.
+#[allow(dead_code)]
 pub(crate) async fn fetch_and_download_handoff_snapshot_attachments(
     _ai_client: Arc<dyn AIClient>,
     _http_client: &http_client::Client,
@@ -82,6 +68,7 @@ pub(crate) async fn fetch_and_download_handoff_snapshot_attachments(
 /// Downloads are performed concurrently using `join_all`.
 /// Makes a best-effort attempt to download all attachments, logging warnings for failures.
 /// The filename is already formatted by the server with UUID prefix (e.g., "uuid_filename.png").
+#[allow(dead_code)]
 async fn download_and_write_attachments(
     attachments: Vec<TaskAttachment>,
     attachment_dir: &Path,
@@ -118,6 +105,7 @@ async fn download_and_write_attachments(
 /// Download a single task attachment into `attachment_dir/<sanitized filename>`.
 ///
 /// Delegates to [`download_attachment`] so transient failures retry on the shared schedule.
+#[allow(dead_code)]
 async fn download_task_attachment(
     attachment: TaskAttachment,
     attachment_dir: &Path,
@@ -145,6 +133,7 @@ async fn download_task_attachment(
 /// Download a single handoff attachment into `file_path`, mapping failure to
 /// `(filename, error_message)` so the aggregator in
 /// [`fetch_and_download_handoff_snapshot_attachments`] can log and count per-file outcomes.
+#[allow(dead_code)]
 async fn download_handoff_entry(
     attachment: TaskAttachment,
     file_path: PathBuf,
@@ -165,6 +154,7 @@ async fn download_handoff_entry(
 /// Shared download primitive: GET `download_url`, write the body to `file_path`, and retry
 /// transient HTTP failures on the shared bounded-backoff schedule. Non-2xx responses surface
 /// an [`HttpStatusError`] so the retry classifier can decide whether to retry.
+#[allow(dead_code)]
 async fn download_attachment(
     http_client: &http_client::Client,
     download_url: &str,

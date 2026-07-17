@@ -18,6 +18,7 @@ use crate::auth::credentials::{AuthToken, Credentials};
 use crate::auth::user::User;
 
 #[derive(Clone, Debug, serde::Deserialize)]
+#[allow(dead_code)]
 pub struct AgentIdentity {
     pub uid: String,
     pub name: String,
@@ -28,6 +29,7 @@ pub const AMBIENT_WORKLOAD_TOKEN_HEADER: &str = "X-Warp-Ambient-Workload-Token";
 pub const CLOUD_AGENT_ID_HEADER: &str = "X-Warp-Cloud-Agent-ID";
 const AMBIENT_WORKLOAD_TOKEN_DURATION: instant::Duration = instant::Duration::from_secs(3 * 60 * 60);
 
+#[allow(dead_code)]
 pub struct SyncedUserSettings {
     pub is_cloud_conversation_storage_enabled: bool,
     pub is_crash_reporting_enabled: bool,
@@ -44,6 +46,7 @@ impl Default for SyncedUserSettings {
     }
 }
 
+#[allow(dead_code)]
 pub struct FetchUserResult {
     pub user: User,
     pub credentials: Credentials,
@@ -56,12 +59,19 @@ pub struct FetchUserResult {
 #[cfg_attr(target_family = "wasm", async_trait(?Send))]
 pub trait AuthClient: 'static + Send + Sync {
     async fn get_or_refresh_access_token(&self) -> Result<AuthToken>;
+    #[allow(dead_code)]
     async fn get_user_settings(&self) -> Result<Option<SyncedUserSettings>>;
+    #[allow(dead_code)]
     async fn set_is_telemetry_enabled(&self, value: bool) -> Result<()>;
+    #[allow(dead_code)]
     async fn set_is_crash_reporting_enabled(&self, value: bool) -> Result<()>;
+    #[allow(dead_code)]
     async fn set_is_cloud_conversation_storage_enabled(&self, value: bool) -> Result<()>;
+    #[allow(dead_code)]
     async fn update_user_settings(&self, settings_snapshot: crate::settings::PrivacySettingsSnapshot) -> Result<()>;
+    #[allow(dead_code)]
     async fn set_user_is_onboarded(&self) -> Result<bool>;
+    #[allow(dead_code)]
     async fn list_api_keys(&self) -> Result<Vec<cute_graphql::queries::api_keys::ApiKeyProperties>>;
     async fn create_api_key(
         &self,
@@ -71,6 +81,7 @@ pub trait AuthClient: 'static + Send + Sync {
         expires_at: Option<cute_graphql::scalars::Time>,
     ) -> Result<cute_graphql::mutations::generate_api_key::GenerateApiKeyResult>;
     async fn expire_api_key(&self, key_uid: &crate::server::ids::ApiKeyUid) -> Result<cute_graphql::mutations::expire_api_key::ExpireApiKeyResult>;
+    #[allow(dead_code)]
     async fn list_agent_identities(&self) -> Result<Vec<AgentIdentity>>;
     async fn get_or_create_ambient_workload_token(&self) -> Result<Option<String>>;
 }

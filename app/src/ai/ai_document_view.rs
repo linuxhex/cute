@@ -993,6 +993,7 @@ impl AIDocumentView {
         });
     }
 
+    #[allow(dead_code)]
     fn create_cute_drive_notebook(&self, ctx: &mut ViewContext<Self>) {
         let success = AIDocumentModel::handle(ctx).update(ctx, |model, ctx| {
             model.sync_to_cute_drive(self.document_id, ctx)

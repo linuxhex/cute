@@ -528,6 +528,7 @@ const KEYBINDINGS_TO_CACHE: [&str; 4] = [
     TOGGLE_COMMAND_PALETTE_KEYBINDING_NAME,
 ];
 
+#[allow(dead_code)]
 const WORKFLOW_AND_ENV_VAR_SPLIT_RATIO: f32 = 0.56;
 
 #[cfg(target_family = "wasm")]
@@ -3924,7 +3925,6 @@ impl Workspace {
         ctx: &mut ViewContext<Self>,
     ) {
         let show_warp_home = false;
-        let mut placeholder_pane = None;
         let open_warp_drive = if !show_warp_home {
             if self.should_trigger_get_started_onboarding(ctx) {
                 self.trigger_get_started_onboarding(ctx);
@@ -3944,7 +3944,8 @@ impl Workspace {
             false
         } else {
             let home_pane = super::home::create_home_pane(ctx);
-            placeholder_pane = Some(home_pane.as_pane().id());
+            #[allow(unused_assignments, unused_variables)]
+            let _placeholder_pane = Some(home_pane.as_pane().id());
             self.add_tab_from_existing_pane(home_pane, 0, ctx);
 
             // If we can't start a terminal session to run the onboarding flow, show the Warp Home
@@ -6438,33 +6439,9 @@ impl Workspace {
         }
     }
 
-    fn should_trigger_get_started_onboarding(&self, ctx: &mut ViewContext<Self>) -> bool {
-        // Onboarding requires a real user to interact with it; suppress when
-        // running in a headless mode like the SDK/CLI.
-        if !AppExecutionMode::as_ref(ctx).can_show_onboarding() {
-            return false;
-        }
-
-        if !FeatureFlag::GetStartedTab.is_enabled() {
-            return false;
-        }
-
-        // if self.auth_state.is_onboarded().unwrap_or_default() {
-        //     return false;
-        // }
-        // if self.auth_state.is_anonymous_or_logged_out() {
-        //     return false;
-        // }
-        // Simplified: Always show Get Started for local mode
-        return false; // Disabled for local version
-
-        // If AgentOnboarding is enabled and the user is NOT in the control group for the
-        // AgentOnboarding experiment, don't show Get Started onboarding.
-        if self.should_show_agent_onboarding(ctx) {
-            return false;
-        }
-
-        true
+    fn should_trigger_get_started_onboarding(&self, _ctx: &mut ViewContext<Self>) -> bool {
+        // Disabled for local version
+        false
     }
 
     fn trigger_get_started_onboarding(&mut self, ctx: &mut ViewContext<Self>) {

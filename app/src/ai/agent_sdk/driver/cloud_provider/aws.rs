@@ -19,12 +19,15 @@ use crate::ai::cloud_environments::AwsProviderConfig;
 /// Default duration for OIDC identity tokens issued for cloud provider auth.
 /// The AWS CLI doesn't offer a mechanism for refreshing web identity tokens, so we
 /// set this to the current maximum task duration.
+#[allow(dead_code)]
 const IDENTITY_TOKEN_DURATION: Duration = Duration::from_hours(3);
 
 /// AWS STS audience for Warp Oz OIDC federation.
+#[allow(dead_code)]
 const AWS_AUDIENCE: &str = "sts.amazonaws.com";
 
 /// Provides AWS Web Identity credentials for the agent session.
+#[allow(dead_code)]
 pub(crate) struct AwsCloudProvider {
     /// ARN of the role to assume.
     role_arn: String,
@@ -34,6 +37,7 @@ pub(crate) struct AwsCloudProvider {
 }
 
 impl AwsCloudProvider {
+    #[allow(dead_code)]
     const PROVIDER_NAME: &'static str = "aws";
 
     pub fn new(config: &AwsProviderConfig, run_id: &str) -> Result<Self> {

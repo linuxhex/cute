@@ -119,22 +119,27 @@ impl ConversationNavigationData {
         self.id
     }
 
+    #[allow(dead_code)]
     pub fn title(&self) -> &str {
         &self.title
     }
 
+    #[allow(dead_code)]
     pub fn last_updated(&self) -> chrono::DateTime<chrono::Local> {
         self.last_updated
     }
 
+    #[allow(dead_code)]
     pub fn pane_view_locator(&self) -> Option<PaneViewLocator> {
         self.pane_view_locator
     }
 
+    #[allow(dead_code)]
     pub fn is_in_active_pane(&self) -> bool {
         self.is_in_active_pane
     }
 
+    #[allow(dead_code)]
     pub fn window_id(&self) -> Option<WindowId> {
         self.window_id
     }

@@ -113,6 +113,7 @@ const SESSION_EXPIRED_TEXT: &str = "Sessions expire after one week and cannot be
 
 use crate::UserWorkspaces;
 
+#[allow(dead_code)]
 pub fn init(app: &mut AppContext) {
     use crate::util::bindings::cmd_or_ctrl_shift;
 
@@ -2155,6 +2156,7 @@ pub enum AgentManagementViewAction {
     ToggleSetupGuide,
     ShowAgentTypeSelector,
     OpenSession { item_id: ManagementCardItemId },
+    #[allow(dead_code)]
     FocusSearch,
 }
 

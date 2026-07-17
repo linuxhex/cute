@@ -147,6 +147,7 @@ impl RequestLimitInfo {
     }
 }
 
+#[allow(dead_code)]
 fn cache_request_limit_info(request_limit_info: RequestLimitInfo, app_mut: &mut AppContext) {
     if let Ok(serialized) = serde_json::to_string(&request_limit_info) {
         let _ = app_mut
@@ -182,6 +183,7 @@ impl Entity for AIRequestUsageModel {
 }
 
 pub enum AIRequestUsageModelEvent {
+    #[allow(dead_code)]
     RequestUsageUpdated,
     RequestBonusRefunded {
         requests_refunded: i32,
@@ -227,6 +229,7 @@ impl AIRequestUsageModel {
         // The model is initialized with default values that indicate unlimited usage
     }
 
+    #[allow(dead_code)]
     pub fn update_request_limit_info(
         &mut self,
         request_limit_info: RequestLimitInfo,
@@ -334,6 +337,7 @@ impl AIRequestUsageModel {
     }
 
     /// Simplified: Local version always has requests remaining (no quota limits).
+    #[allow(dead_code)]
     fn requests_remaining(&self) -> usize {
         999999
     }
@@ -437,6 +441,7 @@ impl AIRequestUsageModel {
         }
     }
 
+    #[allow(dead_code)]
     pub fn total_workspace_bonus_credits_remaining(&self, uid: WorkspaceUid) -> i32 {
         let now = Utc::now();
         let uid_ref = &uid;  // Use reference instead of moving uid
@@ -456,6 +461,7 @@ impl AIRequestUsageModel {
         //     .unwrap_or(0)
     }
 
+    #[allow(dead_code)]
     pub fn total_user_interactive_bonus_credits_remaining(&self) -> i32 {
         let now = Utc::now();
         self.bonus_grants
@@ -482,6 +488,7 @@ impl AIRequestUsageModel {
         ctx.notify();
     }
 
+    #[allow(dead_code)]
     pub fn enable_buy_credits_banner(&mut self, ctx: &mut ModelContext<Self>) {
         self.buy_addon_credits_banner_dismissed = false;
         ctx.notify();

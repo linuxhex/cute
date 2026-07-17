@@ -59,6 +59,7 @@ const DEFAULT_HOST_ENV_VAR: &str = "CUTE_CLOUD_MODE_DEFAULT_HOST";
 
 // ── Shared constants ────────────────────────────────────────────────
 
+#[allow(dead_code)]
 pub const ORCHESTRATION_CUTE_WORKER_HOST: &str = WARP_WORKER_HOST;
 // Cute: 已注释，清理云端功能 - ORCHESTRATION_WARP_WORKER_HOST 替换为空字符串
 pub const ORCHESTRATION_WARP_WORKER_HOST: &str = "";
@@ -1030,6 +1031,7 @@ pub fn should_show_auth_secret_picker(state: &OrchestrationEditState) -> bool {
 /// returning `None` if the persisted name has been deleted server-side.
 /// Cute: 已注释，清理云端 auth secret 选择逻辑
 /// 本地 Agent 不需要云端 auth secret 选择
+#[allow(dead_code)]
 pub fn resolve_default_auth_secret_for_harness(
     harness_type: &str,
     _ctx: &AppContext,

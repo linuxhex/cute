@@ -23,6 +23,7 @@ use crate::server::server_api::ai::AIClient;
 use crate::server::server_api::ServerApiProvider;
 
 /// How long to wait for workspace metadata to refresh.
+#[allow(dead_code)]
 pub const WORKSPACE_METADATA_REFRESH_TIMEOUT: Duration = Duration::from_secs(10);
 
 pub fn validate_agent_mode_base_model_id(
@@ -158,6 +159,7 @@ pub fn refresh_cute_drive(
 }
 
 /// Alias for `refresh_cute_drive` for backwards compatibility.
+#[allow(dead_code)]
 pub fn refresh_warp_drive<C>(
     ctx: &mut C,
 ) -> impl Future<Output = anyhow::Result<()>> + Send + 'static
@@ -303,6 +305,7 @@ Without an environment, the agent will not be able to access private repositorie
     /// Resolve the environment to use when updating an agent integration. If the user did not
     /// request any changes to the environment, this returns `Ok(None)`.
     /// Warp Drive *must* have been synced first.
+    #[allow(dead_code)]
     pub fn resolve_for_update(
         args: EnvironmentUpdateArgs,
         ctx: &AppContext,

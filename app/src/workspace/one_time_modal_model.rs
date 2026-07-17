@@ -5,7 +5,7 @@ use cuteui::{Entity, ModelContext, SingletonEntity, WindowId};
 use super::hoa_onboarding;
 use crate::auth::auth_manager::AuthManagerEvent;
 use crate::auth::AuthManager;
-use crate::settings::{AISettings, CodeSettings};
+use crate::settings::AISettings;
 use crate::terminal::general_settings::GeneralSettings;
 
 /// A generic model for managing one-time modals that should be shown to users only once.
@@ -96,28 +96,6 @@ impl OneTimeModalModel {
 
     fn check_and_trigger_all_modals(&mut self, _ctx: &mut ModelContext<Self>) {
         // Cute OMJF-11111: 本地模式不展示云相关一次性弹窗
-        return;
-
-        // Never show one-time modals on WASM.
-        if cfg!(target_family = "wasm") {
-            return;
-        }
-
-        // Existing users should never see the code toolbelt new feature popup.
-        CodeSettings::handle(_ctx).update(_ctx, |settings, ctx| {
-            if let Err(e) = settings
-                .dismissed_code_toolbelt_new_feature_popup
-                .set_value(true, ctx)
-            {
-                log::warn!("Failed to mark code toolbelt new feature popup as dismissed: {e}");
-            }
-        });
-
-        if self.check_and_trigger_hoa_onboarding(_ctx) {
-            return;
-        }
-
-        self.check_and_trigger_build_plan_migration_modal(_ctx);
     }
 
     fn set_hoa_onboarding_open(&mut self, is_open: bool, ctx: &mut ModelContext<Self>) -> bool {
@@ -129,6 +107,7 @@ impl OneTimeModalModel {
         false
     }
 
+    #[allow(dead_code)]
     fn check_and_trigger_hoa_onboarding(&mut self, ctx: &mut ModelContext<Self>) -> bool {
         if !FeatureFlag::HOAOnboardingFlow.is_enabled() {
             return false;
@@ -175,30 +154,12 @@ impl OneTimeModalModel {
         false
     }
 
+    #[allow(dead_code)]
     fn check_and_trigger_build_plan_migration_modal(
         &mut self,
-        ctx: &mut ModelContext<Self>,
+        _ctx: &mut ModelContext<Self>,
     ) -> bool {
-        // Check if already dismissed
-        let general_settings = GeneralSettings::as_ref(ctx);
-        if *general_settings
-            .build_plan_migration_modal_dismissed
-            .value()
-        {
-            return false;
-        }
-
         // Simplified: Local version has no build plan migration
-        return false;
-
-        // Check if current workspace has sunsetted_to_build_ts set
-        // let user_workspaces = UserWorkspaces::as_ref(ctx);
-        // let Some(current_team) = user_workspaces.current_team() else {
-        //     return false;
-        // };
-
-        // Simplified: local version has no build plan migration modal
-        let _ = ctx;
         false
     }
 }

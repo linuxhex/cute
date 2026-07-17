@@ -383,10 +383,12 @@ pub(super) struct AIBlockStateHandles {
 
     /// Mouse state handle for 'open skill' button
     /// from an OpenSkill action banner
+    #[allow(dead_code)]
     open_skill_button_handle: MouseStateHandle,
 
     /// Mouse state handle for 'open skill' button
     /// from a ReadFiles action banner
+    #[allow(dead_code)]
     read_from_skill_button_handle: MouseStateHandle,
 }
 
@@ -763,6 +765,7 @@ pub struct AIBlock {
     controller: ModelHandle<BlocklistAIController>,
     active_session: ModelHandle<ActiveSession>,
     terminal_view_id: EntityId,
+    #[allow(dead_code)]
     window_id: cuteui::WindowId,
 
     /// The current working directory at the time the AI block was created. Note that this

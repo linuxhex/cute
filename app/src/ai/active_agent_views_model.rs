@@ -319,6 +319,7 @@ impl ActiveAgentViewsModel {
 
     /// Get the most recent focused conversation or ambient task ID, persisted
     /// across non-terminal focus changes.
+    #[allow(dead_code)]
     pub fn get_last_focused_conversation(&self) -> Option<ConversationOrTaskId> {
         self.last_focused_terminal_state
             .as_ref()

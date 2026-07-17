@@ -17,7 +17,9 @@ pub use user_uid::UserUid;
 pub enum AuthViewVariant {
     #[default]
     RequireLogin,
+    #[allow(dead_code)]
     RequireLoginCloseable,
+    #[allow(dead_code)]
     ShareRequirementCloseable,
 }
 

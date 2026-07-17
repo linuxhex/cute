@@ -15,12 +15,14 @@ use crate::code_review::code_review_view::CodeReviewView;
 use crate::pane_group::{PaneGroup, PaneId};
 use crate::workspace::PaneViewLocator;
 
+#[allow(dead_code)]
 pub struct CodeEditorSummary<'a> {
     pub unsaved_changes: Vec<&'a CodeEditorStatus>,
 }
 
 impl<'a> CodeEditorSummary<'a> {
     /// Create a summary from the currently open Code Editors.
+    #[allow(dead_code)]
     pub fn new(editors: &'a [CodeEditorStatus]) -> Self {
         let unsaved_changes = editors
             .iter()
@@ -33,6 +35,7 @@ impl<'a> CodeEditorSummary<'a> {
 
 #[derive(Copy, Clone)]
 pub struct CodeEditorStatus {
+    #[allow(dead_code)]
     unsaved_changes: bool,
 }
 

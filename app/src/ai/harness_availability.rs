@@ -377,34 +377,7 @@ impl HarnessAvailabilityModel {
                     ctx.emit(HarnessAvailabilityEvent::Changed);
                 });
             }
-            return;
         }
-
-        // 注释掉登录状态检查 - 本地版本不需要
-        // if !AuthStateProvider::as_ref(ctx).get().is_logged_in() {
-        //     return;
-        // }
-
-        let ai_client = ServerApiProvider::as_ref(ctx).get_ai_client();
-        ctx.spawn(
-            async move { ai_client.get_available_harnesses().await },
-            |me, result, ctx| match result {
-                Ok(new_harnesses) => {
-                    if new_harnesses != me.harnesses {
-                        me.harnesses = new_harnesses;
-                        me.cache(ctx);
-                        let stale: Vec<Harness> = me.auth_secrets.keys().copied().collect();
-                        for harness in stale {
-                            me.invalidate_auth_secrets(harness);
-                        }
-                        ctx.emit(HarnessAvailabilityEvent::Changed);
-                    }
-                }
-                Err(e) => {
-                    report_error!(e.context("Failed to fetch available harnesses"));
-                }
-            },
-        );
     }
 
     fn cache(&self, ctx: &ModelContext<Self>) {

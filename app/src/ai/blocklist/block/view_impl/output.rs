@@ -177,6 +177,7 @@ pub(crate) struct Props<'a> {
     /// spawning snapshot; AIBlock just lazily creates the view per
     /// `AIAgentActionId` and embeds it via `ChildView` when the action
     /// is rendered. Multi-card lifecycle = AIBlock lifecycle.
+    #[allow(dead_code)]
     pub(crate) run_agents_card_views: &'a HashMap<AIAgentActionId, ViewHandle<RunAgentsCardView>>,
     #[cfg(feature = "local_fs")]
     pub(crate) resolved_code_block_paths:

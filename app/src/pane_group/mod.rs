@@ -3330,6 +3330,7 @@ impl PaneGroup {
     }
 
     /// Initial layout for a [`PaneGroup`] with a single ambient agent pane.
+    #[allow(dead_code)]
     fn initial_ambient_agent_pane(
         resources: TerminalViewResources,
         view_bounds: RectF,

@@ -41,9 +41,11 @@ use crate::cloud_stub_types::SharedSessionSource;
 pub(crate) enum ShareSessionError {
     /// Connection to the session-sharing server failed.
     #[error("Internal error")]
+    #[allow(dead_code)]
     Internal(#[source] Arc<anyhow::Error>),
     /// The server rejected the session-sharing request.
     #[error("{0}")]
+    #[allow(dead_code)]
     Failed(String),
     /// Session sharing is disabled for this user or team.
     #[error(
@@ -75,6 +77,7 @@ pub(crate) enum TerminalDriverEvent {
     /// Terminal bootstrap is taking unusually long.
     SlowBootstrap,
     /// The terminal session has established a shared session.
+    #[allow(dead_code)]
     EstablishedSharedSession {
         session_id: session_sharing_protocol::common::SessionId,
         join_url: String,

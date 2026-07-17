@@ -17,13 +17,21 @@ use crate::ai::blocklist::RequestedEditResolution;
 #[derive(Serialize, Debug, EnumDiscriminants)]
 #[strum_discriminants(derive(EnumIter))]
 pub enum RequestFileEditsTelemetryEvent {
+    #[allow(dead_code)]
     EditResolved(EditResolvedEvent),
+    #[allow(dead_code)]
     EditAcceptClicked(EditAcceptClickedEvent),
+    #[allow(dead_code)]
     EditAcceptAndContinueClicked(EditAcceptAndContinueClickedEvent),
+    #[allow(dead_code)]
     DiffMatchFailed(DiffMatchFailedEvent),
+    #[allow(dead_code)]
     DiffInvalidFile(DiffInvalidFileEvent),
+    #[allow(dead_code)]
     EditReceived(EditReceivedEvent),
+    #[allow(dead_code)]
     MissingLineNumbers(MissingLineNumbersEvent),
+    #[allow(dead_code)]
     MalformedFinalLineProxy(MalformedFinalLineProxyEvent),
 }
 

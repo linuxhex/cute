@@ -379,10 +379,12 @@ pub enum ServerApiEvent {
     StagingAccessBlocked,
     /// The user's access token was invalid, so they need to reauth before they can make
     /// requests to warp-server.
+    #[allow(dead_code)]
     NeedsReauth,
     /// The user's account has been disabled.
     UserAccountDisabled,
     /// The current bearer token was refreshed.
+    #[allow(dead_code)]
     AccessTokenRefreshed {
         #[cfg_attr(target_family = "wasm", allow(dead_code))]
         token: String,
@@ -414,6 +416,7 @@ pub struct ServerApi {
     event_sender: async_channel::Sender<ServerApiEvent>,
     last_server_time: Arc<Mutex<Option<ServerTime>>>,
     // We technically use OAuth2 for headless device authentication.
+    #[allow(dead_code)]
     oauth_client: OAuth2Client,
     /// Cached ambient workload token for requests from ambient agents.
     ambient_workload_token: Arc<Mutex<Option<cute_isolation_platform::WorkloadToken>>>,
@@ -510,6 +513,7 @@ impl ServerApi {
         self.auth_state.anonymous_id()
     }
 
+    #[allow(dead_code)]
     fn user_id(&self) -> Option<UserUid> {
         self.auth_state.user_id()
     }
@@ -592,6 +596,7 @@ impl ServerApi {
     }
 
     /// Sends a GET request to a public API endpoint for a specific task.
+    #[allow(dead_code)]
     async fn get_public_api_response_for_task(
         &self,
         task_id: &AmbientAgentTaskId,
@@ -752,6 +757,7 @@ impl ServerApi {
     ///
     /// # Arguments
     /// * `path` - Endpoint path relative to `/api/v1` (e.g., "agent/tasks/{task_id}")
+    #[allow(dead_code)]
     async fn get_public_api<R>(&self, path: &str) -> Result<R>
     where
         R: serde::de::DeserializeOwned,
@@ -924,6 +930,7 @@ impl ServerApi {
     }
 
     /// Sends a POST request to a public API endpoint and returns the raw response on success.
+    #[allow(dead_code)]
     async fn post_public_api_response<B>(
         &self,
         path: &str,
@@ -1007,6 +1014,7 @@ impl ServerApi {
     /// # Arguments
     /// * `path` - Endpoint path relative to `/api/v1` (e.g., "agent/run")
     /// * `body` - Request body to serialize as JSON
+    #[allow(dead_code)]
     async fn post_public_api<B, R>(&self, path: &str, body: &B) -> Result<R>
     where
         B: Serialize,
@@ -1021,6 +1029,7 @@ impl ServerApi {
     }
 
     /// Sends a PUT request to a public API endpoint and returns the raw response on success.
+    #[allow(dead_code)]
     async fn put_public_api_response<B>(
         &self,
         path: &str,
@@ -1058,6 +1067,7 @@ impl ServerApi {
     }
 
     /// Sends a PUT request to a public API endpoint.
+    #[allow(dead_code)]
     async fn put_public_api<B, R>(&self, path: &str, body: &B) -> Result<R>
     where
         B: Serialize,
@@ -1072,6 +1082,7 @@ impl ServerApi {
     }
 
     /// Sends a POST request to a public API endpoint that returns no response body.
+    #[allow(dead_code)]
     async fn post_public_api_unit<B>(&self, path: &str, body: &B) -> Result<()>
     where
         B: Serialize,
@@ -1081,6 +1092,7 @@ impl ServerApi {
     }
 
     /// Sends a DELETE request to a public API endpoint that returns no response body.
+    #[allow(dead_code)]
     async fn delete_public_api_unit(&self, path: &str) -> Result<()> {
         let auth_token = self
             .get_or_refresh_access_token()
@@ -1111,6 +1123,7 @@ impl ServerApi {
     }
 
     /// Sends a PATCH request to a public API endpoint that returns no response body.
+    #[allow(dead_code)]
     async fn patch_public_api_unit<B>(&self, path: &str, body: &B) -> Result<()>
     where
         B: Serialize,

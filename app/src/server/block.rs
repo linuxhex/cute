@@ -7,13 +7,21 @@ use crate::terminal::model::grid::Dimensions as _;
 use crate::terminal::model::ObfuscateSecrets;
 
 // These are pixel heights of various parts of an embedded block.
+#[allow(dead_code)]
 pub const TITLE_HEIGHT: u32 = 34;
+#[allow(dead_code)]
 pub const HEADER_PADDING: u32 = 30;
+#[allow(dead_code)]
 pub const OUTPUT_PADDING: u32 = 32;
+#[allow(dead_code)]
 pub const LINE_HEIGHT: u32 = 19;
+#[allow(dead_code)]
 pub const PROMPT_LINE_HEIGHT: u32 = 16;
+#[allow(dead_code)]
 pub const OUTPUT_CELL_WIDTH: u32 = 10;
+#[allow(dead_code)]
 pub const EMBED_FOOTER_HEIGHT: u32 = 38;
+#[allow(dead_code)]
 pub const EXTRA_PADDING: u32 = 35;
 
 /// This enum is a replica of the `share_block::DisplaySetting` struct auto-generated from the GraphQL Schema.
@@ -77,6 +85,7 @@ pub struct Block {
 }
 
 /// A helper struct to organize the block's contents.
+#[allow(dead_code)]
 struct BlockContents {
     command: Option<String>,
     stylized_command: Option<String>,
@@ -87,6 +96,7 @@ struct BlockContents {
 }
 
 impl Block {
+    #[allow(dead_code)]
     pub fn new(
         block: &ClientBlock,
         show_prompt: bool,
@@ -231,6 +241,7 @@ impl Block {
         }
     }
 
+    #[allow(dead_code)]
     pub fn embed_pixel_height(
         block: &ClientBlock,
         show_prompt: bool,
@@ -268,6 +279,7 @@ impl Block {
         height
     }
 
+    #[allow(dead_code)]
     pub fn embed_pixel_width(block: &ClientBlock) -> u32 {
         (block.output_grid().grid_handler().columns() as u32 * OUTPUT_CELL_WIDTH) + OUTPUT_PADDING
     }

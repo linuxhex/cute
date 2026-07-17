@@ -698,6 +698,7 @@ impl AmbientAgentRunner {
 }
 
 /// Get a conversation by conversation ID.
+#[allow(dead_code)]
 pub fn get_conversation(ctx: &mut AppContext, conversation_id: String) -> anyhow::Result<()> {
     let runner = ctx.add_singleton_model(|_ctx| AmbientAgentRunner);
     runner.update(ctx, |runner, ctx| {
@@ -706,12 +707,14 @@ pub fn get_conversation(ctx: &mut AppContext, conversation_id: String) -> anyhow
 }
 
 /// Get a conversation by run ID.
+#[allow(dead_code)]
 pub fn get_run_conversation(ctx: &mut AppContext, run_id: String) -> anyhow::Result<()> {
     let runner = ctx.add_singleton_model(|_ctx| AmbientAgentRunner);
     runner.update(ctx, |runner, ctx| runner.get_run_conversation(run_id, ctx))
 }
 
 impl AmbientAgentRunner {
+    #[allow(dead_code)]
     fn get_conversation(
         &self,
         conversation_id: String,

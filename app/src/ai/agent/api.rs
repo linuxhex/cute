@@ -108,6 +108,7 @@ pub struct RequestParams {
     pub context_window_limit: Option<u32>,
     pub mcp_context: Option<MCPContext>,
     pub planning_enabled: bool,
+    #[allow(dead_code)]
     should_redact_secrets: bool,
 
     /// User-provided API keys for AI providers (BYO API Key).

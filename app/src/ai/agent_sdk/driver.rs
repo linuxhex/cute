@@ -105,6 +105,7 @@ const MCP_SERVER_STARTUP_TIMEOUT: Duration = Duration::from_secs(20);
 const HARNESS_SAVE_INTERVAL: Duration = Duration::from_secs(30);
 /// Timeout for individual harness auth preflight commands.
 const PREFLIGHT_CHECK_TIMEOUT: Duration = Duration::from_secs(30);
+#[allow(dead_code)]
 pub(crate) const WARP_DRIVE_SYNC_TIMEOUT: Duration = Duration::from_secs(60);
 const SETUP_FAILED_IDLE_TIMEOUT: Duration = Duration::from_secs(120);
 /// Maximum time to wait for an automatic error resume before propagating the error.
@@ -291,8 +292,11 @@ pub struct AgentDriver {
     environment: Option<AmbientAgentEnvironment>,
 
     // End-of-run snapshot upload controls.
+    #[allow(dead_code)]
     snapshot_disabled: bool,
+    #[allow(dead_code)]
     snapshot_upload_timeout: Duration,
+    #[allow(dead_code)]
     snapshot_script_timeout: Duration,
 
     /// Conversation ID this driver is running. Set at construction for

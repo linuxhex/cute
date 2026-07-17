@@ -212,10 +212,12 @@ impl<T: View> Modal<T> {
         self.title = title;
     }
 
+    #[allow(dead_code)]
     pub fn set_header_icon(&mut self, icon: Option<icons::Icon>) {
         self.header_icon = icon;
     }
 
+    #[allow(dead_code)]
     pub fn set_header_icon_color(&mut self, color: Option<Fill>) {
         self.header_icon_color = color;
     }

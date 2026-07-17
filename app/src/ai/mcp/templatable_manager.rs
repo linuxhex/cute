@@ -95,6 +95,7 @@ pub struct TemplatableMCPServerManager {
 struct SpawnedServerInfo {
     abort_handle: AbortHandle,
     #[cfg(not(target_family = "wasm"))]
+    #[allow(dead_code)]
     oauth_result_tx: async_channel::Sender<oauth::CallbackResult>,
 }
 

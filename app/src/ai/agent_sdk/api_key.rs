@@ -27,6 +27,7 @@ use crate::util::time_format::format_approx_duration_from_now_utc;
 use crate::ServerApiProvider;
 
 /// Run API key-related commands.
+#[allow(dead_code)]
 pub fn run(
     ctx: &mut AppContext,
     global_options: GlobalOptions,
@@ -55,9 +56,11 @@ pub fn run(
     }
 }
 
+#[allow(dead_code)]
 struct ApiKeyCommandRunner;
 
 impl ApiKeyCommandRunner {
+    #[allow(dead_code)]
     fn list(
         &self,
         output_format: OutputFormat,
@@ -238,6 +241,7 @@ impl cuteui::Entity for ApiKeyCommandRunner {
 impl SingletonEntity for ApiKeyCommandRunner {}
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[allow(dead_code)]
 struct ApiKeyInfo {
     uid: String,
     name: String,
@@ -305,6 +309,7 @@ impl TableFormat for ApiKeyInfo {
     }
 }
 
+#[allow(dead_code)]
 fn resolve_api_key_identifier(
     keys: &[ApiKeyInfo],
     key_identifier: &str,
@@ -349,17 +354,20 @@ fn resolve_api_key_identifier(
 }
 
 #[derive(Debug, Clone, Serialize)]
+#[allow(dead_code)]
 struct CreatedApiKeyInfo {
     raw_api_key: String,
     api_key: ApiKeyInfo,
 }
 
 #[derive(Debug, Clone, Serialize)]
+#[allow(dead_code)]
 struct ExpiredApiKeyInfo {
     key_uid: String,
     expired: bool,
 }
 
+#[allow(dead_code)]
 fn sort_api_keys(
     keys: &mut [ApiKeyInfo],
     sort_by: Option<ApiKeySortByArg>,
@@ -408,6 +416,7 @@ fn sort_api_keys(
     }
 }
 
+#[allow(dead_code)]
 fn expires_at_from_args(args: ApiKeyExpirationArgs) -> Result<Option<Time>> {
     if args.no_expiration {
         return Ok(None);
@@ -426,6 +435,7 @@ fn expires_at_from_args(args: ApiKeyExpirationArgs) -> Result<Option<Time>> {
     Err(anyhow!("expiration behavior is required"))
 }
 
+#[allow(dead_code)]
 fn print_created_api_key(
     result: CreatedApiKeyInfo,
     output_format: OutputFormat,
@@ -448,6 +458,7 @@ fn print_created_api_key(
     Ok(())
 }
 
+#[allow(dead_code)]
 fn print_expire_api_key_result(
     key_uid: String,
     expired: bool,
@@ -474,6 +485,7 @@ fn print_expire_api_key_result(
     Ok(())
 }
 
+#[allow(dead_code)]
 fn finish_command(result: Result<()>, ctx: &mut ModelContext<ApiKeyCommandRunner>) {
     match result {
         Ok(()) => ctx.terminate_app(TerminationMode::ForceTerminate, None),

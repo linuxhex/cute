@@ -130,6 +130,7 @@ const CUTE_SQLITE_FILE_NAME: &str = "cute.sqlite";
 /// When delete a cloud object, this callback is used to delete the cloud
 /// object. It takes the id of the cloud object to delete as a parameter.
 /// The supplied conn has already started a transaction.
+#[allow(dead_code)]
 type DeleteCloudObjectFn =
     Box<dyn FnOnce(&mut SqliteConnection, CloudObjectId) -> Result<(), Error>>;
 
@@ -460,6 +461,7 @@ fn ensure_owner_only_file(_path: &Path) -> Result<()> {
     Ok(())
 }
 
+#[allow(dead_code)]
 pub(super) fn remove(sender: SyncSender<ModelEvent>) {
     // Instruct the writer thread to remove the database and pause processing
     // events.
@@ -471,6 +473,7 @@ pub(super) fn remove(sender: SyncSender<ModelEvent>) {
         .context("Error requesting database deletion"));
 }
 
+#[allow(dead_code)]
 pub(super) fn reconstruct(sender: SyncSender<ModelEvent>) {
     report_if_error!(sender
         .send(ModelEvent::ReconstructAndResume)
@@ -1788,6 +1791,7 @@ fn remove_ignored_suggestion(
     Ok(())
 }
 
+#[allow(dead_code)]
 fn save_workspace(conn: &mut SqliteConnection, workspace: WorkspaceMetadata) -> Result<()> {
     // Set all existing workspaces as not selected
     diesel::update(workspaces)
@@ -1819,6 +1823,7 @@ fn save_workspace(conn: &mut SqliteConnection, workspace: WorkspaceMetadata) -> 
     Ok(())
 }
 
+#[allow(dead_code)]
 fn save_workspaces(
     conn: &mut SqliteConnection,
     workspaces_to_insert: Vec<WorkspaceMetadata>,
@@ -1883,6 +1888,7 @@ fn save_workspaces(
     Ok(())
 }
 
+#[allow(dead_code)]
 fn set_current_workspace(conn: &mut SqliteConnection, workspace_uid: WorkspaceUid) -> Result<()> {
     use schema::workspaces::dsl::*;
 
@@ -3205,6 +3211,7 @@ fn update_finished_command(
 //     Ok(())
 // }
 
+#[allow(dead_code)]
 fn clear_user_profiles(conn: &mut SqliteConnection) -> Result<(), Error> {
     conn.transaction::<(), Error, _>(|conn| {
         diesel::delete(schema::user_profiles::dsl::user_profiles).execute(conn)?;
@@ -3366,6 +3373,7 @@ fn sync_object_actions(
 //     // 云端对象删除功能已禁用
 //     Ok(())
 // }
+#[allow(dead_code)]
 fn delete_objects(_conn: &mut SqliteConnection, _ids: Vec<String>) -> Result<(), Error> {
     // 云端对象删除功能已禁用，直接返回成功
     Ok(())

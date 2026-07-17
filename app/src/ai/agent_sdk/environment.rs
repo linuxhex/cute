@@ -29,9 +29,11 @@ use crate::util::time_format::format_approx_duration_from_now_utc;
 use crate::CloudObjectTypeAndId;
 use crate::UserProfiles;
 
+#[allow(dead_code)]
 const WARP_DEV_ENVIRONMENTS_REPO: &str = "https://github.com/warpdotdev/warp-dev-environments";
 
 /// Parse repo strings in the format "owner/repo" into GithubRepo objects.
+#[allow(dead_code)]
 fn parse_repos(repo_strings: Vec<String>) -> anyhow::Result<Vec<GithubRepo>> {
     repo_strings
         .into_iter()
@@ -49,6 +51,7 @@ fn parse_repos(repo_strings: Vec<String>) -> anyhow::Result<Vec<GithubRepo>> {
 }
 
 /// Handle environment-related CLI commands.
+#[allow(dead_code)]
 pub fn run(
     ctx: &mut AppContext,
     global_options: GlobalOptions,
@@ -133,9 +136,11 @@ pub fn run(
 }
 
 /// Singleton model for running async work as part of environment CLI commands.
+#[allow(dead_code)]
 struct EnvironmentCommandRunner;
 
 impl EnvironmentCommandRunner {
+    #[allow(dead_code)]
     fn list_images(&self, global_options: GlobalOptions, ctx: &mut ModelContext<Self>) {
         // 注释掉 GraphQL query 调用 - 本地版本不支持
         // let server_api = ServerApiProvider::as_ref(ctx).get();
@@ -1067,6 +1072,7 @@ impl SingletonEntity for EnvironmentCommandRunner {}
 
 /// Environment information that's shown in the `list` command.
 #[derive(Serialize)]
+#[allow(dead_code)]
 struct EnvironmentInfo {
     id: String,
     name: String,
@@ -1124,6 +1130,7 @@ impl TableFormat for EnvironmentInfo {
 
 /// Image information that's shown in the `image list` command.
 #[derive(Serialize)]
+#[allow(dead_code)]
 struct ImageInfo {
     image: String,
     repository: String,

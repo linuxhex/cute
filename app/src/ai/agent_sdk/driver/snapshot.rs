@@ -22,9 +22,13 @@ pub(super) const DEFAULT_DECLARATIONS_SCRIPT_TIMEOUT: Duration = Duration::from_
 /// Upper bound on the end-of-run upload pipeline's total runtime.
 pub(super) const DEFAULT_SNAPSHOT_UPLOAD_TIMEOUT: Duration = Duration::from_secs(120);
 
+#[allow(dead_code)]
 const DECLARATION_VERSION: u32 = 1;
+#[allow(dead_code)]
 const DECLARATIONS_PATH_ENV_VAR: &str = "OZ_SNAPSHOT_DECLARATIONS_FILE";
+#[allow(dead_code)]
 const DEFAULT_DECLARATIONS_DIR: &str = "/tmp/oz";
+#[allow(dead_code)]
 const DEFAULT_DECLARATIONS_FILENAME: &str = "snapshot-declarations.jsonl";
 
 // --- Declarations writer handle (used by AgentDriver) ---
@@ -32,8 +36,10 @@ const DEFAULT_DECLARATIONS_FILENAME: &str = "snapshot-declarations.jsonl";
 /// Commands accepted by the async declarations writer task.
 enum WriterCommand {
     /// Append file entries for the given paths to the declarations file.
+    #[allow(dead_code)]
     Append(Vec<String>),
     /// Acknowledge once every previously-queued command has finished its fs writes.
+    #[allow(dead_code)]
     Flush(oneshot::Sender<()>),
 }
 
@@ -48,6 +54,7 @@ pub(super) struct DeclarationsWriterHandle {
 
 impl DeclarationsWriterHandle {
     /// Spawn the writer task on background and return a handle.
+    #[allow(dead_code)]
     pub(super) fn new(
         task_id: AmbientAgentTaskId,
         working_dir: PathBuf,
@@ -72,6 +79,7 @@ impl DeclarationsWriterHandle {
     }
 
     /// Awaits until every previously-queued append has finished its fs writes.
+    #[allow(dead_code)]
     pub(super) async fn flush(&self) {
         let (ack_tx, ack_rx) = oneshot::channel();
         if self.tx.send(WriterCommand::Flush(ack_tx)).is_err() {
@@ -84,6 +92,7 @@ impl DeclarationsWriterHandle {
 }
 
 /// Writer task loop: owns the seen set, lazily opens the file per write.
+#[allow(dead_code)]
 async fn writer_task(
     mut rx: mpsc::UnboundedReceiver<WriterCommand>,
     declarations_path: PathBuf,
@@ -113,6 +122,7 @@ async fn writer_task(
 }
 
 /// Normalize and write one JSONL line for raw_path.
+#[allow(dead_code)]
 async fn process_append_path(
     raw_path: String,
     declarations_path: &Path,
@@ -161,6 +171,7 @@ async fn process_append_path(
 }
 
 /// Check if path is under an existing repo by checking for .git directories.
+#[allow(dead_code)]
 async fn path_is_under_existing_repo(path: &Path) -> bool {
     let mut current = path.parent();
     while let Some(dir) = current {
@@ -174,6 +185,7 @@ async fn path_is_under_existing_repo(path: &Path) -> bool {
 }
 
 /// Append one JSONL line for path to the declarations file.
+#[allow(dead_code)]
 async fn append_declaration_line(declarations_path: &Path, path: &str) -> Result<()> {
     if let Some(parent) = declarations_path.parent() {
         tokio::fs::create_dir_all(parent)
@@ -203,11 +215,13 @@ async fn append_declaration_line(declarations_path: &Path, path: &str) -> Result
 }
 
 /// Resolve the declarations file path from env and optional task ID.
+#[allow(dead_code)]
 fn resolve_declarations_path(task_id: Option<&AmbientAgentTaskId>) -> PathBuf {
     resolve_declarations_path_with_override(task_id, std::env::var_os(DECLARATIONS_PATH_ENV_VAR))
 }
 
 /// Pure resolver: returns the declarations file path given an explicit override.
+#[allow(dead_code)]
 fn resolve_declarations_path_with_override(
     task_id: Option<&AmbientAgentTaskId>,
     override_path: Option<OsString>,

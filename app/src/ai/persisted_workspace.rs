@@ -614,10 +614,12 @@ impl PersistedWorkspace {
             .sum()
     }
 
+    #[allow(dead_code)]
     fn on_settings_changed(&mut self, ctx: &mut ModelContext<Self>) {
         Self::maybe_enable_codebase_indexing(ctx);
     }
 
+    #[allow(dead_code)]
     pub fn on_user_changed(&self, ctx: &mut ModelContext<Self>) {
         Self::maybe_enable_codebase_indexing(ctx);
     }

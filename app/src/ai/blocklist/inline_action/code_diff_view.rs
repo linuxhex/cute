@@ -474,6 +474,7 @@ pub struct CodeDiffView {
     focus_handle: Option<PaneFocusHandle>,
     /// Client and server identifiers for the AI output associated with the code diffs.
     identifiers: AIIdentifiers,
+    #[allow(dead_code)]
     edit_format_kind: RequestFileEditsFormatKind,
     /// `False` until a user makes the first edit to one of the diffs in the view.
     #[cfg_attr(target_family = "wasm", allow(dead_code))]

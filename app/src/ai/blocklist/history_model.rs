@@ -2361,6 +2361,7 @@ impl BlocklistAIHistoryModel {
 
     /// Clears all stored conversation-related data in memory.
     /// This is used when logging out to ensure no AI history persists across users.
+    #[allow(dead_code)]
     pub(crate) fn reset(&mut self) {
         self.live_conversation_ids_for_terminal_view.clear();
         self.cleared_conversation_ids_for_terminal_view.clear();

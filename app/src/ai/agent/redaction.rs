@@ -26,6 +26,7 @@ pub(crate) fn redact_secrets(input: &mut String) {
 
 /// Redact secrets in-place for all user-provided text fields inside the inputs that will be
 /// sent to the server.
+#[allow(dead_code)]
 pub(crate) fn redact_inputs(inputs: &mut [AIAgentInput]) {
     for input in inputs.iter_mut() {
         match input {
@@ -316,6 +317,7 @@ pub(crate) fn redact_inputs(inputs: &mut [AIAgentInput]) {
     }
 }
 
+#[allow(dead_code)]
 fn redact_ask_user_question_result(result: &mut AskUserQuestionResult) {
     match result {
         AskUserQuestionResult::Success { answers } => {
@@ -330,6 +332,7 @@ fn redact_ask_user_question_result(result: &mut AskUserQuestionResult) {
         AskUserQuestionResult::Cancelled => {}
     }
 }
+#[allow(dead_code)]
 fn redact_context(context: &mut [AIAgentContext]) {
     for context_item in context {
         match context_item {
@@ -356,6 +359,7 @@ fn redact_context(context: &mut [AIAgentContext]) {
     }
 }
 
+#[allow(dead_code)]
 fn redact_attachment(attachment: &mut AIAgentAttachment) {
     match attachment {
         AIAgentAttachment::PlainText(text) => {

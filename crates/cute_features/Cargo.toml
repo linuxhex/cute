@@ -8,6 +8,7 @@ license.workspace = true
 
 [features]
 test-util = []
+integration_tests = []
 
 [dependencies]
 enum-iterator.workspace = true

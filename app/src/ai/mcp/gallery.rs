@@ -149,6 +149,7 @@ impl MCPGalleryManager {
     }
 
     /// Update gallery items from the server response
+    #[allow(dead_code)]
     pub fn update_gallery_items(
         &mut self,
         gallery_items: Vec<GalleryMCPServer>,
@@ -173,6 +174,7 @@ impl MCPGalleryManager {
 }
 
 pub enum MCPGalleryManagerEvent {
+    #[allow(dead_code)]
     ItemsRefreshed,
 }
 

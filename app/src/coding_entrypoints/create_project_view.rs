@@ -22,6 +22,7 @@ const SUGGESTION_ITEM_PADDING: f32 = 12.;
 pub struct CreateProjectView {
     editor: ViewHandle<GlowingEditor>,
     suggestions: Vec<BuildSuggestion>,
+    #[allow(dead_code)]
     is_ftux: bool,
 }
 

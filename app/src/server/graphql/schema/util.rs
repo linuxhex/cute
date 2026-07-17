@@ -4,6 +4,7 @@ use crate::server::ids::{HashedSqliteId, ObjectUid, ServerId, SyncId};
 
 /// Converts the graphql action history type into an ObjectActionHistory, requires converting
 /// the individual actions, action types, and action subtypes.
+#[allow(dead_code)]
 pub fn object_action_history_from_gql(
     history: cute_graphql::object_actions::ObjectActionHistory,
 ) -> Result<ObjectActionHistory, anyhow::Error> {
@@ -37,6 +38,7 @@ pub fn object_action_history_from_gql(
 }
 
 /// Converts the graphql action type ("EXECUTED", etc) to ObjectActionType.
+#[allow(dead_code)]
 fn try_into_object_action_type(
     action_type: cute_graphql::object_actions::ActionType,
 ) -> Result<ObjectActionType, anyhow::Error> {
@@ -46,6 +48,7 @@ fn try_into_object_action_type(
 }
 
 /// Converts the graphql action entry (SingleAction, BundledActions) into its ObjectAction corollary.
+#[allow(dead_code)]
 fn try_into_object_action(
     record: &cute_graphql::object_actions::ActionRecord,
     uid: ObjectUid,

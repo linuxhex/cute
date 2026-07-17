@@ -366,40 +366,7 @@ impl InitProjectModel {
     }
 
     fn compute_codebase_context_step(&mut self, _pwd_path: &Path, _ctx: &mut ModelContext<Self>) {
-        // if !UserWorkspaces::as_ref(ctx).is_codebase_context_enabled(ctx) {
-        //     // Feature disabled, leave as None
-        //     return;
-        // }
         // Feature disabled for local version - skip codebase context
-        return;
-
-        let codebase_index_manager = CodebaseIndexManager::handle(_ctx);
-        let is_indexed = codebase_index_manager
-            .as_ref(_ctx)
-            .get_codebase_index_status_for_path(_pwd_path, _ctx)
-            .is_some();
-
-        if is_indexed {
-            // Already indexed, mark as completed
-            self.set_step(
-                InitStepKind::CodebaseContext,
-                Some(InitStep::new_completed(
-                    InitStepKind::CodebaseContext,
-                    InitActionResult::CodebaseContext(CodebaseIndexingResult::Accepted),
-                )),
-            );
-        } else {
-            // Ready for user interaction
-            self.set_step(
-                InitStepKind::CodebaseContext,
-                Some(InitStep::new_ready(
-                    InitStepKind::CodebaseContext,
-                    InitStepData::CodebaseContext {
-                        pwd_path: _pwd_path.to_path_buf(),
-                    },
-                )),
-            );
-        }
     }
 
     fn compute_language_servers_step(&mut self, pwd_path: &Path, ctx: &mut ModelContext<Self>) {

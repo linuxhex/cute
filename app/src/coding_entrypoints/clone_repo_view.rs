@@ -7,6 +7,7 @@ use crate::coding_entrypoints::glowing_editor::{GlowingEditor, GlowingEditorEven
 
 pub struct CloneRepoView {
     editor: ViewHandle<GlowingEditor>,
+    #[allow(dead_code)]
     is_ftux: bool,
 }
 

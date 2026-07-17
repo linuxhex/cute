@@ -176,6 +176,7 @@ impl PrincipalInfo {
     }
 
     /// Create a PrincipalInfo with just the first character as a fallback.
+    #[allow(dead_code)]
     fn from_uid_fallback(uid: &str) -> Self {
         let first_char = uid.chars().next().unwrap_or('?').to_uppercase().to_string();
         Self::new(first_char, None)
@@ -227,6 +228,7 @@ pub struct ConversationDetailsData {
 }
 
 impl ConversationDetailsData {
+    #[allow(dead_code)]
     fn directory_for_task(task: &AmbientAgentTask, app: &AppContext) -> Option<String> {
         let history_model = BlocklistAIHistoryModel::as_ref(app);
         let conversation_id = history_model
@@ -252,6 +254,7 @@ impl ConversationDetailsData {
     /// Build details data from an in-memory `AIConversation`. Used both by the WASM
     /// transcript/shared-session details panel and by the native pane-level details panel
     /// when the active conversation is a local (non-cloud) Warp Agent run.
+    #[allow(dead_code)]
     pub fn from_conversation(conversation: &AIConversation, app: &AppContext) -> Self {
         let mut directory = None;
         let mut conversation_id = None;
@@ -337,6 +340,7 @@ impl ConversationDetailsData {
         }
     }
 
+    #[allow(dead_code)]
     pub fn from_task(
         task: &AmbientAgentTask,
         open_action: Option<WorkspaceAction>,
@@ -500,6 +504,7 @@ impl ConversationDetailsData {
 
     /// Minimal details data for when we only know the task id (e.g. shared sessions)
     /// but have not loaded the full `AmbientAgentTask` yet.
+    #[allow(dead_code)]
     pub(crate) fn from_task_id(
         task_id: AmbientAgentTaskId,
         fetch_error: Option<TaskFetchError>,

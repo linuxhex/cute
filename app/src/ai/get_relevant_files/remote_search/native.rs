@@ -13,6 +13,7 @@ use crate::remote_server::codebase_index_model::{
 };
 
 pub(super) enum RemoteSearchRequest {
+    #[allow(dead_code)]
     Pending(futures_util::stream::AbortHandle),
     Ready(SearchCodebaseResult),
 }

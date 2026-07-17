@@ -60,6 +60,7 @@ pub enum AgentTypeSelectorAction {
     SelectLocalAgent,
     Dismiss,
     HoveredIn(usize),
+    #[allow(dead_code)]
     ArrowUp,
     ArrowDown,
     Enter,
@@ -79,6 +80,7 @@ pub struct AgentTypeSelector {
     selected_option_index: usize,
 }
 
+#[allow(dead_code)]
 pub fn init(app: &mut AppContext) {
     use cuteui::keymap::macros::*;
 

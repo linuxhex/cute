@@ -110,6 +110,7 @@ impl OrchestrationPillBarModel {
     /// Invoked on logout so the next user does not inherit the previous
     /// account's UI state; persisted pins are wiped by the sqlite reset
     /// that runs alongside logout.
+    #[allow(dead_code)]
     pub fn reset(&mut self) {
         self.pinned.clear();
         self.horizontal_scroll_states.borrow_mut().clear();

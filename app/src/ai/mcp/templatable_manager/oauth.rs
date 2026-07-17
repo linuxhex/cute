@@ -43,6 +43,7 @@ pub type FileBasedPersistedCredentialsMap = HashMap<u64, PersistedCredentials>;
 /// tokens are only saved to the in-memory store by default. This wrapper
 /// ensures they also get written back to secure storage so they survive app
 /// restarts.
+#[allow(dead_code)]
 struct PersistingCredentialStore {
     inner: InMemoryCredentialStore,
     client_secret: Option<String>,
@@ -59,6 +60,7 @@ impl PersistingCredentialStore {
     ///
     /// When the new response omits a refresh token, carry forward the one already
     /// in the store. See: <https://datatracker.ietf.org/doc/html/rfc6749#section-6>
+    #[allow(dead_code)]
     async fn apply_refresh_token_carry_forward(&self, credentials: &mut StoredCredentials) {
         if credentials
             .token_response
@@ -123,6 +125,7 @@ impl CredentialStore for PersistingCredentialStore {
 /// Instead, the caller seeds the inner store with any existing credentials prior
 /// to installation (see [`install_persisting_credential_store`]). This store's
 /// sole role is to write token updates back to secure storage as they occur.
+#[allow(dead_code)]
 async fn install_persisting_credential_store(
     auth_manager: &mut AuthorizationManager,
     persisted_credentials: Option<PersistedCredentials>,
@@ -164,9 +167,13 @@ async fn install_persisting_credential_store(
 
 /// Context for OAuth authentication flows.
 pub struct AuthContext {
+    #[allow(dead_code)]
     pub oauth_result_rx: async_channel::Receiver<CallbackResult>,
+    #[allow(dead_code)]
     pub spawner: ModelSpawner<TemplatableMCPServerManager>,
+    #[allow(dead_code)]
     pub uuid: Uuid,
+    #[allow(dead_code)]
     pub persisted_credentials: Option<PersistedCredentials>,
     /// Whether the client is running in headless/CLI mode.
     pub is_headless: bool,
@@ -177,7 +184,9 @@ pub struct AuthContext {
 /// Result of OAuth callback.
 #[derive(Debug, Clone)]
 pub enum CallbackResult {
+    #[allow(dead_code)]
     Success { code: String, csrf_token: String },
+    #[allow(dead_code)]
     Error { error: Option<String> },
 }
 
@@ -197,6 +206,7 @@ pub enum CallbackResult {
 // }
 
 // 本地版本的简化实现：不支持 OAuth 认证
+#[allow(dead_code)]
 pub async fn make_authenticated_client(
     _resource_url: &str,
     auth_context: AuthContext,
@@ -241,6 +251,7 @@ impl TemplatableMCPServerManager {
         Err(anyhow::anyhow!("OAuth callback handling is not supported in local version"))
     }
 
+    #[allow(dead_code)]
     pub fn save_credentials_to_secure_storage(
         &mut self,
         app: &mut cuteui::AppContext,

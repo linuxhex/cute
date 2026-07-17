@@ -214,6 +214,7 @@ pub(crate) enum HarnessKind {
     ThirdParty(Box<dyn ThirdPartyHarness>),
     /// Harnesses that exist in the shared CLI enum but are not supported by the
     /// standalone agent driver.
+    #[allow(dead_code)]
     Unsupported(Harness),
 }
 
@@ -260,6 +261,7 @@ pub(crate) fn harness_kind(harness: Harness) -> Result<HarnessKind, AgentDriverE
 /// Returns `None` for [`Harness::Oz`], for unsupported harnesses, and
 /// for any third-party harness whose `auth_check_command` returns `None`
 /// (e.g. Gemini today).
+#[allow(dead_code)]
 pub(crate) fn auth_check_command_for(harness: Harness) -> Option<String> {
     let HarnessKind::ThirdParty(third_party) = harness_kind(harness).ok()? else {
         return None;
@@ -286,6 +288,7 @@ pub(crate) fn validate_cli_installed(
     Ok(())
 }
 
+#[allow(dead_code)]
 fn insert_non_empty_task_env_var(
     env_vars: &mut HashMap<OsString, OsString>,
     key: &'static str,

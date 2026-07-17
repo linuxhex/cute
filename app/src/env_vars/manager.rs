@@ -42,6 +42,7 @@ impl EnvVarCollectionManager {
     }
 
     /// If the collection is already open in a pane, finds the location of that pane.
+    #[allow(dead_code)]
     pub fn find_pane(
         &self,
         source: &EnvVarCollectionSource,
@@ -151,6 +152,7 @@ impl EnvVarCollectionManager {
         }
     }
 
+    #[allow(dead_code)]
     pub fn reload_collection(
         &mut self,
         source: &EnvVarCollectionSource,
@@ -173,12 +175,14 @@ impl EnvVarCollectionManager {
         }
     }
 
+    #[allow(dead_code)]
     pub fn reset(&mut self) {
         self.panes_by_hashed_id.clear();
     }
 }
 
 struct EnvVarCollectionPaneData {
+    #[allow(dead_code)]
     env_var_collection_id: SyncId,
     window_id: WindowId,
     handle: WeakViewHandle<EnvVarCollectionView>,

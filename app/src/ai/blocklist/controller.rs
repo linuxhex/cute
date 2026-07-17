@@ -325,6 +325,7 @@ pub struct BlocklistAIController {
     pending_auto_resume_handles: HashMap<AIConversationId, SpawnedFutureHandle>,
     /// Pending dormant Claude wake preparations for success-idle child conversations.
     #[cfg_attr(target_family = "wasm", allow(dead_code))]
+    #[allow(dead_code)]
     pending_local_claude_wakes: HashMap<AIConversationId, SpawnedFutureHandle>,
     /// Passive conversations explicitly requested to follow up after actions complete.
     pending_passive_follow_ups: HashSet<AIConversationId>,
@@ -372,6 +373,7 @@ enum FollowUpTrigger {
     UserRequested,
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[allow(dead_code)]
 enum LocalClaudeWakeTrigger {
     PendingEvents,
     WakeOnlyStream {
@@ -381,6 +383,7 @@ enum LocalClaudeWakeTrigger {
 
 impl LocalClaudeWakeTrigger {
     #[cfg(not(target_family = "wasm"))]
+    #[allow(dead_code)]
     fn requires_pending_events(&self) -> bool {
         match self {
             Self::PendingEvents => true,
@@ -1502,6 +1505,7 @@ impl BlocklistAIController {
         self.pending_passive_follow_ups.remove(&conversation_id);
     }
 
+    #[allow(dead_code)]
     fn conversation_ready_for_pending_events(
         &self,
         conversation_id: AIConversationId,
@@ -1544,6 +1548,7 @@ impl BlocklistAIController {
     }
 
     #[cfg(not(target_family = "wasm"))]
+    #[allow(dead_code)]
     fn maybe_prepare_local_claude_wake(
         &mut self,
         conversation_id: AIConversationId,

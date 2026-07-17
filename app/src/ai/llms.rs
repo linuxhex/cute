@@ -858,6 +858,7 @@ impl LLMPreferences {
         self.custom_llms = build_custom_llm_infos(ApiKeyManager::as_ref(app).keys());
     }
 
+    #[allow(dead_code)]
     fn sanitize_disabled_custom_model_preferences(&mut self, ctx: &mut ModelContext<Self>) {
         if Self::custom_inference_enabled(ctx) || self.custom_llms.is_empty() {
             return;
@@ -944,6 +945,7 @@ impl LLMPreferences {
     }
 
     /// Returns the preferred Codex model, if set by the server.
+    #[allow(dead_code)]
     pub fn get_preferred_codex_model(&self) -> Option<&LLMInfo> {
         self.models_by_feature
             .agent_mode
@@ -1097,6 +1099,7 @@ impl LLMPreferences {
     }
 
     /// No auth required (i.e. to populate the pre-login onboarding picker).
+    #[allow(dead_code)]
     fn refresh_public_models(&self, ctx: &mut ModelContext<Self>) {
         let ai_api_client = ServerApiProvider::as_ref(ctx).get_ai_client();
         ctx.spawn(
@@ -1124,6 +1127,7 @@ impl LLMPreferences {
         self.refresh_authed_models(ctx);
     }
 
+    #[allow(dead_code)]
     pub fn update_feature_model_choices(
         &mut self,
         choices_result: Result<ModelsByFeature, anyhow::Error>,

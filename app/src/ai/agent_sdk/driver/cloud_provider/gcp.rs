@@ -12,6 +12,7 @@ use crate::ai::cloud_environments::GcpProviderConfig;
 
 /// Token lifetime for GCP executable-sourced credentials. The GCP client
 /// libraries handle refreshing automatically, so we keep this short.
+#[allow(dead_code)]
 const TOKEN_LIFETIME: Duration = Duration::from_secs(30 * 60);
 
 /// Provides GCP Workload Identity Federation credentials for the agent session.
@@ -19,11 +20,13 @@ const TOKEN_LIFETIME: Duration = Duration::from_secs(30 * 60);
 /// The credential config file is written eagerly during construction. GCP SDKs
 /// discover it via `GOOGLE_APPLICATION_CREDENTIALS` and invoke the embedded
 /// executable to obtain tokens on demand.
+#[allow(dead_code)]
 pub(crate) struct GcpCloudProvider {
     credentials: GcpCredentials,
 }
 
 impl GcpCloudProvider {
+    #[allow(dead_code)]
     const PROVIDER_NAME: &'static str = "gcp";
 
     pub fn new(config: &GcpProviderConfig, run_id: &str) -> Result<Self> {

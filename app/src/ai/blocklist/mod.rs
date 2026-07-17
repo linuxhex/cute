@@ -117,13 +117,17 @@ mod handoff_stubs {
 
     #[derive(Clone, Debug, Default)]
     pub(crate) struct TouchedWorkspace {
+        #[allow(dead_code)]
         pub repos: Vec<TouchedRepo>,
+        #[allow(dead_code)]
         pub orphan_files: Vec<PathBuf>,
     }
 
     #[derive(Clone, Debug)]
     pub(crate) struct TouchedRepo {
+        #[allow(dead_code)]
         pub git_root: PathBuf,
+        #[allow(dead_code)]
         pub repo_id: Option<GithubRepo>,
     }
 

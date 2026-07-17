@@ -18,12 +18,14 @@ use crate::report_if_error;
 #[derive(Clone)]
 enum QuitScope<'a> {
     Pane {
+        #[allow(dead_code)]
         pane_group: &'a PaneGroup,
         pane_group_id: EntityId,
         window_id: WindowId,
         pane_id: PaneId,
     },
     Tabs(Vec<WeakViewHandle<PaneGroup>>),
+    #[allow(dead_code)]
     Window(WindowId),
     App,
     #[allow(dead_code)]
@@ -45,6 +47,7 @@ pub struct UnsavedStateSummary<'a> {
     tabs_with_long_running_commands: usize,
 
     /// All terminal sessions in this scope.
+    #[allow(dead_code)]
     terminal_sessions: Vec<SessionNavigationData>,
 
     /// Whether or not there are unsaved code changes.
@@ -64,6 +67,7 @@ pub struct QuitWarningDialog<'a> {
 
 impl QuitScope<'_> {
     /// All sessions in this scope.
+    #[allow(dead_code)]
     fn sessions(&self, ctx: &AppContext) -> Vec<SessionNavigationData> {
         match self {
             Self::Pane {
@@ -100,6 +104,7 @@ impl QuitScope<'_> {
     }
 
     /// All code editors in this scope.
+    #[allow(dead_code)]
     fn code_editors(&self, ctx: &AppContext) -> Vec<CodeEditorStatus> {
         match self {
             Self::Pane {
@@ -125,6 +130,7 @@ impl QuitScope<'_> {
     }
 
     /// All code review views in this scope (from the panel, not panes).
+    #[allow(dead_code)]
     fn code_review_views(&self, ctx: &AppContext) -> Vec<CodeEditorStatus> {
         match self {
             Self::Pane { .. } => {
@@ -155,6 +161,7 @@ impl QuitScope<'_> {
         }
     }
 
+    #[allow(dead_code)]
     fn close_target(&self) -> CloseTarget {
         match self {
             Self::Pane { .. } => CloseTarget::PANE,

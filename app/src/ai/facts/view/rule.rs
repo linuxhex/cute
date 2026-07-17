@@ -143,6 +143,7 @@ impl RuleRow {
 }
 
 pub struct RuleView {
+    #[allow(dead_code)]
     owner: Option<Owner>,
     cloud_global_rules: Vec<CloudRuleRow>,
     /// File-based global rules (e.g. `~/.agents/AGENTS.md`). Surfaced in the

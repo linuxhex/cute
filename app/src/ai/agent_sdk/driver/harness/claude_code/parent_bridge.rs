@@ -342,6 +342,7 @@ pub(super) fn stage_parent_bridge_message(
     Ok(())
 }
 
+#[allow(dead_code)]
 pub(super) async fn prime_parent_bridge_staged_for_self_managed_wake(
     hydrator: &MessageHydrator,
     state_dir: &Path,
@@ -371,6 +372,7 @@ pub(super) async fn prime_parent_bridge_staged_for_self_managed_wake(
     write_parent_bridge_event_cursor(state_dir, wake_message.sequence)
 }
 
+#[allow(dead_code)]
 fn move_parent_bridge_surfaced_messages_to_staged(state_dir: &Path) -> Result<()> {
     let surfaced_records = parent_bridge_message_records(&parent_bridge_surfaced_dir(state_dir))?;
     for (path, record) in surfaced_records {

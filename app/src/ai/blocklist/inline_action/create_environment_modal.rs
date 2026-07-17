@@ -7,6 +7,7 @@ use crate::workspace::ToastStack;
 #[derive(Debug, Clone)]
 pub enum CreateEnvironmentModalEvent {
     Cancelled,
+    #[allow(dead_code)]
     Created { environment_id: String },
 }
 
@@ -31,11 +32,13 @@ impl CreateEnvironmentModal {
         ctx.notify();
     }
 
+    #[allow(dead_code)]
     pub fn hide(&mut self, ctx: &mut ViewContext<Self>) {
         self.visible = false;
         ctx.notify();
     }
 
+    #[allow(dead_code)]
     fn cancel(&mut self, ctx: &mut ViewContext<Self>) {
         self.hide(ctx);
         ctx.emit(CreateEnvironmentModalEvent::Cancelled);

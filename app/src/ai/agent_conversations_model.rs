@@ -61,6 +61,7 @@ use crate::ui_components::icons::Icon;
 use crate::workspace::{RestoreConversationLayout, WorkspaceAction};
 
 const POLLING_INTERVAL: Duration = Duration::from_secs(30);
+#[allow(dead_code)]
 const RTC_TASK_REFRESH_THROTTLE: Duration = Duration::from_secs(5);
 const INITIAL_TASK_AMOUNT: i32 = 100;
 
@@ -118,10 +119,12 @@ enum TaskFetchState {
     /// when it failed so we can back off for [`PERMANENT_FETCH_FAILURE_COOLDOWN`] before
     /// retrying. We don't refuse forever in case permissions change mid-session.
     /// The `TaskFetchError` carries structured failure details for display in the UI.
+    #[allow(dead_code)]
     PermanentlyFailed { at: Instant, error: TaskFetchError },
     /// The retry chain just exhausted on a transient error; remember when it failed so we
     /// can back off for [`TRANSIENT_FETCH_FAILURE_COOLDOWN`] before retrying.
     /// The `TaskFetchError` carries structured failure details for display in the UI.
+    #[allow(dead_code)]
     TransientlyFailed { at: Instant, error: TaskFetchError },
 }
 
@@ -132,12 +135,14 @@ enum TaskFetchState {
 enum RtcTaskRefreshThrottleState {
     #[default]
     Idle,
+    #[allow(dead_code)]
     CoolingDown {
         pending_timestamp: Option<DateTime<Utc>>,
         timer_abort_handle: AbortHandle,
     },
 }
 
+#[allow(dead_code)]
 fn record_earliest_rtc_task_refresh_timestamp(
     pending_timestamp: &mut Option<DateTime<Utc>>,
     timestamp: DateTime<Utc>,
@@ -561,6 +566,7 @@ pub struct AgentConversationsModel {
     /// the meaning of each variant. Tasks that have been successfully fetched live in `tasks`
     /// and are absent from this map.
     task_fetch_state: HashMap<AmbientAgentTaskId, TaskFetchState>,
+    #[allow(dead_code)]
     rtc_task_refresh_throttle_state: RtcTaskRefreshThrottleState,
     /// Earliest RTC timestamp received while no list surface was open.
     /// On next `register_view_open`, triggers a single `fetch_tasks_updated_after`.
@@ -743,6 +749,7 @@ impl AgentConversationsModel {
     // }
 
     // Handle RTC invalidations for list views, respecting the refresh throttling.
+    #[allow(dead_code)]
     fn handle_rtc_for_list_views(
         &mut self,
         timestamp: DateTime<Utc>,
@@ -792,6 +799,7 @@ impl AgentConversationsModel {
         };
     }
 
+    #[allow(dead_code)]
     fn abort_rtc_task_refresh_throttle(&mut self) {
         if let RtcTaskRefreshThrottleState::CoolingDown {
             timer_abort_handle, ..
@@ -1177,6 +1185,7 @@ impl AgentConversationsModel {
         self.tasks.insert(task.task_id, task);
     }
 
+    #[allow(dead_code)]
     pub(crate) fn mark_task_execution_ended(
         &mut self,
         task_id: AmbientAgentTaskId,
@@ -1569,6 +1578,7 @@ impl AgentConversationsModel {
     /// Returns the error details when the most recent fetch for `task_id` ended in a
     /// permanent or transient failure and the cooldown has not yet elapsed. The caller
     /// can use this to display an error state in the details panel.
+    #[allow(dead_code)]
     pub(crate) fn task_fetch_error(&self, task_id: &AmbientAgentTaskId) -> Option<&TaskFetchError> {
         match self.task_fetch_state.get(task_id) {
             Some(
@@ -1897,6 +1907,7 @@ impl AgentConversationsModel {
 
     /// Clears all stored conversation and task data in memory.
     /// This is used when logging out to ensure no conversation history persists across users.
+    #[allow(dead_code)]
     pub(crate) fn reset(&mut self) {
         self.tasks.clear();
         self.conversations.clear();

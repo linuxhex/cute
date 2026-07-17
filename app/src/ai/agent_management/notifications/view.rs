@@ -66,6 +66,7 @@ pub enum NotificationMailboxViewAction {
     MarkAllRead,
     ClickItem(NotificationId),
     Dismiss,
+    #[allow(dead_code)]
     SelectPrevious,
     SelectNext,
     CycleFilter,
@@ -73,6 +74,7 @@ pub enum NotificationMailboxViewAction {
 }
 
 impl NotificationMailboxView {
+    #[allow(dead_code)]
     pub fn init(app: &mut AppContext) {
         app.register_fixed_bindings([
             FixedBinding::new(

@@ -349,6 +349,7 @@ impl AIExecutionProfilesModel {
             .unwrap_or_else(|| self.default_profile(ctx))
     }
 
+    #[allow(dead_code)]
     pub fn default_profile_id(&self) -> ClientProfileId {
         self.default_profile_state.id()
     }

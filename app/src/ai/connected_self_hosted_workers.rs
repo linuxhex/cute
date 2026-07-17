@@ -4,6 +4,7 @@ use crate::server::server_api::ai::ConnectedSelfHostedWorker;
 pub const WARP_WORKER_HOST: &str = "warp";
 
 pub enum ConnectedSelfHostedWorkersEvent {
+    #[allow(dead_code)]
     Changed,
 }
 
@@ -41,6 +42,7 @@ impl ConnectedSelfHostedWorkersModel {
         hosts
     }
 
+    #[allow(dead_code)]
     fn clear_workers(&mut self, ctx: &mut ModelContext<Self>) {
         let _ = ctx;
         self.clear_worker_cache();

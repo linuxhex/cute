@@ -39,6 +39,7 @@ impl HandoffComposeState {
     }
 
     #[cfg_attr(target_family = "wasm", allow(dead_code))]
+    #[allow(dead_code)]
     pub(crate) fn entry_point(&self) -> HandoffEntryPoint {
         self.entry_point
     }

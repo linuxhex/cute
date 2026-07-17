@@ -260,6 +260,7 @@ pub fn parse_github_pr_url(url: &str) -> Option<(String, u32)> {
 
 /// Deserialize artifacts, skipping any that fail to parse.
 /// This ensures task loading doesn't fail entirely if an artifact has an unknown format.
+#[allow(dead_code)]
 pub fn deserialize_artifacts<'de, D>(deserializer: D) -> Result<Vec<Artifact>, D::Error>
 where
     D: serde::Deserializer<'de>,

@@ -639,6 +639,7 @@ impl RunSortOrder {
 }
 
 /// Build the path + query string for `GET /api/v1/agent/runs` from a filter.
+#[allow(dead_code)]
 pub(crate) fn build_list_agent_runs_url(limit: i32, filter: &TaskListFilter) -> String {
     let mut url = format!("agent/runs?limit={limit}");
 
@@ -709,9 +710,11 @@ pub(crate) fn build_list_agent_runs_url(limit: i32, filter: &TaskListFilter) -> 
     url
 }
 
+#[allow(dead_code)]
 pub(crate) fn build_run_followup_url(run_id: &AmbientAgentTaskId) -> String {
     format!("agent/runs/{run_id}/followups")
 }
+#[allow(dead_code)]
 pub(crate) fn build_fork_conversation_url(conversation_id: &str) -> String {
     format!(
         "agent/conversations/{}/fork",
@@ -1129,6 +1132,7 @@ pub trait AIClient: 'static + Send + Sync {
     ) -> Result<GenerateCodeReviewContentResponse, anyhow::Error>;
 }
 
+#[allow(dead_code)]
 fn into_file_artifact_record(
     artifact: cute_graphql::mutations::create_file_artifact_upload_target::FileArtifact,
 ) -> FileArtifactRecord {
@@ -1142,6 +1146,7 @@ fn into_file_artifact_record(
 }
 
 impl ServerApi {
+    #[allow(dead_code)]
     pub(crate) async fn send_agent_message_for_task(
         &self,
         task_id: &AmbientAgentTaskId,
@@ -1155,6 +1160,7 @@ impl ServerApi {
     }
 
     #[cfg_attr(target_family = "wasm", allow(dead_code))]
+    #[allow(dead_code)]
     pub(crate) async fn list_agent_messages_for_task(
         &self,
         task_id: &AmbientAgentTaskId,
@@ -1212,6 +1218,7 @@ impl ServerApi {
 /// domain type. Unknown variants bubble as an error rather than being silently
 /// dropped, because a server-provided field we can't represent will almost certainly
 /// cause the upload to fail.
+#[allow(dead_code)]
 fn convert_upload_field(
     field: cute_graphql::mutations::create_file_artifact_upload_target::FileArtifactUploadField,
 ) -> anyhow::Result<UploadField> {
@@ -1977,6 +1984,7 @@ fn convert_harness(harness: cute_graphql::ai::AgentHarness) -> AIAgentHarness {
     }
 }
 
+#[allow(dead_code)]
 fn convert_block_snapshot_format(
     format: cute_graphql::ai::SerializedBlockFormat,
 ) -> AIAgentSerializedBlockFormat {
@@ -1985,6 +1993,7 @@ fn convert_block_snapshot_format(
     }
 }
 
+#[allow(dead_code)]
 fn convert_conversation_format(
     format: cute_graphql::ai::AIConversationFormat,
 ) -> AIAgentConversationFormat {

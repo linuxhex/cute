@@ -53,6 +53,7 @@ pub enum NotificationSourceAgent {
 }
 
 impl NotificationSourceAgent {
+    #[allow(dead_code)]
     pub fn is_ambient(&self) -> bool {
         match self {
             NotificationSourceAgent::Oz { is_ambient }

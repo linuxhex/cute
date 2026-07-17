@@ -12,6 +12,7 @@ pub trait BlockClient: 'static + Send + Sync {
     async fn unshare_block(&self, block_id: String) -> Result<(), anyhow::Error>;
 
     /// Uploads a given block to the server via the /share_block endpoint.
+    #[allow(dead_code)]
     async fn save_block(
         &self,
         block: &Block,
@@ -22,6 +23,7 @@ pub trait BlockClient: 'static + Send + Sync {
 
     async fn blocks_owned_by_user(&self) -> Result<Vec<Block>, anyhow::Error>;
 
+    #[allow(dead_code)]
     async fn generate_shared_block_title(
         &self,
         request: GenerateBlockTitleRequest,

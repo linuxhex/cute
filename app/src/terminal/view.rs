@@ -71,7 +71,6 @@ use std::time::Duration;
 
 use action::RememberForWarpification;
 pub use action::{AgentOnboardingVersion, OnboardingIntention, OnboardingVersion, TerminalAction};
-use ai::api_keys::{ApiKeyManager, AwsCredentialsState};
 use ai::index::full_source_code_embedding::manager::{BuildSource, CodebaseIndexManager};
 use async_channel::{Receiver, Sender};
 use base64::Engine as _;
@@ -281,7 +280,7 @@ use crate::ai::conversation_utils;
 use crate::ai::document::ai_document_model::{AIDocumentId, AIDocumentModel, AIDocumentVersion};
 use crate::ai::execution_profiles::profiles::{AIExecutionProfilesModel, ClientProfileId};
 use crate::ai::get_relevant_files::controller::GetRelevantFilesController;
-use crate::ai::llms::{LLMId, LLMModelHost, LLMPreferences};
+use crate::ai::llms::LLMId;
 use crate::ai::loading::shimmering_cute_loading_text;
 #[cfg(feature = "local_fs")]
 use crate::ai::persisted_workspace::PersistedWorkspace;
@@ -9554,62 +9553,9 @@ impl TerminalView {
     fn maybe_insert_aws_bedrock_login_banner(
         &mut self,
         _model_id: &LLMId,
-        ctx: &mut ViewContext<Self>,
+        _ctx: &mut ViewContext<Self>,
     ) {
-        // Don't show if already displayed
-        if self.inline_banners_state.aws_bedrock_login_banner.is_some() {
-            return;
-        }
-
-        // Check if dismissed (either permanently via "Don't show again" or for this session via "X")
-        if ByoLlmAuthBannerSessionState::as_ref(ctx).is_dismissed() {
-            return;
-        }
-
-        // Check if AWS Bedrock is available in the workspace
-        // if !UserWorkspaces::as_ref(ctx).is_aws_bedrock_credentials_enabled(ctx) {
-            return;
-        // }
-
-        // Check if the model supports AWS Bedrock routing
-        let llm_prefs = LLMPreferences::as_ref(ctx);
-        let Some(llm_info) = llm_prefs.get_llm_info(_model_id) else {
-            return;
-        };
-
-        let supports_aws_bedrock = llm_info
-            .host_configs
-            .get(&LLMModelHost::AwsBedrock)
-            .is_some_and(|config| config.enabled);
-        if !supports_aws_bedrock {
-            return;
-        }
-
-        if matches!(
-            ApiKeyManager::as_ref(ctx).aws_credentials_state(),
-            AwsCredentialsState::Loaded { .. }
-        ) {
-            return;
-        }
-
-        // User doesn't have AWS credentials - show the banner
-        let banner_id = self.inline_banners_state.next_banner_id();
-        self.inline_banners_state.aws_bedrock_login_banner = Some(AwsBedrockLoginBannerState {
-            id: banner_id,
-            login_button_mouse_state: Default::default(),
-            dismiss_button_mouse_state: Default::default(),
-            dont_show_again_button_mouse_state: Default::default(),
-        });
-
-        self.model
-            .lock()
-            .block_list_mut()
-            .append_inline_banner_with_custom_height(
-                InlineBannerItem::new(banner_id, InlineBannerType::AwsBedrockLogin),
-                3.5,
-            );
-
-        ctx.notify();
+        // AWS Bedrock feature is disabled for local version
     }
 
     fn remove_aws_cli_not_installed_banner(&mut self, ctx: &mut ViewContext<Self>) {

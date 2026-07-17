@@ -10,6 +10,7 @@ crash_reporting = ["dep:sentry", "dep:sentry-log"]
 local_fs = []
 release_bundle = []
 test-util = ["dep:mockito", "cute_features/test-util"]
+integration_tests = ["cute_features/integration_tests"]
 
 [dependencies]
 anyhow.workspace = true

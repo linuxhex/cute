@@ -23,6 +23,7 @@ pub(crate) struct CloudProviderSetupError {
 }
 
 impl CloudProviderSetupError {
+    #[allow(dead_code)]
     pub(crate) fn new(provider_name: &'static str, source: impl Into<Error>) -> Self {
         Self {
             provider_name,
@@ -54,6 +55,7 @@ pub(crate) trait CloudProvider: Send {
 }
 
 /// Build the set of cloud providers from an environment's provider configuration.
+#[allow(dead_code)]
 pub(crate) fn load_providers(
     providers: &ProvidersConfig,
     run_id: &str,

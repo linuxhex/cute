@@ -1855,43 +1855,9 @@ async fn determine_transport(
         StatusCode::NOT_FOUND | StatusCode::METHOD_NOT_ALLOWED => Ok(Transport::Sse(None)),
         StatusCode::UNAUTHORIZED => {
             // OAuth is disabled as cloud feature is removed.
-            return Err(rmcp::RmcpError::transport_creation::<ReqwestHttpTransport>(
+            Err(rmcp::RmcpError::transport_creation::<ReqwestHttpTransport>(
                 "Server requires authentication, which is not yet supported.".to_string(),
-            ));
-
-            let _spawner = _auth_context.spawner.clone();
-            // Go through the OAuth flow to get an authenticated client.
-            // This will first attempt to use cached credentials before starting interactive OAuth.
-            let (client, did_require_login) = oauth::make_authenticated_client(url, _auth_context)
-                .boxed()
-                .await
-                .map_err(rmcp::RmcpError::transport_creation::<ReqwestHttpTransport>)?;
-            let transport = match send_initialize_request(url, headers, Some(&client)).await? {
-                StatusCode::OK => Ok(Transport::Http(Some(client))),
-                StatusCode::NOT_FOUND | StatusCode::METHOD_NOT_ALLOWED => {
-                    Ok(Transport::Sse(Some(client)))
-                }
-                other => Err(unexpected_error(other)),
-            };
-            if transport.is_ok() && did_require_login {
-                let _ = _spawner
-                    .spawn(move |_, ctx| {
-                        if let Some(active_window_id) = ctx.windows().active_window() {
-                            ToastStack::handle(ctx).update(ctx, |stack, ctx| {
-                                stack.add_ephemeral_toast(
-                                    DismissibleToast::default(format!(
-                                        "Successfully authenticated {_server_name} MCP server"
-                                    )),
-                                    active_window_id,
-                                    ctx,
-                                );
-                            });
-                        }
-                    })
-                    .await;
-            }
-
-            transport
+            ))
         }
         status => Err(unexpected_error(status)),
     }

@@ -61,6 +61,7 @@ enum BufferSource {
         initial_content_version: Option<ContentVersion>,
     },
     /// Backed by a remote filesystem over the remote server protocol.
+    #[allow(dead_code)]
     Remote {
         remote_path: RemotePath,
         /// `None` while waiting for the `OpenBufferResponse`; `Some` once loaded.
@@ -203,6 +204,7 @@ pub enum GlobalBufferModelEvent {
     },
     /// A remote buffer update conflicted with local edits.
     /// The UI should present a resolution dialog.
+    #[allow(dead_code)]
     RemoteBufferConflict {
         file_id: FileId,
     },
@@ -212,8 +214,11 @@ pub enum GlobalBufferModelEvent {
     ServerLocalBufferUpdated {
         file_id: FileId,
         /// Incremental edits with 1-indexed character offsets (matching `CharOffset`).
+        #[allow(dead_code)]
         edits: Vec<CharOffsetEdit>,
+        #[allow(dead_code)]
         new_server_version: ContentVersion,
+        #[allow(dead_code)]
         expected_client_version: ContentVersion,
     },
 }
@@ -239,8 +244,11 @@ impl GlobalBufferModelEvent {
 /// to proto types. Offsets use the same 1-indexed coordinate system as
 /// the buffer's `CharOffset`, so no conversion is needed at the boundary.
 pub struct CharOffsetEdit {
+    #[allow(dead_code)]
     pub start: CharOffset,
+    #[allow(dead_code)]
     pub end: CharOffset,
+    #[allow(dead_code)]
     pub text: String,
 }
 
@@ -1491,6 +1499,7 @@ impl GlobalBufferModel {
     ///
     /// Uses the `location_to_id` BiMap for O(1) lookup instead of scanning
     /// all buffer states.
+    #[allow(dead_code)]
     fn find_remote_file_id(&self, host_id: &HostId, path: &str) -> Option<FileId> {
         let std_path = StandardizedPath::try_new(path).ok()?;
         let location = LocalOrRemotePath::Remote(RemotePath::new(host_id.clone(), std_path));
@@ -1642,6 +1651,7 @@ impl GlobalBufferModel {
     /// Delegates to `open_local` with `is_server_local = true` so the buffer
     /// is created directly with a `ServerLocal` source and `SyncClock`.
     #[cfg(feature = "local_fs")]
+    #[allow(dead_code)]
     pub fn open_server_local(
         &mut self,
         path: PathBuf,
@@ -1666,6 +1676,7 @@ impl GlobalBufferModel {
     /// `insert_at_char_offset_ranges` (which expects all offsets in the
     /// original-buffer coordinate space).
     #[cfg(feature = "local_fs")]
+    #[allow(dead_code)]
     pub fn apply_client_edit(
         &mut self,
         file_id: FileId,
@@ -1725,6 +1736,7 @@ impl GlobalBufferModel {
     /// `FileModel` can detect concurrent modifications between the save
     /// request and the disk write completing.
     #[cfg(feature = "local_fs")]
+    #[allow(dead_code)]
     pub fn save_server_local(
         &mut self,
         file_id: FileId,
@@ -1746,6 +1758,7 @@ impl GlobalBufferModel {
     /// Resolve a conflict by accepting the client's content.
     /// Replaces the buffer content, updates the sync clock, and saves to disk.
     #[cfg(feature = "local_fs")]
+    #[allow(dead_code)]
     pub fn resolve_conflict(
         &mut self,
         file_id: FileId,
@@ -1792,6 +1805,7 @@ impl GlobalBufferModel {
     // ── Public accessors ──────────────────────────────────────────────
 
     /// Returns the buffer text content for a given `FileId`.
+    #[allow(dead_code)]
     pub fn content_for_file(&self, file_id: FileId, ctx: &cuteui::AppContext) -> Option<String> {
         let state = self.buffers.get(&file_id)?;
         let buffer = state.buffer.upgrade(ctx)?;
@@ -1799,6 +1813,7 @@ impl GlobalBufferModel {
     }
 
     /// Returns a reference to the `SyncClock` for a server-local buffer.
+    #[allow(dead_code)]
     pub fn sync_clock_for_server_local(&self, file_id: FileId) -> Option<&SyncClock> {
         let state = self.buffers.get(&file_id)?;
         match &state.source {
@@ -1823,6 +1838,7 @@ impl GlobalBufferModel {
     /// connection gets the new content) and `ServerLocalBufferUpdated` (so
     /// other connections receive a `BufferUpdatedPush` with the fresh content).
     #[cfg(feature = "local_fs")]
+    #[allow(dead_code)]
     pub fn force_reload_server_local(
         &mut self,
         file_id: FileId,

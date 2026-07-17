@@ -397,13 +397,18 @@ pub mod spawn {
     /// Events emitted while spawning/monitoring an ambient agent task (stub).
     #[derive(Debug, Clone)]
     pub enum AmbientAgentEvent {
+        #[allow(dead_code)]
         TaskSpawned { task_id: AmbientAgentTaskId },
+        #[allow(dead_code)]
         AtCapacity,
+        #[allow(dead_code)]
         StateChanged {
             state: AmbientAgentTaskState,
             status_message: Option<TaskStatusMessage>,
         },
+        #[allow(dead_code)]
         SessionStarted { session_join_info: SessionJoinInfo },
+        #[allow(dead_code)]
         TimedOut,
     }
 
@@ -443,6 +448,7 @@ pub mod scheduled {
 
     /// Manager for scheduled ambient agents (stub).
     #[derive(Debug, Clone, Default)]
+    #[allow(dead_code)]
     pub struct ScheduledAgentManager;
 
     impl Entity for ScheduledAgentManager {
@@ -452,10 +458,12 @@ pub mod scheduled {
     impl SingletonEntity for ScheduledAgentManager {}
 
     impl ScheduledAgentManager {
+        #[allow(dead_code)]
         pub fn new(_ctx: &mut cuteui::ModelContext<Self>) -> Self {
             Self
         }
 
+        #[allow(dead_code)]
         pub fn create_schedule(
             &self,
             _config: ScheduledAmbientAgent,
@@ -466,6 +474,7 @@ pub mod scheduled {
             ))
         }
 
+        #[allow(dead_code)]
         pub fn pause_schedule(
             &self,
             _schedule_id: crate::server::ids::SyncId,
@@ -473,6 +482,7 @@ pub mod scheduled {
             futures::future::ok(())
         }
 
+        #[allow(dead_code)]
         pub fn unpause_schedule(
             &self,
             _schedule_id: crate::server::ids::SyncId,
@@ -480,6 +490,7 @@ pub mod scheduled {
             futures::future::ok(())
         }
 
+        #[allow(dead_code)]
         pub fn update_schedule(
             &self,
             _schedule_id: crate::server::ids::SyncId,
@@ -488,6 +499,7 @@ pub mod scheduled {
             futures::future::ok(())
         }
 
+        #[allow(dead_code)]
         pub fn delete_schedule(
             &self,
             _schedule_id: crate::server::ids::SyncId,
@@ -495,10 +507,12 @@ pub mod scheduled {
             futures::future::ok(())
         }
 
+        #[allow(dead_code)]
         pub fn list_schedules(&self) -> Vec<CloudScheduledAmbientAgent> {
             Vec::new()
         }
 
+        #[allow(dead_code)]
         pub fn fetch_schedule_history(
             &self,
             _schedule_id: crate::server::ids::SyncId,
@@ -509,6 +523,7 @@ pub mod scheduled {
 
     /// Parameters for updating a schedule (stub).
     #[derive(Debug, Clone, Default)]
+    #[allow(dead_code)]
     pub struct UpdateScheduleParams {
         pub name: Option<String>,
         pub cron: Option<String>,
@@ -569,6 +584,7 @@ pub mod github_auth_url {
         String::new()
     }
 
+    #[allow(dead_code)]
     pub fn build_auth_url_with_next(
         _base_auth_url: &str,
         _target: GithubAuthRedirectTarget,
@@ -586,6 +602,7 @@ pub mod github_auth_notifier {
     /// Events emitted by the GitHub auth notifier (stub).
     #[derive(Debug, Clone)]
     pub enum GitHubAuthEvent {
+        #[allow(dead_code)]
         AuthCompleted,
     }
 

@@ -31,6 +31,7 @@ pub trait AITip: Clone {
     fn keystroke(&self, app: &AppContext) -> Option<Keystroke>;
 
     /// Returns the documentation link for this tip, if available.
+    #[allow(dead_code)]
     fn link(&self) -> Option<String>;
 
     /// Returns the raw description text for this tip.
@@ -485,6 +486,7 @@ impl<T: AITip + 'static> AITipModel<T> {
     ///
     /// # Panics
     /// Panics if the tips vector is empty.
+    #[allow(dead_code)]
     pub fn new(tips: Vec<T>) -> Self {
         use rand::seq::SliceRandom;
         debug_assert!(!tips.is_empty(), "AITipModel must have at least one tip");
@@ -627,6 +629,7 @@ impl SingletonEntity for AITipModel<AgentTip> {}
 impl AITipModel<crate::terminal::view::ambient_agent::CloudModeTip> {
     /// Refreshes the current tip with a new random selection.
     /// Only updates if not in cooldown period (60 seconds).
+    #[allow(dead_code)]
     pub fn maybe_refresh_tip(&mut self, ctx: &mut ModelContext<Self>) {
         // Don't update if cooldown is active
         if self.cooldown_handle.is_some() {
@@ -654,6 +657,7 @@ impl AITipModel<crate::terminal::view::ambient_agent::CloudModeTip> {
 
     /// Resets the cooldown timer without changing the current tip.
     /// This ensures the current tip will be shown for the full cooldown period.
+    #[allow(dead_code)]
     pub fn reset_cooldown(&mut self, ctx: &mut ModelContext<Self>) {
         // Cancel any existing cooldown
         if let Some(handle) = self.cooldown_handle.take() {

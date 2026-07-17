@@ -209,9 +209,11 @@ pub enum ActiveEnvVarCollectionDataEvent {
     /// The EVC's breadcrumbs were updated.
     BreadcrumbsChanged,
     /// The EVC was synced to the server for the first time.
+    #[allow(dead_code)]
     CreatedOnServer(ServerId),
     /// The EVC was trashed or untrashed
     /// (used for refreshing the pane overflow items)
+    #[allow(dead_code)]
     TrashStatusChanged,
 }
 

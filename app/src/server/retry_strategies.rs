@@ -16,6 +16,7 @@ use crate::server::server_api::presigned_upload::HttpStatusError;
 /// is borked, etc.
 /// For team memberships, we also don't yet process messages for joining or leaving a team, so the user would see these
 /// updates only after a periodic poll.
+#[allow(dead_code)]
 pub const PERIODIC_POLL: Duration = Duration::from_secs(60 * 10);
 
 /// For a periodic poll, it's fine to wait for longer period of time between retries. However, we don't want this to be so
@@ -38,6 +39,7 @@ pub const OUT_OF_BAND_REQUEST_RETRY_STRATEGY: RetryOption = RetryOption::exponen
 .with_jitter(0.5 /* max_jitter_percentage */);
 
 // For listeners, retry up to 5 times, waiting between 10-40 seconds between retries.
+#[allow(dead_code)]
 pub const LISTENER_RETRY_STRATEGY: RetryOption = RetryOption::linear(
     Duration::from_secs(25), /* interval */
     5,                       /* max retry count */
@@ -92,15 +94,19 @@ fn is_transient_status(status: u16) -> bool {
 }
 
 /// Maximum total attempts per operation (initial attempt plus retries on transient errors).
+#[allow(dead_code)]
 pub(crate) const MAX_ATTEMPTS: usize = 3;
 
 /// Base backoff between retry attempts; each subsequent attempt multiplies by [`BACKOFF_FACTOR`].
+#[allow(dead_code)]
 const INITIAL_BACKOFF: Duration = Duration::from_millis(500);
 
 /// Exponential growth factor for retry backoff.
+#[allow(dead_code)]
 const BACKOFF_FACTOR: f32 = 2.0;
 
 /// Maximum jitter as a fraction of the backoff interval.
+#[allow(dead_code)]
 const BACKOFF_JITTER: f32 = 0.3;
 
 /// Run `attempt_fn` with bounded exponential-backoff retries on transient failures.
@@ -112,6 +118,7 @@ const BACKOFF_JITTER: f32 = 0.3;
 ///
 /// Transient errors are retried up to [`MAX_ATTEMPTS`] total. Permanent errors return
 /// immediately. A warning is logged between attempts so retries are visible in logs.
+#[allow(dead_code)]
 pub(crate) async fn with_bounded_retry<T, F, Fut>(operation: &str, mut attempt_fn: F) -> Result<T>
 where
     F: FnMut() -> Fut,

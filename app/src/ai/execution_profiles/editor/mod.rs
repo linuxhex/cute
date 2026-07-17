@@ -1270,6 +1270,7 @@ impl ExecutionProfileEditorView {
         });
     }
 
+    #[allow(dead_code)]
     fn update_all_editor_interaction_states(
         view: &Self,
         workspace: ModelHandle<UserWorkspaces>,

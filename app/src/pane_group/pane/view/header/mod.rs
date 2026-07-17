@@ -122,6 +122,7 @@ pub struct PaneHeader<P: BackingView> {
     overflow_menu:
         ViewHandle<Menu<PaneHeaderAction<P::PaneHeaderOverflowMenuAction, P::CustomAction>>>,
     toolbelt_buttons: Vec<ToolbeltButton>,
+    #[allow(dead_code)]
     shared_content: SharedPaneContent,
     open_overlay: OpenOverlay,
     is_visible_in_pane_group: bool, // If this pane header is being dragged along the tab bar, then it is not visible in the pane group
@@ -467,7 +468,7 @@ impl<P: BackingView> PaneHeader<P> {
             required_controls.add_child(close_button);
         }
 
-        let mut optional_controls = Flex::row()
+        let optional_controls = Flex::row()
             .with_main_axis_alignment(MainAxisAlignment::End)
             .with_cross_axis_alignment(CrossAxisAlignment::Center)
             .with_main_axis_size(MainAxisSize::Min);

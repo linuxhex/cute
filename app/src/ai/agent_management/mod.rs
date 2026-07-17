@@ -9,6 +9,7 @@ pub(crate) mod view;
 
 pub(crate) use agent_management_model::{AgentManagementEvent, AgentNotificationsModel};
 
+#[allow(dead_code)]
 pub fn init(app: &mut cuteui::AppContext) {
     view::init(app);
     agent_type_selector::init(app);

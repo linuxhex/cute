@@ -3447,11 +3447,13 @@ impl Input {
     }
 
     #[cfg_attr(target_family = "wasm", allow(dead_code))]
+    #[allow(dead_code)]
     pub(crate) fn handoff_entry_point(&self, ctx: &AppContext) -> HandoffEntryPoint {
         self.handoff_compose_state.as_ref(ctx).entry_point()
     }
 
     #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
+    #[allow(dead_code)]
     pub(crate) fn exit_cloud_handoff_compose_and_clear(&mut self, ctx: &mut ViewContext<Self>) {
         self.exit_cloud_handoff_compose(ctx);
         self.editor.update(ctx, |editor, ctx| {
@@ -3573,47 +3575,7 @@ impl Input {
 
     #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
     fn maybe_launch_cloud_handoff_request(&mut self, _ctx: &mut ViewContext<Self>) -> bool {
-        use crate::cloud_stub_types::CloudObjectLookup as _;
-
-        // if !FeatureFlag::OzHandoff.is_enabled()
-        //     || !FeatureFlag::HandoffLocalCloud.is_enabled()
-        //     || !cfg!(all(feature = "local_fs", not(target_family = "wasm")))
-        //     || self.prefix_mode(_ctx) != InputPrefixMode::CloudHandoff
-        // {
-        //     return false;
-        // }
-        return false;
-
-        let prompt = self.editor.as_ref(_ctx).buffer_text(_ctx).trim().to_owned();
-        if prompt.is_empty() {
-            return true;
-        }
-
-        if CloudAmbientAgentEnvironment::get_all(_ctx).is_empty() {
-            _ctx.emit(Event::OpenHandoffEnvironmentCreationModal);
-            return true;
-        }
-
-        let attachments = self.collect_cloud_launch_attachments(_ctx);
-        let environment_id = self
-            .handoff_compose_state
-            .as_ref(_ctx)
-            .selected_environment_id()
-            .cloned();
-        let entry_point = self.handoff_compose_state.as_ref(_ctx).entry_point();
-        let launch = PendingCloudLaunch {
-            prompt,
-            attachments,
-        };
-
-        self.exit_cloud_handoff_compose_and_clear(_ctx);
-
-        _ctx.dispatch_typed_action_deferred(WorkspaceAction::OpenLocalToCloudHandoffPane {
-            launch: Some(launch),
-            environment_id,
-            entry_point,
-        });
-        true
+        false
     }
 
     #[cfg(not(all(feature = "local_fs", not(target_family = "wasm"))))]
@@ -5275,6 +5237,7 @@ impl Input {
         &self.editor
     }
 
+    #[allow(dead_code)]
     pub(crate) fn ai_context_model(&self) -> &ModelHandle<BlocklistAIContextModel> {
         &self.ai_context_model
     }

@@ -35,6 +35,7 @@ impl SyncClock {
     }
 
     /// Reconstruct a `SyncClock` from wire values (proto deserialization).
+    #[allow(dead_code)]
     pub fn from_wire(server_version: u64, client_version: u64) -> Self {
         Self {
             server_version: ContentVersion::from_raw(server_version as usize),
@@ -50,12 +51,14 @@ impl SyncClock {
     }
 
     /// Check whether a server push's expected client version matches our local state.
+    #[allow(dead_code)]
     pub fn server_push_matches(&self, expected_client_version: ContentVersion) -> bool {
         self.client_version == expected_client_version
     }
 
     /// Check whether a client edit's expected server version matches our local state.
     #[cfg_attr(not(feature = "local_fs"), allow(dead_code))]
+    #[allow(dead_code)]
     pub fn client_edit_matches(&self, expected_server_version: ContentVersion) -> bool {
         self.server_version == expected_server_version
     }

@@ -48,6 +48,7 @@ const MAX_PROMPT_TOOLTIP_LENGTH: usize = 200;
 /// - Open existing rules or workflows directly
 ///
 /// An [`ActionButton`] theme for suggested rules and prompts.
+#[allow(dead_code)]
 struct SuggestionButtonTheme;
 
 impl ActionButtonTheme for SuggestionButtonTheme {
@@ -361,6 +362,7 @@ impl SuggestionChipView {
     }
 
     /// Updates the UI state to reflect that a rule has been added.
+    #[allow(dead_code)]
     fn on_add_suggestion(&mut self, ctx: &mut ViewContext<Self>) {
         self.is_saved = true;
         self.chip.update(ctx, |chip, ctx| {

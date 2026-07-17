@@ -71,6 +71,7 @@ pub trait IntegrationsClient: 'static + IntegrationsClientBounds {
     ) -> Result<SimpleIntegrationsOutput>;
 
     /// Polls the status of an OAuth connect transaction.
+    #[allow(dead_code)]
     async fn poll_oauth_connect_status(&self, tx_id: String) -> Result<OauthConnectTxStatus>;
 
     /// Gets the list of integration provider names that are using the specified environment.

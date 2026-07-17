@@ -42,12 +42,14 @@ pub enum UploadFieldValue {
 
 /// Request body for upload-snapshot upload targets.
 #[derive(Debug, Clone, serde::Serialize)]
+#[allow(dead_code)]
 pub struct SnapshotUploadRequest {
     pub files: Vec<SnapshotFileInfo>,
 }
 
 /// Describes a single file in a snapshot upload request.
 #[derive(Debug, Clone, serde::Serialize)]
+#[allow(dead_code)]
 pub struct SnapshotFileInfo {
     pub filename: String,
     pub mime_type: String,
@@ -55,21 +57,25 @@ pub struct SnapshotFileInfo {
 
 /// Response from the upload-snapshot endpoint.
 #[derive(Debug, Clone, serde::Deserialize)]
+#[allow(dead_code)]
 pub struct SnapshotUploadResponse {
     pub uploads: Vec<UploadTarget>,
 }
 
 #[derive(serde::Serialize)]
+#[allow(dead_code)]
 struct CreateExternalConversationRequest {
     format: String,
 }
 
 #[derive(serde::Deserialize)]
+#[allow(dead_code)]
 struct CreateExternalConversationResponse {
     conversation_id: String,
 }
 
 #[derive(serde::Serialize)]
+#[allow(dead_code)]
 struct GetUploadTargetRequest {
     conversation_id: String,
 }
@@ -108,33 +114,39 @@ pub struct ReportArtifactResponse {
 }
 
 #[derive(serde::Serialize)]
+#[allow(dead_code)]
 struct NotifyUserRequest {
     message: String,
 }
 
 #[derive(serde::Serialize)]
+#[allow(dead_code)]
 struct FinishTaskRequest {
     success: bool,
     summary: String,
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
+#[allow(dead_code)]
 struct ShutdownError {
     category: String,
     message: String,
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
+#[allow(dead_code)]
 pub(crate) struct ReportShutdownRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     error: Option<ShutdownError>,
 }
 
 impl ReportShutdownRequest {
+    #[allow(dead_code)]
     pub fn clean() -> Self {
         Self { error: None }
     }
 
+    #[allow(dead_code)]
     pub fn abnormal(category: String, message: String) -> Self {
         Self {
             error: Some(ShutdownError { category, message }),
@@ -175,6 +187,7 @@ pub trait HarnessSupportClient: 'static + Send + Sync {
         error_message: String,
     ) -> Result<()>;
 
+    #[allow(dead_code)]
     async fn get_snapshot_upload_targets(
         &self,
         request: &SnapshotUploadRequest,

@@ -8,6 +8,7 @@ use crate::settings::CodeSettings;
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum CodebaseAutoIndexingSurface {
+    #[allow(dead_code)]
     Local,
     Remote,
 }
@@ -33,6 +34,7 @@ pub(crate) fn should_use_codebase_indexing(
     )
 }
 
+#[allow(dead_code)]
 pub(crate) fn should_auto_index_codebase(
     surface: CodebaseAutoIndexingSurface,
     ctx: &AppContext,
@@ -55,6 +57,7 @@ fn codebase_indexing_enabled(
         && codebase_context_enabled
 }
 
+#[allow(dead_code)]
 pub(crate) fn codebase_auto_indexing_enabled(
     surface: CodebaseAutoIndexingSurface,
     codebase_context_enabled: bool,
@@ -63,6 +66,7 @@ pub(crate) fn codebase_auto_indexing_enabled(
     codebase_indexing_enabled(surface, codebase_context_enabled) && auto_indexing_enabled
 }
 
+#[allow(dead_code)]
 pub(crate) fn auto_index_candidate_roots<Root>(
     roots: impl IntoIterator<Item = Root>,
     mut should_request_index: impl FnMut(&Root) -> bool,
