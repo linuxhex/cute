@@ -269,7 +269,7 @@ use crate::server::telemetry::{
     AddTabWithShellSource, AnonymousUserSignupEntrypoint,
     LaunchConfigUiLocation, PaletteSource,
 };
-use crate::cloud_stub_types::sharing::dialog::SharingDialogSource;
+use crate::pane_group::pane::SharingDialogSource;
 use crate::settings::{
     active_theme_kind, respect_system_theme, AISettings, AISettingsChangedEvent,
     AccessibilitySettings, AliasExpansionSettings, AppEditorSettings, BlockVisibilitySettings,

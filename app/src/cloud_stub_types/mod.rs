@@ -79,11 +79,6 @@ pub mod items {
 /// Re-export sharing module (was crate::drive::sharing)
 pub mod sharing {
     pub use crate::cloud_stub_types::{ShareableObject, SharingAccessLevel, ContentEditability};
-
-    /// Re-export dialog submodule
-    pub mod dialog {
-        pub use crate::cloud_stub_types::{SharingDialog, SharingDialogEvent, SharingDialogSource};
-    }
 }
 
 /// Re-export export module (was crate::drive::export)
@@ -1663,20 +1658,6 @@ impl ShareableObject {
     }
 }
 
-/// Minimal stub for SharingDialogSource
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum SharingDialogSource {
-    ConversationList,
-    // InviteeRequest,
-    WorkflowView,
-    DrivePanel,
-    PaneHeader,
-    CommandPalette,
-    StartedSessionShare,
-    AIBlockContextMenu,
-    OnboardingBlock,
-}
-
 /// Minimal stub for DrivePanel (view type)
 #[derive(Clone, Debug)]
 pub struct DrivePanel {}
@@ -1780,79 +1761,6 @@ impl From<cute_graphql::object_permissions::AccessLevel> for SharingAccessLevel 
             cute_graphql::object_permissions::AccessLevel::Viewer => SharingAccessLevel::Viewer,
         }
     }
-}
-
-/// Minimal stub for SharingDialog
-#[derive(Clone, Debug)]
-pub struct SharingDialog {
-    target: Option<ShareableObject>,
-}
-
-impl cuteui::Entity for SharingDialog {
-    type Event = SharingDialogEvent;
-}
-
-impl cuteui::View for SharingDialog {
-    fn ui_name() -> &'static str {
-        "SharingDialog"
-    }
-
-    fn render(&self, _ctx: &AppContext) -> Box<dyn cuteui::Element> {
-        Box::new(cuteui::elements::Empty::new())
-    }
-}
-
-/// Implement TypedActionView trait for SharingDialog
-impl cuteui::TypedActionView for SharingDialog {
-    type Action = ();
-}
-
-impl SharingDialog {
-    pub fn new(_target: Option<ShareableObject>, _ctx: &mut ViewContext<Self>) -> Self {
-        Self {
-            target: None,
-        }
-    }
-
-    pub fn set_target(&mut self, _target: Option<ShareableObject>, _ctx: &mut ViewContext<Self>) {
-        // Stub implementation
-    }
-
-    pub fn report_open(&mut self, _source: SharingDialogSource, _ctx: &mut ViewContext<Self>) {
-        // Stub implementation
-    }
-
-    pub fn has_target(&self) -> bool {
-        self.target.is_some()
-    }
-
-    pub fn has_shared_session_target(&self) -> bool {
-        false
-    }
-
-    pub fn editability(&self) -> ContentEditability {
-        ContentEditability::ReadOnly
-    }
-
-    pub fn copy_link(&mut self, _ctx: &mut ViewContext<Self>) {
-        // Stub implementation
-    }
-
-    pub fn show_qr_code(&mut self, _ctx: &mut ViewContext<Self>) {
-        // Stub implementation
-    }
-
-    pub fn is_unsharable_conversation(&self) -> bool {
-        false
-    }
-}
-
-/// Minimal stub for SharingDialogEvent
-#[derive(Clone, Debug)]
-pub enum SharingDialogEvent {
-    Close,
-    UpdateAccessLevel(SharingAccessLevel),
-    Share,
 }
 
 /// Minimal stub for WorkflowArgSelector

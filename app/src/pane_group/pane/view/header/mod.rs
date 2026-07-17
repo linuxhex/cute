@@ -29,7 +29,6 @@ use crate::pane_group::pane::{
     ToolbeltButton,
 };
 use crate::pane_group::{BackingView, Direction, PaneDragDropLocation, PaneId, TabBarHoverIndex};
-use crate::cloud_stub_types::sharing::dialog::SharingDialogSource;
 use crate::settings::CodeSettings;
 use crate::tab::tab_position_id;
 use crate::terminal::view::TerminalAction;
@@ -92,7 +91,6 @@ pub enum PaneHeaderAction<A: ActionPayload, B: ActionPayload> {
     OverflowMenuAction(A),
     CustomAction(B),
     OpenOverflowMenu,
-    ShareContents,
     Close,
     PaneHeaderDragStarted,
     PaneHeaderDragged {
@@ -361,7 +359,6 @@ struct MouseStateHandles {
 #[derive(Default, Debug, PartialEq, Eq)]
 enum OpenOverlay {
     OverflowMenu,
-    SharingDialog,
     #[default]
     None,
 }
@@ -475,11 +472,6 @@ impl<P: BackingView> PaneHeader<P> {
             .with_cross_axis_alignment(CrossAxisAlignment::Center)
             .with_main_axis_size(MainAxisSize::Min);
 
-        if should_show_on_header {
-            let appearance = Appearance::as_ref(app);
-            self.render_sharing_controls(&mut optional_controls, appearance, None, None, app);
-        }
-
         let optional_controls =
             Shrinkable::new(1., Clipped::new(optional_controls.finish()).finish()).finish();
 
@@ -497,12 +489,12 @@ impl<P: BackingView> PaneHeader<P> {
         (right_justified_row, required_width)
     }
 
-    /// Adds overlay children to the stack (overflow menu and sharing dialog).
+    /// Adds overlay children to the stack (overflow menu).
     fn add_overlays_to_stack(
         &self,
         stack: &mut Stack,
         should_display_overflow_menu_button: bool,
-        app: &AppContext,
+        _app: &AppContext,
     ) {
         match self.open_overlay {
             OpenOverlay::OverflowMenu => {
@@ -514,19 +506,6 @@ impl<P: BackingView> PaneHeader<P> {
                             vec2f(0., 0.),
                             PositionedElementOffsetBounds::WindowByPosition,
                             PositionedElementAnchor::BottomRight,
-                            ChildAnchor::TopRight,
-                        ),
-                    );
-                }
-            }
-            OpenOverlay::SharingDialog => {
-                if self.is_sharing_dialog_enabled(app) {
-                    stack.add_positioned_overlay_child(
-                        ChildView::new(self.sharing_dialog()).finish(),
-                        OffsetPositioning::offset_from_parent(
-                            vec2f(-8., 0.),
-                            ParentOffsetBounds::WindowByPosition,
-                            ParentAnchor::BottomRight,
                             ChildAnchor::TopRight,
                         ),
                     );
@@ -582,7 +561,6 @@ impl<P: BackingView> PaneHeader<P> {
                 let should_show_on_header = hover_state.is_hovered()
                     || self.open_overlay != OpenOverlay::None
                     || options.has_open_menu
-                    || self.has_shareable_shared_session(app)
                     || options.always_show_icons;
 
                 let (right_justified_row, min_right_width) = self.render_right_justified_row(
@@ -724,16 +702,7 @@ impl<P: BackingView> View for PaneHeader<P> {
             overflow_button_position_id: self.overflow_button_position_id(),
             has_overflow_items,
             header_left_inset,
-            render_sharing_controls_fn: Box::new(|app, icon_color, button_size| {
-                if !self.is_sharing_dialog_enabled(app) {
-                    return None;
-                }
-
-                let appearance = Appearance::as_ref(app);
-                let mut row = Flex::row();
-                self.render_sharing_controls(&mut row, appearance, icon_color, button_size, app);
-                Some(row.finish())
-            }),
+            _phantom: std::marker::PhantomData,
         };
         let header_content = self
             .pane_stack
@@ -878,9 +847,6 @@ impl<P: BackingView> TypedActionView for PaneHeader<P> {
                 self.open_overlay = OpenOverlay::OverflowMenu;
                 ctx.emit(Event::PaneHeaderOverflowMenuToggled(true));
                 ctx.notify();
-            }
-            PaneHeaderAction::ShareContents => {
-                self.share_pane_contents(SharingDialogSource::PaneHeader, ctx)
             }
             PaneHeaderAction::PaneHeaderDragStarted => {
             }
@@ -1176,4 +1142,3 @@ fn render_draggable_placeholder_element(
     .with_background_color(appearance.theme().dark_overlay().into())
     .finish()
 }
-

@@ -358,7 +358,7 @@ use crate::server::telemetry::{
     SaveAsWorkflowModalSource,
     TelemetryEvent, ToggleBlockFilterSource, WorkflowTelemetryMetadata,
 };
-use crate::cloud_stub_types::sharing::dialog::SharingDialogSource;
+use crate::pane_group::pane::SharingDialogSource;
 // Session navigation types are now exported from crate root
 use crate::{CommandContext, SessionNavigationPromptElements};
 use crate::settings::ai::FocusedTerminalInfo;

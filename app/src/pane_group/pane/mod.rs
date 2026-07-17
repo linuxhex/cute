@@ -61,8 +61,20 @@ use crate::cloud_stub_types::FileNotebookView;
 use crate::cloud_stub_types::NotebookView;
 use crate::pane_group::focus_state::PaneFocusHandle;
 use crate::pane_group::pane::get_started_view::GetStartedView;
-use crate::cloud_stub_types::sharing::dialog::SharingDialogSource;
 use crate::settings::PaneSettings;
+
+/// Minimal stub for sharing dialog source (local version doesn't support cloud sharing).
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum SharingDialogSource {
+    ConversationList,
+    WorkflowView,
+    DrivePanel,
+    PaneHeader,
+    CommandPalette,
+    StartedSessionShare,
+    AIBlockContextMenu,
+    OnboardingBlock,
+}
 use crate::settings_view::environments_page::EnvironmentsPageView;
 use crate::settings_view::SettingsView;
 use crate::terminal::available_shells::AvailableShell;

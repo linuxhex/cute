@@ -9,11 +9,6 @@ use cuteui::fonts::Properties;
 use cuteui::text_layout::ClipConfig;
 use cuteui::{AppContext, Element};
 
-/// Closure that renders sharing controls (share button, view-only indicator) for a pane header.
-/// Accepts optional icon color and button size overrides.
-type RenderSharingControlsFn<'a> =
-    Box<dyn Fn(&AppContext, Option<Fill>, Option<f32>) -> Option<Box<dyn Element>> + 'a>;
-
 /// Context provided to backing views when rendering header content.
 ///
 /// This provides read-only access to appearance and configuration,
@@ -32,20 +27,20 @@ pub struct HeaderRenderContext<'a> {
     /// Extra left inset for the header's left-side controls, used to avoid
     /// overlap with a floating button overlay (e.g. the vertical tabs toggle).
     pub header_left_inset: f32,
-    /// Closure that renders the sharing controls. Use [`Self::sharing_controls`] to call this.
-    pub(super) render_sharing_controls_fn: RenderSharingControlsFn<'a>,
+    /// In the local version, sharing is disabled so this is always None.
+    pub _phantom: std::marker::PhantomData<&'a ()>,
 }
 
 impl HeaderRenderContext<'_> {
     /// Renders the sharing controls (share button, view-only indicator) for this pane.
-    /// Returns `None` if sharing is not enabled.
+    /// Returns `None` in the local version since sharing is disabled.
     pub fn sharing_controls(
         &self,
-        app: &AppContext,
-        icon_color: Option<Fill>,
-        button_size: Option<f32>,
+        _app: &AppContext,
+        _icon_color: Option<Fill>,
+        _button_size: Option<f32>,
     ) -> Option<Box<dyn Element>> {
-        (self.render_sharing_controls_fn)(app, icon_color, button_size)
+        None
     }
 }
 

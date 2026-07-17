@@ -11,8 +11,8 @@ use cuteui::elements::{
     Border, Container, DropTarget, DropTargetData, Flex, MainAxisSize, ParentElement, SavePosition,
     Shrinkable,
 };
-use cuteui::keymap::EditableBinding;
 use cuteui::presenter::ChildView;
+use cute_core::settings::Setting;
 use cuteui::{
     AppContext, Element, Entity, ModelHandle, SingletonEntity, TypedActionView, View, ViewContext,
     ViewHandle,
@@ -25,22 +25,10 @@ use crate::appearance::Appearance;
 use crate::pane_group::focus_state::{PaneFocusHandle, PaneGroupFocusEvent};
 use crate::pane_group::pane::ActionOrigin;
 use crate::pane_group::{Direction, SplitPaneState, TabBarHoverIndex};
-use crate::cloud_stub_types::sharing::dialog::SharingDialogSource;
 use crate::settings::{PaneSettings, PaneSettingsChangedEvent};
-use crate::util::bindings::CustomAction;
 
-const HAS_SHARED_OBJECT_CONTEXT_KEY: &str = "PaneView_HasSharedObject";
-
-pub fn init(app: &mut AppContext) {
-    use cuteui::keymap::macros::*;
-
-    app.register_editable_bindings([EditableBinding::new(
-        "pane:share_pane_contents",
-        "Share pane",
-        PaneAction::ShareContents,
-    )
-    .with_custom_action(CustomAction::SharePaneContents)
-    .with_context_predicate(id!("PaneView") & id!(HAS_SHARED_OBJECT_CONTEXT_KEY))]);
+pub fn init(_app: &mut AppContext) {
+    // Local version: no sharing bindings needed
 }
 
 pub enum PaneViewEvent {
@@ -63,7 +51,6 @@ pub enum PaneViewEvent {
 
 #[derive(Debug, Clone)]
 pub enum PaneAction {
-    ShareContents,
 }
 
 impl<P: BackingView> Entity for PaneView<P> {
@@ -237,20 +224,14 @@ impl<P: BackingView> PaneView<P> {
                 });
                 ctx.notify();
             }
-            PaneConfigurationEvent::ShareableObjectChanged(object) => {
-                self.header.update(ctx, |header, ctx| {
-                    header.set_shareable_object(object.clone(), ctx);
-                });
+            PaneConfigurationEvent::ShareableObjectChanged(_) => {
+                // No-op in local version
             }
-            PaneConfigurationEvent::ToggleSharingDialog(source) => {
-                self.header.update(ctx, |header, ctx| {
-                    header.share_pane_contents(source.clone(), ctx);
-                });
+            PaneConfigurationEvent::ToggleSharingDialog(_) => {
+                // No-op in local version
             }
-            PaneConfigurationEvent::OpenSharingQrCode(source) => {
-                self.header.update(ctx, |header, ctx| {
-                    header.open_shared_session_qr_code(source.clone(), ctx);
-                });
+            PaneConfigurationEvent::OpenSharingQrCode(_) => {
+                // No-op in local version
             }
             _ => {}
         }
@@ -425,24 +406,16 @@ impl<P: BackingView> View for PaneView<P> {
         .finish()
     }
 
-    fn keymap_context(&self, ctx: &AppContext) -> cuteui::keymap::Context {
-        let mut keymap_context = Self::default_keymap_context();
-        if self.header.as_ref(ctx).is_sharing_dialog_enabled(ctx) {
-            keymap_context.set.insert(HAS_SHARED_OBJECT_CONTEXT_KEY);
-        }
-        keymap_context
+    fn keymap_context(&self, _ctx: &AppContext) -> cuteui::keymap::Context {
+        Self::default_keymap_context()
     }
 }
 
 impl<P: BackingView> TypedActionView for PaneView<P> {
     type Action = PaneAction;
 
-    fn handle_action(&mut self, action: &Self::Action, ctx: &mut ViewContext<Self>) {
-        match action {
-            PaneAction::ShareContents => self.header.update(ctx, |header, ctx| {
-                header.share_pane_contents(SharingDialogSource::CommandPalette, ctx);
-            }),
-        }
+    fn handle_action(&mut self, _action: &Self::Action, _ctx: &mut ViewContext<Self>) {
+        // No actions in local version
     }
 }
 

@@ -3,11 +3,11 @@ use cute_core::ui::color::coloru_with_opacity;
 use cute_core::ui::theme::color::internal_colors;
 use cute_util::path::user_friendly_path;
 use cuteui::elements::{
-    AnchorPair, ChildAnchor, ChildView, ConstrainedBox, Container, CornerRadius,
+    ChildAnchor, ConstrainedBox, Container, CornerRadius,
     CrossAxisAlignment, DispatchEventResult, Element, EventHandler, Flex, Highlight, Hoverable,
     MainAxisAlignment, MainAxisSize, MouseInBehavior, MouseStateHandle, OffsetPositioning,
-    OffsetType, ParentAnchor, ParentElement, ParentOffsetBounds, PositionedElementOffsetBounds,
-    PositioningAxis, Radius, SavePosition, Shrinkable, Stack, Text, XAxisAnchor, YAxisAnchor,
+    ParentAnchor, ParentElement, ParentOffsetBounds,
+    Radius, SavePosition, Shrinkable, Stack, Text,
 };
 use cuteui::fonts::{Properties, Weight};
 use cuteui::platform::Cursor;
@@ -21,7 +21,6 @@ use crate::ai::agent_conversations_model::{
 };
 use crate::ai::conversation_status_ui::STATUS_ELEMENT_PADDING;
 use crate::appearance::Appearance;
-use crate::cloud_stub_types::sharing::dialog::SharingDialog;
 use crate::menu::Menu;
 use crate::ui_components::agent_icon::agent_conversation_entry_icon_variant;
 use crate::ui_components::icon_with_status::render_icon_with_status;
@@ -36,9 +35,6 @@ const MAX_TOOLTIP_LENGTH: usize = 80;
 
 /// Spacing between icon and title
 const ICON_SPACING: f32 = 4.;
-
-/// Offset for the sharing dialog from the item row
-const DIALOG_OFFSET_PIXELS: f32 = -16.;
 
 /// Total size of the agent icon-with-status component rendered in each conversation list
 /// row.
@@ -90,7 +86,6 @@ pub struct ItemProps<'a> {
     pub overflow_menu: &'a ViewHandle<Menu<ConversationListViewAction>>,
     pub overflow_menu_display: OverflowMenuDisplay,
     pub conversation_id: AgentConversationEntryId,
-    pub sharing_dialog: &'a ViewHandle<SharingDialog>,
     pub is_share_dialog_open: bool,
     pub list_position_id: &'a str,
     pub tooltip_opens_right: bool,
@@ -179,7 +174,6 @@ pub fn render_item(props: ItemProps<'_>, app: &AppContext) -> Box<dyn Element> {
         overflow_menu,
         overflow_menu_display,
         conversation_id,
-        sharing_dialog,
         is_share_dialog_open,
         list_position_id,
         tooltip_opens_right,
@@ -398,31 +392,12 @@ pub fn render_item(props: ItemProps<'_>, app: &AppContext) -> Box<dyn Element> {
         )
         .finish();
 
-    // Wrap in a stack to support the sharing dialog overlay
+    // Wrap in a stack to support overlays (sharing dialog removed in local version)
     let position_id = conversation_item_position_id(&conversation_id);
-    let mut item_stack = Stack::new().with_child(event_handler);
+    let item_stack = Stack::new().with_child(event_handler);
 
-    // Add the sharing dialog as a positioned overlay when open for this item
-    if is_share_dialog_open {
-        // Position the dialog to the right of the item row
-        item_stack.add_positioned_overlay_child(
-            ChildView::new(sharing_dialog).finish(),
-            OffsetPositioning::from_axes(
-                PositioningAxis::relative_to_stack_child(
-                    &position_id,
-                    PositionedElementOffsetBounds::WindowBySize,
-                    OffsetType::Pixel(DIALOG_OFFSET_PIXELS),
-                    AnchorPair::new(XAxisAnchor::Right, XAxisAnchor::Left),
-                ),
-                PositioningAxis::relative_to_stack_child(
-                    &position_id,
-                    PositionedElementOffsetBounds::WindowByPosition,
-                    OffsetType::Pixel(DIALOG_OFFSET_PIXELS),
-                    AnchorPair::new(YAxisAnchor::Middle, YAxisAnchor::Middle),
-                ),
-            ),
-        );
-    }
+    // In local version, sharing dialog overlay is not rendered
+    let _ = is_share_dialog_open;
 
     SavePosition::new(item_stack.finish(), &position_id).finish()
 }
