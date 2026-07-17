@@ -210,7 +210,7 @@ use crate::default_terminal::DefaultTerminal;
 use crate::cloud_stub_types::export::ExportManager;
 use crate::cloud_stub_types::import::modal::{ImportModal, ImportModalEvent};
 use crate::cloud_stub_types::items::WarpDriveItemId;
-use crate::cloud_stub_types::settings::{CuteDriveSettings, CuteDriveSettingsChangedEvent};
+use crate::cloud_stub_types::settings::CuteDriveSettings;
 use crate::cloud_stub_types::workflows::arguments::ArgumentsState;
 use crate::cloud_stub_types::workflows::modal::{WorkflowModal, WorkflowModalEvent};
 use crate::cloud_stub_types::{
@@ -2981,12 +2981,7 @@ impl Workspace {
             }
         });
 
-        ctx.subscribe_to_model(&CuteDriveSettings::handle(ctx), |me, _, event, ctx| {
-            if let CuteDriveSettingsChangedEvent::EnableWarpDrive { .. } = event {
-                me.update_left_panel_available_views(ctx);
-                ctx.notify();
-            }
-        });
+        // CuteDriveSettingsChangedEvent subscription removed - CuteDrive feature disabled
 
         let toast_stack =
             ctx.add_typed_action_view(|_| DismissibleToastStack::new(Duration::from_secs(4)));
@@ -8682,9 +8677,6 @@ impl Workspace {
             WorkflowModalEvent::UpdatedWorkflow(workflow_id) => {
                 // If saved workflow id matches the one that is currently displayed, then refresh workflow info box + input
                 self.maybe_refresh_workflow_info_box_and_input(&SyncId::from(WorkflowId::from(workflow_id.clone())), ctx);
-            }
-            WorkflowModalEvent::ViewInCuteDrive(id) => {
-                self.view_in_and_focus_warp_drive(WarpDriveItemId::Object(id.clone()), ctx);
             }
             // Simplified: local version has no upgrade
             WorkflowModalEvent::AiAssistUpgradeError(_team_uid, _user_id) => {}
@@ -14735,9 +14727,6 @@ impl Workspace {
             pane_group::Event::FocusPaneInWorkspace { locator } => {
                 // Focus an existing pane by its locator (used when avoiding duplicate file panes during undo close pane)
                 self.focus_pane(*locator, ctx);
-            }
-            pane_group::Event::ViewInCuteDrive(id) => {
-                self.view_in_and_focus_warp_drive(id.clone(), ctx);
             }
             // If focused pane contains an object, then set selected state in WD to that object
             pane_group::Event::PaneFocused => {

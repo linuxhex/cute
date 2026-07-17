@@ -25,7 +25,7 @@ use cuteui::{
 use super::super::palette_styles as styles;
 use crate::appearance::Appearance;
 use crate::cloud_stub_types::model::persistence::CloudModel;
-use crate::cloud_stub_types::CloudObjectTypeAndId;
+
 use crate::palette::PaletteMode;
 use crate::pane_group::pane::welcome_view::WelcomeViewAction;
 use crate::search::action::search_item::MatchedBinding;
@@ -86,10 +86,6 @@ pub enum Event {
     /// Open a notebook identified by `id`.
     OpenNotebook {
         id: SyncId,
-    },
-    /// View the relevant object in the Warp Drive sidebar.
-    ViewInCuteDrive {
-        id: CloudObjectTypeAndId,
     },
     /// Open a file at the given path.
     OpenFile {

@@ -12,15 +12,7 @@ use crate::cloud_stub_types::AiOverages;
 #[cfg_attr(not(target_family = "wasm"), async_trait)]
 #[cfg_attr(target_family = "wasm", async_trait(?Send))]
 pub trait WorkspaceClient: 'static + Send + Sync {
-    async fn generate_stripe_billing_portal_link(&self, team_uid: ServerId) -> Result<String>;
-
     async fn refresh_ai_overages(&self) -> Result<AiOverages>;
-
-    async fn purchase_addon_credits(
-        &self,
-        team_uid: ServerId,
-        credits: i32,
-    ) -> Result<WorkspacesMetadataResponse>;
 
     async fn update_addon_credits_settings(
         &self,
@@ -34,19 +26,7 @@ pub trait WorkspaceClient: 'static + Send + Sync {
 #[cfg_attr(not(target_family = "wasm"), async_trait)]
 #[cfg_attr(target_family = "wasm", async_trait(?Send))]
 impl WorkspaceClient for ServerApi {
-    async fn generate_stripe_billing_portal_link(&self, _team_uid: ServerId) -> Result<String> {
-        Err(anyhow!("Billing operations not supported in local version"))
-    }
-
     async fn refresh_ai_overages(&self) -> Result<AiOverages> {
-        Err(anyhow!("Billing operations not supported in local version"))
-    }
-
-    async fn purchase_addon_credits(
-        &self,
-        _team_uid: ServerId,
-        _credits: i32,
-    ) -> Result<WorkspacesMetadataResponse> {
         Err(anyhow!("Billing operations not supported in local version"))
     }
 

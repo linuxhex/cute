@@ -22,7 +22,6 @@ use crate::ai::blocklist::block::secret_redaction::find_secrets_in_text_with_lev
 use crate::cloud_stub_types::breadcrumbs::ContainingObject;
 use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
 use crate::cloud_stub_types::Owner;
-use crate::CuteDriveItemId;
 use crate::cloud_stub_types::sharing::{ContentEditability, ShareableObject};
 use crate::editor::EditorView;
 use crate::env_vars::active_env_var_collection_data::{
@@ -304,7 +303,6 @@ pub struct EnvVarCollectionView {
 pub enum EnvVarCollectionEvent {
     Pane(PaneEvent),
     UpdatedEnvVarCollection(SyncId),
-    ViewInCuteDrive(CuteDriveItemId),
     Invoke(EnvVarCollectionType),
 }
 #[derive(Debug, Clone)]
@@ -339,8 +337,6 @@ pub enum EnvVarCollectionAction {
     // Unsaved changes dialog actions
     ForceClose,
     CloseUnsavedChangesDialog,
-    // Breadcrumbs action
-    ViewInCuteDrive(CuteDriveItemId),
 }
 
 /// Defines the view for a collection of environment variables
@@ -1040,10 +1036,6 @@ impl EnvVarCollectionView {
             });
     }
 
-    fn view_in_cute_drive(&mut self, id: CuteDriveItemId, ctx: &mut ViewContext<Self>) {
-        ctx.emit(EnvVarCollectionEvent::ViewInCuteDrive(id));
-    }
-
     // This is a public re-export of close since it's a trait method
     pub(super) fn close_env_var_collection(&mut self, ctx: &mut ViewContext<Self>) {
         self.close(ctx);
@@ -1251,10 +1243,8 @@ impl View for EnvVarCollectionView {
                         Container::new(render_breadcrumbs(
                             self.breadcrumbs.clone(),
                             appearance,
-                            |ctx, _, breadcrumb| {
-                                ctx.dispatch_typed_action(EnvVarCollectionAction::ViewInCuteDrive(
-                                    breadcrumb.kind.clone().into_item_id(),
-                                ));
+                            |_ctx, _, _breadcrumb| {
+                                // CuteDrive navigation removed
                             },
                         ))
                         .with_horizontal_margin(CORE_HORIZONATAL_MARGIN)
@@ -1478,7 +1468,6 @@ impl TypedActionView for EnvVarCollectionView {
                 self.update_open_modal_state(ctx);
                 ctx.notify();
             }
-            EnvVarCollectionAction::ViewInCuteDrive(id) => self.view_in_cute_drive(id.clone(), ctx),
         }
     }
 }

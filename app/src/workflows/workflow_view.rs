@@ -42,7 +42,7 @@ use crate::cloud_stub_types::model::view::CloudViewModel;
 use crate::cloud_stub_types::{CloudObject, Owner, Revision, Space};
 use crate::cloud_stub_types::cloud_object_styling::cute_drive_icon_color;
 use crate::cloud_stub_types::drive_helpers::has_feature_gated_anonymous_user_reached_workflow_limit;
-use crate::cloud_stub_types::items::WarpDriveItemId;
+
 use crate::cloud_stub_types::sharing::{ContentEditability, ShareableObject};
 use cute_server_client::drive::sharing::SharingAccessLevel;
 use crate::cloud_stub_types::workflows::ai_assist::GeneratedCommandMetadataError;
@@ -195,7 +195,6 @@ impl WorkflowEditorErrorState {
 
 #[derive(Debug, Clone)]
 pub enum WorkflowAction {
-    ViewInCuteDrive(WarpDriveItemId),
     AddArgument,
     ToggleViewMode,
     RunWorkflow,
@@ -219,7 +218,6 @@ pub enum WorkflowViewEvent {
     Pane(PaneEvent),
     CreatedWorkflow(SyncId),
     UpdatedWorkflow(SyncId),
-    ViewInCuteDrive(WarpDriveItemId),
     // OpenDriveObjectShareDialog {
     //     cloud_object_type_and_id: CloudObjectTypeAndId,
     //     invitee_email: Option<String>,
@@ -555,7 +553,7 @@ impl WorkflowView {
     pub fn load(
         &mut self,
         workflow: CloudWorkflow,
-        settings: &OpenWarpDriveObjectSettings,
+        _settings: &OpenWarpDriveObjectSettings,
         mode: WorkflowViewMode,
         ctx: &mut ViewContext<Self>,
     ) {
@@ -676,12 +674,7 @@ impl WorkflowView {
         self.update_editors_interactivity(ctx);
         self.refresh_pane_overflow_menu(ctx);
 
-        if let Some(focused_folder_id) = settings.focused_folder_id.map(SyncId::ServerId) {
-            self.view_in_cute_drive(
-                WarpDriveItemId::Object(CloudObjectTypeAndId::Folder(focused_folder_id)),
-                ctx,
-            );
-        }
+        // CuteDrive navigation removed: focused_folder_id no longer opens drive
 
         if matches!(mode, WorkflowViewMode::View) {
             self.focus_first_argument_value(ctx);
@@ -2278,10 +2271,6 @@ impl WorkflowView {
         })
     }
 
-    fn view_in_cute_drive(&mut self, id: WarpDriveItemId, ctx: &mut ViewContext<Self>) {
-        ctx.emit(WorkflowViewEvent::ViewInCuteDrive(id));
-    }
-
     fn issue_request(&mut self, ctx: &mut ViewContext<Self>) {
         let ai_client = self.ai_client.clone();
         let command = self.content_editor.as_ref(ctx).buffer_text(ctx);
@@ -2606,11 +2595,7 @@ impl View for WorkflowView {
                 Container::new(render_breadcrumbs(
                     self.breadcrumbs.clone(),
                     appearance,
-                    |ctx, _, breadcrumb| {
-                        ctx.dispatch_typed_action(WorkflowAction::ViewInCuteDrive(
-                            breadcrumb.kind.clone().into_item_id(),
-                        ));
-                    },
+                    |_, _, _| { /* CuteDrive navigation removed */ },
                 ))
                 .with_horizontal_margin(CORE_HORIZONATAL_MARGIN)
                 .with_vertical_margin(vertical_margin / 2.)
@@ -2769,7 +2754,6 @@ impl TypedActionView for WorkflowView {
 
     fn handle_action(&mut self, action: &Self::Action, ctx: &mut ViewContext<Self>) {
         match action {
-            WorkflowAction::ViewInCuteDrive(id) => self.view_in_cute_drive(id.clone(), ctx),
             WorkflowAction::AddArgument => self.add_argument(ctx),
             WorkflowAction::ToggleViewMode => self.toggle_view_mode(ctx),
             WorkflowAction::CloseUnsavedDialog => self.hide_unsaved_changes_dialog(ctx),

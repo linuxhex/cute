@@ -1,12 +1,13 @@
-use cuteui::AppContext;
+// Minimal breadcrumbs stub - CuteDrive navigation removed
+// ContainingObject is retained for UI breadcrumb display but no longer
+// converts to CuteDriveItemId
 
-use super::{CloudObject, Space};
-// Import cloud stub types for removed WarpDrive functionality
-use crate::{CuteDriveItemId, CloudObjectTypeAndId, CloudFolder};
+use cuteui::AppContext;
+use crate::cloud_stub_types::CloudObject;
 use crate::ui_components::breadcrumb::Breadcrumb;
 
-// Encapsulates an object that can contain other objects, and keeps
-// information necessary to show breadcrumbs.
+/// Encapsulates an object that can contain other objects, and keeps
+/// information necessary to show breadcrumbs.
 #[derive(Clone, Debug)]
 pub struct ContainingObject {
     pub name: String,
@@ -23,41 +24,26 @@ impl Breadcrumb for ContainingObject {
     }
 }
 
-impl From<&CloudFolder> for ContainingObject {
-    fn from(folder: &CloudFolder) -> Self {
+impl From<&crate::cloud_stub_types::models::CloudFolder> for ContainingObject {
+    fn from(folder: &crate::cloud_stub_types::models::CloudFolder) -> Self {
         Self {
             name: folder.display_name().clone(),
-            kind: ContainingObjectKind::Object(CloudObjectTypeAndId::Folder(folder.id)),
-        }
-    }
-}
-
-impl Space {
-    pub fn into_containing_object(self, app: &AppContext) -> ContainingObject {
-        ContainingObject {
-            name: self.name(app).clone(),
-            kind: ContainingObjectKind::Space(self),
+            kind: ContainingObjectKind::Object(super::CloudObjectTypeAndId::Folder(folder.id)),
         }
     }
 }
 
 #[derive(Clone, Debug)]
 pub enum ContainingObjectKind {
-    Space(Space),
-    Object(CloudObjectTypeAndId),
+    Space(super::Space),
+    Object(super::CloudObjectTypeAndId),
 }
 
-impl ContainingObjectKind {
-    pub fn into_item_id(self) -> CuteDriveItemId {
-        match self {
-            ContainingObjectKind::Space(space) => {
-                match space {
-                    Space::Team { team_uid } => CuteDriveItemId::Space(team_uid),
-                    Space::Personal => CuteDriveItemId::Folder("personal".to_string()), // or some default
-                    Space::Shared => CuteDriveItemId::Folder("shared".to_string()), // or some default
-                }
-            },
-            ContainingObjectKind::Object(object) => CuteDriveItemId::Object(object),
+impl super::Space {
+    pub fn into_containing_object(self, app: &AppContext) -> ContainingObject {
+        ContainingObject {
+            name: self.name(app).clone(),
+            kind: ContainingObjectKind::Space(self),
         }
     }
 }

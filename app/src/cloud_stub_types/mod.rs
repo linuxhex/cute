@@ -362,9 +362,6 @@ pub struct OpenCuteDriveObjectSettings {
     pub open_mode: WorkflowOpenMode,
     pub focus_pane: bool,
     pub focused_folder_id: Option<crate::server::ids::ServerId>,
-    // pub invitee_email: Option<String>,
-    #[allow(dead_code)]
-    invitee_email: Option<String>, // Simplified: kept for struct compatibility but not used
 }
 
 /// Minimal stub for CuteDriveSettings
@@ -1541,7 +1538,6 @@ pub fn has_feature_gated_anonymous_user_reached_workflow_limit(_ctx: &cuteui::Ap
 /// Minimal stub for WorkflowModalEvent
 #[derive(Clone, Debug)]
 pub enum WorkflowModalEvent {
-    ViewInCuteDrive(CloudObjectTypeAndId),
     AiAssistUpgradeError(String, String),
     OpenFromCuteDrive(CloudObjectTypeAndId, OpenCuteDriveObjectSettings),
     Close,

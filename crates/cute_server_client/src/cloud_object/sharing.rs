@@ -1,10 +1,9 @@
 // Sharing types stub -保留了关键的类型定义用于 cloud_stub_types
+// Moved from drive/sharing.rs
 
 use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
-// Cute: session-sharing-protocol已删除，Role和ProfileData类型在本地定义
-// use session_sharing_protocol::common::{ProfileData as SessionSharingProfileData, Role};
 use cute_graphql::object_permissions::AccessLevel;
 
 use crate::auth::UserUid;

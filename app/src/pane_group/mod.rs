@@ -80,7 +80,7 @@ use crate::code::view::{CodeView, CodeViewAction};
 use crate::code_review::comments::{AttachedReviewComment, PendingImportedReviewComment};
 use crate::code_review::diff_state::DiffMode;
 // Warp Drive imports enabled for local version
-use crate::cloud_stub_types::items::WarpDriveItemId;
+
 use crate::cloud_stub_types::OpenCuteDriveObjectArgs;
 use crate::CloudObjectTypeAndId;
 use crate::env_vars::EnvVarCollectionType;
@@ -573,7 +573,6 @@ pub enum Event {
     FocusPaneInWorkspace {
         locator: PaneViewLocator,
     },
-    ViewInCuteDrive(WarpDriveItemId),
     MoveToSpace {
         cloud_object_type_and_id: CloudObjectTypeAndId,
         space: Space,

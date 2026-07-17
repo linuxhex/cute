@@ -29,7 +29,6 @@ use crate::ai::document::ai_document_model::{
 };
 use crate::ai::document::orchestration_config_block::OrchestrationConfigBlockView;
 use crate::appearance::Appearance;
-use crate::cloud_stub_types::items::WarpDriveItemId;
 use crate::cloud_stub_types::sharing::ShareableObject;
 use crate::cloud_stub_types::CloudObjectTypeAndId;
 use crate::editor::InteractionState;
@@ -102,7 +101,6 @@ pub enum AIDocumentAction {
     SendUpdatedPlan,
     CopyLink(String),
     CopyPlanId,
-    ShowInWarpDrive,
     AttachToActiveSession,
 }
 
@@ -110,7 +108,6 @@ pub enum AIDocumentAction {
 pub enum AIDocumentEvent {
     Pane(PaneEvent),
     CloseRequested,
-    ViewInCuteDrive(WarpDriveItemId),
     #[cfg(feature = "local_fs")]
     OpenCodeInWarp {
         source: CodeSource,
@@ -1242,17 +1239,6 @@ impl TypedActionView for AIDocumentView {
                 // Update UI to reflect the new query
                 self.update_header_buttons(ctx);
             }
-            AIDocumentAction::ShowInWarpDrive => {
-                if let Some(document) =
-                    AIDocumentModel::as_ref(ctx).get_current_document(&self.document_id)
-                {
-                    if let Some(sync_id) = document.sync_id {
-                        ctx.emit(AIDocumentEvent::ViewInCuteDrive(WarpDriveItemId::Object(
-                            CloudObjectTypeAndId::Notebook(sync_id),
-                        )));
-                    }
-                }
-            }
             #[allow(unreachable_patterns)]
             AIDocumentAction::CreateWarpDriveNotebook => {
                 // CreateWarpDriveNotebook variant disabled
@@ -1307,12 +1293,6 @@ impl BackingView for AIDocumentView {
                 MenuItemFields::new("Copy link")
                     .with_on_select_action(AIDocumentAction::CopyLink(link))
                     .with_icon(Icon::Link)
-                    .into_item(),
-            );
-            menu_items.push(
-                MenuItemFields::new("Show in Warp Drive")
-                    .with_on_select_action(AIDocumentAction::ShowInWarpDrive)
-                    .with_icon(Icon::WarpDrive)
                     .into_item(),
             );
         }
