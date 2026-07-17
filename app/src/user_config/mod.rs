@@ -31,7 +31,7 @@ lazy_static! {
 #
 # This file defines your launch configuration.
 # More on how to do so here:
-# https://docs.warp.dev/terminal/sessions/launch-configurations
+# https://github.com/linuxhex/cute/docs/launch-configurations
 #
 # All launch configurations are stored under {}.
 # Edit them anytime!

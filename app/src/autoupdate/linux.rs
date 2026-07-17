@@ -242,7 +242,7 @@ mod package_manager {
                 FormattedTextFragment::plain_text(" to install the update and re-launch Warp.  "),
                 FormattedTextFragment::hyperlink(
                     "Please report any issues",
-                    "https://github.com/warpdotdev/Warp/issues/new/choose",
+                    "https://github.com/linuxhex/cute/issues/new/choose",
                 ),
             ]));
 

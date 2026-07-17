@@ -516,7 +516,7 @@ impl LaunchConfigSaveModal {
                     .link(
                         "Link to Documentation".to_string(),
                         Some(
-                            "https://docs.warp.dev/terminal/sessions/launch-configurations"
+                            "https://github.com/linuxhex/cute/docs/launch-configurations"
                                 .to_string(),
                         ),
                         None,
