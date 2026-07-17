@@ -1,9 +1,6 @@
-use cuteui::elements::{ChildView, Element, Empty};
-use cuteui::{AppContext, Entity, SingletonEntity, TypedActionView, View, ViewContext, ViewHandle};
+use cuteui::elements::{Element, Empty};
+use cuteui::{AppContext, Entity, SingletonEntity, TypedActionView, View, ViewContext};
 
-use crate::settings_view::handoff_environment_creation_modal::{
-    HandoffEnvironmentCreationModal, HandoffEnvironmentCreationModalEvent,
-};
 use crate::view_components::DismissibleToast;
 use crate::workspace::ToastStack;
 
@@ -15,30 +12,11 @@ pub enum CreateEnvironmentModalEvent {
 
 pub struct CreateEnvironmentModal {
     visible: bool,
-    handoff_modal: ViewHandle<HandoffEnvironmentCreationModal>,
 }
 
 impl CreateEnvironmentModal {
-    pub fn new(ctx: &mut ViewContext<Self>) -> Self {
-        let handoff_modal =
-            ctx.add_typed_action_view(HandoffEnvironmentCreationModal::new_for_orchestration);
-        ctx.subscribe_to_view(&handoff_modal, |me, _, event, ctx| match event {
-            HandoffEnvironmentCreationModalEvent::Created { env_id } => {
-                me.visible = false;
-                ctx.emit(CreateEnvironmentModalEvent::Created {
-                    environment_id: env_id.uid(),
-                });
-                ctx.notify();
-            }
-            HandoffEnvironmentCreationModalEvent::Cancelled => {
-                me.cancel(ctx);
-            }
-        });
-
-        Self {
-            visible: false,
-            handoff_modal,
-        }
+    pub fn new(_ctx: &mut ViewContext<Self>) -> Self {
+        Self { visible: false }
     }
 
     pub fn is_visible(&self) -> bool {
@@ -47,10 +25,9 @@ impl CreateEnvironmentModal {
 
     pub fn show(&mut self, ctx: &mut ViewContext<Self>) {
         self.visible = true;
-        self.handoff_modal.update(ctx, |modal, ctx| {
-            modal.show(ctx);
-        });
-        ctx.focus(&self.handoff_modal);
+        // Removed: handoff environment creation modal not needed in local version.
+        // Emit Cancelled immediately so callers are not left waiting.
+        ctx.emit(CreateEnvironmentModalEvent::Cancelled);
         ctx.notify();
     }
 
@@ -64,6 +41,7 @@ impl CreateEnvironmentModal {
         ctx.emit(CreateEnvironmentModalEvent::Cancelled);
     }
 
+    #[allow(dead_code)]
     fn show_error_toast(&self, message: String, ctx: &mut ViewContext<Self>) {
         let window_id = ctx.window_id();
         ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
@@ -88,11 +66,6 @@ impl View for CreateEnvironmentModal {
     }
 
     fn render(&self, _app: &AppContext) -> Box<dyn Element> {
-        if !self.visible {
-            return Empty::new().finish();
-        }
-
-        ChildView::new(&self.handoff_modal).finish()
+        Empty::new().finish()
     }
 }
-

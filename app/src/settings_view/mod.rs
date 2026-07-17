@@ -75,7 +75,6 @@ pub(crate) mod environments_page;
 mod execution_profile_view;
 mod features;
 mod features_page;
-pub(crate) mod handoff_environment_creation_modal;
 pub mod keybindings;
 pub mod mcp_servers;
 pub mod mcp_servers_page;

@@ -515,10 +515,7 @@ pub enum WorkspaceAction {
         environment_id: Option<crate::server::ids::SyncId>,
         entry_point: crate::ai::ambient_agent_types::telemetry::HandoffEntryPoint,
     },
-    /// Show the environment creation modal during `&` handoff compose when no
-    /// environments exist.
-    ShowHandoffEnvironmentCreationModal,
-    ShowCloudModeV2EnvironmentCreationModal,
+    // Removed: ShowHandoffEnvironmentCreationModal, ShowCloudModeV2EnvironmentCreationModal - handoff modal not needed in local version
     /// Open the workspace modal for creating a new managed auth secret.
     /// Dispatched by orchestration card pickers' "New API key…" item.
     OpenCreateAuthSecretModal {
@@ -944,8 +941,6 @@ impl WorkspaceAction {
             | OpenSettingsFile
             | FixSettingsWithOz { .. }
             | OpenLocalToCloudHandoffPane { .. }
-            | ShowHandoffEnvironmentCreationModal
-            | ShowCloudModeV2EnvironmentCreationModal
             | OpenCreateAuthSecretModal { .. }
             | OpenNetworkLogPane
             | OpenBranchSelector { .. }

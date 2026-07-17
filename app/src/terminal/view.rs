@@ -19870,12 +19870,10 @@ impl TerminalView {
                 ctx.emit(Event::OpenPluginInstructionsPane(*agent, *kind));
             }
             InputEvent::OpenHandoffEnvironmentCreationModal => {
-                ctx.dispatch_typed_action(&WorkspaceAction::ShowHandoffEnvironmentCreationModal);
+                // Removed: Handoff environment creation modal not needed in local version
             }
             InputEvent::OpenCloudModeV2EnvironmentCreationModal => {
-                ctx.dispatch_typed_action(
-                    &WorkspaceAction::ShowCloudModeV2EnvironmentCreationModal,
-                );
+                // Removed: Cloud mode v2 environment creation modal not needed in local version
             }
         }
     }
