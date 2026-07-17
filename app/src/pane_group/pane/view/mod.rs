@@ -12,7 +12,6 @@ use cuteui::elements::{
     Shrinkable,
 };
 use cuteui::presenter::ChildView;
-use cute_core::settings::Setting;
 use cuteui::{
     AppContext, Element, Entity, ModelHandle, SingletonEntity, TypedActionView, View, ViewContext,
     ViewHandle,
