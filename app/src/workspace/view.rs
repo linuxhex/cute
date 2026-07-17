@@ -1199,13 +1199,13 @@ impl Workspace {
     ) -> Vec<crate::workspace::branch_selector::CommitInfo> {
         use crate::workspace::branch_selector::CommitInfo;
 
-        // 使用 --graph 参数获取分支图形信息
-        // --format 使用特殊分隔符 ||| 来分隔图形和提交信息
+        // 使用 --graph --all 参数获取完整分支图形信息
+        // --all 显示所有分支的交叉曲线，--format 使用特殊分隔符 ||| 来分隔图形和提交信息
         let mut cmd = command::blocking::Command::new("git");
         cmd.args([
             "log",
             &format!("-{}", limit),
-            branch_name,
+            "--all",
             "--graph",
             "--format=%H|||%s|||%an|||%ae|||%at",
         ])
@@ -5672,14 +5672,14 @@ impl Workspace {
 
         match target {
             FileTarget::MarkdownViewer(layout) => {
-                let session = self.get_active_session(ctx);
-
-                self.open_file_notebook(
-                    LocalOrRemotePath::Local(path.clone()),
-                    session,
-                    layout,
-                    ctx,
-                );
+                // Cute: MarkdownViewer (notebook) was a cloud feature, use CodeEditor instead
+                let open_as_preview = false;
+                let code_source = CodeSource::Link {
+                    path: path.clone(),
+                    range_start: line_col,
+                    range_end: None,
+                };
+                self.open_code(code_source, layout, line_col, open_as_preview, &[], ctx);
             }
             FileTarget::EnvEditor => {
                 let editor_value: Option<String> = self
@@ -14539,7 +14539,16 @@ impl Workspace {
                 #[cfg(feature = "local_fs")]
                 {
                     let layout = *EditorSettings::as_ref(ctx).open_file_layout.value();
-                    self.open_file_notebook(path.clone(), Some(session.clone()), layout, ctx);
+                    // Cute: Use open_code instead of open_file_notebook (notebook was a cloud feature)
+                    if let LocalOrRemotePath::Local(local_path) = path {
+                        let code_source = CodeSource::Link {
+                            path: local_path.clone(),
+                            range_start: None,
+                            range_end: None,
+                        };
+                        self.open_code(code_source, layout, None, false, &[], ctx);
+                    }
+                    let _ = session;
                 }
             }
             pane_group::Event::MoveToSpace {

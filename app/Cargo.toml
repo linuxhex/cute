@@ -568,6 +568,7 @@ default = [
     "pending_user_query_indicator",
     "git_operations_in_code_review",
     "skip_login",
+    "local_fs",
 ]
 # Enable this feature to automatically perform heap profiling.  NOTE: This will
 # substantially slow down program execution.
