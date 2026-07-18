@@ -81,8 +81,7 @@ pub enum AgentTipKind {
     Context,
     /// Tips about code editors, file trees, and code review panes
     Code,
-    /// Tips about local-to-cloud handoff
-    Handoff,
+    // Removed: Handoff - not needed in local version
 }
 
 static DEFAULT_TIPS: LazyLock<Vec<AgentTip>> = LazyLock::new(|| {
@@ -322,13 +321,7 @@ static DEFAULT_TIPS: LazyLock<Vec<AgentTip>> = LazyLock::new(|| {
             action: None,
             kind: AgentTipKind::General,
         },
-        AgentTip {
-            description: "Type `&` or use the handoff chip to move a local conversation to the cloud.".to_string(),
-            link: None,
-            binding_name: None,
-            action: None,
-            kind: AgentTipKind::Handoff,
-        },
+        // Removed: handoff tip - not needed in local version
         AgentTip {
             description: "Enable desktop notifications to get an alert when an agent needs your attention.".to_string(),
             link: Some("https://docs.cute.dev/agent-platform/cloud-agents/managing-cloud-agents#in-app-agent-notifications".to_string()),
@@ -422,10 +415,7 @@ impl AITip for AgentTip {
                 .get_codebase_index_status_for_path(root, app)
                 .is_none();
         }
-        // Handoff tips only apply when the feature is available and enabled.
-        if matches!(self.kind, AgentTipKind::Handoff) {
-            return AISettings::as_ref(app).is_cloud_handoff_enabled(app);
-        }
+        // Removed: Handoff tips check - not needed in local version
         // Tips whose description references a keybinding placeholder should only be shown
         // when the keybinding is actually configured, so we never display the raw
         // "<keybinding>" string to users.

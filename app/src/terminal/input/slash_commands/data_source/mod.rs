@@ -103,7 +103,7 @@ impl SlashCommandDataSource {
             if matches!(
                 event,
                 AISettingsChangedEvent::IsAnyAIEnabled { .. }
-                    | AISettingsChangedEvent::ShouldForceDisableCloudHandoff { .. }
+                // Removed: ShouldForceDisableCloudHandoff check - not needed in local version
             ) {
                 me.recompute_active_commands(ctx);
             }

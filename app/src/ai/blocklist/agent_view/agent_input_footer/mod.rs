@@ -233,10 +233,7 @@ pub struct AgentInputFooter {
     // Fast-forward (auto-approve) toggle button shown in the agent view footer.
     fast_forward_button: ViewHandle<ActionButton>,
 
-    // "Hand off to cloud" chip. Visibility is gated on native/local handoff
-    // availability. Per-conversation eligibility is enforced by
-    // `Workspace::start_local_to_cloud_handoff`.
-    handoff_to_cloud_button: ViewHandle<ActionButton>,
+    // Removed: handoff_to_cloud_button - not needed in local version
 
     // CLI agent voice input state (self-contained, bypasses editor voice flow).
     #[cfg(feature = "voice_input")]
@@ -360,19 +357,7 @@ impl AgentInputFooter {
                 })
         });
 
-        // "Hand off to cloud" chip. On click dispatches the workspace action that
-        // splits a new cloud-mode pane next to the local pane; that pane handles
-        // the rest of the handoff flow when native/local handoff is available.
-        let handoff_to_cloud_button = ctx.add_typed_action_view(|_ctx| {
-            ActionButton::new("", AgentInputButtonTheme)
-                .with_icon(Icon::UploadCloud)
-                .with_tooltip("Hand off to cloud (or type &)")
-                .with_size(button_size)
-                .with_tooltip_alignment(TooltipAlignment::Left)
-                .on_click(|ctx| {
-                    ctx.dispatch_typed_action(AgentInputFooterAction::OpenHandoffPane);
-                })
-        });
+        // Removed: handoff_to_cloud_button - not needed in local version
 
         // CLI agent-specific buttons (only rendered when a CLI agent session is active).
         let cli_button_size = ButtonSize::AgentInputButton;
@@ -675,7 +660,7 @@ impl AgentInputFooter {
             if matches!(
                 event,
                 AISettingsChangedEvent::AIAutoDetectionEnabled { .. }
-                    | AISettingsChangedEvent::ShouldForceDisableCloudHandoff { .. }
+                // Removed: ShouldForceDisableCloudHandoff check - not needed in local version
             ) {
                 ctx.notify()
             }
@@ -799,7 +784,7 @@ impl AgentInputFooter {
             cli_display_chips: vec![],
             display_chip_config,
             fast_forward_button,
-            handoff_to_cloud_button,
+            // Removed: handoff_to_cloud_button - not needed in local version
             #[cfg(feature = "voice_input")]
             cli_voice_input_state: CLIVoiceInputState::default(),
             #[cfg(feature = "voice_input")]
@@ -1319,7 +1304,8 @@ impl AgentInputFooter {
             | AgentToolbarItemKind::NLDToggle
             | AgentToolbarItemKind::ContextWindowUsage
             | AgentToolbarItemKind::FastForwardToggle
-            | AgentToolbarItemKind::HandoffToCloud => None,
+            // Removed: AgentToolbarItemKind::HandoffToCloud - not needed in local version
+            => None,
         }
     }
 
@@ -1923,16 +1909,7 @@ impl AgentInputFooter {
             AgentToolbarItemKind::FastForwardToggle => FeatureFlag::FastForwardAutoexecuteButton
                 .is_enabled()
                 .then(|| ChildView::new(&self.fast_forward_button).finish()),
-            AgentToolbarItemKind::HandoffToCloud => {
-                if !AISettings::as_ref(app)
-                    .is_cloud_handoff_enabled_for_terminal_view(self.terminal_view_id, app)
-                    || is_cloud_context
-                {
-                    return None;
-                }
-
-                Some(ChildView::new(&self.handoff_to_cloud_button).finish())
-            }
+            // Removed: AgentToolbarItemKind::HandoffToCloud - not needed in local version
             // Handled by the available_in() guard above; included for exhaustiveness.
             AgentToolbarItemKind::FileExplorer
             | AgentToolbarItemKind::RichInput
@@ -2211,9 +2188,7 @@ pub enum AgentInputFooterAction {
     StartRemoteControl,
     StopRemoteControl,
     OpenCodingAgentSettings,
-    /// Open the local-to-cloud handoff pane. Dispatched by the
-    /// "Hand off to cloud" footer chip.
-    OpenHandoffPane,
+    // Removed: OpenHandoffPane - not needed in local version
     ShowContextMenu {
         position: Vector2F,
     },
@@ -2369,14 +2344,7 @@ impl TypedActionView for AgentInputFooter {
                     widget_id: crate::settings_view::cli_agent_settings_widget_id(),
                 });
             }
-            AgentInputFooterAction::OpenHandoffPane => {
-                // if FeatureFlag::OzHandoff.is_enabled()
-                //     && FeatureFlag::HandoffLocalCloud.is_enabled()
-                //     && cfg!(all(feature = "local_fs", not(target_family = "wasm")))
-                // {
-                //     ctx.emit(AgentInputFooterEvent::OpenHandoffPane);
-                // }
-            }
+            // Removed: OpenHandoffPane action handler - not needed in local version
             AgentInputFooterAction::ShowContextMenu { position } => {
                 ctx.emit(AgentInputFooterEvent::ShowContextMenu {
                     position: *position,

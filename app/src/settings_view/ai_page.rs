@@ -2802,9 +2802,7 @@ pub enum AISettingsPageAction {
 
     #[cfg(feature = "local_fs")]
     SetConversationLayout(crate::util::file::external_editor::settings::OpenConversationPreference),
-    ToggleCloudHandoff,
-    ToggleAmpersandHandoff,
-    ToggleAutoHandoffOnSleep,
+    // Removed: ToggleCloudHandoff, ToggleAmpersandHandoff, ToggleAutoHandoffOnSleep - not needed in local version
     ToggleShowConversationHistory,
     ToggleAutoToggleRichInput,
     ToggleAutoOpenRichInputOnCLIAgentStart,
@@ -3416,30 +3414,7 @@ impl TypedActionView for AISettingsPageView {
             AISettingsPageAction::OpenEditCustomEndpointModal(index) => {
                 self.show_edit_custom_endpoint_modal(*index, ctx);
             }
-            AISettingsPageAction::ToggleCloudHandoff => {
-                AISettings::handle(ctx).update(ctx, |settings, ctx| {
-                    report_if_error!(settings
-                        .should_force_disable_cloud_handoff
-                        .toggle_and_save_value(ctx));
-                });
-                ctx.notify();
-            }
-            AISettingsPageAction::ToggleAmpersandHandoff => {
-                AISettings::handle(ctx).update(ctx, |settings, ctx| {
-                    report_if_error!(settings
-                        .should_force_disable_ampersand_handoff
-                        .toggle_and_save_value(ctx));
-                });
-                ctx.notify();
-            }
-            AISettingsPageAction::ToggleAutoHandoffOnSleep => {
-                AISettings::handle(ctx).update(ctx, |settings, ctx| {
-                    report_if_error!(settings
-                        .auto_handoff_on_sleep_enabled
-                        .toggle_and_save_value(ctx));
-                });
-                ctx.notify();
-            }
+            // Removed: ToggleCloudHandoff, ToggleAmpersandHandoff, ToggleAutoHandoffOnSleep handlers - not needed in local version
             #[allow(unreachable_patterns)]
             AISettingsPageAction::ToggleWarpDriveContext => {
                 // ToggleWarpDriveContext variant disabled

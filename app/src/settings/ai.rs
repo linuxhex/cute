@@ -1297,35 +1297,9 @@ define_settings_group!(AISettings, settings: [
         description: "Whether the Warp Agent adds an attribution co-author line to commit messages and pull requests it creates.",
     }
 
-    should_force_disable_cloud_handoff: ShouldForceDisableCloudHandoff {
-        type: bool,
-        default: false,
-        supported_platforms: SupportedPlatforms::DESKTOP,
-        sync_to_cloud: SyncToCloud::Globally(RespectUserSyncSetting::Yes),
-        private: false,
-        toml_path: "agents.warp_agent.other.should_force_disable_cloud_handoff",
-        description: "Whether to force-disable local-to-cloud handoff.",
-    }
-
-    should_force_disable_ampersand_handoff: ShouldForceDisableAmpersandHandoff {
-        type: bool,
-        default: false,
-        supported_platforms: SupportedPlatforms::DESKTOP,
-        sync_to_cloud: SyncToCloud::Globally(RespectUserSyncSetting::Yes),
-        private: false,
-        toml_path: "agents.warp_agent.other.should_force_disable_ampersand_handoff",
-        description: "Whether to force-disable the & prefix for cloud handoff compose mode.",
-    }
-
-    auto_handoff_on_sleep_enabled: AutoHandoffOnSleepEnabled {
-        type: bool,
-        default: false,
-        supported_platforms: SupportedPlatforms::MAC,
-        sync_to_cloud: SyncToCloud::Globally(RespectUserSyncSetting::Yes),
-        private: false,
-        toml_path: "agents.warp_agent.other.auto_handoff_on_sleep_enabled",
-        description: "Whether Warp automatically hands off local agent conversations to cloud when the computer is about to sleep.",
-    }
+    // Removed: should_force_disable_cloud_handoff - not needed in local version
+    // Removed: should_force_disable_ampersand_handoff - not needed in local version
+    // Removed: auto_handoff_on_sleep_enabled - not needed in local version
 ]);
 
 impl AISettings {
@@ -1493,60 +1467,6 @@ impl AISettings {
 
     pub fn is_orchestration_enabled(&self, app: &cuteui::AppContext) -> bool {
         false && self.is_any_ai_enabled(app)
-    }
-
-    /// Returns true when local-to-cloud handoff is effectively enabled.
-    /// Simplified: local version has no cloud handoff.
-    pub fn is_cloud_handoff_enabled(&self, _app: &cuteui::AppContext) -> bool {
-        false
-    }
-    pub fn is_cloud_handoff_enabled_for_conversation(
-        &self,
-        conversation: Option<&AIConversation>,
-        app: &cuteui::AppContext,
-    ) -> bool {
-        self.is_cloud_handoff_enabled(app)
-            && !conversation
-                .is_some_and(|conversation| is_orchestration_conversation(conversation, app))
-    }
-
-    pub fn is_cloud_handoff_enabled_for_terminal_view(
-        &self,
-        terminal_view_id: EntityId,
-        app: &cuteui::AppContext,
-    ) -> bool {
-        let active_conversation =
-            BlocklistAIHistoryModel::as_ref(app).active_conversation(terminal_view_id);
-        self.is_cloud_handoff_enabled_for_conversation(active_conversation, app)
-    }
-
-    pub fn is_ampersand_handoff_enabled(&self, app: &cuteui::AppContext) -> bool {
-        self.is_cloud_handoff_enabled(app) && !*self.should_force_disable_ampersand_handoff
-    }
-    pub fn is_ampersand_handoff_enabled_for_conversation(
-        &self,
-        conversation: Option<&AIConversation>,
-        app: &cuteui::AppContext,
-    ) -> bool {
-        self.is_cloud_handoff_enabled_for_conversation(conversation, app)
-            && !*self.should_force_disable_ampersand_handoff
-    }
-
-    pub fn is_ampersand_handoff_enabled_for_terminal_view(
-        &self,
-        terminal_view_id: EntityId,
-        app: &cuteui::AppContext,
-    ) -> bool {
-        self.is_cloud_handoff_enabled_for_terminal_view(terminal_view_id, app)
-            && !*self.should_force_disable_ampersand_handoff
-    }
-
-    pub fn is_auto_handoff_on_sleep_enabled(&self, app: &cuteui::AppContext) -> bool {
-        self.is_cloud_handoff_enabled(app)
-            && self
-                .auto_handoff_on_sleep_enabled
-                .is_supported_on_current_platform()
-            && *self.auto_handoff_on_sleep_enabled
     }
 
     /// Simplified: Local version has no quota limits, always returns false.

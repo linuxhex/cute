@@ -174,15 +174,8 @@ impl AgentViewZeroStateBlock {
                     return;
                 }
 
-                // Hide the zero state when this pane becomes a local-to-cloud handoff
-                // pane (REMOTE-1486). The fresh cloud-mode banner is suppressed because
-                // the pane is actually pre-loaded with a forked source conversation, not
-                // a brand-new one.
-                if matches!(event, AmbientAgentViewModelEvent::PendingHandoffChanged)
-                    && model.as_ref(ctx).is_local_to_cloud_handoff()
-                {
-                    me.should_hide = true;
-                } else if model.as_ref(ctx).should_show_status_footer() {
+                // Removed: local-to-cloud handoff check - not needed in local version
+                if model.as_ref(ctx).should_show_status_footer() {
                     me.should_hide = true;
                 }
 
@@ -197,8 +190,7 @@ impl AgentViewZeroStateBlock {
 
         let has_parent_terminal =
             cloud_agent_view_model.is_none_or(|model| !model.as_ref(ctx).is_ambient_agent());
-        let is_local_to_cloud_handoff = cloud_agent_view_model
-            .is_some_and(|model| model.as_ref(ctx).is_local_to_cloud_handoff());
+        // Removed: is_local_to_cloud_handoff - not needed in local version
         let changelog_model = ChangelogModel::handle(ctx);
         ctx.subscribe_to_model(&changelog_model, |me, changelog_model, event, ctx| {
             if let changelog_model::Event::ChangelogRequestComplete { .. } = event {
@@ -255,8 +247,8 @@ impl AgentViewZeroStateBlock {
             terminal_model,
             current_working_directory,
             cached_recent_conversations,
-            should_hide: matches!(origin, AgentViewEntryOrigin::AcceptedPassiveCodeDiff)
-                || is_local_to_cloud_handoff,
+            should_hide: matches!(origin, AgentViewEntryOrigin::AcceptedPassiveCodeDiff),
+            // Removed: is_local_to_cloud_handoff check - not needed in local version
             should_show_init_callout,
             has_parent_terminal,
             state_handles,
@@ -1243,4 +1235,3 @@ mod styles {
         appearance.monospace_font_size() + 6.
     }
 }
-

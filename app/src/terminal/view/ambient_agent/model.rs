@@ -210,10 +210,7 @@ impl AmbientAgentViewModel {
         }
     }
 
-    /// Whether this pane is in local-to-cloud handoff mode.
-    pub fn is_local_to_cloud_handoff(&self) -> bool {
-        self.pending_handoff.is_some()
-    }
+    /// Removed: is_local_to_cloud_handoff - not needed in local version
 
     /// Get the selected environment ID for this run.
     pub fn selected_environment_id(&self) -> Option<&SyncId> {
