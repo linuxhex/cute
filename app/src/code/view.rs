@@ -2235,32 +2235,7 @@ impl TypedActionView for CodeView {
             }
             #[cfg(feature = "local_fs")]
             CodeViewAction::RenderMarkdown => {
-                let lor_path = self
-                    .tab_at(self.active_tab_index)
-                    .and_then(|t| t.location.clone());
-
-                if let Some(lor_path) = lor_path {
-                    let source = self.source.clone();
-                    if self.active_tab_has_unsaved_changes(ctx) {
-                        self.save_local(
-                            self.active_tab_index,
-                            Some(Box::new(move |outcome, _me, ctx| {
-                                if outcome != SaveOutcome::Canceled {
-                                    ctx.emit(CodeViewEvent::Pane(PaneEvent::ReplaceWithFilePane {
-                                        path: lor_path.clone(),
-                                        source: Some(source.clone()),
-                                    }));
-                                }
-                            })),
-                            ctx,
-                        );
-                    } else {
-                        ctx.emit(CodeViewEvent::Pane(PaneEvent::ReplaceWithFilePane {
-                            path: lor_path,
-                            source: Some(source),
-                        }));
-                    }
-                }
+                // Cute: MarkdownViewer/Notebook was a cloud feature, keep in CodeEditor
             }
 
             CodeViewAction::DragOverIndex {

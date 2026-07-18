@@ -10,7 +10,7 @@ pub async fn generate_multi_agent_output(
     _params: RequestParams,
     _cancellation_rx: futures::channel::oneshot::Receiver<()>,
 ) -> Result<ResponseStream, ConvertToAPITypeError> {
-    unimplemented!("generate_multi_agent_output disabled")
+    Err(ConvertToAPITypeError::Unimplemented("generate_multi_agent_output disabled".to_string()))
 }
 
 #[cfg(test)]

@@ -274,7 +274,7 @@ impl BackingView for WelcomeView {
         _action: &Self::PaneHeaderOverflowMenuAction,
         _ctx: &mut ViewContext<Self>,
     ) {
-        unimplemented!()
+        // Cute: No overflow menu actions for WelcomeView
     }
 
     fn close(&mut self, ctx: &mut ViewContext<Self>) {

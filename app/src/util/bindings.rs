@@ -76,7 +76,7 @@ pub enum CustomAction {
     SelectBlockAbove,
     SelectBlockBelow,
     SelectAllBlocks,
-    CreateBlockPermalink,
+    // Cute: CreateBlockPermalink removed - cloud feature
     ToggleBookmarkBlock,
     FindWithinBlock,
     CopyBlock,
@@ -345,8 +345,7 @@ pub fn custom_tag_to_keystroke(custom: CustomTag) -> Option<Keystroke> {
         CustomAction::ClearBlocks => Keystroke::parse(cmd_or_ctrl_shift("k")).ok(),
         CustomAction::SelectBlockAbove => Keystroke::parse("cmdorctrl-up").ok(),
         CustomAction::SelectBlockBelow => Keystroke::parse("cmdorctrl-down").ok(),
-        // Set this to mac-only. On Linux this conflicts with the binding to save a workflow.
-        CustomAction::CreateBlockPermalink => mac_only_keystroke("cmd-shift-S"),
+        // Cute: CreateBlockPermalink binding removed - cloud feature
         CustomAction::ToggleBookmarkBlock => Keystroke::parse(cmd_or_ctrl_shift("b")).ok(),
         CustomAction::CopyBlockOutput => Keystroke::parse("cmdorctrl-alt-shift-C").ok(),
         // Set this to mac-only. On Linux this conflicts with the general binding to copy.
@@ -932,4 +931,3 @@ fn mac_only_keystroke(source: &str) -> Option<Keystroke> {
         None
     }
 }
-

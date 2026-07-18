@@ -10,7 +10,7 @@ use cuteui::platform::Cursor;
 use cuteui::{AppContext, Element, Entity, SingletonEntity, TypedActionView, View, ViewContext};
 
 use crate::appearance::Appearance;
-use crate::cloud_stub_types::settings::{WarpDriveSettings, CuteDriveSettingsChangedEvent};
+// Cute: WarpDriveSettings/CuteDriveSettings import removed
 use crate::search::{FilterChipRenderer, QueryFilter};
 use crate::settings::{AISettings, AISettingsChangedEvent};
 
@@ -56,11 +56,7 @@ impl CommandSearchZeroStateView {
             }
         });
 
-        ctx.subscribe_to_model(&WarpDriveSettings::handle(ctx), |_, _, event, ctx| {
-            if let CuteDriveSettingsChangedEvent::EnableWarpDrive { .. } = event {
-                ctx.notify();
-            }
-        });
+        // Cute: WarpDriveSettings subscription removed - CuteDrive disabled
 
         Self {
             filter_chip_to_mouse_state_handle: QueryFilter::all()

@@ -325,7 +325,6 @@ use crate::context_chips::prompt::Prompt;
 use crate::context_chips::prompt::PromptSelection;
 use crate::context_chips::prompt_type::PromptType;
 use crate::context_chips::ContextChipKind;
-use crate::cloud_stub_types::settings::CuteDriveSettings;
 use crate::cloud_stub_types::sharing::ShareableObject;
 use crate::cloud_stub_types::CloudObjectTypeAndId;
 use crate::editor::{AutosuggestionType, CrdtOperation, EditorAction};
@@ -9426,20 +9425,10 @@ impl TerminalView {
 
     fn anonymous_user_ai_sign_up_banner_action(
         &mut self,
-        action: AnonymousUserLoginBannerAction,
-        ctx: &mut ViewContext<Self>,
+        _action: AnonymousUserLoginBannerAction,
+        _ctx: &mut ViewContext<Self>,
     ) {
-        match action {
-            AnonymousUserLoginBannerAction::SignUp => {
-                ctx.emit(Event::SignupAnonymousUser {
-                    entrypoint: AnonymousUserSignupEntrypoint::LOGIN_GATED_FEATURE,
-                });
-                self.remove_anonymous_user_ai_sign_up_banner(ctx);
-            }
-            AnonymousUserLoginBannerAction::Close => {
-                self.remove_anonymous_user_ai_sign_up_banner(ctx);
-            }
-        }
+        // Cloud sign-up disabled - no-op
     }
 
     fn insert_anonymous_user_ai_sign_up_banner(&mut self, ctx: &mut ViewContext<Self>) {
@@ -15339,20 +15328,7 @@ impl TerminalView {
                         .into_item(),
                 ];
 
-                if CuteDriveSettings::is_cute_drive_enabled(ctx) {
-                    items.push(MenuItem::Separator);
-                    items.push(
-                        MenuItemFields::new("Save as workflow")
-                            .with_on_select_action(TerminalAction::ContextMenu(
-                                ContextMenuAction::OpenWorkflowModal,
-                            ))
-                            .with_key_shortcut_label(keybinding_name_to_display_string(
-                                "terminal:toggle_teams_modal",
-                                ctx,
-                            ))
-                            .into_item(),
-                    );
-                }
+                // Cute: CuteDrive disabled, "Save as workflow" menu removed
 
                 if AISettings::as_ref(ctx).is_any_ai_enabled(ctx) {
                     if FeatureFlag::AgentMode.is_enabled() {
@@ -15374,7 +15350,7 @@ impl TerminalView {
                     } else {
                         items.extend([
                             MenuItem::Separator,
-                            MenuItemFields::new("Ask Warp AI")
+                            MenuItemFields::new("Ask Cute AI")
                                 .with_on_select_action(TerminalAction::ContextMenu(
                                     ContextMenuAction::AskAI(AskAISource::SelectedBlockOrText),
                                 ))
@@ -16038,17 +16014,7 @@ impl TerminalView {
             }
         }
 
-        // Section 3: Teams related
-        if !all_current_input_text.is_empty() && CuteDriveSettings::is_cute_drive_enabled(ctx) {
-            items.extend([
-                MenuItem::Separator,
-                MenuItemFields::new("Save as workflow")
-                    .with_on_select_action(TerminalAction::InputContextMenuItem(
-                        InputContextMenuAction::SaveAsWorkflow,
-                    ))
-                    .into_item(),
-            ]);
-        }
+        // Cute: Section 3: Teams related - disabled, CuteDrive not available
 
         // Section 4: input hint text toggle
         if !is_editor_disabled {
@@ -20270,10 +20236,7 @@ impl TerminalView {
                 ctx.notify();
             }
             BannerEvent::Action(_) => {
-                #[cfg(debug_assertions)]
-                unimplemented!(
-                    "Control master error banner does not yet support handling terminal actions"
-                );
+                // Cute: Control master error banner action not supported
             }
         }
     }

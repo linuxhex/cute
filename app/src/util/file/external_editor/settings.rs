@@ -99,7 +99,7 @@ define_settings_group!(EditorSettings, settings: [
     },
     prefer_markdown_viewer: PreferMarkdownViewer {
         type: bool,
-        default: true,
+        default: false,
         supported_platforms: SupportedPlatforms::ALL,
         sync_to_cloud: SyncToCloud::Globally(RespectUserSyncSetting::Yes),
         private: false,

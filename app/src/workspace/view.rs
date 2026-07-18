@@ -86,7 +86,7 @@ use cuteui::platform::{
     Cursor, FilePickerConfiguration, FullscreenState, SystemTheme, TerminationMode,
 };
 use cuteui::text_layout::ClipConfig;
-use cuteui::ui_components::button::{Button, ButtonVariant};
+use cuteui::ui_components::button::Button;
 use cuteui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
 use cuteui::windowing::state::ApplicationStage;
 use cuteui::windowing::{StateEvent, WindowManager};
@@ -210,7 +210,6 @@ use crate::default_terminal::DefaultTerminal;
 use crate::cloud_stub_types::export::ExportManager;
 use crate::cloud_stub_types::import::modal::{ImportModal, ImportModalEvent};
 use crate::cloud_stub_types::items::WarpDriveItemId;
-use crate::cloud_stub_types::settings::CuteDriveSettings;
 use crate::cloud_stub_types::workflows::arguments::ArgumentsState;
 use crate::cloud_stub_types::workflows::modal::{WorkflowModal, WorkflowModalEvent};
 use crate::cloud_stub_types::{
@@ -1199,13 +1198,13 @@ impl Workspace {
     ) -> Vec<crate::workspace::branch_selector::CommitInfo> {
         use crate::workspace::branch_selector::CommitInfo;
 
-        // 使用 --graph --all 参数获取完整分支图形信息
-        // --all 显示所有分支的交叉曲线，--format 使用特殊分隔符 ||| 来分隔图形和提交信息
+        // 使用 --graph 参数获取分支图形信息
+        // --format 使用特殊分隔符 ||| 来分隔图形和提交信息
         let mut cmd = command::blocking::Command::new("git");
         cmd.args([
             "log",
             &format!("-{}", limit),
-            "--all",
+            branch_name,
             "--graph",
             "--format=%H|||%s|||%an|||%ae|||%at",
         ])
@@ -1222,7 +1221,7 @@ impl Workspace {
         fn is_graph_char(c: char) -> bool {
             matches!(
                 c,
-                '*' | '|' | '\\' | '/' | ' ' | '`' | '\'' | '.' | '_' | '-'
+                '*' | '|' | '\\' | '/' | ' ' | '`' | '\'' | '.' | '_' | '-' | '+' | 'o'
             )
         }
 
@@ -1241,7 +1240,7 @@ impl Workspace {
                     // 图形字符：*、|、\、/、空格、`、'、. 等
                     // 找到第一个非图形字符的位置
                     let graph_end = line
-                        .find(|c: char| !Self::is_graph_char(c))
+                        .find(|c: char| !is_graph_char(c))
                         .unwrap_or(line.len());
 
                     // 如果没有找到分隔符，可能不是提交行（纯图形行）
@@ -11361,7 +11360,7 @@ impl Workspace {
                         let url = NOTIFICATIONS_TROUBLESHOOT_URL.to_string();
                         view.toast_stack.update(ctx, |toast_stack, ctx| {
                             let toast = DismissibleToast::error(
-                                "Warp doesn't have permission to send desktop notifications.".to_string(),
+                                "Cute doesn't have permission to send desktop notifications.".to_string(),
                             )
                             .with_link(ToastLink::new("Troubleshoot notifications".to_string()).with_href(url));
                             toast_stack.add_persistent_toast(toast, ctx);
@@ -11845,16 +11844,12 @@ impl Workspace {
     }
 
     /// Updates the left panel's warp drive view.
-    fn update_warp_drive_view<F>(&mut self, ctx: &mut ViewContext<Self>, update_fn: F)
+    /// Cute: DrivePanel disabled - this is now a no-op.
+    fn update_warp_drive_view<F>(&mut self, _ctx: &mut ViewContext<Self>, _update_fn: F)
     where
         F: FnOnce(&mut DrivePanel, &mut ViewContext<DrivePanel>),
     {
-        self.left_panel_view.update(ctx, |left_panel, ctx| {
-            // left_panel.warp_drive_view().update(ctx, |warp_drive, ctx| {
-            //     update_fn(warp_drive, ctx);
-            // });
-            let _ = (left_panel, ctx, update_fn);
-        });
+        // DrivePanel is disabled in local mode
     }
 
     /// View an object in Warp Drive and open its sharing settings.
@@ -11955,7 +11950,7 @@ impl Workspace {
                                 link = link.with_keystroke(keystroke);
                             }
 
-                            let toast = DismissibleToast::default(String::from("Warp updated!"))
+                            let toast = DismissibleToast::default(String::from("Cute updated!"))
                                 .with_link(link);
 
                             stack.add_ephemeral_toast(toast, ctx);
@@ -15909,111 +15904,9 @@ impl Workspace {
         }
     }
 
-    fn handle_warp_drive_event(&mut self, event: &DrivePanelEvent, ctx: &mut ViewContext<Self>) {
-        match event {
-            DrivePanelEvent::Open | DrivePanelEvent::Close => {
-                // These events are not currently handled
-            }
-            DrivePanelEvent::RunWorkflow(_workflow) => {
-                self.run_workflow_in_active_input(
-                    &WorkflowType::Notebook(Workflow::Command {
-                        name: String::new(),
-                        command: String::new(),
-                        tags: Vec::new(),
-                        description: None,
-                        arguments: Vec::new(),
-                        source_url: None,
-                        author: None,
-                        author_url: None,
-                        shells: Vec::new(),
-                        environment_variables: None,
-                    }),
-                    WorkflowSource::Notebook {
-                        notebook_id: None,
-                        team_uid: None,
-                        location: crate::cloud_stub_types::NotebookLocation::PersonalCloud,
-                    },
-                    WorkflowSelectionSource::WarpDrive,
-                    None,
-                    TerminalSessionFallbackBehavior::default(),
-                    ctx,
-                );
-            }
-            DrivePanelEvent::InvokeEnvironmentVariables {
-                env_var_collection,
-                in_subshell,
-            } => {
-                let Some(env_var_collection) = CloudModel::as_ref(ctx).get_env_var_collection(&env_var_collection.sync_id()) else {
-                    log::warn!("Tried to execute EVC but it does not exist");
-                    return;
-                };
-                self.invoke_environment_variables(
-                    env_var_collection.clone(),
-                    *in_subshell,
-                    ctx,
-                );
-            }
-            DrivePanelEvent::OpenTeamSettingsPage => {
-                self.show_settings_with_section(Some(SettingsSection::Teams), ctx);
-            }
-            DrivePanelEvent::OpenImportModal {
-                owner,
-                initial_folder_id,
-            } => self.open_import_modal(*owner, &initial_folder_id.as_ref().map(|id| crate::server::ids::SyncId::ServerId(crate::server::ids::ServerId::from_string_lossy(id.clone()))), ctx),
-            DrivePanelEvent::OpenWorkflowModalWithNew {
-                owner,
-                initial_folder_id,
-            } => {
-                let space: crate::cloud_stub_types::Space = (*owner).into();
-                self.open_workflow_modal(space, initial_folder_id.as_ref().map(|id| SyncId::ServerId(crate::server::ids::ServerId::from_string_lossy(id.clone()))), ctx);
-            }
-            DrivePanelEvent::OpenWorkflowModalWithCloudWorkflow(workflow_id) => {
-                let workflow_sync_id = crate::server::ids::SyncId::ServerId(crate::server::ids::ServerId::from_string_lossy(workflow_id.to_string()));
-                self.open_workflow_with_existing(
-                    workflow_sync_id,
-                    &OpenWarpDriveObjectSettings::default(),
-                    ctx,
-                );
-            }
-            DrivePanelEvent::OpenSearch => {
-                // WarpDrive palette mode has been removed
-            }
-            DrivePanelEvent::OpenNotebook(source) => {
-                let notebook_source = crate::cloud_stub_types::NotebookSource::Existing(source.sync_id());
-                self.open_notebook(&notebook_source, &OpenWarpDriveObjectSettings::default(), ctx, true)
-            }
-            DrivePanelEvent::OpenEnvVarCollection(source) => {
-                let env_source = EnvVarCollectionSource::Existing(source.sync_id());
-                self.open_env_var_collection(&env_source, false, ctx)
-            }
-            DrivePanelEvent::OpenWorkflowInPane(source, mode) => {
-                let workflow_source = crate::workflows::WorkflowOpenSource::Existing(source.sync_id());
-                let view_mode = match mode {
-                    crate::cloud_stub_types::WorkflowOpenMode::Default => crate::workflows::WorkflowViewMode::View,
-                    crate::cloud_stub_types::WorkflowOpenMode::Edit => crate::workflows::WorkflowViewMode::Edit,
-                    crate::cloud_stub_types::WorkflowOpenMode::Run => crate::workflows::WorkflowViewMode::View,
-                };
-                self.open_workflow_in_pane(
-                    &workflow_source,
-                    &OpenWarpDriveObjectSettings::default(),
-                    view_mode,
-                    ctx,
-                )
-            }
-            DrivePanelEvent::OpenAIFactCollection => {
-                self.open_ai_fact_collection_pane(None, None, ctx);
-            }
-            DrivePanelEvent::OpenMCPServerCollection => {
-                self.show_settings_with_section(Some(SettingsSection::MCPServers), ctx);
-
-            }
-            DrivePanelEvent::FocusCuteDrive => {
-                ctx.focus(&self.left_panel_view);
-            }
-            DrivePanelEvent::AttachPlanAsContext(id) => {
-                self.attach_plan_as_context(*id, ctx);
-            }
-        }
+    /// Cute: DrivePanel disabled - handle_warp_drive_event is a no-op
+    fn handle_warp_drive_event(&mut self, _event: &DrivePanelEvent, _ctx: &mut ViewContext<Self>) {
+        // DrivePanel is disabled in local mode
     }
 
     fn attach_plan_as_context(&mut self, id: AIDocumentId, ctx: &mut ViewContext<Self>) {
@@ -18709,92 +18602,6 @@ impl Workspace {
         .finish()
     }
 
-    fn render_web_anonymous_user_sign_in_button(
-        &self,
-        appearance: &Appearance,
-    ) -> Box<dyn Element> {
-        let default_styles = UiComponentStyles {
-            font_color: Some(appearance.theme().active_ui_text_color().into()),
-            font_size: Some(12.),
-            font_weight: Some(Weight::Light),
-            font_family_id: Some(appearance.ui_font_family()),
-            border_color: None,
-            border_radius: Some(CornerRadius::with_all(Radius::Pixels(5.))),
-            border_width: Some(1.),
-            width: Some(80.),
-            height: Some(24.),
-            ..Default::default()
-        };
-        let hovered_styles = UiComponentStyles {
-            font_color: Some(appearance.theme().accent().into()),
-            border_color: Some(appearance.theme().accent().into()),
-            ..default_styles
-        };
-        let button = appearance
-            .ui_builder()
-            .button_with_custom_styles(
-                ButtonVariant::Text,
-                self.mouse_states.sign_in_button.clone(),
-                default_styles,
-                Some(hovered_styles),
-                Some(hovered_styles),
-                None,
-            )
-            .with_centered_text_label(String::from("Sign up"));
-
-        Align::new(
-            button
-                .build()
-                .on_click(|ctx, _, _| {
-                    ctx.dispatch_typed_action(WorkspaceAction::SignInAnonymousWebUser)
-                })
-                .finish(),
-        )
-        .finish()
-    }
-
-    fn render_anonymous_sign_up_user_button(&self, appearance: &Appearance) -> Box<dyn Element> {
-        let default_styles = UiComponentStyles {
-            font_color: Some(appearance.theme().active_ui_text_color().into()),
-            font_size: Some(12.),
-            font_weight: Some(Weight::Semibold),
-            font_family_id: Some(appearance.ui_font_family()),
-            border_color: Some(appearance.theme().active_ui_text_color().into()),
-            border_radius: Some(CornerRadius::with_all(Radius::Pixels(5.))),
-            border_width: Some(1.),
-            width: Some(80.),
-            height: Some(24.),
-            ..Default::default()
-        };
-        let hovered_styles = UiComponentStyles {
-            font_color: Some(appearance.theme().accent().into()),
-            border_color: Some(appearance.theme().accent().into()),
-            ..default_styles
-        };
-
-        let button = appearance
-            .ui_builder()
-            .button_with_custom_styles(
-                ButtonVariant::Text,
-                self.mouse_states.sign_up_button.clone(),
-                default_styles,
-                Some(hovered_styles),
-                Some(hovered_styles),
-                None,
-            )
-            .with_centered_text_label(String::from("Sign up"));
-
-        Align::new(
-            button
-                .build()
-                .on_click(|ctx, _, _| {
-                    ctx.dispatch_typed_action(WorkspaceAction::SignupAnonymousUser)
-                })
-                .finish(),
-        )
-        .finish()
-    }
-
     fn render_offline_button(&self, appearance: &Appearance) -> Box<dyn Element> {
         let ui_builder = appearance.ui_builder().clone();
 
@@ -20346,23 +20153,7 @@ impl Workspace {
         entrypoint: AnonymousUserSignupEntrypoint,
         _ctx: &mut ViewContext<Self>,
     ) {
-        // 注释掉匿名用户链接和注册流程 - 本地版本不需要
-        // if self.auth_state.is_user_anonymous().unwrap_or_default() {
-        //     // User has a Firebase anonymous account — use the linking flow.
-        //     AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
-        //         auth_manager.initiate_anonymous_user_linking(entrypoint, ctx);
-        //     });
-        // } else {
-        //     // User is fully logged out (no Firebase user) — open the regular sign-up page.
-        //     AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
-        //         let sign_up_url = auth_manager.sign_up_url();
-        //         ctx.open_url(&sign_up_url);
-        //     });
-        // }
-        // self.require_login_modal.update(ctx, |auth_modal, ctx| {
-        //     auth_modal.skip_to_browser_open_step(ctx);
-        // });
-        // self.open_require_login_modal(AuthViewVariant::RequireLoginCloseable, ctx);
+        // Cloud sign-up disabled in local version
         log::info!("User signup flow skipped in local version for entrypoint: {:?}", entrypoint);
     }
 
@@ -22334,9 +22125,7 @@ impl View for Workspace {
             }
         };
 
-        if CuteDriveSettings::is_cute_drive_enabled(app) {
-            context.set.insert(flags::ENABLE_WARP_DRIVE);
-        }
+        // Cute: CuteDrive disabled, ENABLE_WARP_DRIVE flag never set
 
         if AISettings::as_ref(app).is_any_ai_enabled(app)
             && *AISettings::as_ref(app).show_conversation_history

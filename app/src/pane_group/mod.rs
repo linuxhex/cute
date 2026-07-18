@@ -1759,46 +1759,51 @@ impl PaneGroup {
                 Ok((PaneData::new(pane_id), focus))
             }
             LeafContents::Notebook(snapshot) => {
-                let pane: Box<dyn AnyPaneContent + 'static> = match snapshot {
-                    NotebookPaneSnapshot::CloudNotebook {
-                        notebook_id,
-                        settings,
-                    } => Box::new(NotebookPane::restore(notebook_id, settings, ctx)?),
-                    NotebookPaneSnapshot::LocalFileNotebook { path } => Box::new(FilePane::new(
-                        Some(LocalOrRemotePath::Local(path)),
-                        None,
-                        #[cfg(feature = "local_fs")]
-                        None,
-                        ctx,
-                    )),
+                // Cute: Notebook/FileNotebook was a cloud feature, redirect to CodeEditor
+                let local_path = match snapshot {
+                    NotebookPaneSnapshot::CloudNotebook { .. } => None,
+                    NotebookPaneSnapshot::LocalFileNotebook { path } => Some(path),
                 };
 
-                let pane_id = pane.as_pane().id();
-                pane_contents.insert(pane_id, pane);
-                let focus = InitialFocus {
-                    focused_pane: leaf.is_focused.then_some(pane_id),
-                    active_session: None,
-                };
-
-                Ok((PaneData::new(pane_id), focus))
+                if let Some(path) = local_path {
+                    let source = CodeSource::Link {
+                        path: path.clone(),
+                        range_start: None,
+                        range_end: None,
+                    };
+                    let pane = CodePane::new(source, None, ctx);
+                    let pane_id = pane.id();
+                    pane_contents.insert(pane_id, Box::new(pane));
+                    let focus = InitialFocus {
+                        focused_pane: leaf.is_focused.then_some(pane_id),
+                        active_session: None,
+                    };
+                    Ok((PaneData::new(pane_id), focus))
+                } else {
+                    // Cloud notebook without local path - skip this pane
+                    Err(anyhow::anyhow!("Skipping cloud notebook pane (not available in local mode)"))
+                }
             }
             LeafContents::File(file_snapshot) => {
-                let pane = Box::new(FilePane::new(
-                    file_snapshot.path.map(LocalOrRemotePath::Local),
-                    None,
-                    #[cfg(feature = "local_fs")]
-                    None,
-                    ctx,
-                ));
-
-                let pane_id = pane.as_pane().id();
-                pane_contents.insert(pane_id, pane);
-                let focus = InitialFocus {
-                    focused_pane: leaf.is_focused.then_some(pane_id),
-                    active_session: None,
-                };
-
-                Ok((PaneData::new(pane_id), focus))
+                // Cute: FileNotebook was a cloud feature, redirect to CodeEditor
+                if let Some(ref path) = file_snapshot.path {
+                    let source = CodeSource::Link {
+                        path: path.clone(),
+                        range_start: None,
+                        range_end: None,
+                    };
+                    let pane = CodePane::new(source, None, ctx);
+                    let pane_id = pane.id();
+                    pane_contents.insert(pane_id, Box::new(pane));
+                    let focus = InitialFocus {
+                        focused_pane: leaf.is_focused.then_some(pane_id),
+                        active_session: None,
+                    };
+                    Ok((PaneData::new(pane_id), focus))
+                } else {
+                    // No path - skip this pane
+                    Err(anyhow::anyhow!("Skipping file pane without a path"))
+                }
             }
             #[cfg(feature = "local_fs")]
             LeafContents::Code(snapshot) => {
@@ -4934,35 +4939,6 @@ impl PaneGroup {
         }
     }
 
-    #[cfg(feature = "local_fs")]
-    fn replace_code_pane_with_file_pane(
-        &mut self,
-        code_pane_id: PaneId,
-        path: LocalOrRemotePath,
-        source: Option<crate::code::editor_management::CodeSource>,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        // Get the active session to pass to the FilePane, if any
-        let session = self.active_session_view(ctx).and_then(|view| {
-            // Use the active session if it's local
-            let view_ref = view.as_ref(ctx);
-            if view_ref.active_session_is_local(ctx) == Some(true) {
-                view_ref
-                    .active_block_session_id()
-                    .and_then(|session_id| view_ref.sessions_model().as_ref(ctx).get(session_id))
-            } else {
-                None
-            }
-        });
-
-        let file_pane = FilePane::new(Some(path), session, source, ctx);
-        let success = self.replace_pane(code_pane_id, file_pane, false, ctx);
-
-        if !success {
-            log::error!("Failed to replace code pane {code_pane_id:?} with file pane");
-        }
-    }
-
     /// Handle a common pane event, such as splitting off another pane.
     pub(super) fn handle_pane_event(
         &mut self,
@@ -5009,10 +4985,6 @@ impl PaneGroup {
             #[cfg(feature = "local_fs")]
             PaneEvent::ReplaceWithCodePane { path, source } => {
                 self.replace_file_pane_with_code_pane(pane_id, path.clone(), source.clone(), ctx);
-            }
-            #[cfg(feature = "local_fs")]
-            PaneEvent::ReplaceWithFilePane { path, source } => {
-                self.replace_code_pane_with_file_pane(pane_id, path.clone(), source.clone(), ctx);
             }
             PaneEvent::RepoChanged => {
                 ctx.emit(Event::RepoChanged);
@@ -5833,8 +5805,7 @@ impl PaneGroup {
                 });
             }
             BannerEvent::Action(_) => {
-                #[cfg(debug_assertions)]
-                unimplemented!("User default shell change banner doesn't support actions");
+                // Cute: Shell change banner action not supported
             }
         }
         ctx.notify();

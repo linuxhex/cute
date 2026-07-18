@@ -1110,8 +1110,8 @@ impl EnvironmentsPageWidget {
             EnvironmentListScope::Team => {
                 let shared_by_text = UserWorkspaces::as_ref(app)
                     .current_team()
-                    .map(|team| format!("Shared by Warp and {}", team.name))
-                    .unwrap_or_else(|| "Shared by Warp and your team".to_string());
+                    .map(|team| format!("Shared by Cute and {}", team.name))
+                    .unwrap_or_else(|| "Shared by Cute and your team".to_string());
                 Self::render_overline_header(&shared_by_text, appearance)
             }
         };

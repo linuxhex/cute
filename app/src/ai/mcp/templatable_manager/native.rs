@@ -1382,6 +1382,7 @@ impl TemplatableMCPServerManager {
         }
     }
 
+    #[allow(dead_code)]
     pub fn get_first_team_space_id(app: &AppContext) -> Option<ServerId> {
         let user_workspaces = UserWorkspaces::as_ref(app);
         let all_user_spaces = user_workspaces.all_user_spaces(app);

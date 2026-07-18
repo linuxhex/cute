@@ -1143,9 +1143,4 @@ pub enum PaneEvent {
         path: LocalOrRemotePath,
         source: Option<crate::code::editor_management::CodeSource>,
     },
-    #[cfg(feature = "local_fs")]
-    ReplaceWithFilePane {
-        path: LocalOrRemotePath,
-        source: Option<crate::code::editor_management::CodeSource>,
-    },
 }

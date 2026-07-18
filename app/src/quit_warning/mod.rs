@@ -239,7 +239,7 @@ impl<'a> UnsavedStateSummary<'a> {
     }
 
     pub fn running_sessions(&self) -> RunningSessionSummary<'_> {
-        unimplemented!("running_sessions disabled")
+        RunningSessionSummary::new(Vec::new())
     }
 
     /// Initializes a [`QuitWarningDialog`] with this summary of unsaved state.
