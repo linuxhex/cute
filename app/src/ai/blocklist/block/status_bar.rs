@@ -54,7 +54,7 @@ use crate::settings_view::keybindings::KeybindingChangedNotifier;
 use crate::terminal::input::buffer_model::{InputBufferModel, InputBufferUpdateEvent};
 use crate::terminal::input::slash_command_model::SlashCommandModel;
 use crate::terminal::input::suggestions_mode_model::InputSuggestionsModeModel;
-use crate::terminal::input::{HandoffComposeState, SET_INPUT_MODE_TERMINAL_ACTION_NAME};
+use crate::terminal::input::SET_INPUT_MODE_TERMINAL_ACTION_NAME;
 use crate::terminal::model::block::LONG_RUNNING_COMMAND_DURATION_MS;
 use crate::terminal::model_events::{ModelEvent, ModelEventDispatcher};
 use crate::terminal::view::ambient_agent::{
@@ -141,7 +141,6 @@ impl BlocklistAIStatusBar {
         input_suggestions_model: ModelHandle<InputSuggestionsModeModel>,
         slash_command_model: ModelHandle<SlashCommandModel>,
         ephemeral_message_model: ModelHandle<EphemeralMessageModel>,
-        handoff_compose_state: ModelHandle<HandoffComposeState>,
         terminal_view_id: EntityId,
         ctx: &mut ViewContext<Self>,
     ) -> Self {
@@ -337,7 +336,6 @@ impl BlocklistAIStatusBar {
                 input_suggestions_model,
                 slash_command_model,
                 context_model.clone(),
-                handoff_compose_state,
                 terminal_model.clone(),
                 ctx,
             )

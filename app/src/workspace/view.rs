@@ -13759,24 +13759,6 @@ impl Workspace {
     // Removed: show_cloud_mode_v2_environment_creation_modal - not needed in local version
 
     #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-    fn restore_source_handoff_draft(
-        source_view: &ViewHandle<TerminalView>,
-        launch: Option<PendingCloudLaunch>,
-        environment_id: Option<SyncId>,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        let Some(launch) = launch else {
-            return;
-        };
-        source_view.update(ctx, |view, ctx| {
-            let input = view.input().clone();
-            input.update(ctx, |input, ctx| {
-                input.restore_cloud_handoff_draft(launch, environment_id, ctx);
-            });
-        });
-    }
-
-    #[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
     fn show_handoff_success_toast(ctx: &mut ViewContext<Self>) {
         let window_id = ctx.window_id();
         WorkspaceToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
@@ -13860,7 +13842,6 @@ impl Workspace {
             log::warn!(
                 "start_local_to_cloud_handoff: failed to push fresh cloud-mode pane over the active session"
             );
-            Self::restore_source_handoff_draft(&source_view, launch, environment_id, ctx);
             let window_id = ctx.window_id();
             WorkspaceToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
                 toast_stack.add_ephemeral_toast(
@@ -13976,7 +13957,6 @@ impl Workspace {
             .is_cloud_handoff_enabled_for_conversation(source_conversation.as_ref(), ctx)
         {
             if show_user_feedback {
-                Self::restore_source_handoff_draft(&source_view, launch, environment_id, ctx);
                 let window_id = ctx.window_id();
                 WorkspaceToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
                     toast_stack.add_ephemeral_toast(
@@ -14023,7 +14003,6 @@ impl Workspace {
 
             if has_long_running_command {
                 if show_user_feedback {
-                    Self::restore_source_handoff_draft(&source_view, launch, environment_id, ctx);
                     let window_id = ctx.window_id();
                     WorkspaceToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
                         toast_stack.add_ephemeral_toast(
@@ -14059,7 +14038,6 @@ impl Workspace {
 
         let Some(source_token) = source_conversation.server_conversation_token().cloned() else {
             if show_user_feedback {
-                Self::restore_source_handoff_draft(&source_view, launch, environment_id, ctx);
                 let window_id = ctx.window_id();
                 WorkspaceToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
                     toast_stack.add_ephemeral_toast(
@@ -14106,12 +14084,6 @@ impl Workspace {
                         "start_local_to_cloud_handoff: fork_conversation RPC failed: {err:#}"
                     );
                     if show_user_feedback {
-                        Self::restore_source_handoff_draft(
-                            &source_view,
-                            launch,
-                            environment_id,
-                            ctx,
-                        );
                         let window_id = ctx.window_id();
                         WorkspaceToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
                             toast_stack.add_ephemeral_toast(
