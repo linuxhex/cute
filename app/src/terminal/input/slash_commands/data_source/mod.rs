@@ -68,19 +68,10 @@ pub struct SlashCommandDataSource {
     active_commands_by_id: HashMap<SlashCommandId, StaticCommand>,
     active_repo_root: Option<PathBuf>,
     ambient_agent_view_model: Option<ModelHandle<AmbientAgentViewModel>>,
-    is_cloud_mode_v2: bool,
 }
 
 impl SlashCommandDataSource {
     pub fn new(args: DataSourceArgs, ctx: &mut ModelContext<Self>) -> Self {
-        Self::build(args, /* is_cloud_mode_v2 */ false, ctx)
-    }
-
-    pub fn for_cloud_mode_v2(args: DataSourceArgs, ctx: &mut ModelContext<Self>) -> Self {
-        Self::build(args, /* is_cloud_mode_v2 */ true, ctx)
-    }
-
-    fn build(args: DataSourceArgs, is_cloud_mode_v2: bool, ctx: &mut ModelContext<Self>) -> Self {
         let DataSourceArgs {
             active_session,
             agent_view_controller,
@@ -189,7 +180,6 @@ impl SlashCommandDataSource {
             active_commands_by_id: Default::default(),
             active_repo_root: None,
             ambient_agent_view_model,
-            is_cloud_mode_v2,
         };
         me.recompute_active_commands(ctx);
         me
@@ -201,12 +191,11 @@ impl SlashCommandDataSource {
     const CLI_AGENT_INPUT_ALLOWED_COMMANDS: &[&str] = &["/prompts", "/skills"];
 
     fn is_cloud_mode(&self, ctx: &AppContext) -> bool {
-        self.is_cloud_mode_v2
-            || (false
-                && self
-                    .ambient_agent_view_model
-                    .as_ref()
-                    .is_some_and(|model| model.as_ref(ctx).is_ambient_agent()))
+        false
+            && self
+                .ambient_agent_view_model
+                .as_ref()
+                .is_some_and(|model| model.as_ref(ctx).is_ambient_agent())
     }
 
     fn recompute_active_commands(&mut self, ctx: &mut ModelContext<Self>) {
@@ -289,10 +278,6 @@ impl SlashCommandDataSource {
 
         if AISettings::as_ref(ctx).is_any_ai_enabled(ctx) {
             session_context |= Availability::AI_ENABLED;
-        }
-
-        if self.is_cloud_mode_v2 && false {
-            // Availability::CLOUD_AGENT_V2 disabled
         }
 
         if !self.is_cloud_mode(ctx) {
@@ -474,7 +459,7 @@ impl SyncDataSource for SlashCommandDataSource {
                     InlineItem::from_slash_command(id, command, app)
                         .with_name_match_result(fuzzy_result.name_match_result)
                         .with_description_match_result(fuzzy_result.description_match_result)
-                        .with_compact_layout(self.is_cloud_mode_v2)
+                        .with_compact_layout(false)
                         .with_score(
                             OrderedFloat(score) * SCORE_MULTIPLIER
                                 + OrderedFloat(prefix_boost) * SCORE_MULTIPLIER
@@ -530,7 +515,7 @@ impl SyncDataSource for SlashCommandDataSource {
                         InlineItem::from_skill(&skill, app)
                             .with_name_match_result(fuzzy_result.name_match_result)
                             .with_description_match_result(fuzzy_result.description_match_result)
-                            .with_compact_layout(self.is_cloud_mode_v2)
+                            .with_compact_layout(false)
                             .with_score(
                                 OrderedFloat(score) * SCORE_MULTIPLIER
                                     + OrderedFloat(prefix_boost) * SCORE_MULTIPLIER

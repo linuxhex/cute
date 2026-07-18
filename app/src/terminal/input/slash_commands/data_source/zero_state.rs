@@ -15,17 +15,12 @@ use crate::terminal::input::slash_commands::{
 
 pub struct ZeroStateDataSource {
     slash_command_data_source: ModelHandle<SlashCommandDataSource>,
-    is_cloud_mode_v2: bool,
 }
 
 impl ZeroStateDataSource {
-    pub fn new(
-        slash_command_data_source: &ModelHandle<SlashCommandDataSource>,
-        is_cloud_mode_v2: bool,
-    ) -> Self {
+    pub fn new(slash_command_data_source: &ModelHandle<SlashCommandDataSource>) -> Self {
         Self {
             slash_command_data_source: slash_command_data_source.clone(),
-            is_cloud_mode_v2,
         }
     }
 }
@@ -80,7 +75,7 @@ impl SyncDataSource for ZeroStateDataSource {
             } else {
                 results.push(
                     InlineItem::from_slash_command(active_command_id, active_command, app)
-                        .with_compact_layout(self.is_cloud_mode_v2)
+                        .with_compact_layout(false)
                         .into(),
                 );
             }
@@ -93,14 +88,13 @@ impl SyncDataSource for ZeroStateDataSource {
             {
                 results.push(
                     InlineItem::from_slash_command(id, command, app)
-                        .with_compact_layout(self.is_cloud_mode_v2)
+                        .with_compact_layout(false)
                         .into(),
                 );
             }
         }
 
-        if self.is_cloud_mode_v2
-            && FeatureFlag::ListSkills.is_enabled()
+        if FeatureFlag::ListSkills.is_enabled()
             && AISettings::as_ref(app).is_any_ai_enabled(app)
         {
             let slash_command_data_source = self.slash_command_data_source.as_ref(app);
@@ -125,13 +119,13 @@ impl SyncDataSource for ZeroStateDataSource {
                 }
                 results.push(
                     InlineItem::from_skill(&skill, app)
-                        .with_compact_layout(self.is_cloud_mode_v2)
+                        .with_compact_layout(false)
                         .into(),
                 );
             }
         }
 
-        if self.is_cloud_mode_v2 && AISettings::as_ref(app).is_any_ai_enabled(app) {
+        if AISettings::as_ref(app).is_any_ai_enabled(app) {
             let saved_prompts: Vec<_> = CloudModel::as_ref(app)
                 .get_all_active_workflows()
                 .filter(|cw| cw.model().data.is_agent_mode_workflow())
@@ -146,7 +140,7 @@ impl SyncDataSource for ZeroStateDataSource {
             for saved_prompt in saved_prompts {
                 results.push(
                     InlineItem::from_saved_prompt(saved_prompt, app)
-                        .with_compact_layout(self.is_cloud_mode_v2)
+                        .with_compact_layout(false)
                         .into(),
                 );
             }
