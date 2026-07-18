@@ -19782,9 +19782,6 @@ impl TerminalView {
             InputEvent::OpenHandoffEnvironmentCreationModal => {
                 // Removed: Handoff environment creation modal not needed in local version
             }
-            InputEvent::OpenCloudModeV2EnvironmentCreationModal => {
-                // Removed: Cloud mode v2 environment creation modal not needed in local version
-            }
         }
     }
 
