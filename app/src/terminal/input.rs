@@ -87,8 +87,7 @@ pub use cuteui::geometry::vector::{vec2f, Vector2F};
 use cuteui::keymap::{BindingDescription, EditableBinding, FixedBinding, Keystroke};
 use cuteui::platform::OperatingSystem;
 use cuteui::presenter::ChildView;
-#[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-use cuteui::r#async::FutureExt as _;
+
 use cuteui::r#async::SpawnedFutureHandle;
 use cuteui::text_layout::TextStyle;
 use cuteui::ui_components::chip::Chip;
@@ -140,27 +139,19 @@ use crate::ai::agent::{AIAgentContext, AIAgentExchangeId, CancellationReason, En
 use crate::ai::agent_conversations_model::{
     AgentConversationNavigationSubject, AgentConversationsModel,
 };
-use crate::ai::ambient_agent_types::telemetry::HandoffEntryPoint;
 use crate::ai::attachment_utils::MAX_ATTACHMENT_SIZE_BYTES;
 use crate::ai::block_context::BlockContext;
-#[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-use crate::ai::blocklist::agent_view::agent_input_footer::sort_environments_by_recency;
 use crate::ai::blocklist::agent_view::shortcuts::AgentShortcutViewModel;
 use crate::ai::blocklist::agent_view::{
-    is_in_cloud_context, AgentInputFooter, AgentInputFooterEvent, AgentViewController,
+    AgentInputFooter, AgentInputFooterEvent, AgentViewController,
     AgentViewEntryOrigin, EphemeralMessageModel,
 };
 use crate::ai::blocklist::block::cli_controller::CLISubagentController;
 use crate::ai::blocklist::block::status_bar::BlocklistAIStatusBar;
-#[cfg(all(feature = "local_fs", not(target_family = "wasm")))]
-use crate::ai::blocklist::{
-    pick_handoff_overlap_env, resolve_repo_for_path, HandoffLaunchAttachments, PendingCloudLaunch,
-    TouchedWorkspace,
-};
 use crate::ai::blocklist::prompt::prompt_alert::{PromptAlertEvent, PromptAlertView};
 use crate::ai::blocklist::telemetry_banner::should_collect_ai_ugc_telemetry;
 use crate::ai::blocklist::{
-    ai_brand_color, ai_indicator_height, render_ai_agent_mode_icon, render_ai_follow_up_icon,
+    ai_indicator_height, render_ai_agent_mode_icon, render_ai_follow_up_icon,
     AttachmentType, BlocklistAIActionModel, BlocklistAIContextEvent, BlocklistAIContextModel,
     BlocklistAIController, BlocklistAIControllerEvent, BlocklistAIHistoryEvent,
     BlocklistAIHistoryModel, BlocklistAIInputEvent, BlocklistAIInputModel, InputConfig, InputType,
@@ -168,7 +159,6 @@ use crate::ai::blocklist::{
     SlashCommandRequest, BLOCK_CONTEXT_ATTACHMENT_REGEX, DIFF_HUNK_ATTACHMENT_REGEX,
     DRIVE_OBJECT_ATTACHMENT_REGEX,
 };
-use crate::ai::cloud_environments::CloudAmbientAgentEnvironment;
 use crate::ai::document::ai_document_model::{AIDocumentId, AIDocumentVersion};
 use crate::ai::execution_profiles::profiles::AIExecutionProfilesModel;
 use crate::ai::harness_availability::HarnessAvailabilityModel;
@@ -188,10 +178,8 @@ use crate::ai::AIRequestUsageModel;
 use crate::ai_assistant::execution_context::WarpAiExecutionContext;
 use crate::appearance::{Appearance, AppearanceEvent};
 use crate::channel::ChannelState;
-use crate::cloud_stub_types::model::generic_string_model::StringModel;
 use crate::cloud_stub_types::model::persistence::CloudModel;
 use crate::cloud_stub_types::model::view::CloudViewModel;
-use crate::cloud_stub_types::CloudObjectLookup as _;
 #[cfg(feature = "local_fs")]
 use crate::code::editor_management::CodeSource;
 use crate::code_review::diff_state::DiffMode;
@@ -285,7 +273,7 @@ use crate::terminal::package_installers::command_at_cursor_has_common_package_in
 use crate::terminal::prompt_render_helper::should_render_ps1_prompt;
 use crate::terminal::universal_developer_input::AtContextMenuDisabledReason;
 use crate::terminal::view::ambient_agent::{
-    AuthSecretFtuxView, AuthSecretSelector,
+    AuthSecretSelector,
     HarnessSelector, HarnessSelectorEvent, HostSelector,
 };
 use crate::terminal::view::inline_banner::{PromptSuggestionsEvent, PromptSuggestionsView};
@@ -12236,7 +12224,7 @@ impl Input {
     }
 
     /// Returns true if toggling the input mode is disabled.
-    fn is_input_mode_toggle_disabled(&self, ctx: &ViewContext<Self>) -> bool {
+    fn is_input_mode_toggle_disabled(&self, _ctx: &ViewContext<Self>) -> bool {
         // Don't allow input mode changes for:
         // - read-only viewers in shared sessions.
         // - long-running commands with an agent tagged in or in control.

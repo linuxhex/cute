@@ -15,6 +15,7 @@ pub enum HandoffComposeStateEvent {
 /// Transient state owned by the local input while drafting a cloud handoff
 /// prompt (the `&` prefix mode), before a cloud pane exists.
 #[derive(Default)]
+#[allow(dead_code)]
 pub struct HandoffComposeState {
     active: bool,
     selected_environment_id: Option<SyncId>,
@@ -23,10 +24,12 @@ pub struct HandoffComposeState {
 }
 
 impl HandoffComposeState {
+    #[allow(dead_code)]
     pub(crate) fn is_active(&self) -> bool {
         self.active
     }
 
+    #[allow(dead_code)]
     pub(crate) fn activate(
         &mut self,
         entry_point: HandoffEntryPoint,
@@ -44,6 +47,7 @@ impl HandoffComposeState {
         self.entry_point
     }
 
+    #[allow(dead_code)]
     pub(crate) fn exit(&mut self, ctx: &mut ModelContext<Self>) {
         if !self.active && !self.has_explicit_environment_selection {
             return;
@@ -54,10 +58,12 @@ impl HandoffComposeState {
         ctx.emit(HandoffComposeStateEvent::ActiveChanged);
     }
 
+    #[allow(dead_code)]
     pub(crate) fn selected_environment_id(&self) -> Option<&SyncId> {
         self.selected_environment_id.as_ref()
     }
 
+    #[allow(dead_code)]
     pub(crate) fn set_environment_id(
         &mut self,
         environment_id: Option<SyncId>,
@@ -85,6 +91,7 @@ impl HandoffComposeState {
         ctx.emit(HandoffComposeStateEvent::EnvironmentSelected);
     }
 
+    #[allow(dead_code)]
     pub(crate) fn ensure_default_environment_id(
         &mut self,
         environment_id: SyncId,
@@ -99,4 +106,3 @@ impl HandoffComposeState {
 impl Entity for HandoffComposeState {
     type Event = HandoffComposeStateEvent;
 }
-

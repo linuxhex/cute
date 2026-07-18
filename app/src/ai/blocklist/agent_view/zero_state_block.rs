@@ -41,7 +41,7 @@ use crate::terminal::input::message_bar::{Message, MessageItem};
 use crate::terminal::model::blocks::BlockHeightItem;
 use crate::terminal::model::session::{BootstrapSessionType, Session, SessionType, Sessions};
 use crate::terminal::model_events::{AnsiHandlerEvent, ModelEvent, ModelEventDispatcher};
-use crate::terminal::view::ambient_agent::{AmbientAgentViewModel, AmbientAgentViewModelEvent};
+use crate::terminal::view::ambient_agent::AmbientAgentViewModel;
 use crate::terminal::view::TerminalAction;
 use crate::terminal::{self, prompt, TerminalModel};
 use crate::util::time_format::format_approx_duration_from_now_utc;
@@ -169,7 +169,7 @@ impl AgentViewZeroStateBlock {
 
         if let Some(cloud_agent_view_model) = cloud_agent_view_model {
             let model_events_clone = model_events_dispatcher.clone();
-            ctx.subscribe_to_model(cloud_agent_view_model, move |me, model, event, ctx| {
+            ctx.subscribe_to_model(cloud_agent_view_model, move |me, model, _event, ctx| {
                 if me.should_hide {
                     return;
                 }

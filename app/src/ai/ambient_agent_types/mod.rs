@@ -542,6 +542,7 @@ pub mod scheduled {
 pub mod telemetry {
     /// Entry point for a cloud handoff flow (stub).
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+    #[allow(dead_code)]
     pub enum HandoffEntryPoint {
         FooterChip,
         #[default]

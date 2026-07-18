@@ -984,7 +984,7 @@ pub(crate) fn initialize_app(
     // in `initialize_cloud_preferences_syncer`; InvalidSettings means TOML
     // parsed but individual values were wrong, which doesn't mean local
     // state is unusable.
-    let startup_toml_parse_error_for_syncer = user_defaults_on_startup
+    let _startup_toml_parse_error_for_syncer = user_defaults_on_startup
         .settings_file_error
         .as_ref()
         .and_then(|err| match err {

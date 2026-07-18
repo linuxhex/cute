@@ -21,7 +21,6 @@ use tokio::fs;
 use toolbar_item::AgentToolbarItemKind;
 #[cfg(feature = "voice_input")]
 use voice_input::{StartListeningError, VoiceSessionResult};
-use cute_cli::agent::Harness;
 use cute_core::report_if_error;
 use cute_core::ui::color::blend::Blend;
 use cute_core::ui::theme::color::internal_colors;
@@ -42,8 +41,6 @@ use cuteui::{
     ViewHandle,
 };
 
-#[cfg(feature = "local_fs")]
-pub(crate) use self::environment_selector::sort_environments_by_recency;
 pub(crate) use self::environment_selector::{
     EnvironmentSelector, EnvironmentSelectorEvent, EnvironmentSelectorTarget,
 };
@@ -53,7 +50,6 @@ use crate::ai::blocklist::prompt::prompt_alert::{PromptAlertEvent, PromptAlertVi
 use crate::ai::blocklist::usage::icon_for_context_window_usage;
 use crate::ai::blocklist::BlocklistAIInputModel;
 use crate::ai::execution_profiles::profiles::AIExecutionProfilesModel;
-use crate::ai::harness_availability::HarnessAvailabilityModel;
 use crate::ai::AIRequestUsageModel;
 use crate::appearance::Appearance;
 use crate::auth::AuthManager;
@@ -1845,7 +1841,7 @@ impl AgentInputFooter {
         &self,
         item: &AgentToolbarItemKind,
         shared_status: &SharedSessionStatus,
-        is_cloud_context: bool,
+        _is_cloud_context: bool,
         _is_conversation_transcript_context: bool,
         app: &AppContext,
     ) -> Option<Box<dyn Element>> {

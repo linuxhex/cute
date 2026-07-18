@@ -24,7 +24,7 @@ use cute_core::execution_mode::AppExecutionMode;
 use cute_core::features::FeatureFlag;
 use cuteui::platform::keyboard::KeyCode;
 use cuteui::platform::OperatingSystem;
-use cuteui::{AppContext, Entity, EntityId, ModelContext, SingletonEntity, UpdateModel};
+use cuteui::{AppContext, Entity, ModelContext, SingletonEntity, UpdateModel};
 
 use crate::ai::agent::conversation::AIConversation;
 use crate::ai::blocklist::BlocklistAIHistoryModel;
@@ -1689,6 +1689,7 @@ impl AISettings {
     }
 }
 
+#[allow(dead_code)]
 fn is_orchestration_conversation(conversation: &AIConversation, app: &AppContext) -> bool {
     conversation.has_parent_agent()
         || !BlocklistAIHistoryModel::as_ref(app)

@@ -1,10 +1,7 @@
 use cute_core::settings::Setting;
-use cute_core::ui::theme::color::internal_colors;
 use cuteui::elements::{
-    Align, AnchorPair, Border, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment,
-    DispatchEventResult, DropTarget, Element, Empty, EventHandler, Expanded, Flex, Hoverable,
-    MainAxisSize, OffsetPositioning, OffsetType, ParentElement, PositionedElementOffsetBounds,
-    PositioningAxis, Radius, SavePosition, Stack, XAxisAnchor, YAxisAnchor,
+    Border, Container, DropTarget, Element, Flex, Hoverable,
+    MainAxisSize, ParentElement, SavePosition, Stack,
 };
 use cuteui::presenter::ChildView;
 use cuteui::{AppContext, SingletonEntity as _};
@@ -22,7 +19,6 @@ use crate::ai::blocklist::InputType;
 use crate::ai::harness_availability::HarnessAvailabilityModel;
 use crate::appearance::Appearance;
 use crate::context_chips::spacing::{self};
-use crate::editor::position_id_for_cursor;
 use crate::features::FeatureFlag;
 use crate::settings::InputModeSettings;
 use crate::terminal::settings::TerminalSettings;

@@ -149,7 +149,7 @@ use cuteui::elements::shimmering_text::ShimmeringTextStateHandle;
 use cuteui::elements::{
     get_rich_content_position_id, Align, Border, ChildAnchor, ChildView, Clipped,
     ClippedScrollStateHandle, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment,
-    DispatchEventResult, DropTarget, DropTargetData, Empty, EventHandler, Expanded, Fill, Flex,
+    DispatchEventResult, DropTarget, DropTargetData, Empty, EventHandler, Fill, Flex,
     Hoverable, Icon, LiveElement, MouseStateHandle, NewScrollable, OffsetPositioning, ParentAnchor,
     ParentElement, ParentOffsetBounds, PositionedElementAnchor, PositionedElementOffsetBounds,
     Radius, Rect, SavePosition, ScrollStateHandle, Scrollable, ScrollableElement, ScrollbarWidth,

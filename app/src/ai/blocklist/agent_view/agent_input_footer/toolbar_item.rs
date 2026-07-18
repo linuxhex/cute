@@ -1,10 +1,8 @@
 use serde::{Deserialize, Serialize};
-use cuteui::SingletonEntity;
 
 use super::editor::AgentToolbarEditorMode;
 use crate::context_chips::{agent_footer_available_chips, available_chips, ContextChipKind};
 use crate::features::FeatureFlag;
-use crate::settings::AISettings;
 // 已注释：清理 shared_session 共享会话功能，使用 stub 类型
 // use crate::terminal::shared_session::SharedSessionStatus;
 use crate::SharedSessionStatus;

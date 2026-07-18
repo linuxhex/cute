@@ -2,7 +2,7 @@ use pathfinder_geometry::rect::RectF;
 use pathfinder_geometry::vector::Vector2F;
 
 use super::util::{scroll_clipped_scrollable_handle_with_delta, scroll_delta_for_axis};
-use super::{NewScrollableElement, ScrollableAxis};
+use super::NewScrollableElement;
 use crate::elements::new_scrollable::util::child_constraint_for_axis;
 use crate::elements::{
     Axis, ClippedScrollStateHandle, F32Ext, ScrollData, ScrollStateHandle, ScrollTarget,
@@ -39,7 +39,7 @@ pub enum SingleAxisConfig {
 
 impl SingleAxisConfig {
     /// At run-time, validate if the passed-in axis config is valid.
-    pub(super) fn validate(&self, axis: Axis) {
+    pub(super) fn validate(&self, #[allow(unused_variables)] axis: Axis) {
         #[cfg(debug_assertions)]
         {
             if let SingleAxisConfig::Manual { child, .. } = self {

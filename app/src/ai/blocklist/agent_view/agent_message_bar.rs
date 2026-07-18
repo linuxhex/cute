@@ -3,7 +3,6 @@ use std::sync::Arc;
 use parking_lot::FairMutex;
 use cute_core::features::FeatureFlag;
 use cute_core::ui::appearance::Appearance;
-use cute_core::ui::theme::Fill;
 use cuteui::assets::asset_cache::AssetSource;
 use cuteui::elements::{Container, Element, Empty, MouseStateHandle};
 use cuteui::keymap::Keystroke;
@@ -18,10 +17,10 @@ use crate::ai::agent::{
 use crate::ai::blocklist::agent_view::shortcuts::AgentShortcutViewModel;
 use crate::ai::blocklist::agent_view::zero_state_block::render_ambient_credits_banner;
 use crate::ai::blocklist::agent_view::{
-    agent_view_bg_fill, is_in_cloud_context, AgentViewController, AgentViewControllerEvent,
+    agent_view_bg_fill, AgentViewController, AgentViewControllerEvent,
 };
 use crate::ai::blocklist::{
-    ai_brand_color, BlocklistAIContextEvent, BlocklistAIContextModel, BlocklistAIHistoryEvent,
+    BlocklistAIContextEvent, BlocklistAIContextModel, BlocklistAIHistoryEvent,
     BlocklistAIInputEvent, BlocklistAIInputModel,
 };
 use crate::ai::document::ai_document_model::{AIDocumentModel, AIDocumentModelEvent};
@@ -31,7 +30,6 @@ use crate::ai::request_usage_model::{
     AIRequestUsageModel, AIRequestUsageModelEvent, AMBIENT_AGENT_TRIAL_CREDIT_THRESHOLD,
 };
 use crate::search::slash_command_menu::static_commands::commands;
-use crate::settings::AISettings;
 use crate::terminal::input::buffer_model::{InputBufferModel, InputBufferUpdateEvent};
 use crate::terminal::input::message_bar::attached_context::{
     AttachedBlocksMessageProducer, AttachedContextArgs, AttachedTextSelectionMessageProducer,
@@ -49,7 +47,6 @@ use crate::terminal::input::suggestions_mode_model::{
 use crate::terminal::input::{InputAction, SET_INPUT_MODE_AGENT_ACTION_NAME};
 use crate::terminal::model::TerminalModel;
 use crate::terminal::view::TerminalAction;
-use crate::ui_components::blended_colors;
 use crate::util::bindings::keybinding_name_to_keystroke;
 use crate::workspace::tab_settings::{TabSettings, TabSettingsChangedEvent};
 #[cfg(not(target_family = "wasm"))]

@@ -533,7 +533,7 @@ impl Scene {
         }
     }
 
-    fn validate_rect(rect: &RectF, location: Option<&'static std::panic::Location<'static>>) {
+    fn validate_rect(rect: &RectF, _location: Option<&'static std::panic::Location<'static>>) {
         #[cfg(debug_assertions)]
         let location_info = location
             .map(|loc| {

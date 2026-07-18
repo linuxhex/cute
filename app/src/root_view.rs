@@ -1414,6 +1414,7 @@ pub struct RootView {
     mouse_states: TrafficLightMouseStates,
     window_id: WindowId,
     pending_tutorial: Option<OnboardingTutorial>,
+    #[allow(dead_code)]
     pending_post_auth_onboarding_settings: Option<SelectedSettings>,
     #[cfg(target_family = "wasm")]
     web_handoff_view: Option<ViewHandle<Workspace>>,

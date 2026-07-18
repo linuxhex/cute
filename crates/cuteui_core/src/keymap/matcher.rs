@@ -16,9 +16,11 @@ pub struct Matcher {
     keymap: Keymap,
     /// Default binding validator that should run on every binding (irrespective of the [`Context`]
     /// the binding was registered against).
+    #[allow(dead_code)]
     default_binding_validator: Option<BindingValidatorFn>,
     /// List of validators to be used during binding validation. Each binding validator validates
     /// all of the bindings that match the [`Context`] it is paired with.
+    #[allow(dead_code)]
     binding_validators: Vec<(Context, BindingValidatorFn)>,
     /// Function to convert bindings that have a [`CustomTag`] trigger to one that has a
     /// [`Keystroke`]-based trigger instead. If `None`, bindings are not converted.  

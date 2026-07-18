@@ -44,7 +44,7 @@ use crate::terminal::input::slash_command_model::{
     SlashCommandEntryState, UpdatedSlashCommandModel,
 };
 use crate::terminal::input::{
-    CompletionsTrigger, Event, Input, InputAction, InputSuggestionsMode, UserQueryMenuAction,
+    CompletionsTrigger, Event, Input, InputSuggestionsMode, UserQueryMenuAction,
 };
 #[cfg(feature = "local_fs")]
 use crate::terminal::model::session::Session;
