@@ -1,11 +1,11 @@
 use cuteui::{Entity, ModelContext, SingletonEntity};
 
 use super::CloudEnvVarCollectionModel;
-use crate::cloud_stub_types::breadcrumbs::ContainingObject;
-use crate::cloud_stub_types::model::persistence::CloudModelEvent;
-use crate::cloud_stub_types::model::view::CloudViewModel;
-use crate::cloud_stub_types::{CloudObject, Owner, Revision, Space};
-use crate::cloud_stub_types::sharing::{ContentEditability, SharingAccessLevel};
+use crate::local_storage_types::breadcrumbs::ContainingObject;
+use crate::local_storage_types::model::persistence::CloudModelEvent;
+use crate::local_storage_types::model::view::CloudViewModel;
+use crate::local_storage_types::{CloudObject, Owner, Revision, Space};
+use crate::local_storage_types::sharing::{ContentEditability, SharingAccessLevel};
 use crate::env_vars::CloudEnvVarCollection;
 use crate::server::ids::{ClientId, ServerId, SyncId};
 use crate::{AppContext, CloudModel};

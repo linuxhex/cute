@@ -10,8 +10,8 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use super::{JsonModel, JsonSerializer};
-use crate::cloud_stub_types::model::generic_string_model::StringModel;
-use crate::cloud_stub_types::{CloudObjectUuid, GenericStringObjectUniqueKey};
+use crate::local_storage_types::model::generic_string_model::StringModel;
+use crate::local_storage_types::{CloudObjectUuid, GenericStringObjectUniqueKey};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct JSONMCPServer {

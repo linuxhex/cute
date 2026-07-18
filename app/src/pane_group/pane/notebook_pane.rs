@@ -5,7 +5,7 @@ use super::{
     DetachType, PaneConfiguration, PaneContent, PaneGroup, PaneId, ShareableLink, ShareableLinkError,
 };
 use crate::pane_group::focus_state::PaneFocusHandle;
-use crate::cloud_stub_types::NotebookView;
+use crate::local_storage_types::NotebookView;
 use crate::app_state::LeafContents;
 
 pub struct NotebookPane {
@@ -28,7 +28,7 @@ impl NotebookPane {
 
     pub fn restore(
         _notebook_id: Option<crate::server::ids::SyncId>,
-        _settings: Option<crate::cloud_stub_types::OpenCuteDriveObjectSettings>,
+        _settings: Option<crate::local_storage_types::OpenCuteDriveObjectSettings>,
         _ctx: &mut ViewContext<PaneGroup>,
     ) -> Result<Self, anyhow::Error> {
         // Stub - cloud notebook restore is not available
@@ -63,7 +63,7 @@ impl PaneContent for NotebookPane {
         // Stub: return a placeholder notebook snapshot
         LeafContents::Notebook(crate::app_state::NotebookPaneSnapshot::CloudNotebook {
             notebook_id: Some(crate::server::ids::SyncId::ClientId(crate::server::ids::ClientId::new())),
-            settings: Some(crate::cloud_stub_types::OpenCuteDriveObjectSettings::default()),
+            settings: Some(crate::local_storage_types::OpenCuteDriveObjectSettings::default()),
         })
     }
 

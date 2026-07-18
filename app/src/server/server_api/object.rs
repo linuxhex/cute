@@ -11,12 +11,12 @@ use cute_server_client::cloud_object::{SerializedModel, ServerMetadata};
 use cute_server_client::ids::{GenericStringObjectId, HashedSqliteId, ObjectUid, ServerId, SyncId};
 
 use super::ServerApi;
-use crate::cloud_stub_types::{
+use crate::local_storage_types::{
     BulkCreateCloudObjectResult, BulkCreateGenericStringObjectsRequest, CreateCloudObjectResult,
     CreateObjectRequest, ObjectsToUpdate, Owner, Revision,
 };
-use crate::cloud_stub_types::folders::FolderId;
-use crate::cloud_stub_types::sharing::SharingAccessLevel;
+use crate::local_storage_types::folders::FolderId;
+use crate::local_storage_types::sharing::SharingAccessLevel;
 use crate::workflows::WorkflowId;
 
 // ---------------------------------------------------------------------------
@@ -154,7 +154,7 @@ pub trait ObjectClient: 'static + Send + Sync {
         workflow_id: WorkflowId,
         data: SerializedModel,
         revision: Option<Revision>,
-    ) -> Result<crate::cloud_stub_types::UpdateCloudObjectResult<crate::cloud_stub_types::ServerWorkflow>>;
+    ) -> Result<crate::local_storage_types::UpdateCloudObjectResult<crate::local_storage_types::ServerWorkflow>>;
 
     /// Creates n generic string objects in a single graphql request.
     async fn bulk_create_generic_string_objects(
@@ -165,8 +165,8 @@ pub trait ObjectClient: 'static + Send + Sync {
 
     async fn create_generic_string_object(
         &self,
-        format: crate::cloud_stub_types::GenericStringObjectFormat,
-        uniqueness_key: Option<crate::cloud_stub_types::GenericStringObjectUniqueKey>,
+        format: crate::local_storage_types::GenericStringObjectFormat,
+        uniqueness_key: Option<crate::local_storage_types::GenericStringObjectUniqueKey>,
         request: CreateObjectRequest,
     ) -> Result<CreateCloudObjectResult>;
 
@@ -180,11 +180,11 @@ pub trait ObjectClient: 'static + Send + Sync {
     /// Updates a notebook with the new title and data.
     async fn update_notebook(
         &self,
-        notebook_id: crate::cloud_stub_types::models::NotebookId,
+        notebook_id: crate::local_storage_types::models::NotebookId,
         title: Option<String>,
         data: Option<SerializedModel>,
         revision: Option<Revision>,
-    ) -> Result<crate::cloud_stub_types::UpdateCloudObjectResult<crate::cloud_stub_types::ServerNotebook>>;
+    ) -> Result<crate::local_storage_types::UpdateCloudObjectResult<crate::local_storage_types::ServerNotebook>>;
 
     async fn create_folder(&self, request: CreateObjectRequest) -> Result<CreateCloudObjectResult>;
 
@@ -192,26 +192,26 @@ pub trait ObjectClient: 'static + Send + Sync {
         &self,
         folder_id: FolderId,
         name: SerializedModel,
-    ) -> Result<crate::cloud_stub_types::UpdateCloudObjectResult<crate::cloud_stub_types::ServerFolder>>;
+    ) -> Result<crate::local_storage_types::UpdateCloudObjectResult<crate::local_storage_types::ServerFolder>>;
 
     async fn update_generic_string_object(
         &self,
         object_id: GenericStringObjectId,
         model: SerializedModel,
         revision: Option<Revision>,
-    ) -> Result<crate::cloud_stub_types::UpdateCloudObjectResult<Box<dyn crate::cloud_stub_types::ServerObject>>>;
+    ) -> Result<crate::local_storage_types::UpdateCloudObjectResult<Box<dyn crate::local_storage_types::ServerObject>>>;
 
     /// Sets the current editor of the notebook to be the logged in user
     async fn grab_notebook_edit_access(
         &self,
-        notebook_id: crate::cloud_stub_types::models::NotebookId,
-    ) -> Result<crate::cloud_stub_types::ServerMetadata>;
+        notebook_id: crate::local_storage_types::models::NotebookId,
+    ) -> Result<crate::local_storage_types::ServerMetadata>;
 
     /// Sets the current editor of the notebook to be null
     async fn give_up_notebook_edit_access(
         &self,
-        notebook_id: crate::cloud_stub_types::models::NotebookId,
-    ) -> Result<crate::cloud_stub_types::ServerMetadata>;
+        notebook_id: crate::local_storage_types::models::NotebookId,
+    ) -> Result<crate::local_storage_types::ServerMetadata>;
 
     /// Gets updates for all Cute Drive actions.
     async fn get_cute_drive_updates(
@@ -231,7 +231,7 @@ pub trait ObjectClient: 'static + Send + Sync {
     // Transfers a notebook to the given owner
     async fn transfer_notebook_owner(
         &self,
-        notebook_id: crate::cloud_stub_types::models::NotebookId,
+        notebook_id: crate::local_storage_types::models::NotebookId,
         owner: Owner,
     ) -> Result<bool>;
 
@@ -256,7 +256,7 @@ pub trait ObjectClient: 'static + Send + Sync {
         id: ServerId,
         folder_id: Option<FolderId>,
         owner: Owner,
-        object_type: crate::cloud_stub_types::ObjectType,
+        object_type: crate::local_storage_types::ObjectType,
     ) -> Result<bool>;
 
     async fn record_object_action(
@@ -292,13 +292,13 @@ pub trait ObjectClient: 'static + Send + Sync {
         object_id: ServerId,
         guest_emails: Vec<String>,
         access_level: cute_graphql::object_permissions::AccessLevel,
-    ) -> Result<crate::cloud_stub_types::ServerPermissions>;
+    ) -> Result<crate::local_storage_types::ServerPermissions>;
 
     async fn remove_object_guest(
         &self,
         object_id: ServerId,
         guest: GuestIdentifier,
-    ) -> Result<crate::cloud_stub_types::ServerPermissions>;
+    ) -> Result<crate::local_storage_types::ServerPermissions>;
 
     /// Fetches the last-used timestamps for all cloud environments.
     async fn fetch_environment_last_task_run_timestamps(
@@ -321,7 +321,7 @@ impl ObjectClient for ServerApi {
         _workflow_id: WorkflowId,
         _data: SerializedModel,
         _revision: Option<Revision>,
-    ) -> Result<crate::cloud_stub_types::UpdateCloudObjectResult<crate::cloud_stub_types::ServerWorkflow>> {
+    ) -> Result<crate::local_storage_types::UpdateCloudObjectResult<crate::local_storage_types::ServerWorkflow>> {
         Err(anyhow!("Cloud objects not supported in local version"))
     }
 
@@ -335,8 +335,8 @@ impl ObjectClient for ServerApi {
 
     async fn create_generic_string_object(
         &self,
-        _format: crate::cloud_stub_types::GenericStringObjectFormat,
-        _uniqueness_key: Option<crate::cloud_stub_types::GenericStringObjectUniqueKey>,
+        _format: crate::local_storage_types::GenericStringObjectFormat,
+        _uniqueness_key: Option<crate::local_storage_types::GenericStringObjectUniqueKey>,
         _request: CreateObjectRequest,
     ) -> Result<CreateCloudObjectResult> {
         Err(anyhow!("Cloud objects not supported in local version"))
@@ -351,11 +351,11 @@ impl ObjectClient for ServerApi {
 
     async fn update_notebook(
         &self,
-        _notebook_id: crate::cloud_stub_types::models::NotebookId,
+        _notebook_id: crate::local_storage_types::models::NotebookId,
         _title: Option<String>,
         _data: Option<SerializedModel>,
         _revision: Option<Revision>,
-    ) -> Result<crate::cloud_stub_types::UpdateCloudObjectResult<crate::cloud_stub_types::ServerNotebook>> {
+    ) -> Result<crate::local_storage_types::UpdateCloudObjectResult<crate::local_storage_types::ServerNotebook>> {
         Err(anyhow!("Cloud objects not supported in local version"))
     }
 
@@ -367,7 +367,7 @@ impl ObjectClient for ServerApi {
         &self,
         _folder_id: FolderId,
         _name: SerializedModel,
-    ) -> Result<crate::cloud_stub_types::UpdateCloudObjectResult<crate::cloud_stub_types::ServerFolder>> {
+    ) -> Result<crate::local_storage_types::UpdateCloudObjectResult<crate::local_storage_types::ServerFolder>> {
         Err(anyhow!("Cloud objects not supported in local version"))
     }
 
@@ -376,21 +376,21 @@ impl ObjectClient for ServerApi {
         _object_id: GenericStringObjectId,
         _model: SerializedModel,
         _revision: Option<Revision>,
-    ) -> Result<crate::cloud_stub_types::UpdateCloudObjectResult<Box<dyn crate::cloud_stub_types::ServerObject>>> {
+    ) -> Result<crate::local_storage_types::UpdateCloudObjectResult<Box<dyn crate::local_storage_types::ServerObject>>> {
         Err(anyhow!("Cloud objects not supported in local version"))
     }
 
     async fn grab_notebook_edit_access(
         &self,
-        _notebook_id: crate::cloud_stub_types::models::NotebookId,
-    ) -> Result<crate::cloud_stub_types::ServerMetadata> {
+        _notebook_id: crate::local_storage_types::models::NotebookId,
+    ) -> Result<crate::local_storage_types::ServerMetadata> {
         Err(anyhow!("Cloud objects not supported in local version"))
     }
 
     async fn give_up_notebook_edit_access(
         &self,
-        _notebook_id: crate::cloud_stub_types::models::NotebookId,
-    ) -> Result<crate::cloud_stub_types::ServerMetadata> {
+        _notebook_id: crate::local_storage_types::models::NotebookId,
+    ) -> Result<crate::local_storage_types::ServerMetadata> {
         Err(anyhow!("Cloud objects not supported in local version"))
     }
 
@@ -416,7 +416,7 @@ impl ObjectClient for ServerApi {
 
     async fn transfer_notebook_owner(
         &self,
-        _notebook_id: crate::cloud_stub_types::models::NotebookId,
+        _notebook_id: crate::local_storage_types::models::NotebookId,
         _owner: Owner,
     ) -> Result<bool> {
         Err(anyhow!("Cloud objects not supported in local version"))
@@ -455,7 +455,7 @@ impl ObjectClient for ServerApi {
         _id: ServerId,
         _folder_id: Option<FolderId>,
         _owner: Owner,
-        _object_type: crate::cloud_stub_types::ObjectType,
+        _object_type: crate::local_storage_types::ObjectType,
     ) -> Result<bool> {
         Err(anyhow!("Cloud objects not supported in local version"))
     }
@@ -503,7 +503,7 @@ impl ObjectClient for ServerApi {
         _object_id: ServerId,
         _guest_emails: Vec<String>,
         _access_level: cute_graphql::object_permissions::AccessLevel,
-    ) -> Result<crate::cloud_stub_types::ServerPermissions> {
+    ) -> Result<crate::local_storage_types::ServerPermissions> {
         Err(anyhow!("Cloud objects not supported in local version"))
     }
 
@@ -511,7 +511,7 @@ impl ObjectClient for ServerApi {
         &self,
         _object_id: ServerId,
         _guest: GuestIdentifier,
-    ) -> Result<crate::cloud_stub_types::ServerPermissions> {
+    ) -> Result<crate::local_storage_types::ServerPermissions> {
         Err(anyhow!("Cloud objects not supported in local version"))
     }
 

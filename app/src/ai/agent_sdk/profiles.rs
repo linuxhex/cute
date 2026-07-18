@@ -6,8 +6,8 @@ use cuteui::{AppContext, ModelContext, SingletonEntity};
 
 use crate::ai::agent_sdk::output::{self, TableFormat};
 use crate::ai::execution_profiles::profiles::AIExecutionProfilesModel;
-use crate::cloud_stub_types::model::generic_string_model::StringModel;
-use crate::cloud_stub_types::UpdateManager; // Import from cloud_stub_types
+use crate::local_storage_types::model::generic_string_model::StringModel;
+use crate::local_storage_types::UpdateManager; // Import from local_storage_types
 // use crate::server::cloud_objects::UpdateManager; // Removed: cloud sync feature
 use crate::server::ids::SyncId;
 

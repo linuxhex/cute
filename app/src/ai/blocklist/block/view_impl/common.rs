@@ -82,7 +82,7 @@ use crate::ai::loading::shimmering_cute_loading_text;
 use crate::ai::AIRequestUsageModel;
 use crate::code::editor::view::CodeEditorView;
 use crate::code::editor_management::CodeSource;
-use crate::cloud_stub_types::{markdown_table_appearance, rich_text_styles};
+use crate::local_storage_types::{markdown_table_appearance, rich_text_styles};
 use crate::search::slash_command_menu::static_commands::commands;
 use crate::settings::{FontSettings, InputSettings};
 use crate::settings_view::SettingsSection;

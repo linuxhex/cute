@@ -11,7 +11,7 @@ use super::{
 };
 use crate::app_state::{LeafContents, WorkflowPaneSnapshot};
 
-use crate::cloud_stub_types::OpenWarpDriveObjectSettings;
+use crate::local_storage_types::OpenWarpDriveObjectSettings;
 use crate::server::ids::SyncId;
 use crate::workflows::manager::{WorkflowManager, WorkflowOpenSource};
 use crate::workflows::workflow_view::{WorkflowView, WorkflowViewEvent};

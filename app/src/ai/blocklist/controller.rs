@@ -57,11 +57,11 @@ use crate::ai::document::ai_document_model::{
 };
 use crate::ai::llms::{LLMId, LLMPreferences};
 use crate::ai::AIRequestUsageModel;
-use crate::cloud_stub_types::model::persistence::CloudModel;
+use crate::local_storage_types::model::persistence::CloudModel;
 use crate::features::FeatureFlag;
 use crate::global_resource_handles::GlobalResourceHandlesProvider;
 use crate::network::NetworkStatus;
-use crate::cloud_stub_types::FileLinkResolutionContext;
+use crate::local_storage_types::FileLinkResolutionContext;
 use crate::persistence::ModelEvent;
 #[cfg(not(target_family = "wasm"))]
 use crate::server::server_api::ServerApiProvider;

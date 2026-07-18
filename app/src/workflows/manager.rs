@@ -5,9 +5,9 @@ use cuteui::{Entity, EntityId, ModelContext, SingletonEntity};
 
 use super::workflow::Workflow;
 use super::CloudWorkflowModel;
-use crate::cloud_stub_types::model::persistence::CloudModel;
+use crate::local_storage_types::model::persistence::CloudModel;
 use cute_server_client::cloud_object::{GenericCloudObject, Owner};
-use crate::cloud_stub_types::OpenWarpDriveObjectSettings;
+use crate::local_storage_types::OpenWarpDriveObjectSettings;
 use crate::pane_group::{PaneContent, WorkflowPane};
 
 use crate::server::ids::{ClientId, SyncId};

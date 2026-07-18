@@ -50,13 +50,13 @@ use crate::terminal::history::PersistedCommand;
 use crate::terminal::model::block::{SerializedAgentViewVisibility, SerializedBlock};
 use crate::terminal::model::session::SessionId;
 use crate::workflows::CloudWorkflow;
-use crate::cloud_stub_types::model::generic_string_model::CloudStringObject;
-use crate::cloud_stub_types::model::actions::ObjectAction;
-use crate::cloud_stub_types::{HashedSqliteId, RevisionAndLastEditor, ServerCreationInfo};
+use crate::local_storage_types::model::generic_string_model::CloudStringObject;
+use crate::local_storage_types::model::actions::ObjectAction;
+use crate::local_storage_types::{HashedSqliteId, RevisionAndLastEditor, ServerCreationInfo};
 use crate::persistence::model::ObjectMetadata;
 use crate::server::ids::ClientId;
-use crate::cloud_stub_types::models::CloudNotebook;
-use crate::cloud_stub_types::folders::CloudFolder;
+use crate::local_storage_types::models::CloudNotebook;
+use crate::local_storage_types::folders::CloudFolder;
 use crate::ai::document::ai_document_model::AIDocumentId;
 
 pub enum PersistenceScope {
@@ -200,7 +200,7 @@ pub struct PersistedData {
     pub ignored_suggestions: Vec<(String, SuggestionType)>,
     pub mcp_server_installations: HashMap<Uuid, TemplatableMCPServerInstallation>,
     pub mcp_servers_to_restore: Vec<Uuid>,
-    pub cloud_objects: Vec<Box<dyn crate::cloud_stub_types::CloudObject>>,
+    pub cloud_objects: Vec<Box<dyn crate::local_storage_types::CloudObject>>,
     #[allow(dead_code)]
     pub time_of_next_force_object_refresh: Option<DateTime<Utc>>,
     #[allow(dead_code)]

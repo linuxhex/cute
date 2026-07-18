@@ -44,7 +44,7 @@ use crate::ai::conversation_navigation::ConversationNavigationData;
 use crate::auth::auth_manager::{AuthManager, AuthManagerEvent};
 use crate::auth::AuthStateProvider;
 use session_sharing_protocol::common::SessionId;
-use crate::cloud_stub_types::CloudObjectLookup as _;
+use crate::local_storage_types::CloudObjectLookup as _;
 use crate::network::{NetworkStatus, NetworkStatusEvent, NetworkStatusKind};
 
 // DELETED: 云端功能 UpdateManager 相关导入已移除

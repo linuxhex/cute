@@ -57,7 +57,7 @@ use crate::ai::blocklist::{
 use crate::ai::cloud_environments::{
     AmbientAgentEnvironment, CloudAmbientAgentEnvironment, GithubRepo,
 };
-use crate::cloud_stub_types::{CloudObject, CloudObjectLookup};
+use crate::local_storage_types::{CloudObject, CloudObjectLookup};
 use crate::ai::document::ai_document_model::{AIDocumentModel, AIDocumentModelEvent};
 use crate::ai::execution_profiles::profiles::AIExecutionProfilesModel;
 use crate::ai::llms::{LLMId, LLMPreferences};

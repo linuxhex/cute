@@ -26,14 +26,14 @@ use crate::ai::execution_profiles::profiles::AIExecutionProfilesModel;
 use crate::UserWorkspaces;
 use crate::appearance::Appearance;
 use crate::auth::auth_state::AuthStateProvider;
-use crate::cloud_stub_types::{CloudObject, CloudObjectEventEntrypoint, Owner, Revision};
-use crate::cloud_stub_types::model::persistence::CloudModel;
-use crate::cloud_stub_types::models::notebook::CloudNotebookModel;
+use crate::local_storage_types::{CloudObject, CloudObjectEventEntrypoint, Owner, Revision};
+use crate::local_storage_types::model::persistence::CloudModel;
+use crate::local_storage_types::models::notebook::CloudNotebookModel;
 use crate::global_resource_handles::GlobalResourceHandlesProvider;
-use crate::cloud_stub_types::{FileLinkResolutionContext, NotebooksEditorModel, RichTextEditorModelEvent};
-use crate::cloud_stub_types::MarkdownDisplayMode;
-use crate::cloud_stub_types::rich_text_styles;
-use crate::cloud_stub_types::NotebookId;
+use crate::local_storage_types::{FileLinkResolutionContext, NotebooksEditorModel, RichTextEditorModelEvent};
+use crate::local_storage_types::MarkdownDisplayMode;
+use crate::local_storage_types::rich_text_styles;
+use crate::local_storage_types::NotebookId;
 use crate::persistence::ModelEvent;
 // DELETED: 云端功能 UpdateManager 相关导入已移除
 // use crate::server::cloud_objects::update_manager::{

@@ -40,7 +40,7 @@ use crate::app_state::{AppState, PaneUuid, WindowSnapshot};
 use crate::appearance::Appearance;
 use crate::auth::auth_manager::{AuthManager, AuthManagerEvent};
 // Cloud model and drive object imports enabled for local version
-use crate::cloud_stub_types::OpenWarpDriveObjectSettings;
+use crate::local_storage_types::OpenWarpDriveObjectSettings;
 use crate::features::FeatureFlag;
 use crate::interval_timer::IntervalTimer;
 use crate::launch_configs::launch_config;

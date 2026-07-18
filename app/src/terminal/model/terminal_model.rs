@@ -15,8 +15,8 @@ use serde::Serialize;
 use session_sharing_protocol::common::{
     OrderedTerminalEventType, ParticipantId,
 };
-// Use cloud_stub_types::SessionSourceType instead of session_sharing_protocol::sharer::SessionSourceType
-use crate::cloud_stub_types::{SessionSourceType, SharedSessionSource};
+// Use local_storage_types::SessionSourceType instead of session_sharing_protocol::sharer::SessionSourceType
+use crate::local_storage_types::{SessionSourceType, SharedSessionSource};
 use cute_core::features::FeatureFlag;
 use cute_core::report_error;
 use cute_core::semantic_selection::SemanticSelection;
@@ -89,7 +89,7 @@ use crate::terminal::{
     color, ssh, BlockPadding, ShellHost, ShellLaunchData, ShellLaunchState, SizeUpdate,
     SizeUpdateReason,
 };
-// REMOVED: duplicate import - SharedSessionSource is imported from cloud_stub_types above
+// REMOVED: duplicate import - SharedSessionSource is imported from local_storage_types above
 // use crate::SharedSessionSource;
 use crate::util::AsciiDebug;
 
@@ -1058,7 +1058,7 @@ impl TerminalModel {
         session_startup_path: Option<PathBuf>,
     ) -> Self {
         use super::session::get_local_hostname;
-use crate::cloud_stub_types::SharedSessionStatus;
+use crate::local_storage_types::SharedSessionStatus;
 
         let mut terminal_model = Self::new(
             restored_blocks,

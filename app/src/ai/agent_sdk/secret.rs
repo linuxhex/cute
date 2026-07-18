@@ -23,7 +23,7 @@ use cuteui::{AppContext, SingletonEntity as _};
 
 use super::output::{self, TableFormat};
 use crate::auth::UserUid;
-use crate::cloud_stub_types::Owner;
+use crate::local_storage_types::Owner;
 use crate::server::ids::ServerId;
 use crate::util::time_format::format_approx_duration_from_now_utc;
 

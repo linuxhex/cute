@@ -67,9 +67,9 @@ use crate::ai::llms::{LLMContextWindow, LLMId, LLMPreferences, LLMPreferencesEve
 use crate::ai::mcp::TemplatableMCPServerManager;
 use crate::ai::paths::host_native_absolute_path;
 // use crate::auth::AuthStateProvider;
-use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
-use crate::cloud_stub_types::GenericStringObjectFormat::Json;
-use crate::cloud_stub_types::{JsonObjectType, ObjectType};
+use crate::local_storage_types::model::persistence::{CloudModel, CloudModelEvent};
+use crate::local_storage_types::GenericStringObjectFormat::Json;
+use crate::local_storage_types::{JsonObjectType, ObjectType};
 use crate::editor::{EditorOptions, InteractionState, SingleLineEditorOptions, TextColors};
 use crate::modal::{Modal, ModalEvent, ModalViewState};
 use crate::settings::{

@@ -145,8 +145,8 @@ use crate::ai::get_relevant_files::controller::{
 use crate::ai::skills::SkillOpenOrigin;
 use crate::ai::{AIRequestUsageModel, AIRequestUsageModelEvent};
 use crate::auth::AuthStateProvider;
-use crate::cloud_stub_types::model::generic_string_model::GenericStringObjectId;
-use crate::cloud_stub_types::model::persistence::CloudModel;
+use crate::local_storage_types::model::generic_string_model::GenericStringObjectId;
+use crate::local_storage_types::model::persistence::CloudModel;
 use crate::code::editor::comment_editor::create_readonly_comment_markdown_editor;
 use crate::code::editor::view::{CodeEditorEvent, CodeEditorRenderOptions, CodeEditorView};
 use crate::code::editor_management::CodeSource;
@@ -157,8 +157,8 @@ use crate::code_review::comments::{
 };
 use crate::code_review::telemetry_event::CodeReviewPaneEntrypoint;
 use crate::editor::InteractionState;
-use crate::cloud_stub_types::FileLinkResolutionContext;
-use crate::cloud_stub_types::{EditorViewEvent, RichTextEditorView};
+use crate::local_storage_types::FileLinkResolutionContext;
+use crate::local_storage_types::{EditorViewEvent, RichTextEditorView};
 use crate::server::ids::SyncId;
 use crate::server::telemetry::AgentModeRewindEntrypoint;
 use crate::settings::{

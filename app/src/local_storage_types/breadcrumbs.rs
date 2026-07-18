@@ -3,7 +3,7 @@
 // converts to CuteDriveItemId
 
 use cuteui::AppContext;
-use crate::cloud_stub_types::CloudObject;
+use crate::local_storage_types::CloudObject;
 use crate::ui_components::breadcrumb::Breadcrumb;
 
 /// Encapsulates an object that can contain other objects, and keeps
@@ -24,8 +24,8 @@ impl Breadcrumb for ContainingObject {
     }
 }
 
-impl From<&crate::cloud_stub_types::models::CloudFolder> for ContainingObject {
-    fn from(folder: &crate::cloud_stub_types::models::CloudFolder) -> Self {
+impl From<&crate::local_storage_types::models::CloudFolder> for ContainingObject {
+    fn from(folder: &crate::local_storage_types::models::CloudFolder) -> Self {
         Self {
             name: folder.display_name().clone(),
             kind: ContainingObjectKind::Object(super::CloudObjectTypeAndId::Folder(folder.id)),

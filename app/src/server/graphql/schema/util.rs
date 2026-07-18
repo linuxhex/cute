@@ -1,5 +1,5 @@
 use crate::anyhow;
-use crate::cloud_stub_types::model::actions::{ObjectAction, ObjectActionHistory, ObjectActionSubtype, ObjectActionType};
+use crate::local_storage_types::model::actions::{ObjectAction, ObjectActionHistory, ObjectActionSubtype, ObjectActionType};
 use crate::server::ids::{HashedSqliteId, ObjectUid, ServerId, SyncId};
 
 /// Converts the graphql action history type into an ObjectActionHistory, requires converting

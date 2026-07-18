@@ -29,14 +29,14 @@ use crate::ai::document::ai_document_model::{
 };
 use crate::ai::document::orchestration_config_block::OrchestrationConfigBlockView;
 use crate::appearance::Appearance;
-use crate::cloud_stub_types::sharing::ShareableObject;
-use crate::cloud_stub_types::CloudObjectTypeAndId;
+use crate::local_storage_types::sharing::ShareableObject;
+use crate::local_storage_types::CloudObjectTypeAndId;
 use crate::editor::InteractionState;
 use crate::menu::{Menu, MenuItem, MenuItemFields};
-use crate::cloud_stub_types::NotebooksEditorModel;
-use crate::cloud_stub_types::rich_text_styles;
-use crate::cloud_stub_types::{EditorViewEvent, RichTextEditorConfig, RichTextEditorView};
-use crate::cloud_stub_types::{NotebookLinks, SessionSource};
+use crate::local_storage_types::NotebooksEditorModel;
+use crate::local_storage_types::rich_text_styles;
+use crate::local_storage_types::{EditorViewEvent, RichTextEditorConfig, RichTextEditorView};
+use crate::local_storage_types::{NotebookLinks, SessionSource};
 use crate::pane_group::focus_state::PaneFocusHandle;
 use crate::pane_group::pane::view;
 use crate::pane_group::pane::view::header::components::{
@@ -84,7 +84,7 @@ use cute_util::path::LineAndColumnArg;
 use crate::code::editor_management::CodeSource;
 // Import keybinding constants from code view to ensure consistency
 use crate::code::view::{SAVE_FILE_BINDING_DESCRIPTION, SAVE_FILE_BINDING_NAME};
-use crate::cloud_stub_types::MarkdownDisplayMode;
+use crate::local_storage_types::MarkdownDisplayMode;
 #[cfg(feature = "local_fs")]
 use crate::util::file::external_editor::settings::EditorLayout;
 #[cfg(feature = "local_fs")]
@@ -1005,7 +1005,7 @@ impl AIDocumentView {
     fn export(&self, ctx: &mut ViewContext<Self>) {
         use cuteui::platform::SaveFilePickerConfiguration;
 
-        use crate::cloud_stub_types::export::safe_filename;
+        use crate::local_storage_types::export::safe_filename;
         let markdown = self.editor.as_ref(ctx).markdown_unescaped(ctx);
 
         // Get the document title from the model

@@ -11,7 +11,7 @@ use super::{
 use crate::app_state::{FilePaneSnapshot, LeafContents};
 #[cfg(feature = "local_fs")]
 use crate::code::editor_management::CodeSource;
-use crate::cloud_stub_types::{FileNotebookEvent, FileNotebookView};
+use crate::local_storage_types::{FileNotebookEvent, FileNotebookView};
 use crate::terminal::model::session::Session;
 use crate::workflows::WorkflowSelectionSource;
 

@@ -21,8 +21,8 @@ use crate::server::retry_strategies::{
     is_transient_graphql_or_http_error, OUT_OF_BAND_REQUEST_RETRY_STRATEGY,
 };
 use crate::server::server_api::ServerApiProvider;
-// use crate::cloud_stub_types::AuthManager; // Cute: 已禁用认证管理器
-// use crate::cloud_stub_types::AuthManagerEvent; // Cute: 已禁用认证管理器事件
+// use crate::local_storage_types::AuthManager; // Cute: 已禁用认证管理器
+// use crate::local_storage_types::AuthManagerEvent; // Cute: 已禁用认证管理器事件
 
 const CACHE_KEY: &str = "AvailableHarnesses";
 const AUTH_SECRET_FETCH_FAILURE_COOLDOWN: Duration = Duration::from_secs(60);

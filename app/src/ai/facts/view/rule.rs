@@ -21,9 +21,9 @@ use cuteui::{
 
 use super::{is_edit_allowed, is_syncing, style, AIFact, CloudAIFact, CloudAIFactModel};
 use crate::ai::facts::AIMemory;
-use crate::cloud_stub_types::model::generic_string_model::GenericStringObjectId;
-use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
-use crate::cloud_stub_types::{
+use crate::local_storage_types::model::generic_string_model::GenericStringObjectId;
+use crate::local_storage_types::model::persistence::{CloudModel, CloudModelEvent};
+use crate::local_storage_types::{
     CloudObject, Owner, Revision,
 };
 use crate::editor::{

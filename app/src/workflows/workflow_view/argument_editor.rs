@@ -21,11 +21,11 @@ use super::{
     HORIZONTAL_TEXT_INPUT_PADDING, SECTION_SPACING, VERTICAL_TEXT_INPUT_PADDING,
     WORKFLOW_PARAMETER_HIGHLIGHT_COLOR,
 };
-use crate::cloud_stub_types::workflows::workflow_arg_selector::{
+use crate::local_storage_types::workflows::workflow_arg_selector::{
     WorkflowArgSelector, WorkflowArgSelectorStyles,
 };
-use crate::cloud_stub_types::workflows::workflow_arg_type_helpers::{self, ArgumentTypeEditor};
-use crate::cloud_stub_types::{AliasArgumentSelector, AliasArgumentSelectorEvent}; // Added: stub types for alias argument selector
+use crate::local_storage_types::workflows::workflow_arg_type_helpers::{self, ArgumentTypeEditor};
+use crate::local_storage_types::{AliasArgumentSelector, AliasArgumentSelectorEvent}; // Added: stub types for alias argument selector
 use crate::editor::{
     EditorView, Event as EditorEvent, InteractionState,
     PlainTextEditorViewAction as EditorAction,

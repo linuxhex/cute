@@ -71,7 +71,7 @@ use crate::app_state::{
 use crate::appearance::Appearance;
 use crate::banner::{Banner, BannerEvent, BannerState, BannerTextContent, DismissalType};
 use crate::channel::{Channel, ChannelState};
-use crate::cloud_stub_types::Space;
+use crate::local_storage_types::Space;
 use crate::code::active_file::ActiveFileModel;
 use crate::code::buffer_location::LocalOrRemotePath;
 #[cfg(feature = "local_fs")]
@@ -81,12 +81,12 @@ use crate::code_review::comments::{AttachedReviewComment, PendingImportedReviewC
 use crate::code_review::diff_state::DiffMode;
 // Warp Drive imports enabled for local version
 
-use crate::cloud_stub_types::OpenCuteDriveObjectArgs;
+use crate::local_storage_types::OpenCuteDriveObjectArgs;
 use crate::CloudObjectTypeAndId;
 use crate::env_vars::EnvVarCollectionType;
 use crate::features::FeatureFlag;
 use crate::launch_configs::launch_config::{self, PaneMode, PaneTemplateType};
-use crate::cloud_stub_types::FileNotebookView;
+use crate::local_storage_types::FileNotebookView;
 use crate::palette::PaletteMode;
 use crate::pane_group::focus_state::PaneGroupFocusEvent;
 use crate::pane_group::pane::get_started_pane::GetStartedPane;
@@ -4150,7 +4150,7 @@ impl PaneGroup {
         &self,
         pane_index: usize,
         ctx: &AppContext,
-    ) -> Option<ViewHandle<crate::cloud_stub_types::NotebookView>> {
+    ) -> Option<ViewHandle<crate::local_storage_types::NotebookView>> {
         self.content_by_pane_index(pane_index)
             .and_then(|pane| pane.as_any().downcast_ref::<NotebookPane>())
             .map(|pane| pane.notebook_view(ctx))

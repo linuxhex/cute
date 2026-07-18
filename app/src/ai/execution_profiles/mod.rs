@@ -1,4 +1,4 @@
-pub use crate::cloud_stub_types::models::{
+pub use crate::local_storage_types::models::{
     AIExecutionProfile, ActionPermission, AskUserQuestionPermission, CloudAIExecutionProfile,
     CloudAIExecutionProfileModel, ComputerUsePermission, RunAgentsPermission, WriteToPtyPermission,
     PROFILE_NAME_MAX_LENGTH,
@@ -7,9 +7,9 @@ use cute_core::features::FeatureFlag;
 use cuteui::{AppContext, SingletonEntity};
 
 use super::llms::{LLMContextWindow, LLMPreferences};
-use crate::cloud_stub_types::model::generic_string_model::StringModel;
-use crate::cloud_stub_types::model::json_model::JsonModel;
-use crate::cloud_stub_types::{
+use crate::local_storage_types::model::generic_string_model::StringModel;
+use crate::local_storage_types::model::json_model::JsonModel;
+use crate::local_storage_types::{
     ComputerUseAutonomyValue, GenericStringObjectFormat, GenericStringObjectUniqueKey,
     JsonObjectType, Revision, UniquePer,
 };

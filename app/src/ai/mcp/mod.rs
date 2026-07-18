@@ -8,7 +8,7 @@ use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 use cute_core::ui::Icon;
 
-use crate::cloud_stub_types::{
+use crate::local_storage_types::{
     CloudObjectUuid, GenericStringObjectFormat, GenericStringObjectUniqueKey, JsonObjectType,
     Revision, StringModel,
 };
@@ -45,15 +45,15 @@ cfg_if::cfg_if! {
 pub mod gallery;
 pub use gallery::MCPGalleryManager;
 pub mod templatable;
-// Use all MCP-related types from crate::cloud_stub_types::models::mcp (local definitions with Serialize/Deserialize)
+// Use all MCP-related types from crate::local_storage_types::models::mcp (local definitions with Serialize/Deserialize)
 #[cfg(not(target_family = "wasm"))]
-pub use crate::cloud_stub_types::models::mcp::{
+pub use crate::local_storage_types::models::mcp::{
     CLIServer, JSONMCPServer, JSONTransportType, MCPServer, ServerSentEvents, StaticEnvVar,
     StaticHeader, TransportType,
 };
-pub use crate::cloud_stub_types::models::mcp::CloudMCPServer;
+pub use crate::local_storage_types::models::mcp::CloudMCPServer;
 // Use local MCPServerState definition (includes Authenticating, Enabled, Disabled variants)
-pub use crate::cloud_stub_types::models::mcp::MCPServerState;
+pub use crate::local_storage_types::models::mcp::MCPServerState;
 pub use templatable::{JsonTemplate, TemplatableMCPServer, TemplateVariable};
 pub mod logs;
 pub mod templatable_installation;

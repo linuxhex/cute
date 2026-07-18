@@ -43,12 +43,12 @@ use crate::ai::mcp::{
 };
 use crate::auth::AuthStateProvider;
 use crate::UserWorkspaces;
-use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
-use crate::cloud_stub_types::{
+use crate::local_storage_types::model::persistence::{CloudModel, CloudModelEvent};
+use crate::local_storage_types::{
     CloudObject, CloudObjectLookup as _, CloudObjectMetadataExt,
     CloudObjectUuidLookup as _, GenericStringObjectFormat, JsonObjectType, Space,
 };
-use crate::cloud_stub_types::CloudObjectTypeAndId;
+use crate::local_storage_types::CloudObjectTypeAndId;
 use crate::persistence::{
     database_file_path_for_scope, establish_ro_connection, ModelEvent, PersistenceScope,
 };

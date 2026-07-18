@@ -186,11 +186,11 @@ use crate::auth::AuthStateProvider;
 use crate::banner::BannerState;
 use crate::changelog_model::{ChangelogModel, ChangelogRequestType, Event as ChangelogEvent};
 use crate::channel::{Channel, ChannelState};
-use crate::cloud_stub_types::model::persistence::CloudModel;
-use crate::cloud_stub_types::{
+use crate::local_storage_types::model::persistence::CloudModel;
+use crate::local_storage_types::{
     CloudObject, GenericStringObjectFormat, JsonObjectType, ObjectType, Owner, Space,
 };
-use crate::cloud_stub_types::models::workflow::WorkflowId;
+use crate::local_storage_types::models::workflow::WorkflowId;
 use crate::code::buffer_location::LocalOrRemotePath;
 use crate::code::editor::{add_color, remove_color};
 #[cfg(feature = "local_fs")]
@@ -201,12 +201,12 @@ use crate::code_review::GlobalCodeReviewModel;
 use crate::coding_panel_enablement_state::CodingPanelEnablementState;
 use crate::context_chips::ChipRuntimeCapabilities;
 use crate::default_terminal::DefaultTerminal;
-use crate::cloud_stub_types::export::ExportManager;
-use crate::cloud_stub_types::import::modal::{ImportModal, ImportModalEvent};
-use crate::cloud_stub_types::items::WarpDriveItemId;
-use crate::cloud_stub_types::workflows::arguments::ArgumentsState;
-use crate::cloud_stub_types::workflows::modal::{WorkflowModal, WorkflowModalEvent};
-use crate::cloud_stub_types::{
+use crate::local_storage_types::export::ExportManager;
+use crate::local_storage_types::import::modal::{ImportModal, ImportModalEvent};
+use crate::local_storage_types::items::WarpDriveItemId;
+use crate::local_storage_types::workflows::arguments::ArgumentsState;
+use crate::local_storage_types::workflows::modal::{WorkflowModal, WorkflowModalEvent};
+use crate::local_storage_types::{
     CloudObjectTypeAndId, DrivePanel, DrivePanelEvent, OpenWarpDriveObjectSettings,
 };
 use crate::editor::{
@@ -220,7 +220,7 @@ use crate::launch_configs::save_modal::{LaunchConfigModalEvent, LaunchConfigSave
 use crate::menu::{Event as MenuEvent, Menu, MenuItem, MenuItemFields, MenuSelectionSource};
 use crate::modal::{Modal, ModalEvent, ModalViewState};
 use crate::network::{NetworkStatus, NetworkStatusEvent};
-use crate::cloud_stub_types::{NotebookManager, NotebookSource};
+use crate::local_storage_types::{NotebookManager, NotebookSource};
 use crate::notification::NotificationContext;
 use crate::palette::PaletteMode;
 use crate::pane_group::pane::ActionOrigin;
@@ -14170,7 +14170,7 @@ impl Workspace {
                             Some(WarpDriveItemId::Object(
                                 CloudObjectTypeAndId::from_generic_string_object(
                                     GenericStringObjectFormat::Json(
-                                        crate::cloud_stub_types::JsonObjectType::EnvVarCollection,
+                                        crate::local_storage_types::JsonObjectType::EnvVarCollection,
                                     ),
                                     env_var_collection_id,
                                 ),
@@ -15492,7 +15492,7 @@ impl Workspace {
         //                 workflow_source: WorkflowSource::Notebook {
         //                     notebook_id: None,
         //                     team_uid: None,
-        //                     location: crate::cloud_stub_types::NotebookLocation::PersonalCloud,
+        //                     location: crate::local_storage_types::NotebookLocation::PersonalCloud,
         //                 },
         //                 workflow_selection_source: WorkflowSelectionSource::WarpDrive,
         //                 argument_override: None,
@@ -23444,7 +23444,7 @@ fn render_cross_window_ghost_chip(
     app: &AppContext,
 ) -> Box<dyn Element> {
     use cuteui::elements::DropShadow;
-// use crate::cloud_stub_types::SharedSessionActionSource; // Cute: 模块不存在
+// use crate::local_storage_types::SharedSessionActionSource; // Cute: 模块不存在
 
     let theme = appearance.theme();
 

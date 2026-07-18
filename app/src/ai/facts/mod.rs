@@ -1,14 +1,14 @@
-pub use crate::cloud_stub_types::models::{AIFact, AIMemory, CloudAIFact, CloudAIFactModel};
+pub use crate::local_storage_types::models::{AIFact, AIMemory, CloudAIFact, CloudAIFactModel};
 use cute_core::ui::appearance::Appearance;
 
-use crate::cloud_stub_types::model::generic_string_model::StringModel;
-use crate::cloud_stub_types::model::json_model::JsonModel;
-use crate::cloud_stub_types::{
+use crate::local_storage_types::model::generic_string_model::StringModel;
+use crate::local_storage_types::model::json_model::JsonModel;
+use crate::local_storage_types::{
     GenericStringObjectFormat, GenericStringObjectUniqueKey, JsonObjectType, Revision,
 };
-use crate::cloud_stub_types::items::ai_fact::CuteDriveAIFact;
-use crate::cloud_stub_types::CuteDriveItem;
-use crate::cloud_stub_types::CloudObjectTypeAndId;
+use crate::local_storage_types::items::ai_fact::CuteDriveAIFact;
+use crate::local_storage_types::CuteDriveItem;
+use crate::local_storage_types::CloudObjectTypeAndId;
 use crate::server::ids::SyncId;
 
 pub mod manager;

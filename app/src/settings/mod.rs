@@ -594,7 +594,7 @@ pub fn user_preferences_toml_file_path() -> PathBuf {
     cute_core::paths::config_local_dir().join("settings.toml")
 }
 
-// Re-export types from cloud_stub_types for settings compatibility
-pub use crate::cloud_stub_types::AdminEnablementSetting;
-pub use crate::cloud_stub_types::UgcCollectionEnablementSetting;
-pub use crate::cloud_stub_types::AiAutonomySettings;
+// Re-export types from local_storage_types for settings compatibility
+pub use crate::local_storage_types::AdminEnablementSetting;
+pub use crate::local_storage_types::UgcCollectionEnablementSetting;
+pub use crate::local_storage_types::AiAutonomySettings;

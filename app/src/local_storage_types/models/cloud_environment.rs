@@ -7,8 +7,8 @@ use cute_server_client::{
 use serde::{Deserialize, Serialize};
 
 use super::{JsonModel, JsonSerializer};
-use crate::cloud_stub_types::model::generic_string_model::StringModel;
-use crate::cloud_stub_types::GenericStringObjectUniqueKey;
+use crate::local_storage_types::model::generic_string_model::StringModel;
+use crate::local_storage_types::GenericStringObjectUniqueKey;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct GithubRepo {

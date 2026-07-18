@@ -7,7 +7,7 @@ pub use cute_server_client::cloud_object::{GenericStringModel, Serializer};
 pub use cute_server_client::ids::GenericStringObjectId;
 
 use crate::appearance::Appearance;
-use crate::cloud_stub_types::{
+use crate::local_storage_types::{
     CloudModelType, CloudObject, GenericCloudObject, GenericStringObjectFormat,
     GenericStringObjectUniqueKey, ObjectType, Revision,
 };

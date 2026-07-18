@@ -1,4 +1,4 @@
-pub use crate::cloud_stub_types::models::mcp::{
+pub use crate::local_storage_types::models::mcp::{
     CloudTemplatableMCPServer, GalleryData, JsonTemplate,
     TemplatableMCPServer, TemplateVariable,
 };

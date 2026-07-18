@@ -50,7 +50,7 @@ use crate::SessionSource;
 use crate::terminal::cli_agent_sessions::CLIAgentSessionsModel;
 use crate::terminal::general_settings::GeneralSettings;
 use crate::SharedSessionStatus;
-use crate::cloud_stub_types::{IsSharedSessionCreator, SharedSessionSource};
+use crate::local_storage_types::{IsSharedSessionCreator, SharedSessionSource};
 use crate::terminal::view::ambient_agent::should_disable_snapshot;
 use crate::terminal::view::Event;
 use crate::terminal::{TerminalManager, TerminalView};

@@ -5,9 +5,9 @@ use cuteui::{
     ViewHandle,
 };
 
-use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
-use crate::cloud_stub_types::CloudObject as _;
-use crate::cloud_stub_types::CloudObjectTypeAndId;
+use crate::local_storage_types::model::persistence::{CloudModel, CloudModelEvent};
+use crate::local_storage_types::CloudObject as _;
+use crate::local_storage_types::CloudObjectTypeAndId;
 use crate::server::ids::SyncId;
 use crate::view_components::{DropdownItem, FilterableDropdown, FilterableDropdownOrientation};
 

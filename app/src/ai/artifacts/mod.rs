@@ -10,7 +10,7 @@ use cute_multi_agent_api as api;
 use cuteui::platform::SaveFilePickerConfiguration;
 use cuteui::SingletonEntity;
 
-use crate::cloud_stub_types::NotebookId;
+use crate::local_storage_types::NotebookId;
 use crate::server::server_api::ai::ArtifactDownloadResponse;
 use crate::server::server_api::ServerApiProvider;
 use crate::view_components::DismissibleToast;

@@ -11,8 +11,8 @@ use serde_json::Value;
 use settings::SyncToCloud;
 
 use super::{JsonModel, JsonSerializer};
-use crate::cloud_stub_types::model::generic_string_model::StringModel;
-use crate::cloud_stub_types::UniquePer;
+use crate::local_storage_types::model::generic_string_model::StringModel;
+use crate::local_storage_types::UniquePer;
 
 /// Defines the platform that a preference was set on.
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]

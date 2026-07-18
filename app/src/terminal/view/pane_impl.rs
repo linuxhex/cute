@@ -21,7 +21,7 @@ use crate::ai::agent::conversation::{
 };
 use crate::ai::blocklist::agent_view::agent_view_bg_fill;
 use crate::appearance::Appearance;
-use crate::cloud_stub_types::sharing::ShareableObject;
+use crate::local_storage_types::sharing::ShareableObject;
 use crate::features::FeatureFlag;
 use crate::menu::{MenuItem, MenuItemFields};
 use crate::pane_group::focus_state::{PaneFocusHandle, PaneGroupFocusEvent, PaneGroupFocusState};

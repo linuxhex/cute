@@ -10,7 +10,7 @@ use crate::server::ids::ToServerId;
 
 use super::generic_string_model::GenericStringObjectId;
 use crate::ai::execution_profiles::CloudAIExecutionProfile;
-use crate::cloud_stub_types::{
+use crate::local_storage_types::{
     CloudModelType, CloudObject, CloudObjectLocation, GenericCloudObject,
     ObjectIdType, ObjectType, Owner,
     Space,
@@ -19,7 +19,7 @@ use crate::cloud_stub_types::{
 // Import cloud stub types for removed WarpDrive functionality
 use crate::{CloudObjectTypeAndId, CloudFolder, CloudFolderModel, CloudNotebook, DriveIndexVariant};
 use crate::env_vars::{CloudEnvVarCollection, CloudEnvVarCollectionModel, EnvVarCollection};
-// use crate::cloud_stub_types::CloudNotebook; // Removed: cloud notebook functionality
+// use crate::local_storage_types::CloudNotebook; // Removed: cloud notebook functionality
 use crate::persistence::ModelEvent;
 use crate::server::ids::{ObjectUid, SyncId};
 use crate::settings::cloud_preferences::{CloudPreference, CloudPreferenceModel};

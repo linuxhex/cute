@@ -12,8 +12,8 @@ use cuteui::ui_components::components::UiComponent;
 use cuteui::{AppContext, Element, SingletonEntity};
 
 use crate::appearance::Appearance;
-use crate::cloud_stub_types::cloud_object_styling::cute_drive_icon_color;
-use crate::cloud_stub_types::DriveObjectType;
+use crate::local_storage_types::cloud_object_styling::cute_drive_icon_color;
+use crate::local_storage_types::DriveObjectType;
 use crate::features::FeatureFlag;
 use crate::search::command_palette::mixer::CommandPaletteItemAction;
 use crate::search::command_palette::render_util::{

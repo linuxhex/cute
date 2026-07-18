@@ -52,7 +52,7 @@ use crate::auth::auth_manager::AuthManager;
 use crate::auth::auth_state::AuthState;
 use crate::auth::UserUid;
 use crate::server::graphql::default_request_options;
-use crate::cloud_stub_types::OAuth2Client;
+use crate::local_storage_types::OAuth2Client;
 use crate::server::server_api::presigned_upload::HttpStatusError;
 use crate::settings::PrivacySettingsSnapshot;
 use crate::ChannelState;

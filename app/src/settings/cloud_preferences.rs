@@ -2,7 +2,7 @@
 //!
 //! Note: Cloud-specific logic has been removed. Simplified stub.
 
-pub use crate::cloud_stub_types::models::{CloudPreference, CloudPreferenceModel};
+pub use crate::local_storage_types::models::{CloudPreference, CloudPreferenceModel};
 use settings::macros::define_settings_group;
 use settings::{RespectUserSyncSetting, SupportedPlatforms, SyncToCloud};
 
@@ -18,4 +18,4 @@ define_settings_group!(CloudPreferencesSettings, settings: [
    },
 ]);
 
-// Note: StringModel and JsonModel impls for Preference are in cloud_stub_types/models/preference.rs
+// Note: StringModel and JsonModel impls for Preference are in local_storage_types/models/preference.rs

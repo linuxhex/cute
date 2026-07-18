@@ -29,7 +29,7 @@ impl SharedPaneContent {
 impl<P: BackingView> PaneHeader<P> {
     pub fn set_shareable_object(
         &mut self,
-        _shareable_object: Option<crate::cloud_stub_types::sharing::ShareableObject>,
+        _shareable_object: Option<crate::local_storage_types::sharing::ShareableObject>,
         _ctx: &mut cuteui::ViewContext<Self>,
     ) {
         // No-op in local version

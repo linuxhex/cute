@@ -4,7 +4,7 @@ use cute_server_client::{
     ids::{ServerId, SyncId},
 };
 use serde::{Deserialize, Serialize};
-use crate::cloud_stub_types::{CloudModelType, CloudObjectUpsertParams};
+use crate::local_storage_types::{CloudModelType, CloudObjectUpsertParams};
 use crate::persistence::ModelEvent;
 use crate::{CloudObjectTypeAndId, CuteDriveItem};
 use crate::appearance::Appearance;

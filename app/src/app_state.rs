@@ -12,7 +12,7 @@ use crate::ai::agent_conversations_model::AgentManagementFilters;
 use crate::ai::ambient_agent_types::AmbientAgentTaskId;
 use crate::ai::blocklist::{InputConfig, SerializedBlockListItem};
 use crate::code::editor_management::CodeSource;
-use crate::cloud_stub_types::OpenWarpDriveObjectSettings;
+use crate::local_storage_types::OpenWarpDriveObjectSettings;
 use crate::root_view::quake_mode_window_id;
 use crate::server::ids::SyncId;
 use crate::settings_view::environments_page::EnvironmentsPage;
@@ -215,7 +215,7 @@ pub struct FilePaneSnapshot {
 pub enum NotebookPaneSnapshot {
     CloudNotebook {
         notebook_id: Option<SyncId>,
-        settings: Option<crate::cloud_stub_types::OpenCuteDriveObjectSettings>,
+        settings: Option<crate::local_storage_types::OpenCuteDriveObjectSettings>,
     },
     LocalFileNotebook {
         path: PathBuf,

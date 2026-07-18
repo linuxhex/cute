@@ -5,10 +5,10 @@ use markdown_parser::{parse_markdown, FormattedTextLine};
 use cuteui::{AppContext, SingletonEntity};
 
 use crate::ai::agent::AIAgentCitation;
-use crate::cloud_stub_types::model::persistence::CloudModel;
-use crate::cloud_stub_types::models::env_vars::{EnvVarCollection, EnvVarValue};
+use crate::local_storage_types::model::persistence::CloudModel;
+use crate::local_storage_types::models::env_vars::{EnvVarCollection, EnvVarValue};
 use crate::env_vars::{EnvVarCollectionExt, EnvVarExt};
-use crate::cloud_stub_types::models::notebook::CloudNotebookModel;
+use crate::local_storage_types::models::notebook::CloudNotebookModel;
 use crate::terminal::shell::ShellType;
 use crate::workflows::command_parser::command_matches_workflow;
 

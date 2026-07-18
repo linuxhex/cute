@@ -26,7 +26,7 @@ use crate::ai::ambient_agent_types::{
     AgentConfigSnapshot, AmbientAgentTask, AmbientAgentTaskState,
 };
 use crate::ai::ambient_agent_types::task::TaskAttachment;
-use crate::cloud_stub_types::model::persistence::CloudModel;
+use crate::local_storage_types::model::persistence::CloudModel;
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::server_api::ai::{
     AgentSource, ArtifactType, ExecutionLocation,

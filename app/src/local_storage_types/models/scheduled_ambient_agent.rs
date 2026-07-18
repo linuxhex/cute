@@ -8,7 +8,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use cute_cli::agent::Harness;
 
 use super::{JsonModel, JsonSerializer};
-use crate::cloud_stub_types::model::generic_string_model::StringModel;
+use crate::local_storage_types::model::generic_string_model::StringModel;
 
 /// Runtime configuration snapshot for agent execution.
 ///
@@ -225,7 +225,7 @@ impl StringModel for ScheduledAmbientAgent {
         self.name.clone()
     }
 
-    fn uniqueness_key(&self) -> Option<crate::cloud_stub_types::GenericStringObjectUniqueKey> {
+    fn uniqueness_key(&self) -> Option<crate::local_storage_types::GenericStringObjectUniqueKey> {
         None
     }
 }

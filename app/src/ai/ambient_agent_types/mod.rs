@@ -105,7 +105,7 @@ pub fn conversation_output_status_from_conversation(
 
 // Re-export the real runtime config types that already live in
 // `cloud_object::models::scheduled_ambient_agent`.
-pub use crate::cloud_stub_types::models::AgentConfigSnapshot;
+pub use crate::local_storage_types::models::AgentConfigSnapshot;
 
 /// Source that initiated an ambient agent run (stub).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -348,7 +348,7 @@ pub mod task {
     use serde::{Deserialize, Serialize};
 
     // Re-export the real harness config types.
-    pub use crate::cloud_stub_types::models::{
+    pub use crate::local_storage_types::models::{
         HarnessAuthSecretsConfig, HarnessConfig, HarnessModelConfig,
     };
 
@@ -444,7 +444,7 @@ pub mod scheduled {
     use cute_server_client::cloud_object::Owner;
 
     // Re-export the real scheduled-agent types.
-    pub use crate::cloud_stub_types::models::{CloudScheduledAmbientAgent, ScheduledAmbientAgent};
+    pub use crate::local_storage_types::models::{CloudScheduledAmbientAgent, ScheduledAmbientAgent};
 
     /// Manager for scheduled ambient agents (stub).
     #[derive(Debug, Clone, Default)]

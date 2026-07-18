@@ -178,8 +178,8 @@ use crate::ai::AIRequestUsageModel;
 use crate::ai_assistant::execution_context::WarpAiExecutionContext;
 use crate::appearance::{Appearance, AppearanceEvent};
 use crate::channel::ChannelState;
-use crate::cloud_stub_types::model::persistence::CloudModel;
-use crate::cloud_stub_types::model::view::CloudViewModel;
+use crate::local_storage_types::model::persistence::CloudModel;
+use crate::local_storage_types::model::view::CloudViewModel;
 #[cfg(feature = "local_fs")]
 use crate::code::editor_management::CodeSource;
 use crate::code_review::diff_state::DiffMode;

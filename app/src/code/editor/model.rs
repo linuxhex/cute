@@ -72,7 +72,7 @@ use crate::appearance::Appearance;
 use crate::code::editor::line_iterator::LineIterator;
 use crate::code_review::comments::{CommentId, CommentOrigin, LineDiffContent};
 use crate::editor::InteractionState;
-use crate::cloud_stub_types::word_unit;
+use crate::local_storage_types::word_unit;
 use crate::themes::theme::AnsiColorIdentifier;
 use crate::util::link_detection::get_word_range_at_offset;
 

@@ -21,7 +21,7 @@ use cuteui::AppContext;
 
 use crate::ai::agent::{AgentReviewCommentBatch, DiffSetHunk};
 use crate::ai::blocklist::CLAUDE_ORANGE;
-use crate::cloud_stub_types::UserWorkspaces;
+use crate::local_storage_types::UserWorkspaces;
 use crate::code::editor::line::EditorLineLocation;
 use crate::code_review::comments::AttachedReviewCommentTarget;
 use crate::server::telemetry::CLIAgentType;

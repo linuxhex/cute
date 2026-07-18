@@ -3,9 +3,9 @@ use cuteui::{AppContext, Entity, SingletonEntity};
 
 use super::search_item::RuleSearchItem;
 use crate::ai::facts::{AIFact, CloudAIFactModel};
-use crate::cloud_stub_types::model::generic_string_model::GenericStringObjectId;
-use crate::cloud_stub_types::model::persistence::CloudModel;
-use crate::cloud_stub_types::CloudObject;
+use crate::local_storage_types::model::generic_string_model::GenericStringObjectId;
+use crate::local_storage_types::model::persistence::CloudModel;
+use crate::local_storage_types::CloudObject;
 use crate::search::ai_context_menu::mixer::AIContextMenuSearchableAction;
 use crate::search::data_source::{Query, QueryResult};
 use crate::search::mixer::{DataSourceRunErrorWrapper, SyncDataSource};

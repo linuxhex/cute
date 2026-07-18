@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-pub use crate::cloud_stub_types::models::{CloudWorkflow, CloudWorkflowModel, WorkflowId};
+pub use crate::local_storage_types::models::{CloudWorkflow, CloudWorkflowModel, WorkflowId};
 pub use manager::WorkflowOpenSource;
 use serde::{Deserialize, Serialize};
 use cute_core::context_flag::ContextFlag;
@@ -24,19 +24,19 @@ use async_trait::async_trait;
 pub use categories::{CategoriesView, CategoriesViewEvent, WorkflowsViewAction};
 
 use crate::appearance::Appearance;
-use crate::cloud_stub_types::model::view::CloudViewModel;
-use crate::cloud_stub_types::{
+use crate::local_storage_types::model::view::CloudViewModel;
+use crate::local_storage_types::{
     CloudModelType, CloudObjectUpsertParams, CreateCloudObjectResult,
     CreateObjectRequest, GenericServerObject, ObjectType, Revision, UpdateCloudObjectResult,
 };
-// use crate::cloud_stub_types::items::workflow::CuteDriveWorkflow;
-use crate::cloud_stub_types::CuteDriveItem;
-use crate::cloud_stub_types::CloudObjectTypeAndId;
-use crate::cloud_stub_types::{NotebookId, NotebookLocation};
+// use crate::local_storage_types::items::workflow::CuteDriveWorkflow;
+use crate::local_storage_types::CuteDriveItem;
+use crate::local_storage_types::CloudObjectTypeAndId;
+use crate::local_storage_types::{NotebookId, NotebookLocation};
 use crate::persistence::ModelEvent;
 use crate::server::ids::{ServerId, SyncId};
 use crate::server::server_api::object::ObjectClient;
-use crate::cloud_stub_types::CuteDriveWorkflow;
+use crate::local_storage_types::CuteDriveWorkflow;
 
 pub fn init(app: &mut AppContext) {
     categories::init(app);

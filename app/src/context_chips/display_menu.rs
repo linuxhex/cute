@@ -34,8 +34,8 @@ use cuteui::{
 };
 
 use crate::ai::cloud_environments::CloudAmbientAgentEnvironment;
-use crate::cloud_stub_types::model::generic_string_model::StringModel;
-use crate::cloud_stub_types::CloudObjectLookup as _;
+use crate::local_storage_types::model::generic_string_model::StringModel;
+use crate::local_storage_types::CloudObjectLookup as _;
 use crate::editor::{
     EditorOptions, EditorView, Event as EditorEvent, PropagateAndNoOpNavigationKeys, TextOptions,
 };

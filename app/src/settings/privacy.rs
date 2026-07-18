@@ -8,7 +8,7 @@ use cute_core::features::FeatureFlag;
 use cuteui::{AppContext, Entity, ModelContext, SingletonEntity};
 
 use crate::ai::blocklist::telemetry_banner::should_collect_ai_ugc_telemetry;
-// use crate::cloud_stub_types::model::persistence::CloudModel;
+// use crate::local_storage_types::model::persistence::CloudModel;
 
 // use crate::server::cloud_objects::update_manager::UpdateManager;
 

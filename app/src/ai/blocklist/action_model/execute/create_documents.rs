@@ -11,7 +11,7 @@ use crate::ai::agent::{
 use crate::ai::artifacts::Artifact;
 use crate::ai::blocklist::BlocklistAIHistoryModel;
 use crate::ai::document::ai_document_model::{AIDocumentModel, AIDocumentVersion};
-use crate::cloud_stub_types::FileLinkResolutionContext;
+use crate::local_storage_types::FileLinkResolutionContext;
 use crate::terminal::model::session::active_session::ActiveSession;
 
 pub struct CreateDocumentsExecutor {

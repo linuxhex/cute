@@ -52,10 +52,10 @@ use cute_server_client::cloud_object::{
     CloudObjectMetadata, CloudObjectPermissions,
     JsonObjectType, ObjectIdType, ObjectType,
 };
-use crate::cloud_stub_types::CloudObject;
-use crate::cloud_stub_types::model::generic_string_model::CloudStringObject;
-use crate::cloud_stub_types::models::ai_fact::{CloudAIFact, CloudAIFactModel};
-use crate::cloud_stub_types::models::env_vars::{
+use crate::local_storage_types::CloudObject;
+use crate::local_storage_types::model::generic_string_model::CloudStringObject;
+use crate::local_storage_types::models::ai_fact::{CloudAIFact, CloudAIFactModel};
+use crate::local_storage_types::models::env_vars::{
     CloudEnvVarCollection, CloudEnvVarCollectionModel,
 };
 use super::{
@@ -82,7 +82,7 @@ use crate::auth::auth_state::AuthStateProvider;
 use crate::auth::UserUid;
 use crate::code::editor_management::CodeSource;
 // 删除云端功能import
-// use crate::cloud_stub_types::OpenCuteDriveObjectSettings;
+// use crate::local_storage_types::OpenCuteDriveObjectSettings;
 use crate::persistence::agent::read_agent_conversations;
 use crate::persistence::block_list::{get_all_restored_blocks, read_ai_queries};
 use crate::persistence::model::{
@@ -91,7 +91,7 @@ use crate::persistence::model::{
 };
 use crate::server::ids::{ClientId, HashableId, SyncId, ToServerId};
 // 删除云端功能import
-// use crate::cloud_stub_types::NotebookId;
+// use crate::local_storage_types::NotebookId;
 use crate::workflows::WorkflowId;
 use crate::settings_view::SettingsSection;
 use crate::suggestions::ignored_suggestions_model::SuggestionType;
@@ -101,20 +101,20 @@ use crate::terminal::ShellLaunchData;
 use crate::themes::theme::AnsiColorIdentifier;
 use crate::{report_error, report_if_error, safe_info};
 
-use crate::cloud_stub_types::{
+use crate::local_storage_types::{
     NotebookId, OpenCuteDriveObjectSettings, GenericStringObjectId,
     TeamMetadata, Owner,
 };
-// use crate::cloud_stub_types::{
+// use crate::local_storage_types::{
 //     CloudObject, CloudObjectMetadata, CloudObjectPermissions, CloudObjectStatuses,
 //     CloudObjectSyncStatus, GENERIC_STRING_OBJECT_PREFIX,
 //     NumInFlightRequests, ObjectIdType, ObjectType, Owner, Revision, RevisionAndLastEditor,
 //     ServerCreationInfo,
 // };
-use crate::cloud_stub_types::model::actions::{ObjectAction, ObjectActionSubtype, object_action_from_persisted};
-// use crate::cloud_stub_types::model::generic_string_model::{CloudStringObject, GenericStringObjectId};
-// use crate::cloud_stub_types::models::{CloudNotebook, CloudWorkflow};
-// use crate::cloud_stub_types::folders::{CloudFolder, FolderId};
+use crate::local_storage_types::model::actions::{ObjectAction, ObjectActionSubtype, object_action_from_persisted};
+// use crate::local_storage_types::model::generic_string_model::{CloudStringObject, GenericStringObjectId};
+// use crate::local_storage_types::models::{CloudNotebook, CloudWorkflow};
+// use crate::local_storage_types::folders::{CloudFolder, FolderId};
 
 diesel::define_sql_function! {
     fn json_extract(target: diesel::sql_types::Text, path: diesel::sql_types::Text) -> diesel::sql_types::Text;
@@ -2877,11 +2877,11 @@ fn read_sqlite_data(
         .map(PersistedCommand::from)
         .collect();
 
-    let _user_profiles: Vec<crate::cloud_stub_types::UserProfile> = schema::user_profiles::dsl::user_profiles
+    let _user_profiles: Vec<crate::local_storage_types::UserProfile> = schema::user_profiles::dsl::user_profiles
         .load_iter::<model::UserProfile, DefaultLoadingMode>(conn)?
         .filter_map(|user_profile| user_profile.ok())
         // .map(user_profile_from_persistence)
-        .map(|p| crate::cloud_stub_types::UserProfile { email: p.email, photo_url: p.photo_url })
+        .map(|p| crate::local_storage_types::UserProfile { email: p.email, photo_url: p.photo_url })
         .collect();
 
     let object_actions: Vec<ObjectAction> = schema::object_actions::dsl::object_actions
@@ -2954,7 +2954,7 @@ fn id_from_metadata<K: HashableId + ToServerId>(metadata: &ObjectMetadata) -> Op
 /// metadata graph (revision timestamps, editors, etc.) for the local-only app — these objects are
 /// shown as fully-synced with no pending changes.
 fn default_local_metadata() -> CloudObjectMetadata {
-    use crate::cloud_stub_types::{CloudObjectStatuses, CloudObjectSyncStatus};
+    use crate::local_storage_types::{CloudObjectStatuses, CloudObjectSyncStatus};
     CloudObjectMetadata {
         revision: None,
         metadata_last_updated_ts: None,
@@ -2993,9 +2993,9 @@ fn rebuild_cloud_objects(
     conn: &mut SqliteConnection,
     metadata_rows: &[ObjectMetadata],
 ) -> Result<Vec<Box<dyn CloudObject>>, Error> {
-    use crate::cloud_stub_types::models::folder::CloudFolderModel;
-    use crate::cloud_stub_types::models::notebook::{CloudNotebookModel, NotebookId};
-    use crate::cloud_stub_types::models::workflow::{CloudWorkflowModel, Workflow, WorkflowId};
+    use crate::local_storage_types::models::folder::CloudFolderModel;
+    use crate::local_storage_types::models::notebook::{CloudNotebookModel, NotebookId};
+    use crate::local_storage_types::models::workflow::{CloudWorkflowModel, Workflow, WorkflowId};
     use ai::document::AIDocumentId;
 
     let folders: HashMap<i32, model::Folder> = schema::folders::dsl::folders

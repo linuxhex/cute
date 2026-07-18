@@ -36,25 +36,25 @@ use crate::ai::AIRequestUsageModel;
 use crate::appearance::Appearance;
 use crate::auth::auth_state::AuthState;
 use crate::auth::{AuthStateProvider, UserUid};
-use crate::cloud_stub_types::breadcrumbs::ContainingObject;
-use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
-use crate::cloud_stub_types::model::view::CloudViewModel;
-use crate::cloud_stub_types::{CloudObject, Owner, Revision, Space};
-use crate::cloud_stub_types::cloud_object_styling::cute_drive_icon_color;
-use crate::cloud_stub_types::drive_helpers::has_feature_gated_anonymous_user_reached_workflow_limit;
+use crate::local_storage_types::breadcrumbs::ContainingObject;
+use crate::local_storage_types::model::persistence::{CloudModel, CloudModelEvent};
+use crate::local_storage_types::model::view::CloudViewModel;
+use crate::local_storage_types::{CloudObject, Owner, Revision, Space};
+use crate::local_storage_types::cloud_object_styling::cute_drive_icon_color;
+use crate::local_storage_types::drive_helpers::has_feature_gated_anonymous_user_reached_workflow_limit;
 
-use crate::cloud_stub_types::sharing::{ContentEditability, ShareableObject};
+use crate::local_storage_types::sharing::{ContentEditability, ShareableObject};
 use cute_server_client::drive::sharing::SharingAccessLevel;
-use crate::cloud_stub_types::workflows::ai_assist::GeneratedCommandMetadataError;
-use crate::cloud_stub_types::workflows::arguments::ArgumentsState;
-use crate::cloud_stub_types::workflows::enum_creation_dialog::{
+use crate::local_storage_types::workflows::ai_assist::GeneratedCommandMetadataError;
+use crate::local_storage_types::workflows::arguments::ArgumentsState;
+use crate::local_storage_types::workflows::enum_creation_dialog::{
     EnumCreationDialog, EnumCreationDialogEvent, WorkflowEnumData,
 };
-use crate::cloud_stub_types::workflows::workflow_arg_selector::{
+use crate::local_storage_types::workflows::workflow_arg_selector::{
     WorkflowArgSelector, WorkflowArgSelectorEvent,
 };
-use crate::cloud_stub_types::workflows::workflow_arg_type_helpers::{self, ArgumentEditorRowIndex};
-use crate::cloud_stub_types::{CloudObjectTypeAndId, DriveObjectType, OpenWarpDriveObjectSettings};
+use crate::local_storage_types::workflows::workflow_arg_type_helpers::{self, ArgumentEditorRowIndex};
+use crate::local_storage_types::{CloudObjectTypeAndId, DriveObjectType, OpenWarpDriveObjectSettings};
 use crate::editor::{
     EditorOptions, EditorView, EnterAction, EnterSettings, Event as EditorEvent, InteractionState,
     PlainTextEditorViewAction as EditorAction, PropagateAndNoOpNavigationKeys,

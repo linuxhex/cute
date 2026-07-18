@@ -3,8 +3,8 @@ use std::collections::HashMap;
 
 use cuteui::{Entity, EntityId, ModelContext, SingletonEntity, WeakViewHandle};
 
-use crate::cloud_stub_types::model::persistence::CloudModel;
-use crate::cloud_stub_types::Owner;
+use crate::local_storage_types::model::persistence::CloudModel;
+use crate::local_storage_types::Owner;
 use crate::env_vars::view::env_var_collection::EnvVarCollectionView;
 use crate::pane_group::{EnvVarCollectionPane, PaneContent};
 // DELETED: 云端功能 UpdateManager 相关导入已移除

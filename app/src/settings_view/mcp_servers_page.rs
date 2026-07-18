@@ -14,7 +14,7 @@ use crate::ai::mcp::{
     TemplatableMCPServerManager,
 };
 use crate::appearance::Appearance;
-use crate::cloud_stub_types::Space;
+use crate::local_storage_types::Space;
 use crate::modal::{Modal, ModalViewState};
 use crate::server::sync_queue::InitiatedBy;
 use crate::settings_view::mcp_servers::edit_page::{

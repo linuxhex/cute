@@ -17,18 +17,18 @@ use cuteui::{
 };
 
 use crate::ai::agent::SuggestedRule;
-use crate::cloud_stub_types::model::generic_string_model::GenericStringObjectId;
-use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
-use crate::cloud_stub_types::models::ai_fact::{AIFact, AIMemory, CloudAIFactModel};
-use crate::cloud_stub_types::Owner;
-use crate::cloud_stub_types::CloudObjectTypeAndId;
+use crate::local_storage_types::model::generic_string_model::GenericStringObjectId;
+use crate::local_storage_types::model::persistence::{CloudModel, CloudModelEvent};
+use crate::local_storage_types::models::ai_fact::{AIFact, AIMemory, CloudAIFactModel};
+use crate::local_storage_types::Owner;
+use crate::local_storage_types::CloudObjectTypeAndId;
 use crate::editor::{
     EditorOptions, EditorView, EnterAction, EnterSettings, Event as EditorEvent, InteractionState,
     PropagateAndNoOpNavigationKeys, SingleLineEditorOptions, TextOptions,
 };
 use crate::modal::{Modal, ModalEvent};
 use crate::network::NetworkStatus;
-use crate::cloud_stub_types::UpdateManager; // Import from cloud_stub_types
+use crate::local_storage_types::UpdateManager; // Import from local_storage_types
 // use crate::server::cloud_objects::update_manager::{
 //     ObjectOperation, OperationSuccessType, UpdateManager, UpdateManagerEvent,
 // };

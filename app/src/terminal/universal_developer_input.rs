@@ -38,7 +38,7 @@ use crate::ai::blocklist::{
 use crate::ai::execution_profiles::profiles::AIExecutionProfilesModel;
 use crate::ai::llms::LLMPreferences;
 use crate::ai::AIRequestUsageModel;
-use crate::cloud_stub_types::model::generic_string_model::StringModel;
+use crate::local_storage_types::model::generic_string_model::StringModel;
 use crate::network::NetworkStatus;
 #[cfg(not(target_family = "wasm"))]
 use crate::search::ai_context_menu::view::AIContextMenu;

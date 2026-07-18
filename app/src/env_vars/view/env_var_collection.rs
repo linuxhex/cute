@@ -19,10 +19,10 @@ use cuteui::{
 use super::command_dialog::EnvVarCommandDialog;
 use super::menus::Menus;
 use crate::ai::blocklist::block::secret_redaction::find_secrets_in_text_with_levels;
-use crate::cloud_stub_types::breadcrumbs::ContainingObject;
-use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
-use crate::cloud_stub_types::Owner;
-use crate::cloud_stub_types::sharing::{ContentEditability, ShareableObject};
+use crate::local_storage_types::breadcrumbs::ContainingObject;
+use crate::local_storage_types::model::persistence::{CloudModel, CloudModelEvent};
+use crate::local_storage_types::Owner;
+use crate::local_storage_types::sharing::{ContentEditability, ShareableObject};
 use crate::editor::EditorView;
 use crate::env_vars::active_env_var_collection_data::{
     ActiveEnvVarCollection, ActiveEnvVarCollectionData, ActiveEnvVarCollectionDataEvent,
@@ -638,7 +638,7 @@ impl EnvVarCollectionView {
         if let Some(server_id) = env_var_collection.id.into_server() {
             self.pane_configuration.update(ctx, |pane_config, ctx| {
                 pane_config
-                    .set_shareable_object(Some(ShareableObject::WarpDriveObject(CloudObjectTypeAndId::GenericStringObject { object_type: crate::cloud_stub_types::models::env_var_collection::ENV_VAR_COLLECTION_FORMAT, id: crate::server::ids::SyncId::ServerId(server_id) })), ctx);
+                    .set_shareable_object(Some(ShareableObject::WarpDriveObject(CloudObjectTypeAndId::GenericStringObject { object_type: crate::local_storage_types::models::env_var_collection::ENV_VAR_COLLECTION_FORMAT, id: crate::server::ids::SyncId::ServerId(server_id) })), ctx);
             });
         }
 
@@ -901,7 +901,7 @@ impl EnvVarCollectionView {
                 self.update_breadcrumbs(ctx);
                 self.pane_configuration.update(ctx, |pane_config, ctx| {
                     pane_config.set_shareable_object(
-                        Some(ShareableObject::WarpDriveObject(CloudObjectTypeAndId::GenericStringObject { object_type: crate::cloud_stub_types::models::env_var_collection::ENV_VAR_COLLECTION_FORMAT, id: crate::server::ids::SyncId::ServerId(*server_id) })),
+                        Some(ShareableObject::WarpDriveObject(CloudObjectTypeAndId::GenericStringObject { object_type: crate::local_storage_types::models::env_var_collection::ENV_VAR_COLLECTION_FORMAT, id: crate::server::ids::SyncId::ServerId(*server_id) })),
                         ctx,
                     );
                 });

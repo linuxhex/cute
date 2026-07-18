@@ -1,4 +1,4 @@
-pub use crate::cloud_stub_types::models::EnvVarSecretCommand;
+pub use crate::local_storage_types::models::EnvVarSecretCommand;
 use cuteui::ViewContext;
 
 use super::env_var_collection::{EnvVarCollectionView, VariableRowIndex};

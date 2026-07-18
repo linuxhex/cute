@@ -3,7 +3,7 @@ use cute_core::features::FeatureFlag;
 use cuteui::{Entity, ModelHandle, SingletonEntity};
 
 use crate::ai::skills::SkillManager;
-use crate::cloud_stub_types::model::persistence::CloudModel;
+use crate::local_storage_types::model::persistence::CloudModel;
 use crate::search::data_source::{Query, QueryResult};
 use crate::search::mixer::DataSourceRunErrorWrapper;
 use crate::search::slash_command_menu::static_commands::commands;

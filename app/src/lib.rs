@@ -25,7 +25,7 @@ mod crash_recovery;
 mod debug_dump;
 mod default_terminal;
 mod download_method;
-mod cloud_stub_types;
+mod local_storage_types;
 #[cfg(windows)]
 mod dynamic_libraries;
 mod env_vars;
@@ -206,9 +206,9 @@ use crate::ai::AIRequestUsageModel;
 use crate::antivirus::AntivirusInfo;
 use crate::app_state::AppState;
 use crate::changelog_model::ChangelogModel;
-use crate::cloud_stub_types::model::actions::ObjectActions;
-use crate::cloud_stub_types::model::persistence::CloudModel;
-use crate::cloud_stub_types::model::view::CloudViewModel;
+use crate::local_storage_types::model::actions::ObjectActions;
+use crate::local_storage_types::model::persistence::CloudModel;
+use crate::local_storage_types::model::view::CloudViewModel;
 use crate::code::global_buffer_model::GlobalBufferModel;
 #[cfg(feature = "local_fs")]
 use crate::code::language_server_shutdown_manager::LanguageServerShutdownManager;
@@ -216,51 +216,51 @@ use crate::context_chips::prompt::Prompt;
 use crate::default_terminal::DefaultTerminal;
 use crate::env_vars::manager::EnvVarCollectionManager;
 pub use crate::global_resource_handles::{GlobalResourceHandles, GlobalResourceHandlesProvider};
-pub use crate::cloud_stub_types::CloudObjectTypeAndId;
-pub use crate::cloud_stub_types::CuteDriveItem;
-pub use crate::cloud_stub_types::models::CloudFolder;
-pub use crate::cloud_stub_types::models::CloudFolderModel;
-pub use crate::cloud_stub_types::ContentEditability;
-pub use crate::cloud_stub_types::DriveIndexVariant;
-pub use crate::cloud_stub_types::UserWorkspaces;
-pub use crate::cloud_stub_types::UserWorkspacesEvent;
-pub use crate::cloud_stub_types::SharedSessionStatus;
-pub use crate::cloud_stub_types::IsSharedSessionCreator;
-pub use crate::cloud_stub_types::SharedSessionSource;
-// Cute: session-sharing-protocol已删除，SessionSourceType类型已在cloud_stub_types中定义
-pub use crate::cloud_stub_types::SessionSourceType;
-pub use crate::cloud_stub_types::UserProfiles;
-pub use crate::cloud_stub_types::UserProfile;
-pub use crate::cloud_stub_types::ObjectIdType;
-pub use crate::cloud_stub_types::WorkspaceUid;
+pub use crate::local_storage_types::CloudObjectTypeAndId;
+pub use crate::local_storage_types::CuteDriveItem;
+pub use crate::local_storage_types::models::CloudFolder;
+pub use crate::local_storage_types::models::CloudFolderModel;
+pub use crate::local_storage_types::ContentEditability;
+pub use crate::local_storage_types::DriveIndexVariant;
+pub use crate::local_storage_types::UserWorkspaces;
+pub use crate::local_storage_types::UserWorkspacesEvent;
+pub use crate::local_storage_types::SharedSessionStatus;
+pub use crate::local_storage_types::IsSharedSessionCreator;
+pub use crate::local_storage_types::SharedSessionSource;
+// Cute: session-sharing-protocol已删除，SessionSourceType类型已在local_storage_types中定义
+pub use crate::local_storage_types::SessionSourceType;
+pub use crate::local_storage_types::UserProfiles;
+pub use crate::local_storage_types::UserProfile;
+pub use crate::local_storage_types::ObjectIdType;
+pub use crate::local_storage_types::WorkspaceUid;
 pub use crate::settings::AdminEnablementSetting;
-pub use crate::cloud_stub_types::WorkspaceMetadata;
-pub use crate::cloud_stub_types::TeamMember;
-pub use crate::cloud_stub_types::OpenCuteDriveObjectSettings;
-pub use crate::cloud_stub_types::GenericStringObjectId;
-pub use crate::cloud_stub_types::GENERIC_STRING_OBJECT_PREFIX;
-pub use crate::cloud_stub_types::NotebookId;
+pub use crate::local_storage_types::WorkspaceMetadata;
+pub use crate::local_storage_types::TeamMember;
+pub use crate::local_storage_types::OpenCuteDriveObjectSettings;
+pub use crate::local_storage_types::GenericStringObjectId;
+pub use crate::local_storage_types::GENERIC_STRING_OBJECT_PREFIX;
+pub use crate::local_storage_types::NotebookId;
 
 // Session navigation types (moved from session_management module)
-pub use crate::cloud_stub_types::{
+pub use crate::local_storage_types::{
     SessionNavigationData, TabNavigationData, RunningSessionSummary, SessionSource, CommandContext,
     CuteDriveItemId, WarpDriveItemId, SessionNavigationPromptElements, PromptGrid, PromptChipSnapshot,
 };
-pub use crate::cloud_stub_types::models::CloudWorkflow;
-pub use crate::cloud_stub_types::models::CloudNotebook;
+pub use crate::local_storage_types::models::CloudWorkflow;
+pub use crate::local_storage_types::models::CloudNotebook;
 pub use cute_server_client::cloud_object::Owner;
 pub use cute_server_client::cloud_object::CloudObjectSyncStatus;
 pub use crate::server::server_api::object::{ObjectActionType, ObjectActionSubtype, ObjectAction, ObjectActionHistory};
 pub use crate::workspaces::user_workspaces::WorkspacesMetadataResponse;
-pub use crate::cloud_stub_types::{CloudAgentSettings, UpdateManager};
-pub use crate::cloud_stub_types::CloudObjectMetadata;
-pub use crate::cloud_stub_types::CloudObjectStatuses;
-pub use crate::cloud_stub_types::CloudObjectPermissions;
-pub use crate::cloud_stub_types::UserProfileWithUID;
+pub use crate::local_storage_types::{CloudAgentSettings, UpdateManager};
+pub use crate::local_storage_types::CloudObjectMetadata;
+pub use crate::local_storage_types::CloudObjectStatuses;
+pub use crate::local_storage_types::CloudObjectPermissions;
+pub use crate::local_storage_types::UserProfileWithUID;
 use crate::gpu_state::GPUState;
 use crate::network::NetworkStatus;
-use crate::cloud_stub_types::keys::NotebookKeybindings;
-use crate::cloud_stub_types::NotebookManager;
+use crate::local_storage_types::keys::NotebookKeybindings;
+use crate::local_storage_types::NotebookManager;
 use crate::notification::NotificationContext;
 use crate::persistence::model::AgentConversationData;
 use crate::persistence::PersistenceWriter;

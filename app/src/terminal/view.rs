@@ -298,8 +298,8 @@ use crate::banner::{
     Banner, BannerAction, BannerEvent, BannerState, BannerTextButton, BannerTextContent,
     DismissalType,
 };
-use crate::cloud_stub_types::model::persistence::CloudModel;
-use crate::cloud_stub_types::{CloudObject, GenericStringObjectFormat, JsonObjectType};
+use crate::local_storage_types::model::persistence::CloudModel;
+use crate::local_storage_types::{CloudObject, GenericStringObjectFormat, JsonObjectType};
 #[cfg(feature = "local_fs")]
 use crate::code::editor_management::CodeSource;
 use crate::code_review::comments::{
@@ -325,8 +325,8 @@ use crate::context_chips::prompt::Prompt;
 use crate::context_chips::prompt::PromptSelection;
 use crate::context_chips::prompt_type::PromptType;
 use crate::context_chips::ContextChipKind;
-use crate::cloud_stub_types::sharing::ShareableObject;
-use crate::cloud_stub_types::CloudObjectTypeAndId;
+use crate::local_storage_types::sharing::ShareableObject;
+use crate::local_storage_types::CloudObjectTypeAndId;
 use crate::editor::{AutosuggestionType, CrdtOperation, EditorAction};
 use crate::env_vars::env_var_collection_block::{
     EnvVarCollectionBlock, EnvVarCollectionBlockEvent,

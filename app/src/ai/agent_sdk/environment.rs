@@ -11,8 +11,8 @@ use cute_cli::GlobalOptions;
 use cute_graphql::queries::user_repo_auth_status::UserRepoAuthStatusEnum;
 use cuteui::{AppContext, ModelContext, SingletonEntity};
 
-use crate::cloud_stub_types::CloudObjectLookup as _;
-use crate::cloud_stub_types::CloudObject as _;
+use crate::local_storage_types::CloudObjectLookup as _;
+use crate::local_storage_types::CloudObject as _;
 
 use crate::ai::agent_sdk::output::{self, TableFormat};
 use crate::ai::cloud_environments::{

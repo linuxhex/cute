@@ -9,7 +9,7 @@ use cuteui::{
 };
 
 use crate::appearance::Appearance;
-use crate::cloud_stub_types::MarkdownDisplayMode;
+use crate::local_storage_types::MarkdownDisplayMode;
 
 #[derive(Debug, Clone)]
 pub enum MarkdownToggleEvent {

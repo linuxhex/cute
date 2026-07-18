@@ -3,7 +3,7 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 
 use super::generic_string_model::{Serializer, StringModel};
-use crate::cloud_stub_types::JsonObjectType;
+use crate::local_storage_types::JsonObjectType;
 
 /// A `JsonModel` is a string model that can be serialized to and deserialized from JSON.
 pub trait JsonModel: StringModel + Serialize + DeserializeOwned + 'static {

@@ -9,10 +9,10 @@ use cuteui::{
 use super::suggested_agent_mode_workflow_modal::SuggestedAgentModeWorkflowAndId;
 use super::suggested_rule_modal::SuggestedRuleAndId;
 use crate::ai::agent::{SuggestedAgentModeWorkflow, SuggestedLoggingId, SuggestedRule};
-use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
-use crate::cloud_stub_types::models::ai_fact::{AIFact, AIMemory, CloudAIFactModel};
-use crate::cloud_stub_types::{GenericStringObjectId};
-use crate::cloud_stub_types::CloudObjectTypeAndId;
+use crate::local_storage_types::model::persistence::{CloudModel, CloudModelEvent};
+use crate::local_storage_types::models::ai_fact::{AIFact, AIMemory, CloudAIFactModel};
+use crate::local_storage_types::{GenericStringObjectId};
+use crate::local_storage_types::CloudObjectTypeAndId;
 // use crate::server::cloud_objects::update_manager::{
 //     ObjectOperation, OperationSuccessType, UpdateManager, UpdateManagerEvent,
 // };

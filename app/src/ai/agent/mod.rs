@@ -3079,7 +3079,7 @@ pub struct RequestMetadata {
     pub is_auto_resume_after_error: bool,
 }
 
-pub use crate::cloud_stub_types::models::SuggestedLoggingId;
+pub use crate::local_storage_types::models::SuggestedLoggingId;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct SuggestedRule {

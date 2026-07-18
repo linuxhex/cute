@@ -41,8 +41,8 @@ use super::{editor_text_colors, SettingsSection};
 use crate::ai::ambient_agent_types::github_auth_url::GithubAuthRedirectTarget;
 use crate::ai::cloud_environments::CloudAmbientAgentEnvironment;
 use crate::appearance::Appearance;
-use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
-use crate::cloud_stub_types::{CloudObjectLookup, Owner};
+use crate::local_storage_types::model::persistence::{CloudModel, CloudModelEvent};
+use crate::local_storage_types::{CloudObjectLookup, Owner};
 use crate::UserWorkspaces;
 
 use crate::editor::{

@@ -39,8 +39,8 @@ use crate::ai::mcp::{
     TemplatableMCPServerInstallation,
 };
 use crate::appearance::Appearance;
-use crate::cloud_stub_types::model::persistence::{CloudModel, CloudModelEvent};
-use crate::cloud_stub_types::CloudObjectTypeAndId;
+use crate::local_storage_types::model::persistence::{CloudModel, CloudModelEvent};
+use crate::local_storage_types::CloudObjectTypeAndId;
 use crate::editor::{
     EditorView, PropagateAndNoOpNavigationKeys, SingleLineEditorOptions, TextOptions,
 };

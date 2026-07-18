@@ -20,7 +20,7 @@ use crate::ai::execution_profiles::{
 };
 use crate::ai::llms::LLMPreferences;
 use crate::appearance::Appearance;
-use crate::cloud_stub_types::model::generic_string_model::StringModel;
+use crate::local_storage_types::model::generic_string_model::StringModel;
 use crate::settings::AISettings;
 use crate::ui_components::icons::Icon;
 use crate::view_components::action_button::{ActionButton, ButtonSize, SecondaryTheme};

@@ -15,9 +15,9 @@ use super::{
 use crate::ai::llms::{LLMId, LLMPreferences};
 use crate::ai::mcp::templatable_manager::TemplatableMCPServerManagerEvent;
 use crate::ai::mcp::TemplatableMCPServerManager;
-use crate::cloud_stub_types::model::generic_string_model::GenericStringObjectId;
-use crate::cloud_stub_types::model::persistence::{CloudModelEvent, UpdateSource};
-use crate::cloud_stub_types::CloudObjectTypeAndId;
+use crate::local_storage_types::model::generic_string_model::GenericStringObjectId;
+use crate::local_storage_types::model::persistence::{CloudModelEvent, UpdateSource};
+use crate::local_storage_types::CloudObjectTypeAndId;
 use cute_server_client::cloud_object::{GenericStringObjectFormat, JsonObjectType};
 // DELETED: 云端功能 UpdateManager 导入已移除
 // use crate::server::cloud_objects::update_manager::UpdateManager;

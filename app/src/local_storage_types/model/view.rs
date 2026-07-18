@@ -9,7 +9,7 @@ use cuteui::{AppContext, Entity, ModelContext, SingletonEntity};
 
 use super::persistence::{CloudModel, CloudModelEvent};
 use crate::auth::{AuthStateProvider, UserUid};
-use crate::cloud_stub_types::{CloudObject, CloudObjectLocation, Space};
+use crate::local_storage_types::{CloudObject, CloudObjectLocation, Space};
 // Import cloud stub types for removed functionality
 use crate::{CloudFolder, ContentEditability};
 use cute_server_client::drive::sharing::SharingAccessLevel;

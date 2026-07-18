@@ -50,14 +50,14 @@ pub const GENERIC_STRING_OBJECT_PREFIX: &str = "GENERIC_STRING_";
 
 /// Re-export items module (was crate::drive::items)
 pub mod items {
-    pub use crate::cloud_stub_types::CuteDriveItemId;
+    pub use crate::local_storage_types::CuteDriveItemId;
 
     /// Type alias for backward compatibility
     pub type WarpDriveItemId = CuteDriveItemId;
 
     /// Re-export ai_fact submodule
     pub mod ai_fact {
-        pub use crate::cloud_stub_types::CuteDriveAIFact;
+        pub use crate::local_storage_types::CuteDriveAIFact;
     }
 
     /// Re-export mcp_server submodule
@@ -78,25 +78,25 @@ pub mod items {
 
 /// Re-export sharing module (was crate::drive::sharing)
 pub mod sharing {
-    pub use crate::cloud_stub_types::{ShareableObject, SharingAccessLevel, ContentEditability};
+    pub use crate::local_storage_types::{ShareableObject, SharingAccessLevel, ContentEditability};
 }
 
 /// Re-export export module (was crate::drive::export)
 pub mod export {
-    pub use crate::cloud_stub_types::{ExportManager, safe_filename};
+    pub use crate::local_storage_types::{ExportManager, safe_filename};
 }
 
 /// Re-export folders module (was crate::drive::folders)
 pub mod folders {
-    pub use crate::cloud_stub_types::models::CloudFolder;
+    pub use crate::local_storage_types::models::CloudFolder;
     
-    pub use crate::cloud_stub_types::FolderId;
+    pub use crate::local_storage_types::FolderId;
 }
 
 /// Re-export settings module (was crate::drive::settings)
 pub mod settings {
     // WarpDriveSettings has been renamed to CuteDriveSettings
-    pub use crate::cloud_stub_types::{CuteDriveSettings, CuteDriveSettingsChangedEvent};
+    pub use crate::local_storage_types::{CuteDriveSettings, CuteDriveSettingsChangedEvent};
 
     /// Type alias for backward compatibility
     pub type WarpDriveSettings = CuteDriveSettings;
@@ -109,54 +109,54 @@ pub mod workflows {
 
     /// Re-export arguments submodule
     pub mod arguments {
-        pub use crate::cloud_stub_types::ArgumentsState;
+        pub use crate::local_storage_types::ArgumentsState;
     }
 
     /// Re-export modal submodule
     pub mod modal {
-        pub use crate::cloud_stub_types::{WorkflowModal, WorkflowModalEvent};
+        pub use crate::local_storage_types::{WorkflowModal, WorkflowModalEvent};
     }
 
     /// Re-export ai_assist submodule
     pub mod ai_assist {
-        pub use crate::cloud_stub_types::{GeneratedCommandMetadata, GeneratedCommandMetadataError};
+        pub use crate::local_storage_types::{GeneratedCommandMetadata, GeneratedCommandMetadataError};
     }
 
     /// Re-export enum_creation_dialog submodule
     pub mod enum_creation_dialog {
-        pub use crate::cloud_stub_types::{EnumCreationDialog, EnumCreationDialogEvent, WorkflowEnumData};
+        pub use crate::local_storage_types::{EnumCreationDialog, EnumCreationDialogEvent, WorkflowEnumData};
     }
 
     /// Re-export workflow_arg_selector submodule
     pub mod workflow_arg_selector {
-        pub use crate::cloud_stub_types::{WorkflowArgSelector, WorkflowArgSelectorEvent, WorkflowArgSelectorStyles};
+        pub use crate::local_storage_types::{WorkflowArgSelector, WorkflowArgSelectorEvent, WorkflowArgSelectorStyles};
     }
 
     /// Re-export workflow_arg_type_helpers submodule
-    pub use crate::cloud_stub_types::workflow_arg_type_helpers;
+    pub use crate::local_storage_types::workflow_arg_type_helpers;
 }
 
 /// Re-export cloud_object_styling module
 pub mod cloud_object_styling {
-    // pub use crate::cloud_stub_types::{cute_drive_icon_color, cute_drive_icon_color, DriveObjectType};
-    pub use crate::cloud_stub_types::cute_drive_icon_color;
+    // pub use crate::local_storage_types::{cute_drive_icon_color, cute_drive_icon_color, DriveObjectType};
+    pub use crate::local_storage_types::cute_drive_icon_color;
 }
 
 /// Re-export drive_helpers module
 pub mod drive_helpers {
-    pub use crate::cloud_stub_types::{has_feature_gated_anonymous_user_reached_env_var_limit, has_feature_gated_anonymous_user_reached_workflow_limit};
+    pub use crate::local_storage_types::{has_feature_gated_anonymous_user_reached_env_var_limit, has_feature_gated_anonymous_user_reached_workflow_limit};
 }
 
 /// Re-export panel module
 pub mod panel {
-    pub use crate::cloud_stub_types::{MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH_RATIO};
+    pub use crate::local_storage_types::{MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH_RATIO};
 }
 
 /// Re-export import module
 pub mod import {
     /// Re-export modal submodule
     pub mod modal {
-        pub use crate::cloud_stub_types::{ImportModal, ImportModalEvent};
+        pub use crate::local_storage_types::{ImportModal, ImportModalEvent};
     }
 }
 
@@ -956,7 +956,7 @@ pub struct NotebookEditor {}
 /// Minimal stub for ArgumentsState
 #[derive(Clone, Debug, Default)]
 pub struct ArgumentsState {
-    pub arguments: Vec<crate::cloud_stub_types::models::workflow::Argument>,
+    pub arguments: Vec<crate::local_storage_types::models::workflow::Argument>,
     pub invalid_arguments_char_ranges: Vec<std::ops::Range<usize>>,
     pub valid_arguments_char_ranges_and_arg_index: Vec<(std::ops::Range<usize>, usize)>,
 }
@@ -1198,7 +1198,7 @@ pub struct CuteDriveEnvVarCollection {
 impl CuteDriveEnvVarCollection {
     pub fn new(
         _type_and_id: CloudObjectTypeAndId,
-        _env_var_collection: crate::cloud_stub_types::models::CloudEnvVarCollection,
+        _env_var_collection: crate::local_storage_types::models::CloudEnvVarCollection,
     ) -> Self {
         Self {
             id: _type_and_id.sync_id(),
@@ -1362,7 +1362,7 @@ impl NotebookView {
 /// Minimal stub for OpenCuteDriveObjectArgs
 #[derive(Clone, Debug, PartialEq)]
 pub struct OpenCuteDriveObjectArgs {
-    pub object_type: crate::cloud_stub_types::ObjectType,
+    pub object_type: crate::local_storage_types::ObjectType,
     pub server_id: crate::server::ids::ServerId,
     pub settings: OpenCuteDriveObjectSettings,
 }
@@ -1400,9 +1400,9 @@ impl FileNotebookView {
         // Stub implementation
     }
 
-    pub fn links(&self) -> &crate::cloud_stub_types::NotebookLinks {
+    pub fn links(&self) -> &crate::local_storage_types::NotebookLinks {
         // Stub implementation - returns a reference to a static instance
-        static LINKS: crate::cloud_stub_types::NotebookLinks = crate::cloud_stub_types::NotebookLinks {
+        static LINKS: crate::local_storage_types::NotebookLinks = crate::local_storage_types::NotebookLinks {
             cells: Vec::new(),
         };
         &LINKS
@@ -1432,7 +1432,7 @@ impl cuteui::TypedActionView for FileNotebookView {
 /// Minimal stub for workflow_arg_type_helpers module
 pub mod workflow_arg_type_helpers {
     use super::*;
-    use crate::cloud_stub_types::models::workflow::Argument;
+    use crate::local_storage_types::models::workflow::Argument;
     use crate::workflows::workflow_view::argument_editor::ArgumentEditorRow;
 
     pub use super::{ArgumentEditorRowIndex, ArgumentTypeEditor};
@@ -1605,7 +1605,7 @@ pub struct CloudNotebooksDataSource {}
 
 impl CloudNotebooksDataSource {
     /// Stub constructor
-    pub fn new(_embedding_space: crate::cloud_stub_types::Space, _ctx: &AppContext) -> Self {
+    pub fn new(_embedding_space: crate::local_storage_types::Space, _ctx: &AppContext) -> Self {
         Self {}
     }
 }
@@ -1707,7 +1707,7 @@ impl DrivePanel {
     pub fn open_cloud_object_dialog(
         &mut self,
         _object_type: DriveObjectType,
-        _space: crate::cloud_stub_types::Space,
+        _space: crate::local_storage_types::Space,
         _initial_folder_id: Option<String>,
         _ctx: &mut ViewContext<Self>,
     ) {
@@ -1720,7 +1720,7 @@ impl DrivePanel {
 
     pub fn create_workflow_with_content(
         &mut self,
-        _space: crate::cloud_stub_types::Space,
+        _space: crate::local_storage_types::Space,
         _initial_folder_id: Option<String>,
         _content: String,
         _is_for_agent_mode: bool,
@@ -2284,7 +2284,7 @@ pub struct GeneratedCommandMetadata {
     pub title: String,
     pub description: String,
     pub command: String,
-    pub arguments: Vec<crate::cloud_stub_types::models::workflow::Argument>,
+    pub arguments: Vec<crate::local_storage_types::models::workflow::Argument>,
 }
 
 /// Minimal stub for GeneratedCommandMetadataError
@@ -3653,7 +3653,7 @@ impl UpdateManager {
         self.initial_load_complete
     }
 
-    pub fn create_ai_fact(&mut self, _ai_fact: crate::cloud_stub_types::models::ai_fact::AIFact, _client_id: crate::server::ids::ClientId, _owner: crate::cloud_stub_types::Owner, _ctx: &mut cuteui::ModelContext<Self>) {
+    pub fn create_ai_fact(&mut self, _ai_fact: crate::local_storage_types::models::ai_fact::AIFact, _client_id: crate::server::ids::ClientId, _owner: crate::local_storage_types::Owner, _ctx: &mut cuteui::ModelContext<Self>) {
         // Stub - no-op
     }
 }

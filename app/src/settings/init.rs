@@ -21,7 +21,7 @@ use super::{
 };
 // use crate::ai::cloud_agent_settings::CloudAgentSettings; // Cute: 已注释，清理云端 Agent 设置
 use crate::banner::BannerState;
-use crate::cloud_stub_types::settings::CuteDriveSettings;
+use crate::local_storage_types::settings::CuteDriveSettings;
 use crate::resource_center::TipsCompleted;
 use crate::search::command_search::settings::CommandSearchSettings;
 use crate::terminal::alt_screen_reporting::AltScreenReporting;

@@ -8,7 +8,7 @@ use std::pin::Pin;
 use std::sync::Arc;
 
 use ai::api_keys::{ApiKeyManager, AwsCredentialsRefreshStrategy};
-use crate::cloud_stub_types::{CloudModel, CloudObjectLookup};
+use crate::local_storage_types::{CloudModel, CloudObjectLookup};
 use anyhow::Context;
 pub(crate) use driver::harness::{task_env_vars, validate_cli_installed, ClaudeHarness};
 pub use driver::AgentDriver;
