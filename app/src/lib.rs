@@ -181,7 +181,7 @@ pub use cute_core::{safe_debug, safe_error, safe_info, safe_warn};
 use cute_files::FileModel;
 use cute_logging::LogDestination;
 use cute_managed_secrets::ManagedSecretManager;
-use cuteui::integration::TestDriver;
+use cuteui::TestDriver;
 use cuteui::platform::app::ApproveTerminateResult;
 use cuteui::platform::TerminationMode;
 use cuteui::windowing::state::ApplicationStage;
@@ -270,7 +270,6 @@ use crate::root_view::{
 };
 
 use crate::server::sync_queue::SyncQueue;
-use crate::settings::cloud_preferences_syncer::initialize_cloud_preferences_syncer;
 use crate::settings::manager::SettingsManager;
 use crate::settings::{AISettings, AccessibilitySettings, ScrollSettings, SelectionSettings};
 use crate::settings_view::keybindings::KeybindingChangedNotifier;
@@ -1418,16 +1417,6 @@ pub(crate) fn initialize_app(
     ctx.add_singleton_model(|_| ObjectActions::new(Default::default()));
 
     ctx.add_singleton_model(|_| AudibleBell::new());
-
-    let toml_file_path = settings::user_preferences_toml_file_path();
-    // Cute OMJF-11111: 注册 stub syncer（不向云端同步，仅满足订阅方 InitialLoadCompleted）
-    ctx.add_singleton_model(move |ctx| {
-        initialize_cloud_preferences_syncer(
-            toml_file_path,
-            startup_toml_parse_error_for_syncer.as_deref(),
-            ctx,
-        )
-    });
 
     // LogManager must be registered before any subsystem (e.g. MCP, LSP) that creates file-based loggers.
     ctx.add_singleton_model(|_| simple_logger::manager::LogManager::new());

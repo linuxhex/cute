@@ -28,7 +28,7 @@ use super::ai_queries::AIQueriesDataSource;
 use super::env_var_collections::EnvVarCollectionDataSource;
 use super::history::history_data_source_for_session;
 use super::cute_ai::WarpAIDataSource;
-use super::workflows::{cloud_workflows_data_source, WorkflowsDataSource};
+use super::workflows::WorkflowsDataSource;
 use super::zero_state::{CommandSearchZeroStateEvent, CommandSearchZeroStateView};
 use crate::ai_assistant::execution_context::WarpAiExecutionContext;
 use crate::ai_assistant::GenerateCommandsFromNaturalLanguageError;
@@ -247,17 +247,6 @@ impl CommandSearchView {
                 if AISettings::as_ref(ctx).is_any_ai_enabled(ctx) {
                     workflows_filters.insert(QueryFilter::AgentModeWorkflows);
                 }
-
-                mixer.add_async_source(
-                    cloud_workflows_data_source(),
-                    workflows_filters,
-                    AddAsyncSourceOptions {
-                        debounce_interval: Some(Duration::from_millis(50)),
-                        run_in_zero_state: true,
-                        run_when_unfiltered: true,
-                    },
-                    ctx,
-                );
 
                 // EnvVarCollectionDataSource stays synchronous because each match target is
                 // structurally short (title, variable name, description). The per-item fuzzy

@@ -7,7 +7,7 @@ use futures_util::future::LocalBoxFuture;
 
 use super::window::{IntegrationTestWindowManager, WindowManager};
 use crate::clipboard::ClipboardContent;
-use crate::integration::TestDriver;
+use cuteui_core::TestDriver;
 use crate::notification::RequestPermissionsOutcome;
 use crate::platform::{self, NotificationInfo, TerminationMode};
 use crate::{keymap, AppContext, AssetProvider, WindowId};

@@ -1180,15 +1180,6 @@ impl Workspace {
         branches
     }
 
-    /// Check if a character is a git graph character
-    /// Git graph characters: * | \ / ` ' . space and special drawing chars
-    fn is_graph_char(c: char) -> bool {
-        matches!(
-            c,
-            '*' | '|' | '\\' | '/' | '`' | '\'' | '.' | ' ' | '_' | '-' | '+' | 'o'
-        )
-    }
-
     /// Get recent commits for a branch synchronously with graph lines
     fn get_branch_recent_commits_sync(
         repo_path: &std::path::Path,
@@ -1216,16 +1207,14 @@ impl Workspace {
         }
         let output = cmd.output();
 
-        // 辅助函数：判断是否为 git graph 字符
-        #[allow(dead_code)]
-        fn is_graph_char(c: char) -> bool {
+        let mut commits = Vec::new();
+
+        let is_graph_char = |c: char| {
             matches!(
                 c,
-                '*' | '|' | '\\' | '/' | ' ' | '`' | '\'' | '.' | '_' | '-' | '+' | 'o'
+                '*' | '|' | '\\' | '/' | '`' | '\'' | '.' | ' ' | '_' | '-' | '+' | 'o'
             )
-        }
-
-        let mut commits = Vec::new();
+        };
 
         if let Ok(out) = output {
             if out.status.success() {
@@ -1272,90 +1261,6 @@ impl Workspace {
         }
 
         commits
-    }
-
-    /// Get recent commits for a branch synchronously
-    #[allow(dead_code)]
-    fn get_branch_recent_commits_sync_no_graph(
-        repo_path: &std::path::Path,
-        branch_name: &str,
-        limit: usize,
-    ) -> Vec<crate::workspace::branch_selector::CommitInfo> {
-        use crate::workspace::branch_selector::CommitInfo;
-
-        let output = command::blocking::Command::new("git")
-            .args([
-                "log",
-                &format!("-{}", limit),
-                branch_name,
-                "--format=%H\t%s\t%an\t%ae\t%at",
-            ])
-            .current_dir(repo_path)
-            .stdout(command::Stdio::piped())
-            .stderr(command::Stdio::null())
-            .output();
-
-        let mut commits = Vec::new();
-
-        if let Ok(out) = output {
-            if out.status.success() {
-                let lines = String::from_utf8_lossy(&out.stdout);
-                for line in lines.lines() {
-                    let parts: Vec<&str> = line.trim().split('\t').collect();
-                    if parts.len() >= 5 {
-                        if let Some(timestamp) = parts[4].parse::<i64>().ok() {
-                            if let Some(ts) = chrono::DateTime::from_timestamp(timestamp, 0) {
-                                commits.push(CommitInfo {
-                                    hash: parts[0].to_string(),
-                                    message: parts[1].to_string(),
-                                    author: parts[2].to_string(),
-                                    author_email: parts[3].to_string(),
-                                    timestamp: ts.with_timezone(&chrono::Utc),
-                                    graph_line: None,
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        commits
-    }
-
-    /// Get last commit info for a branch synchronously
-    fn get_branch_last_commit_sync(
-        repo_path: &std::path::Path,
-        branch_name: &str,
-    ) -> Option<crate::workspace::branch_selector::CommitInfo> {
-        use crate::workspace::branch_selector::CommitInfo;
-
-        let output = command::blocking::Command::new("git")
-            .args(["log", "-1", branch_name, "--format=%H\t%s\t%an\t%ae\t%at"])
-            .current_dir(repo_path)
-            .stdout(command::Stdio::piped())
-            .stderr(command::Stdio::null())
-            .output();
-
-        if let Ok(out) = output {
-            if out.status.success() {
-                let line = String::from_utf8_lossy(&out.stdout);
-                let parts: Vec<&str> = line.trim().split('\t').collect();
-                if parts.len() >= 5 {
-                    let timestamp = parts[4].parse::<i64>().ok()?;
-                    return Some(CommitInfo {
-                        hash: parts[0].to_string(),
-                        message: parts[1].to_string(),
-                        author: parts[2].to_string(),
-                        author_email: parts[3].to_string(),
-                        timestamp: chrono::DateTime::from_timestamp(timestamp, 0)?
-                            .with_timezone(&chrono::Utc),
-                        graph_line: None,
-                    });
-                }
-            }
-        }
-        None
     }
 
     #[allow(dead_code)]

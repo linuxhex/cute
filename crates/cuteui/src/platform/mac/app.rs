@@ -10,7 +10,7 @@ use futures_util::future::LocalBoxFuture;
 use objc::runtime::{Object, Sel, BOOL, NO, YES};
 use objc::{class, msg_send, sel, sel_impl};
 use cuteui_core::assets::AssetProvider;
-use cuteui_core::integration::TestDriver;
+use cuteui_core::TestDriver;
 use cuteui_core::keymap::{Keystroke, Trigger};
 use cuteui_core::modals::{AlertDialog, ModalId};
 use cuteui_core::platform::app::{AppCallbackDispatcher, ApproveTerminateResult};

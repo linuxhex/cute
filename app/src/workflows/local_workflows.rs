@@ -212,7 +212,7 @@ pub fn prompt_chip_logging_workflow(shell_family: ShellFamily) -> Option<Workflo
     if !cute_core::channel::ChannelState::enable_debug_features() {
         return None;
     }
-    let log_file_path = crate::context_chips::logging::log_file_path().ok()?;
+    let log_file_path = crate::context_chips::logging::log_file_path()?;
     Some(Workflow::Command {
         name: "Tail prompt chip log".into(),
         command: tail_command_for_shell(shell_family, &log_file_path),

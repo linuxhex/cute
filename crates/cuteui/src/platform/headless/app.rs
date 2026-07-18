@@ -5,7 +5,7 @@ use futures::future::LocalBoxFuture;
 use super::delegate::{self, AppDelegate};
 use super::event_loop::{self, AppEvent};
 use super::windowing::WindowManager;
-use crate::integration::TestDriver;
+use cuteui_core::TestDriver;
 use crate::platform::app::TerminationResult;
 use crate::platform::test::FontDB as TestFontDB;
 use crate::platform::{self};

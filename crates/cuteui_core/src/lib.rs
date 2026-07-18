@@ -14,8 +14,14 @@ pub mod elements;
 pub mod event;
 pub mod fonts;
 pub mod image_cache;
-pub mod integration;
 pub mod keymap;
+
+pub struct TestDriver;
+
+impl TestDriver {
+    #[allow(dead_code)]
+    pub async fn run_test_and_cleanup(self, _app: crate::App) {}
+}
 pub mod modals;
 pub mod notification;
 pub mod platform;

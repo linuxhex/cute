@@ -1,4 +1,4 @@
-use cuteui_core::integration::TestDriver;
+use cuteui_core::TestDriver;
 use cuteui_core::keymap::{CustomTag, Keystroke};
 pub use cuteui_core::platform::app::*;
 use cuteui_core::r#async::LocalBoxFuture;

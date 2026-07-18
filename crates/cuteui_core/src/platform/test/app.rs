@@ -1,8 +1,9 @@
 use futures_util::future::LocalBoxFuture;
 
 use crate::assets::AssetProvider;
-use crate::integration::TestDriver;
 use crate::{platform, AppContext};
+
+pub struct TestDriver;
 
 pub struct App;
 
