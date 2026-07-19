@@ -721,7 +721,7 @@ impl DisplayChip {
                                         crate::util::git::get_branch_commits(
                                             &repo_path,
                                             &branch_name_for_async,
-                                            50, // limit to 50 commits
+                                            500, // limit to 500 commits (increased for better visibility)
                                         )
                                         .await
                                     },

@@ -13025,8 +13025,21 @@ impl Workspace {
             {
                 let full_path = repo_path.join(&file_path);
 
-                // 使用ctx.open_file_path打开文件
-                ctx.open_file_path(&full_path);
+                // 在 Cute 内部编辑器中打开文件（支持 js 等代码文件）
+                let code_source = crate::workspace::code_editor::CodeSource::FileTree {
+                    location: cute_util::local_or_remote_path::LocalOrRemotePath::Local(
+                        full_path.clone(),
+                    ),
+                };
+
+                use crate::util::openable_file_type::{EditorLayout, FileTarget};
+                self.open_file_with_target(
+                    full_path,
+                    FileTarget::CodeEditor(EditorLayout::SplitPane),
+                    None,
+                    code_source,
+                    ctx,
+                );
 
                 let window_id = ctx.window_id();
                 ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
