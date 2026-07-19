@@ -13343,12 +13343,37 @@ impl Workspace {
             });
         }
 
-        let _output = command::blocking::Command::new("git")
+        // 获取新版本文件内容（提交中的版本）
+        let new_content = command::blocking::Command::new("git")
             .args(["show", &format!("{}:{}", commit_hash, file_path)])
             .current_dir(repo_path)
             .stdout(command::Stdio::piped())
             .stderr(command::Stdio::null())
-            .output();
+            .output()
+            .ok()
+            .and_then(|out| {
+                if out.status.success() {
+                    Some(String::from_utf8_lossy(&out.stdout).to_string())
+                } else {
+                    None
+                }
+            });
+
+        // 获取旧版本文件内容（提交之前的版本）
+        let old_content = command::blocking::Command::new("git")
+            .args(["show", &format!("{}^:{}", commit_hash, file_path)])
+            .current_dir(repo_path)
+            .stdout(command::Stdio::piped())
+            .stderr(command::Stdio::null())
+            .output()
+            .ok()
+            .and_then(|out| {
+                if out.status.success() {
+                    Some(String::from_utf8_lossy(&out.stdout).to_string())
+                } else {
+                    None
+                }
+            });
 
         // Get the diff for this file in the commit
         let diff_output = command::blocking::Command::new("git")
@@ -13459,8 +13484,8 @@ impl Workspace {
 
                 return Some(FileDiff {
                     file_path: file_path.to_string(),
-                    old_content: None,
-                    new_content: None,
+                    old_content,
+                    new_content,
                     hunks,
                     is_binary: false,
                     image_local_path: None,
