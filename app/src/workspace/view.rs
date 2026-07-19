@@ -1198,8 +1198,17 @@ impl Workspace {
 
                     let graph_line = line[..graph_end].to_string();
 
-                    // 过滤掉纯图形行（没有提交信息的行），让提交列表更紧凑
+                    // 保留纯图形行以绘制完整的分支连接线
                     if graph_end == line.len() {
+                        // 纯图形行：只有图形，没有提交信息
+                        commits.push(CommitInfo {
+                            hash: String::new(),
+                            message: String::new(),
+                            author: String::new(),
+                            author_email: String::new(),
+                            timestamp: chrono::Utc::now(),
+                            graph_line: Some(graph_line),
+                        });
                         continue;
                     }
 
