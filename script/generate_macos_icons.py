@@ -7,7 +7,7 @@
 from PIL import Image, ImageDraw
 import os
 
-SOURCE_ICON = "app/channels/cute/icon/no-padding/original_cropped.png"
+SOURCE_ICON = "app/channels/cute/icon/no-padding/original_square.png"
 OUTPUT_DIR = "app/channels/cute/icon/with-white-border"
 
 SIZES = [16, 32, 48, 64, 128, 256, 512, 1024]
