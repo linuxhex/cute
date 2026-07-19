@@ -12082,7 +12082,7 @@ impl Workspace {
                                 let recent_commits = Self::get_branch_recent_commits_sync(
                                     repo_path,
                                     &branch.full_name,
-                                    500,
+                                    100, // 降低到100条以提升性能
                                     path_for_closure.as_deref(),
                                 );
                                 view.state.branches[branch_idx].recent_commits = recent_commits;
@@ -12135,7 +12135,7 @@ impl Workspace {
                                     let recent_commits = Self::get_branch_recent_commits_sync(
                                         repo_path,
                                         &branch.full_name,
-                                        if branch.is_remote { 50 } else { 500 },
+                                        if branch.is_remote { 30 } else { 100 }, // 降低以提升性能
                                         path_env.as_deref(),
                                     );
                                     view.state.branches[index].recent_commits = recent_commits;
