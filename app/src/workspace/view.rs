@@ -13026,7 +13026,7 @@ impl Workspace {
                 let full_path = repo_path.join(&file_path);
 
                 // 在 Cute 内部编辑器中打开文件（支持 js 等代码文件）
-                let code_source = crate::workspace::code_editor::CodeSource::FileTree {
+                let code_source = CodeSource::FileTree {
                     location: cute_util::local_or_remote_path::LocalOrRemotePath::Local(
                         full_path.clone(),
                     ),

@@ -158,6 +158,7 @@ impl BranchPicker {
                                     latest_commit_subject: None,
                                     latest_commit_author: None,
                                     latest_commit_date: None,
+                                    latest_commit_date_relative: None,
                                     is_remote: false,
                                 }]);
                             }
