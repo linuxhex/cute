@@ -18,10 +18,10 @@ use crate::terminal::model::grid::grid_handler::Link;
 use crate::terminal::model::index::Point;
 use crate::terminal::model::ObfuscateSecrets;
 use crate::terminal::{color, SizeInfo};
-use crate::themes::theme::WarpTheme;
+use crate::themes::theme::CuteTheme;
 
 pub struct GridRenderParams {
-    pub warp_theme: WarpTheme,
+    pub warp_theme: CuteTheme,
     pub font_family: FamilyId,
     pub font_size: f32,
     pub font_weight: Weight,

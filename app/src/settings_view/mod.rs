@@ -26,7 +26,7 @@ use cute_core::features::FeatureFlag;
 use cute_core::settings::ToggleableSetting as _;
 use cute_core::ui::theme::color::internal_colors;
 use cute_editor::editor::NavigationKey;
-use cuteify_page::{WarpifyPageAction, WarpifyPageView};
+use cuteify_page::{CuteifyPageAction, CuteifyPageView};
 use cuteui::elements::{
     Align, Border, ChildAnchor, ChildView, Clipped, ClippedScrollStateHandle, ClippedScrollable,
     ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, DispatchEventResult, Empty,
@@ -881,7 +881,7 @@ pub enum SettingsAction {
     AI(AISettingsPageAction),
     Code(CodeSettingsPageAction),
     // WarpDrive(cute_drive_page::WarpDriveSettingsPageAction), // Removed: drive module deleted
-    WarpifyPageToggle(WarpifyPageAction),
+    WarpifyPageToggle(CuteifyPageAction),
     Tab,
     Split(Direction),
     ToggleMaximizePane,
@@ -1123,7 +1123,7 @@ impl SettingsView {
             me.handle_code_page_event(event, ctx);
         });
 
-        let warpify_page_handle = ctx.add_typed_action_view(WarpifyPageView::new);
+        let warpify_page_handle = ctx.add_typed_action_view(CuteifyPageView::new);
         ctx.subscribe_to_view(&warpify_page_handle, |me, _, event, ctx| {
             me.handle_warpify_page_event(event, ctx);
         });

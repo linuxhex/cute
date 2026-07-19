@@ -9,7 +9,7 @@ use ai::agent::orchestration_config::OrchestrationConfigStatus;
 use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::vec2f;
 use cute_cli::agent::Harness;
-use cute_core::ui::theme::WarpTheme;
+use cute_core::ui::theme::CuteTheme;
 use cuteui::elements::{
     ChildAnchor, ChildView, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Empty,
     Flex, Hoverable, MainAxisAlignment, MainAxisSize, MouseStateHandle, OffsetPositioning,
@@ -44,7 +44,7 @@ use crate::workspace::WorkspaceAction;
 use crate::BlocklistAIHistoryModel;
 
 /// Renders a pill-shaped toggle switch (36×18) matching the Figma mock.
-fn render_pill_toggle(is_on: bool, theme: &WarpTheme) -> Box<dyn Element> {
+fn render_pill_toggle(is_on: bool, theme: &CuteTheme) -> Box<dyn Element> {
     let thumb_size = 14.;
     let thumb = ConstrainedBox::new(
         Container::new(Empty::new().finish())

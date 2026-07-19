@@ -15,7 +15,7 @@ use cute_core::execution_mode::AppExecutionMode;
 use cute_core::features::FeatureFlag;
 use cute_core::ui::appearance::Appearance;
 use cute_core::ui::theme::color::internal_colors;
-use cute_core::ui::theme::WarpTheme;
+use cute_core::ui::theme::CuteTheme;
 use cute_multi_agent_api::response_event::stream_finished;
 use cute_multi_agent_api::response_event::stream_finished::TokenUsage;
 use cute_multi_agent_api::{self as api};
@@ -4164,7 +4164,7 @@ impl ConversationStatus {
 
     pub fn status_icon_and_color(
         &self,
-        theme: &WarpTheme,
+        theme: &CuteTheme,
         color_style: StatusColorStyle,
     ) -> (Icon, ColorU) {
         match self {

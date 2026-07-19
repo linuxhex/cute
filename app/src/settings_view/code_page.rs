@@ -2369,7 +2369,7 @@ impl CodePageWidget {
         &self,
         server_model: Option<&cuteui::ModelHandle<LspServerModel>>,
         app: &AppContext,
-        theme: &cute_core::ui::theme::WarpTheme,
+        theme: &cute_core::ui::theme::CuteTheme,
     ) -> (ColorU, &'static str) {
         match server_model {
             Some(model) => {

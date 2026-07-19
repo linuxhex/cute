@@ -290,9 +290,9 @@ impl Input {
 
 pub mod styles {
     use pathfinder_color::ColorU;
-    use cute_core::ui::theme::WarpTheme;
+    use cute_core::ui::theme::CuteTheme;
 
-    pub fn default_border_color(theme: &WarpTheme) -> ColorU {
+    pub fn default_border_color(theme: &CuteTheme) -> ColorU {
         theme.outline().into()
     }
 }

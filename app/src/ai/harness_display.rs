@@ -7,7 +7,7 @@
 use pathfinder_color::ColorU;
 use cute_cli::agent::Harness;
 use cute_core::ui::theme::color::internal_colors;
-use cute_core::ui::theme::{Fill as WarpThemeFill, WarpTheme};
+use cute_core::ui::theme::{Fill as CuteThemeFill, CuteTheme};
 
 use crate::ai::agent::conversation::AIAgentHarness;
 use crate::ai::blocklist::CLAUDE_ORANGE;
@@ -53,23 +53,23 @@ pub fn brand_color(harness: Harness) -> Option<ColorU> {
 
 /// Circle background fill for a [`Harness`] icon rendered in a branded circle.
 /// Matches the treatment used in the vertical-tabs sidebar.
-pub fn circle_background(harness: Harness, theme: &WarpTheme) -> WarpThemeFill {
+pub fn circle_background(harness: Harness, theme: &CuteTheme) -> CuteThemeFill {
     match harness {
         Harness::Oz => theme.background(),
-        Harness::Claude => WarpThemeFill::Solid(CLAUDE_ORANGE),
-        Harness::Codex => WarpThemeFill::Solid(OPENAI_COLOR),
-        Harness::Gemini => WarpThemeFill::Solid(GEMINI_BLUE),
-        Harness::OpenCode => WarpThemeFill::Solid(OPENCODE_COLOR),
+        Harness::Claude => CuteThemeFill::Solid(CLAUDE_ORANGE),
+        Harness::Codex => CuteThemeFill::Solid(OPENAI_COLOR),
+        Harness::Gemini => CuteThemeFill::Solid(GEMINI_BLUE),
+        Harness::OpenCode => CuteThemeFill::Solid(OPENCODE_COLOR),
         Harness::Unknown => internal_colors::fg_overlay_2(theme),
     }
 }
 
 /// Icon fill color when rendered on the branded circle background.
-pub fn icon_fill_on_circle(harness: Harness, theme: &WarpTheme) -> WarpThemeFill {
+pub fn icon_fill_on_circle(harness: Harness, theme: &CuteTheme) -> CuteThemeFill {
     match harness {
         Harness::Oz => theme.main_text_color(theme.background()),
         Harness::Claude | Harness::Codex | Harness::Gemini | Harness::OpenCode => {
-            WarpThemeFill::Solid(ColorU::white())
+            CuteThemeFill::Solid(ColorU::white())
         }
         Harness::Unknown => theme.main_text_color(internal_colors::fg_overlay_2(theme)),
     }

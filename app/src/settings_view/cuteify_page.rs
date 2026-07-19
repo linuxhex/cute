@@ -27,9 +27,9 @@ use super::settings_page::{
 };
 use super::{flags, SettingsAction, SettingsSection, ToggleSettingActionPair};
 use crate::appearance::Appearance;
-use crate::terminal::warpify::settings::{
+use crate::terminal::cuteify::settings::{
     EnableSshWarpification, SshExtensionInstallMode,
-    UseSshTmuxWrapper, WarpifySettings, WarpifySettingsChangedEvent,
+    UseSshTmuxWrapper, CuteifySettings, CuteifySettingsChangedEvent,
 };
 use crate::ui_components::blended_colors;
 use crate::view_components::dropdown::{Dropdown, DropdownItem};
@@ -44,14 +44,14 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
     // Add all of the toggle settings from the Warpify Page that you want to show up on the Command Palette here.
     let mut toggle_binding_pairs = vec![];
     if FeatureFlag::SSHTmuxWrapper.is_enabled()
-        && WarpifySettings::as_ref(app)
+        && CuteifySettings::as_ref(app)
             .enable_ssh_warpification
             .is_supported_on_current_platform()
     {
         toggle_binding_pairs.push(ToggleSettingActionPair::new(
             "SSH Warpification",
             builder(SettingsAction::WarpifyPageToggle(
-                WarpifyPageAction::ToggleSshWarpification,
+                CuteifyPageAction::ToggleSshWarpification,
             )),
             context,
             flags::SSH_WARPIFICATION_CONTEXT_FLAG,
@@ -59,14 +59,14 @@ pub fn init_actions_from_parent_view<T: Action + Clone>(
     }
 
     if FeatureFlag::SSHTmuxWrapper.is_enabled()
-        && WarpifySettings::as_ref(app)
+        && CuteifySettings::as_ref(app)
             .use_ssh_tmux_wrapper
             .is_value_explicitly_set()
     {
         toggle_binding_pairs.push(ToggleSettingActionPair::new(
             "SSH session detection for Warpification",
             builder(SettingsAction::WarpifyPageToggle(
-                WarpifyPageAction::ToggleTmuxWarpification,
+                CuteifyPageAction::ToggleTmuxWarpification,
             )),
             context,
             flags::SSH_TMUX_WRAPPER_CONTEXT_FLAG,
@@ -89,7 +89,7 @@ const SSH_TMUX_WARPIFICATION_DESCRIPTION: &str = "The tmux ssh wrapper works in 
 /// asking. Users can also enable the SSH wrapper, and add hosts to a denylist.
 /// This page is essentially the View for the SubshellSettings model, as well as the SshSettings
 /// related to warpification.
-pub struct WarpifyPageView {
+pub struct CuteifyPageView {
     page: PageType<Self>,
     /// This needs to mirror the length of SubshellSettings::added_remove_button_states.
     remove_added_command_button_states: Vec<MouseStateHandle>,
@@ -101,19 +101,19 @@ pub struct WarpifyPageView {
     remove_denylisted_ssh_button_states: Vec<MouseStateHandle>,
     add_denylisted_ssh_editor: ViewHandle<SubmittableTextInput>,
 
-    ssh_extension_install_mode_dropdown: ViewHandle<Dropdown<WarpifyPageAction>>,
+    ssh_extension_install_mode_dropdown: ViewHandle<Dropdown<CuteifyPageAction>>,
 }
 
-impl WarpifyPageView {
+impl CuteifyPageView {
     pub fn new(ctx: &mut ViewContext<Self>) -> Self {
-        let warpify_settings_handle = WarpifySettings::handle(ctx);
+        let cuteify_settings_handle = CuteifySettings::handle(ctx);
 
-        ctx.observe(&warpify_settings_handle, Self::update_button_states);
-        ctx.subscribe_to_model(&warpify_settings_handle, move |me, model, event, ctx| {
+        ctx.observe(&cuteify_settings_handle, Self::update_button_states);
+        ctx.subscribe_to_model(&cuteify_settings_handle, move |me, model, event, ctx| {
             me.update_button_states(model, ctx);
             if matches!(
                 event,
-                WarpifySettingsChangedEvent::SshExtensionInstallModeSetting { .. }
+                CuteifySettingsChangedEvent::SshExtensionInstallModeSetting { .. }
             ) {
                 me.update_dropdown(ctx);
             }
@@ -170,7 +170,7 @@ impl WarpifyPageView {
             ssh_extension_install_mode_dropdown,
         };
 
-        instance.update_button_states(warpify_settings_handle, ctx);
+        instance.update_button_states(cuteify_settings_handle, ctx);
         instance
     }
 
@@ -181,9 +181,9 @@ impl WarpifyPageView {
                 .with_subtitle("Subshells supported: bash, zsh, and fish."),
         ];
 
-        let warpify_settings = WarpifySettings::as_ref(ctx);
+        let cuteify_settings = CuteifySettings::as_ref(ctx);
         if FeatureFlag::SSHTmuxWrapper.is_enabled()
-            && warpify_settings
+            && cuteify_settings
                 .enable_ssh_warpification
                 .is_supported_on_current_platform()
         {
@@ -199,21 +199,21 @@ impl WarpifyPageView {
     /// its delete button in the View.
     fn update_button_states(
         &mut self,
-        warpify_settings_handle: ModelHandle<WarpifySettings>,
+        cuteify_settings_handle: ModelHandle<CuteifySettings>,
         ctx: &mut ViewContext<Self>,
     ) {
-        let warpify_settings = warpify_settings_handle.as_ref(ctx);
-        self.remove_denylisted_command_button_states = warpify_settings
+        let cuteify_settings = cuteify_settings_handle.as_ref(ctx);
+        self.remove_denylisted_command_button_states = cuteify_settings
             .subshell_command_denylist
             .iter()
             .map(|_| Default::default())
             .collect();
-        self.remove_added_command_button_states = warpify_settings
+        self.remove_added_command_button_states = cuteify_settings
             .added_subshell_commands
             .iter()
             .map(|_| Default::default())
             .collect();
-        self.remove_denylisted_ssh_button_states = warpify_settings
+        self.remove_denylisted_ssh_button_states = cuteify_settings
             .ssh_hosts_denylist
             .iter()
             .map(|_| Default::default())
@@ -222,16 +222,16 @@ impl WarpifyPageView {
     }
 
     /// Syncs the install-mode dropdown selection with the current
-    /// `WarpifySettings::ssh_extension_install_mode` value (e.g. after it
+    /// `CuteifySettings::ssh_extension_install_mode` value (e.g. after it
     /// was changed from the SSH remote server choice view).
     fn update_dropdown(&mut self, ctx: &mut ViewContext<Self>) {
-        let current_mode = *WarpifySettings::as_ref(ctx)
+        let current_mode = *CuteifySettings::as_ref(ctx)
             .ssh_extension_install_mode
             .value();
         self.ssh_extension_install_mode_dropdown
             .update(ctx, |dropdown, ctx| {
                 dropdown.set_selected_by_action(
-                    WarpifyPageAction::SetSshExtensionInstallMode(current_mode),
+                    CuteifyPageAction::SetSshExtensionInstallMode(current_mode),
                     ctx,
                 );
             });
@@ -245,8 +245,8 @@ impl WarpifyPageView {
     ) {
         match event {
             SubmittableTextInputEvent::Submit(new_command) => {
-                WarpifySettings::handle(ctx).update(ctx, |warpify_settings, ctx| {
-                    warpify_settings.add_subshell_command(new_command, ctx);
+                CuteifySettings::handle(ctx).update(ctx, |cuteify_settings, ctx| {
+                    cuteify_settings.add_subshell_command(new_command, ctx);
                 });
 
             }
@@ -262,8 +262,8 @@ impl WarpifyPageView {
     ) {
         match event {
             SubmittableTextInputEvent::Submit(new_command) => {
-                WarpifySettings::handle(ctx).update(ctx, |warpify_settings, ctx| {
-                    warpify_settings.denylist_subshell_command(new_command, ctx);
+                CuteifySettings::handle(ctx).update(ctx, |cuteify_settings, ctx| {
+                    cuteify_settings.denylist_subshell_command(new_command, ctx);
                 });
 
             }
@@ -279,8 +279,8 @@ impl WarpifyPageView {
     ) {
         match event {
             SubmittableTextInputEvent::Submit(new_command) => {
-                WarpifySettings::handle(ctx).update(ctx, |warpify_settings, ctx| {
-                    warpify_settings.denylist_ssh_host(new_command, ctx);
+                CuteifySettings::handle(ctx).update(ctx, |cuteify_settings, ctx| {
+                    cuteify_settings.denylist_ssh_host(new_command, ctx);
                 });
 
             }
@@ -289,25 +289,25 @@ impl WarpifyPageView {
     }
 
     fn remove_denylisted_command(&self, index: usize, ctx: &mut ViewContext<Self>) {
-        WarpifySettings::handle(ctx).update(ctx, |warpify, ctx| {
+        CuteifySettings::handle(ctx).update(ctx, |warpify, ctx| {
             warpify.remove_denylisted_subshell_command(index, ctx)
         });
     }
 
     fn remove_added_command(&self, index: usize, ctx: &mut ViewContext<Self>) {
-        WarpifySettings::handle(ctx).update(ctx, |warpify, ctx| {
+        CuteifySettings::handle(ctx).update(ctx, |warpify, ctx| {
             warpify.remove_added_subshell_command(index, ctx)
         });
     }
 
     fn remove_denylisted_ssh_host(&self, index: usize, ctx: &mut ViewContext<Self>) {
-        WarpifySettings::handle(ctx).update(ctx, |warpify, ctx| {
+        CuteifySettings::handle(ctx).update(ctx, |warpify, ctx| {
             warpify.remove_denylisted_ssh_host(index, ctx)
         });
     }
 }
 
-impl Entity for WarpifyPageView {
+impl Entity for CuteifyPageView {
     type Event = SettingsPageEvent;
 }
 
@@ -324,23 +324,23 @@ fn build_sub_sub_title(title: &str, appearance: &Appearance) -> Container {
 
 const SSH_EXTENSION_DROPDOWN_WIDTH: f32 = 250.;
 
-impl WarpifyPageView {
+impl CuteifyPageView {
     fn create_ssh_extension_install_mode_dropdown(
         ctx: &mut ViewContext<Self>,
-    ) -> ViewHandle<Dropdown<WarpifyPageAction>> {
-        let items: Vec<DropdownItem<WarpifyPageAction>> = SshExtensionInstallMode::iter()
+    ) -> ViewHandle<Dropdown<CuteifyPageAction>> {
+        let items: Vec<DropdownItem<CuteifyPageAction>> = SshExtensionInstallMode::iter()
             .map(|mode| {
                 DropdownItem::new(
                     mode.display_name(),
-                    WarpifyPageAction::SetSshExtensionInstallMode(mode),
+                    CuteifyPageAction::SetSshExtensionInstallMode(mode),
                 )
             })
             .collect();
 
-        let current_mode = *WarpifySettings::as_ref(ctx)
+        let current_mode = *CuteifySettings::as_ref(ctx)
             .ssh_extension_install_mode
             .value();
-        let enable_ssh_warpification = *WarpifySettings::as_ref(ctx)
+        let enable_ssh_warpification = *CuteifySettings::as_ref(ctx)
             .enable_ssh_warpification
             .value();
 
@@ -350,7 +350,7 @@ impl WarpifyPageView {
             dropdown.set_menu_width(SSH_EXTENSION_DROPDOWN_WIDTH, ctx);
             dropdown.add_items(items, ctx);
             dropdown.set_selected_by_action(
-                WarpifyPageAction::SetSshExtensionInstallMode(current_mode),
+                CuteifyPageAction::SetSshExtensionInstallMode(current_mode),
                 ctx,
             );
             if !enable_ssh_warpification {
@@ -404,9 +404,9 @@ impl WarpifyPageView {
     }
 }
 
-impl View for WarpifyPageView {
+impl View for CuteifyPageView {
     fn ui_name() -> &'static str {
-        "WarpifyPageView"
+        "CuteifyPageView"
     }
 
     fn render(&self, app: &AppContext) -> Box<dyn Element> {
@@ -415,7 +415,7 @@ impl View for WarpifyPageView {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum WarpifyPageAction {
+pub enum CuteifyPageAction {
     RemoveAddedCommand(usize),
     RemoveDenylistedCommand(usize),
     RemoveDenylistedSshHost(usize),
@@ -427,21 +427,21 @@ pub enum WarpifyPageAction {
     OpenUrl(String),
 }
 
-impl TypedActionView for WarpifyPageView {
-    type Action = WarpifyPageAction;
+impl TypedActionView for CuteifyPageView {
+    type Action = CuteifyPageAction;
 
     fn handle_action(&mut self, action: &Self::Action, ctx: &mut ViewContext<Self>) {
-        use WarpifyPageAction::*;
+        use CuteifyPageAction::*;
         match action {
             RemoveDenylistedCommand(index) => self.remove_denylisted_command(*index, ctx),
             RemoveAddedCommand(index) => self.remove_added_command(*index, ctx),
             ToggleSshWarpification => {
-                WarpifySettings::handle(ctx).update(ctx, |ssh_settings, ctx| {
+                CuteifySettings::handle(ctx).update(ctx, |ssh_settings, ctx| {
                     report_if_error!(ssh_settings
                         .enable_ssh_warpification
                         .toggle_and_save_value(ctx));
                 });
-                let enabled = *WarpifySettings::as_ref(ctx)
+                let enabled = *CuteifySettings::as_ref(ctx)
                     .enable_ssh_warpification
                     .value();
                 self.ssh_extension_install_mode_dropdown
@@ -454,18 +454,18 @@ impl TypedActionView for WarpifyPageView {
                     });
             }
             ToggleTmuxWarpification => {
-                WarpifySettings::handle(ctx).update(ctx, |ssh_settings, ctx| {
+                CuteifySettings::handle(ctx).update(ctx, |ssh_settings, ctx| {
                     report_if_error!(ssh_settings.use_ssh_tmux_wrapper.toggle_and_save_value(ctx));
                 });
             }
             SetSshExtensionInstallMode(mode) => {
-                WarpifySettings::handle(ctx).update(ctx, |warpify_settings, ctx| {
-                    report_if_error!(warpify_settings
+                CuteifySettings::handle(ctx).update(ctx, |cuteify_settings, ctx| {
+                    report_if_error!(cuteify_settings
                         .ssh_extension_install_mode
                         .set_value(*mode, ctx));
                 });
             }
-            WarpifyPageAction::RemoveDenylistedSshHost(index) => {
+            CuteifyPageAction::RemoveDenylistedSshHost(index) => {
                 self.remove_denylisted_ssh_host(*index, ctx);
             }
             OpenUrl(url) => {
@@ -475,7 +475,7 @@ impl TypedActionView for WarpifyPageView {
     }
 }
 
-impl SettingsPageMeta for WarpifyPageView {
+impl SettingsPageMeta for CuteifyPageView {
     fn section() -> SettingsSection {
         SettingsSection::Warpify
     }
@@ -497,8 +497,8 @@ impl SettingsPageMeta for WarpifyPageView {
     }
 }
 
-impl From<ViewHandle<WarpifyPageView>> for SettingsPageViewHandle {
-    fn from(view_handle: ViewHandle<WarpifyPageView>) -> Self {
+impl From<ViewHandle<CuteifyPageView>> for SettingsPageViewHandle {
+    fn from(view_handle: ViewHandle<CuteifyPageView>) -> Self {
         SettingsPageViewHandle::Warpify(view_handle)
     }
 }
@@ -543,7 +543,7 @@ impl TitleWidget {
 }
 
 impl SettingsWidget for TitleWidget {
-    type View = WarpifyPageView;
+    type View = CuteifyPageView;
 
     fn search_terms(&self) -> &str {
         "ssh subshell warpify session"
@@ -567,20 +567,20 @@ struct SubshellsWidget {}
 impl SubshellsWidget {
     fn render_subshells_section(
         &self,
-        view: &WarpifyPageView,
+        view: &CuteifyPageView,
         appearance: &Appearance,
         app: &AppContext,
     ) -> Box<dyn Element> {
         let mut column = Flex::column();
 
-        let warpify_settings = WarpifySettings::as_ref(app);
+        let cuteify_settings = CuteifySettings::as_ref(app);
 
         column.add_child(
             view.build_input_list(
                 "Added commands",
-                &warpify_settings.added_subshell_commands,
+                &cuteify_settings.added_subshell_commands,
                 &view.remove_added_command_button_states,
-                WarpifyPageAction::RemoveAddedCommand,
+                CuteifyPageAction::RemoveAddedCommand,
                 &view.add_added_commands_editor,
                 appearance,
             )
@@ -590,9 +590,9 @@ impl SubshellsWidget {
         column.add_child(
             view.build_input_list(
                 "Denylisted commands",
-                &warpify_settings.subshell_command_denylist,
+                &cuteify_settings.subshell_command_denylist,
                 &view.remove_denylisted_command_button_states,
-                WarpifyPageAction::RemoveDenylistedCommand,
+                CuteifyPageAction::RemoveDenylistedCommand,
                 &view.add_denylisted_commands_editor,
                 appearance,
             )
@@ -605,7 +605,7 @@ impl SubshellsWidget {
 }
 
 impl SettingsWidget for SubshellsWidget {
-    type View = WarpifyPageView;
+    type View = CuteifyPageView;
 
     fn search_terms(&self) -> &str {
         "warpify subshell"
@@ -632,7 +632,7 @@ struct SSHWidget {
 }
 
 impl SettingsWidget for SSHWidget {
-    type View = WarpifyPageView;
+    type View = CuteifyPageView;
 
     fn search_terms(&self) -> &str {
         "warpify ssh"
@@ -650,18 +650,18 @@ impl SettingsWidget for SSHWidget {
             .theme()
             .sub_text_color(appearance.theme().surface_2());
 
-        let enable_ssh_warpification = *WarpifySettings::as_ref(app)
+        let enable_ssh_warpification = *CuteifySettings::as_ref(app)
             .enable_ssh_warpification
             .value();
 
         let should_prompt_ssh_tmux_wrapper =
-            *WarpifySettings::as_ref(app).use_ssh_tmux_wrapper.value();
+            *CuteifySettings::as_ref(app).use_ssh_tmux_wrapper.value();
 
         add_setting(
             &mut column,
-            &WarpifySettings::as_ref(app).enable_ssh_warpification,
+            &CuteifySettings::as_ref(app).enable_ssh_warpification,
             move || {
-                render_body_item::<WarpifyPageAction>(
+                render_body_item::<CuteifyPageAction>(
                     "Warpify SSH Sessions".into(),
                     None,
                     LocalOnlyIconState::for_setting(
@@ -677,7 +677,7 @@ impl SettingsWidget for SSHWidget {
                         .check(enable_ssh_warpification)
                         .build()
                         .on_click(move |ctx, _, _| {
-                            ctx.dispatch_typed_action(WarpifyPageAction::ToggleSshWarpification);
+                            ctx.dispatch_typed_action(CuteifyPageAction::ToggleSshWarpification);
                         })
                         .finish(),
                     None,
@@ -689,7 +689,7 @@ impl SettingsWidget for SSHWidget {
         // Only show the tmux warpification toggle if the user has explicitly changed
         // the setting. We are gradually deprecating tmux warpification, so new users
         // should not see this option, but existing users who opted in keep it.
-        if !WarpifySettings::as_ref(app)
+        if !CuteifySettings::as_ref(app)
             .use_ssh_tmux_wrapper
             .is_value_explicitly_set()
         {
@@ -698,15 +698,15 @@ impl SettingsWidget for SSHWidget {
 
         add_setting(
             &mut column,
-            &WarpifySettings::as_ref(app).use_ssh_tmux_wrapper,
+            &CuteifySettings::as_ref(app).use_ssh_tmux_wrapper,
             move || {
                 let mut column = Flex::column();
 
-                column.add_child(render_body_item::<WarpifyPageAction>(
+                column.add_child(render_body_item::<CuteifyPageAction>(
                     "Use Tmux Warpification".into(),
                     Some(AdditionalInfo {
                         mouse_state: self.additional_info_mouse_state.clone(),
-                        on_click_action: Some(WarpifyPageAction::OpenUrl(
+                        on_click_action: Some(CuteifyPageAction::OpenUrl(
                             "https://docs.warp.dev/terminal/warpify/ssh".into(),
                         )),
                         secondary_text: None,
@@ -730,7 +730,7 @@ impl SettingsWidget for SSHWidget {
                                 return;
                             }
 
-                            ctx.dispatch_typed_action(WarpifyPageAction::ToggleTmuxWarpification);
+                            ctx.dispatch_typed_action(CuteifyPageAction::ToggleTmuxWarpification);
                         })
                         .finish(),
                     None,
@@ -753,13 +753,13 @@ impl SettingsWidget for SSHWidget {
                 );
 
                 if enable_ssh_warpification && should_prompt_ssh_tmux_wrapper {
-                    let warpify_settings = WarpifySettings::as_ref(app);
+                    let cuteify_settings = CuteifySettings::as_ref(app);
                     column.add_child(
                         view.build_input_list(
                             "Denylisted hosts",
-                            &warpify_settings.ssh_hosts_denylist,
+                            &cuteify_settings.ssh_hosts_denylist,
                             &view.remove_denylisted_ssh_button_states,
-                            WarpifyPageAction::RemoveDenylistedSshHost,
+                            CuteifyPageAction::RemoveDenylistedSshHost,
                             &view.add_denylisted_ssh_editor,
                             appearance,
                         )

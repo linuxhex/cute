@@ -14,7 +14,7 @@ pub enum SshRemoteServerChoiceViewEvent {
     Dismissed,
     Install,
     Skip,
-    OpenWarpifySettings,
+    OpenCuteifySettings,
 }
 
 /// Stub action for TypedActionView.

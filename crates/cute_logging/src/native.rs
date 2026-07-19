@@ -658,7 +658,7 @@ fn init_log_directory() -> Result<std::path::PathBuf> {
         } else if #[cfg(any(target_os = "linux", target_os = "freebsd"))] {
             Ok(cute_core::paths::state_dir())
         } else if #[cfg(windows)] {
-            Ok(cute_core::paths::state_dir().join(cute_core::paths::WARP_LOGS_DIR))
+            Ok(cute_core::paths::state_dir().join(cute_core::paths::CUTE_LOGS_DIR))
         } else {
             Err(anyhow::anyhow!("Have not configured file-based logging for the current platform!"))
         }

@@ -4,7 +4,7 @@ use std::cell::RefCell;
 use cute_core::ui::appearance::Appearance;
 use cute_core::ui::builder::UiBuilder;
 use cute_core::ui::theme::color::internal_colors;
-use cute_core::ui::theme::WarpTheme;
+use cute_core::ui::theme::CuteTheme;
 use cuteui::clipboard::ClipboardContent;
 use cuteui::elements::*;
 use cuteui::text_layout::ClipConfig;
@@ -276,7 +276,7 @@ impl TerminationType {
 
 fn inverted_color_ui_builder(appearance: &Appearance) -> UiBuilder {
     let theme = appearance.theme();
-    let theme = WarpTheme::new(
+    let theme = CuteTheme::new(
         theme.foreground(),
         theme.background().into_solid(),
         theme.background(),

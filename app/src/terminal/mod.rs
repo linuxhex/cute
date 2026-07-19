@@ -76,11 +76,6 @@ pub mod terminal_manager;
 mod terminal_size_element;
 pub mod view;
 pub mod cuteify;
-/// Backward compatibility re-export module.
-/// The warpify module has been renamed to cuteify.
-pub mod warpify {
-    pub use super::cuteify::*;
-}
 mod waterfall_gap_element;
 mod writeable_pty;
 #[cfg(windows)]

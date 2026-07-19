@@ -12,7 +12,7 @@ use pathfinder_geometry::vector::vec2f;
 use repo_metadata::repositories::DetectedRepositories;
 use cute_core::ui::appearance::Appearance;
 use cute_core::ui::theme::color::internal_colors;
-use cute_core::ui::theme::{AnsiColorIdentifier, Fill as ThemeFill, WarpTheme};
+use cute_core::ui::theme::{AnsiColorIdentifier, Fill as ThemeFill, CuteTheme};
 use cute_core::ui::Icon;
 #[cfg(feature = "local_fs")]
 use cute_util::local_or_remote_path::LocalOrRemotePath;
@@ -163,7 +163,7 @@ enum LSPServerRenderStatus {
 }
 
 impl LSPServerRenderStatus {
-    fn to_icon_color(&self, theme: &WarpTheme) -> ColorU {
+    fn to_icon_color(&self, theme: &CuteTheme) -> ColorU {
         match self {
             LSPServerRenderStatus::Available => AnsiColorIdentifier::Green
                 .to_ansi_color(&theme.terminal_colors().normal)
@@ -281,7 +281,7 @@ impl CodeFooterView {
         })
     }
 
-    fn render_tab_config_info_icon(theme: &WarpTheme) -> Box<dyn Element> {
+    fn render_tab_config_info_icon(theme: &CuteTheme) -> Box<dyn Element> {
         Container::new(
             ConstrainedBox::new(
                 Icon::Info
@@ -1373,7 +1373,7 @@ impl CodeFooterView {
 
     /// Computes the aggregate indicator color across all tracked servers.
     /// Priority: Failed > Busy > Stopped > Available.
-    fn aggregate_indicator_color(&self, theme: &WarpTheme, app: &AppContext) -> ColorU {
+    fn aggregate_indicator_color(&self, theme: &CuteTheme, app: &AppContext) -> ColorU {
         if self.lsp_servers.is_empty() {
             return LSPServerRenderStatus::Stopped.to_icon_color(theme);
         }
@@ -1446,7 +1446,7 @@ impl CodeFooterView {
     }
 
     fn render_status_text(
-        theme: &WarpTheme,
+        theme: &CuteTheme,
         appearance: &Appearance,
         message: String,
     ) -> Box<dyn Element> {

@@ -8,7 +8,7 @@ use pathfinder_geometry::vector::vec2f;
 use regex::Regex;
 use settings::Setting as _;
 use cute_core::ui::theme::color::internal_colors;
-use cute_core::ui::theme::WarpTheme;
+use cute_core::ui::theme::CuteTheme;
 use cuteui::elements::{
     Align, ChildAnchor, ChildView, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment,
     Empty, Expanded, Flex, Hoverable, MainAxisAlignment, MainAxisSize, MouseStateHandle,
@@ -1728,6 +1728,6 @@ mod styles {
     pub const DESCRIPTION_LINE_MARGIN_BOTTOM: f32 = 6.;
 }
 
-fn description_text_color(theme: &WarpTheme) -> cute_core::ui::theme::Fill {
+fn description_text_color(theme: &CuteTheme) -> cute_core::ui::theme::Fill {
     theme.sub_text_color(theme.surface_2())
 }

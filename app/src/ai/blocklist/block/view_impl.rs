@@ -39,7 +39,7 @@ use cute_core::ui::color::contrast::{
     foreground_color_with_minimum_contrast, MinimumAllowedContrast,
 };
 use cute_core::ui::color::Rgb;
-use cute_core::ui::theme::WarpTheme;
+use cute_core::ui::theme::CuteTheme;
 use cuteui::elements::{
     Align, Border, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Empty, Expanded,
     Flex, FormattedTextElement, Highlight, HighlightedRange, Hoverable, MainAxisAlignment,
@@ -402,7 +402,7 @@ pub(crate) fn add_highlights_to_rich_text(
     find_context: Option<FindContext<'_>>,
     location_index: usize,
     line_count: usize,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
     is_selecting: bool,
     is_action: bool,
     app: &AppContext,

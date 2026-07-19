@@ -15,7 +15,7 @@ use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
 use cuteui::ui_components::text::Span;
 use cuteui::{AppContext, Element, EntityId, EventContext, SingletonEntity};
 
-use crate::themes::theme::{AnsiColorIdentifier, Fill, WarpTheme};
+use crate::themes::theme::{AnsiColorIdentifier, Fill, CuteTheme};
 use crate::ui_components::icons::Icon;
 
 const PROVIDER_BUTTON_ICON_SIZE: f32 = 14.;
@@ -41,7 +41,7 @@ pub const CLAUDE_ORANGE: ColorU = ColorU {
 
 /// Returns the color to be used for various AI signifiers
 /// input with AI mode).
-pub fn ai_brand_color(theme: &WarpTheme) -> ColorU {
+pub fn ai_brand_color(theme: &CuteTheme) -> ColorU {
     AnsiColorIdentifier::Magenta
         .to_ansi_color(&theme.terminal_colors().normal)
         .into()
@@ -49,7 +49,7 @@ pub fn ai_brand_color(theme: &WarpTheme) -> ColorU {
 
 /// Returns the color to be used for error UI throughout Agent Mode (like the "request limit
 /// exceeded" chip).
-pub fn error_color(theme: &WarpTheme) -> ColorU {
+pub fn error_color(theme: &CuteTheme) -> ColorU {
     AnsiColorIdentifier::Red
         .to_ansi_color(&theme.terminal_colors().normal)
         .into()

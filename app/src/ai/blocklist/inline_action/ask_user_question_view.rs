@@ -6,7 +6,7 @@ use ai::agent::action::{AskUserQuestionItem, AskUserQuestionOption, AskUserQuest
 use ai::agent::action_result::{AskUserQuestionAnswerItem, AskUserQuestionResult};
 use itertools::Itertools;
 use cute_core::ui::theme::color::internal_colors;
-use cute_core::ui::theme::WarpTheme;
+use cute_core::ui::theme::CuteTheme;
 use cuteui::elements::new_scrollable::SingleAxisConfig;
 use cuteui::elements::{
     Border, ChildView, Clipped, ClippedScrollStateHandle, ConstrainedBox, Container, CornerRadius,
@@ -1467,7 +1467,7 @@ impl AskUserQuestionView {
     fn render_question_text(
         question_text: &str,
         appearance: &Appearance,
-        theme: &WarpTheme,
+        theme: &CuteTheme,
     ) -> Box<dyn Element> {
         let text_color = theme.foreground().into();
         Container::new(render_text_with_markdown_support(
@@ -1491,7 +1491,7 @@ impl AskUserQuestionView {
         &self,
         question_text: &str,
         appearance: &Appearance,
-        theme: &WarpTheme,
+        theme: &CuteTheme,
     ) -> Box<dyn Element> {
         let body = Flex::column()
             .with_cross_axis_alignment(CrossAxisAlignment::Stretch)
@@ -1519,7 +1519,7 @@ impl AskUserQuestionView {
     fn render_nav_footer(
         &self,
         appearance: &Appearance,
-        theme: &WarpTheme,
+        theme: &CuteTheme,
         app: &AppContext,
     ) -> Box<dyn Element> {
         let counter = format!(

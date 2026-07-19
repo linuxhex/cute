@@ -203,14 +203,14 @@ use super::ssh::util::{
     convert_script_to_one_line, parse_interactive_ssh_command, InteractiveSshCommand,
     SshWarpifyCommand,
 };
-use super::ssh::warpify::{
+use super::ssh::cuteify::{
     begin_warpify_ssh_session_command, warpify_ssh_session_command, SshWarpifyBlock,
     SshWarpifyBlockEvent,
 };
 use super::ssh::SSH_WARPIFY_TIMEOUT_DURATION;
-use super::warpify::success_block::{WarpifySuccessBlock, WarpifySuccessBlockEvent};
-use super::warpify::trigger_state::{SshBlockState, WarpifyState};
-use super::warpify::WarpificationSource;
+use super::cuteify::success_block::{WarpifySuccessBlock, WarpifySuccessBlockEvent};
+use super::cuteify::trigger_state::{SshBlockState, WarpifyState};
+use super::cuteify::WarpificationSource;
 use super::{cli_agent, CLIAgent, GridType, HistoryEvent};
 use crate::ai::agent::api::ServerConversationToken;
 use crate::ai::agent::conversation::{AIConversation, AIConversationId, ConversationStatus};
@@ -480,9 +480,9 @@ pub use crate::terminal::view::rich_content::{
 use crate::terminal::view::ssh_file_upload::FileUploadId;
 use crate::terminal::view::telemetry::PromptSuggestionFallbackReason;
 use crate::terminal::view::zero_state_block::TerminalViewZeroStateBlock;
-use crate::terminal::warpify::render::render_subshell_separator;
-use crate::terminal::warpify::settings::WarpifySettings;
-use crate::terminal::warpify::SubshellSource;
+use crate::terminal::cuteify::render::render_subshell_separator;
+use crate::terminal::cuteify::settings::CuteifySettings;
+use crate::terminal::cuteify::SubshellSource;
 use crate::terminal::waterfall_gap_element::WaterfallGapElement;
 use crate::terminal::{
     block_list_element::BlockHoverAction,
@@ -499,7 +499,7 @@ use crate::terminal::{
     CellSizeAndWindowPadding, History, HistoryEntry, ShellHost, ShellLaunchData, SizeInfo,
     SizeUpdate, SizeUpdateReason,
 };
-use crate::themes::theme::WarpTheme;
+use crate::themes::theme::CuteTheme;
 use crate::throttle::throttle;
 use crate::ui_components::icons::{self};
 use crate::util::bindings::{
@@ -2018,7 +2018,7 @@ impl BlocklistAIRenderContext {
     }
 
     /// Returns the AI context stripe color to use for a block, if any.
-    pub fn context_color_for_block(&self, block: &Block, theme: &WarpTheme) -> Option<ColorU> {
+    pub fn context_color_for_block(&self, block: &Block, theme: &CuteTheme) -> Option<ColorU> {
         match self.context_inclusion_state_for_block(block) {
             Some(AIContextInclusionState::Active) => self.context_color(theme),
             _ => None,
@@ -2029,7 +2029,7 @@ impl BlocklistAIRenderContext {
     pub fn context_color_for_rich_content(
         &self,
         rich_content: &RichContentMetadata,
-        theme: &WarpTheme,
+        theme: &CuteTheme,
     ) -> Option<ColorU> {
         match rich_content {
             RichContentMetadata::AIBlock(ai_metadata)
@@ -2048,7 +2048,7 @@ impl BlocklistAIRenderContext {
 
     /// The context color to use for a block, given its conversation phase.
     /// This assumes the block is part of the active conversation.
-    fn context_color(&self, theme: &WarpTheme) -> Option<ColorU> {
+    fn context_color(&self, theme: &CuteTheme) -> Option<ColorU> {
         (self.is_ai_input_enabled && self.should_highlight_context).then(|| ai_brand_color(theme))
     }
 }
@@ -3589,7 +3589,7 @@ impl TerminalView {
                 FormattedTextFragment::plain_text("). Enabling the SSH extension in "),
                 FormattedTextFragment::hyperlink_action(
                     "settings",
-                    TerminalAction::ShowWarpifySettings,
+                    TerminalAction::ShowCuteifySettings,
                 ),
                 FormattedTextFragment::plain_text(" may resolve this issue."),
             ]))
@@ -8694,7 +8694,7 @@ impl TerminalView {
         ctx: &mut ViewContext<Self>,
     ) {
         match event {
-            WarpifySuccessBlockEvent::OpenWarpifySettings => {
+            WarpifySuccessBlockEvent::OpenCuteifySettings => {
                 ctx.emit(Event::OpenSettings(SettingsSection::Warpify));
             }
         }
@@ -8720,12 +8720,12 @@ impl TerminalView {
 
         match remember_command {
             RememberForWarpification::RememberSubshellCommand(command) => {
-                WarpifySettings::handle(ctx).update(ctx, |warpify, ctx| {
+                CuteifySettings::handle(ctx).update(ctx, |warpify, ctx| {
                     warpify.denylist_subshell_command(command, ctx);
                 });
             }
             RememberForWarpification::RememberSSHHost(host) => {
-                WarpifySettings::handle(ctx).update(ctx, |warpify, ctx| {
+                CuteifySettings::handle(ctx).update(ctx, |warpify, ctx| {
                     warpify.denylist_ssh_host(host, ctx);
                 });
             }
@@ -10677,14 +10677,14 @@ impl TerminalView {
 
                 // Check if the current running command spawns a subshell eligible for Warpification.
                 let shell_family = self.shell_family(ctx);
-                let warpify_settings = WarpifySettings::as_ref(ctx);
-                let is_compatible_subshell_command = warpify_settings
+                let cuteify_settings = CuteifySettings::as_ref(ctx);
+                let is_compatible_subshell_command = cuteify_settings
                     .is_compatible_subshell_command(command, shell_family)
-                    || warpify_settings
+                    || cuteify_settings
                         .is_compatible_subshell_command(warpify_command, shell_family);
-                let command_is_denylisted = warpify_settings
+                let command_is_denylisted = cuteify_settings
                     .is_denylisted_subshell_command(command)
-                    || warpify_settings.is_denylisted_subshell_command(warpify_command);
+                    || cuteify_settings.is_denylisted_subshell_command(warpify_command);
                 // Never warpify or surface warpification for agent-requested commands.
                 let has_ai_metadata = self
                     .model
@@ -11604,7 +11604,7 @@ impl TerminalView {
                 me.remove_ssh_remote_server_choice_block(session_id, ctx);
                 ctx.emit(Event::RemoteServerSkipRequested { session_id });
             }
-            SshRemoteServerChoiceViewEvent::OpenWarpifySettings => {
+            SshRemoteServerChoiceViewEvent::OpenCuteifySettings => {
                 ctx.emit(Event::OpenSettings(SettingsSection::Warpify));
             }
         });
@@ -23517,13 +23517,13 @@ impl TerminalView {
                 let ssh_host = &self.warpify_state.get_pending_ssh_host();
 
                 let shell_family = self.shell_family(ctx);
-                let warpify_settings = WarpifySettings::as_ref(ctx);
+                let cuteify_settings = CuteifySettings::as_ref(ctx);
 
                 let ssh_interactive_session_event = evaluate_warpify_ssh_host(
                     command,
                     ssh_host.as_deref(),
                     shell_family,
-                    warpify_settings,
+                    cuteify_settings,
                 );
 
                 if let SshInteractiveSessionDetected::ShouldPromptWarpification {
@@ -23814,7 +23814,7 @@ impl TypedActionView for TerminalView {
                 "Showed initialization block",
                 WarpA11yRole::TextareaRole,
             )),
-            ShowWarpifySettings => Custom(AccessibilityContent::new_without_help(
+            ShowCuteifySettings => Custom(AccessibilityContent::new_without_help(
                 "Opened Warpify Settings",
                 WarpA11yRole::ButtonRole,
             )),
@@ -24614,7 +24614,7 @@ impl TypedActionView for TerminalView {
             LoadAgentModeConversation => {
                 self.load_agent_mode_conversation(ctx);
             }
-            ShowWarpifySettings => ctx.emit(Event::OpenSettings(SettingsSection::Warpify)),
+            ShowCuteifySettings => ctx.emit(Event::OpenSettings(SettingsSection::Warpify)),
             DeleteAttachment { index } => {
                 self.ai_context_model.update(ctx, |context_model, ctx| {
                     context_model.remove_pending_attachment(*index, ctx);
@@ -26154,7 +26154,7 @@ fn maybe_wrap_terminal_element_in_scrollable(
     vertical_scroll_handle: ScrollStateHandle,
     horizontal_scroll_handle: ClippedScrollStateHandle,
     required_terminal_width: f32,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
     element: impl NewScrollableElement + 'static,
 ) -> Box<dyn Element> {
     let nonactive_thumb_background = theme.disabled_text_color(theme.background()).into();

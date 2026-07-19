@@ -1,6 +1,6 @@
 use markdown_parser::{FormattedText, FormattedTextFragment, FormattedTextLine};
 use cute_core::channel::ChannelState;
-use cute_core::ui::theme::WarpTheme;
+use cute_core::ui::theme::CuteTheme;
 use cuteui::elements::{
     Border, Container, CrossAxisAlignment, Flex, HighlightedHyperlink, Hoverable, Icon,
     MainAxisAlignment, MainAxisSize, MouseStateHandle, ParentElement,
@@ -17,9 +17,8 @@ use cuteui::{
 use crate::appearance::Appearance;
 use crate::terminal::model::ansi::WarpificationUnavailableReason;
 use crate::terminal::cuteify;
-use crate::terminal::warpify;
-use crate::terminal::warpify::render::{apply_spacing_styles, build_description_row};
-use crate::terminal::warpify::settings::WarpifySettings;
+use crate::terminal::cuteify::render::{apply_spacing_styles, build_description_row};
+use crate::terminal::cuteify::settings::CuteifySettings;
 use crate::ui_components::icons::Icon as UiIcon;
 use cute_core::session_id::SessionId;
 
@@ -169,10 +168,10 @@ impl SshErrorBlock {
     fn render_title_ui(
         &self,
         app: &AppContext,
-        theme: &WarpTheme,
+        theme: &CuteTheme,
         appearance: &Appearance,
     ) -> Box<dyn Element> {
-        let header_contents = warpify::render::build_header_row(
+        let header_contents = cuteify::render::build_header_row(
             "Error Warpifying session",
             Icon::new(UiIcon::AlertTriangle.into(), theme.ui_error_color()),
             theme,
@@ -203,7 +202,7 @@ impl SshErrorBlock {
             row.add_child(right_hand_size);
         }
 
-        warpify::render::apply_spacing_styles(Container::new(row.finish())).finish()
+        cuteify::render::apply_spacing_styles(Container::new(row.finish())).finish()
     }
 }
 
@@ -226,7 +225,7 @@ impl View for SshErrorBlock {
 
         content.add_child(self.render_title_ui(app, theme, appearance));
 
-        content.add_child(warpify::render::description_row(
+        content.add_child(cuteify::render::description_row(
             self.error_reason.error_message(),
             theme,
             appearance,
@@ -340,9 +339,9 @@ impl TypedActionView for SshErrorBlock {
                 ctx.open_url(url);
             }
             SshErrorBlockAction::AddSshHostToDenylist(ssh_host) => {
-                let settings = WarpifySettings::handle(ctx);
-                settings.update(ctx, |warpify, ctx| {
-                    warpify.denylist_ssh_host(ssh_host, ctx);
+                let settings = CuteifySettings::handle(ctx);
+                settings.update(ctx, |cuteify, ctx| {
+                    cuteify.denylist_ssh_host(ssh_host, ctx);
                 });
                 ctx.emit(SshErrorBlockEvent::ContinueWithoutWarpification);
                 ctx.notify()

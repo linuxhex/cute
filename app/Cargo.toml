@@ -23,11 +23,6 @@ path = "src/bin/oss.rs"
 test = false
 
 [[bin]]
-name = "warp"
-path = "src/bin/local.rs"
-test = false
-
-[[bin]]
 name = "stable"
 path = "src/bin/stable.rs"
 test = false

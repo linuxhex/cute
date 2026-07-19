@@ -1,6 +1,6 @@
 use cute_core::ui::appearance::Appearance;
 use cute_core::ui::color::coloru_with_opacity;
-use cute_core::ui::theme::{Fill, WarpTheme};
+use cute_core::ui::theme::{Fill, CuteTheme};
 use cuteui::color::ColorU;
 use cuteui::elements::{ConstrainedBox, Container, CornerRadius, Radius};
 use cuteui::Element;
@@ -13,17 +13,17 @@ use crate::ui_components::icons::Icon;
 pub const STATUS_ELEMENT_PADDING: f32 = 2.;
 
 pub trait StatusElementStyle {
-    fn status_icon_and_color(&self, theme: &WarpTheme) -> (Icon, ColorU);
+    fn status_icon_and_color(&self, theme: &CuteTheme) -> (Icon, ColorU);
 }
 
 impl StatusElementStyle for ConversationStatus {
-    fn status_icon_and_color(&self, theme: &WarpTheme) -> (Icon, ColorU) {
+    fn status_icon_and_color(&self, theme: &CuteTheme) -> (Icon, ColorU) {
         ConversationStatus::status_icon_and_color(self, theme, StatusColorStyle::Standard)
     }
 }
 
 impl StatusElementStyle for AgentRunDisplayStatus {
-    fn status_icon_and_color(&self, theme: &WarpTheme) -> (Icon, ColorU) {
+    fn status_icon_and_color(&self, theme: &CuteTheme) -> (Icon, ColorU) {
         AgentRunDisplayStatus::status_icon_and_color(self, theme)
     }
 }

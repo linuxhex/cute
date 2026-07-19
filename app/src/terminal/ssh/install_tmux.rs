@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use markdown_parser::{FormattedText, FormattedTextFragment, FormattedTextLine};
-use cute_core::ui::theme::WarpTheme;
+use cute_core::ui::theme::CuteTheme;
 use cuteui::elements::{
     Border, Container, CrossAxisAlignment, Flex, FormattedTextElement, HighlightedHyperlink,
     Hoverable, Icon, MainAxisAlignment, MainAxisSize, MouseStateHandle, ParentElement,
@@ -21,7 +21,7 @@ use crate::appearance::Appearance;
 use crate::terminal::model::ansi::SystemDetails;
 use crate::terminal::model::escape_sequences;
 use crate::terminal::cuteify::render;
-use crate::terminal::cuteify::settings::WarpifySettings;
+use crate::terminal::cuteify::settings::CuteifySettings;
 use crate::ui_components::blended_colors;
 use crate::ui_components::icons::Icon as UiIcon;
 
@@ -316,7 +316,7 @@ impl SshInstallTmuxBlock {
     fn render_title_ui(
         &self,
         app: &AppContext,
-        theme: &WarpTheme,
+        theme: &CuteTheme,
         appearance: &Appearance,
     ) -> Box<dyn Element> {
         let header_contents = render::build_header_row(
@@ -491,7 +491,7 @@ impl TypedActionView for SshInstallTmuxBlock {
                 ctx.emit(SshInstallTmuxBlockEvent::Interrupt);
             }
             (SshInstallTmuxBlockAction::AddSshHostToDenylist(ssh_host), true) => {
-                let settings = WarpifySettings::handle(ctx);
+                let settings = CuteifySettings::handle(ctx);
                 settings.update(ctx, |cuteify, ctx| {
                     cuteify.denylist_ssh_host(ssh_host, ctx);
                 });

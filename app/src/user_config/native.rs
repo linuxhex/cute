@@ -18,7 +18,7 @@ use super::{
 use crate::features::FeatureFlag;
 use crate::launch_configs::launch_config::LaunchConfig;
 use crate::tab_configs::{TabConfig, TabConfigError};
-use crate::themes::theme::WarpThemeConfig;
+use crate::themes::theme::CuteThemeConfig;
 use crate::cute_managed_paths_watcher::{
     repository_update_touches_path, repository_update_touches_prefix, CuteManagedPathsWatcher,
     CuteManagedPathsWatcherEvent,
@@ -163,8 +163,8 @@ impl super::WarpConfig {
     }
 }
 
-pub fn load_theme_configs(theme_path: &Path) -> WarpThemeConfig {
-    let mut theme_configs = WarpThemeConfig::new();
+pub fn load_theme_configs(theme_path: &Path) -> CuteThemeConfig {
+    let mut theme_configs = CuteThemeConfig::new();
     for_each_dir_entry(theme_path, parse_single_theme_dir_entry)
         .into_iter()
         .for_each(|(theme_name, theme)| theme_configs.add_new_theme(theme_name, theme));

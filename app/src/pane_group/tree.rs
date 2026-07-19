@@ -16,7 +16,7 @@ use cuteui::{AppContext, EntityId, ViewContext};
 use super::{ActivationReason, PaneGroup, PaneId};
 use crate::app_state;
 use crate::pane_group::{get_minimum_pane_size, DraggedBorder, PaneGroupAction};
-use crate::themes::theme::WarpTheme;
+use crate::themes::theme::CuteTheme;
 
 pub(in crate::pane_group) const DEFAULT_FLEX_VALUE: f32 = 1.0;
 pub(in crate::pane_group) const DEFAULT_FLEX_SIZE: PaneFlex = PaneFlex(DEFAULT_FLEX_VALUE);
@@ -508,7 +508,7 @@ impl PaneData {
         self.len == 0
     }
 
-    pub fn render(&self, theme: &WarpTheme, app: &AppContext) -> Box<dyn Element> {
+    pub fn render(&self, theme: &CuteTheme, app: &AppContext) -> Box<dyn Element> {
         match &self.root {
             PaneNode::Leaf(pane) => pane.render(app),
             PaneNode::Branch(node) => node.render(theme, &self.hidden_panes, app),
@@ -714,7 +714,7 @@ impl PaneNode {
 
     fn render(
         &self,
-        theme: &WarpTheme,
+        theme: &CuteTheme,
         hidden_panes: &Vec<HiddenPane>,
         app: &AppContext,
     ) -> Box<dyn Element> {
@@ -1081,7 +1081,7 @@ impl PaneBranch {
 
     fn render(
         &self,
-        theme: &WarpTheme,
+        theme: &CuteTheme,
         hidden_panes: &Vec<HiddenPane>,
         app: &AppContext,
     ) -> Box<dyn Element> {
@@ -1447,7 +1447,7 @@ fn divider_mouse_down_action(
 fn create_divider(
     direction: SplitDirection,
     item: &Divider,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
 ) -> Box<dyn Element> {
     let divider = ConstrainedBox::new(
         Rect::new()
@@ -1483,7 +1483,7 @@ fn create_divider(
 fn create_minimalist_divider(
     direction: SplitDirection,
     item: &Divider,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
 ) -> Box<dyn Element> {
     let divider = ConstrainedBox::new(
         Rect::new()

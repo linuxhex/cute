@@ -26,7 +26,7 @@ use cuteui::{
 use super::workflow::Workflow;
 use super::WorkflowSource;
 use crate::appearance::Appearance;
-use crate::themes::theme::{self, Blend, WarpTheme};
+use crate::themes::theme::{self, Blend, CuteTheme};
 use crate::user_config::{WarpConfig, WarpConfigUpdateEvent};
 use crate::workflows::WorkflowType;
 
@@ -326,7 +326,7 @@ impl SelectionState {
         }
     }
 
-    fn background_color(&self, theme: &WarpTheme) -> theme::Fill {
+    fn background_color(&self, theme: &CuteTheme) -> theme::Fill {
         match self {
             SelectionState::Unselected => theme.surface_2(),
             SelectionState::Selected => theme.surface_2().blend(&theme.accent_overlay()),

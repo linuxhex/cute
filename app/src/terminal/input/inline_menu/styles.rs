@@ -5,7 +5,7 @@
 //! visual design matching the Figma specifications.
 use cute_core::ui::appearance::Appearance;
 use cute_core::ui::color::blend::Blend;
-use cute_core::ui::theme::{Fill, WarpTheme};
+use cute_core::ui::theme::{Fill, CuteTheme};
 use cuteui::color::ColorU;
 use cuteui::{AppContext, SingletonEntity};
 
@@ -46,15 +46,15 @@ pub fn item_background(
     }
 }
 
-pub fn primary_text_color(theme: &WarpTheme, background: Fill) -> Fill {
+pub fn primary_text_color(theme: &CuteTheme, background: Fill) -> Fill {
     theme.main_text_color(background)
 }
 
-pub fn secondary_text_color(theme: &WarpTheme, background: Fill) -> Fill {
+pub fn secondary_text_color(theme: &CuteTheme, background: Fill) -> Fill {
     theme.sub_text_color(background)
 }
 
-pub fn disabled_text_color(theme: &WarpTheme, background: Fill) -> Fill {
+pub fn disabled_text_color(theme: &CuteTheme, background: Fill) -> Fill {
     theme.disabled_text_color(background)
 }
 

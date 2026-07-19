@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::vec2f;
-use cute_core::ui::theme::{Fill, WarpTheme};
+use cute_core::ui::theme::{Fill, CuteTheme};
 use cuteui::elements::{
     Border, ChildAnchor, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Expanded,
     Flex, Hoverable, MainAxisAlignment, MainAxisSize, MouseStateHandle, OffsetPositioning,
@@ -29,7 +29,7 @@ const PILL_GAP: f32 = 8.;
 fn session_type_item_color(
     is_selected: bool,
     on_accent_bg: bool,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
     bg_fill: Fill,
 ) -> ColorU {
     if on_accent_bg {

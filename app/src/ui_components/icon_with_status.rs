@@ -2,7 +2,7 @@ use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::vec2f;
 use cute_core::ui::icons::Icon as WarpIcon;
 use cute_core::ui::theme::color::internal_colors;
-use cute_core::ui::theme::{Fill as WarpThemeFill, WarpTheme};
+use cute_core::ui::theme::{Fill as CuteThemeFill, CuteTheme};
 use cuteui::assets::asset_cache::AssetSource;
 use cuteui::elements::{
     CacheOption, ChildAnchor, ConstrainedBox, Container, CornerRadius, Element, Empty, Image,
@@ -125,7 +125,7 @@ pub(crate) enum IconWithStatusVariant {
     /// A generic icon with a given color on an overlay background.
     Neutral {
         icon: WarpIcon,
-        icon_color: WarpThemeFill,
+        icon_color: CuteThemeFill,
     },
     /// A pre-built icon element on an overlay background.
     NeutralElement { icon_element: Box<dyn Element> },
@@ -165,8 +165,8 @@ pub(crate) fn render_icon_with_status(
     variant: IconWithStatusVariant,
     total_size: f32,
     overlay_extra_overhang_ratio: f32,
-    theme: &WarpTheme,
-    status_container_background: WarpThemeFill,
+    theme: &CuteTheme,
+    status_container_background: CuteThemeFill,
 ) -> Box<dyn Element> {
     render_icon_with_status_with_animation(
         variant,
@@ -187,8 +187,8 @@ pub(crate) fn render_icon_with_status_with_badge_style(
     total_size: f32,
     overlay_extra_overhang_ratio: f32,
     badge_style: StatusBadgeStyle,
-    theme: &WarpTheme,
-    status_container_background: WarpThemeFill,
+    theme: &CuteTheme,
+    status_container_background: CuteThemeFill,
 ) -> Box<dyn Element> {
     render_icon_with_status_with_animation(
         variant,
@@ -208,8 +208,8 @@ pub(crate) fn render_icon_with_status_with_animation(
     total_size: f32,
     overlay_extra_overhang_ratio: f32,
     badge_style: StatusBadgeStyle,
-    theme: &WarpTheme,
-    status_container_background: WarpThemeFill,
+    theme: &CuteTheme,
+    status_container_background: CuteThemeFill,
     animation_phase: Option<f32>, // Cute: Optional breathing animation phase
 ) -> Box<dyn Element> {
     let sub_text = theme.sub_text_color(theme.background());
@@ -242,7 +242,7 @@ pub(crate) fn render_icon_with_status_with_animation(
             // Cloud (ambient) runs use a black glyph on the light-purple background
             // for consistency with the web app; local runs keep the theme text color.
             let glyph_color = if is_ambient {
-                WarpThemeFill::Solid(ColorU::black())
+                CuteThemeFill::Solid(ColorU::black())
             } else {
                 theme.main_text_color(theme.background())
             };
@@ -289,7 +289,7 @@ pub(crate) fn render_icon_with_status_with_animation(
                 let icon_element = agent
                     .icon()
                     .map(|icon| {
-                        icon.to_cuteui_icon(WarpThemeFill::Solid(icon_color))
+                        icon.to_cuteui_icon(CuteThemeFill::Solid(icon_color))
                             .finish()
                     })
                     .unwrap_or_else(|| WarpIcon::Terminal.to_cuteui_icon(sub_text).finish());
@@ -352,7 +352,7 @@ fn render_full_color_cli_agent_icon(agent: CLIAgent, total_size: f32) -> Box<dyn
 #[allow(dead_code)]
 fn render_circle(
     icon_element: Box<dyn Element>,
-    background: WarpThemeFill,
+    background: CuteThemeFill,
     total_size: f32,
 ) -> Box<dyn Element> {
     render_circle_with_animation(icon_element, background, total_size, None)
@@ -361,7 +361,7 @@ fn render_circle(
 /// Cute: Render circle with optional breathing animation phase (0.0 ~ 1.0)
 fn render_circle_with_animation(
     icon_element: Box<dyn Element>,
-    background: WarpThemeFill,
+    background: CuteThemeFill,
     total_size: f32,
     animation_phase: Option<f32>,
 ) -> Box<dyn Element> {
@@ -374,7 +374,7 @@ fn render_circle_with_animation(
 
     // Cute: 呼吸动画只驱动外圈光晕，品牌色圆底保持不透明，避免 tab 上只剩白色 glyph
     let (animated_background, glow_alpha) = match (&background, animation_phase) {
-        (WarpThemeFill::Solid(_color), Some(phase)) => {
+        (CuteThemeFill::Solid(_color), Some(phase)) => {
             let glow = ((phase * std::f32::consts::PI * 2.0).sin().max(0.0) * 120.0) as u8;
             (background, glow)
         }
@@ -383,7 +383,7 @@ fn render_circle_with_animation(
 
     // Cute: Add glow effect when animation is active
     if glow_alpha > 0 {
-        if let WarpThemeFill::Solid(bg_color) = background {
+        if let CuteThemeFill::Solid(bg_color) = background {
             // Build glow layer (larger circle behind)
             let glow_color = ColorU {
                 r: bg_color.r,
@@ -393,7 +393,7 @@ fn render_circle_with_animation(
             };
             let glow_size = circle_size(total_size) + 6.0;
             let glow_inner = Container::new(Box::new(Empty::new()))
-                .with_background(WarpThemeFill::Solid(glow_color))
+                .with_background(CuteThemeFill::Solid(glow_color))
                 .with_corner_radius(CornerRadius::with_all(Radius::Pixels(glow_size / 2.)))
                 .finish();
             let glow = ConstrainedBox::new(glow_inner)
@@ -437,7 +437,7 @@ fn render_circle_with_animation(
 /// requested bounding box rather than shrinking to `circle_size(total)`.
 fn render_neutral_circle(
     icon_element: Box<dyn Element>,
-    background: WarpThemeFill,
+    background: CuteThemeFill,
     total_size: f32,
 ) -> Box<dyn Element> {
     let glyph = total_size * NEUTRAL_GLYPH_RATIO;
@@ -463,8 +463,8 @@ fn attach_status_overlay(
     total_size: f32,
     overlay_extra_overhang_ratio: f32,
     badge_style: StatusBadgeStyle,
-    theme: &WarpTheme,
-    status_container_background: WarpThemeFill,
+    theme: &CuteTheme,
+    status_container_background: CuteThemeFill,
 ) -> Box<dyn Element> {
     if is_ambient {
         render_with_cloud_status_badge(
@@ -494,7 +494,7 @@ fn render_with_cloud_status_badge(
     status: Option<&ConversationStatus>,
     total_size: f32,
     overlay_extra_overhang_ratio: f32,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
 ) -> Box<dyn Element> {
     let cloud_diameter = cloud_icon_size(total_size);
     let cloud = ConstrainedBox::new(
@@ -511,7 +511,7 @@ fn render_with_cloud_status_badge(
             let (icon, color) = status.status_icon_and_color(theme, StatusColorStyle::Cloud);
             let inner = status_in_cloud_size(total_size);
             let status_icon =
-                ConstrainedBox::new(icon.to_cuteui_icon(WarpThemeFill::Solid(color)).finish())
+                ConstrainedBox::new(icon.to_cuteui_icon(CuteThemeFill::Solid(color)).finish())
                     .with_width(inner)
                     .with_height(inner)
                     .finish();
@@ -563,8 +563,8 @@ fn render_with_optional_status_badge(
     total_size: f32,
     overlay_extra_overhang_ratio: f32,
     badge_style: StatusBadgeStyle,
-    theme: &WarpTheme,
-    status_container_background: WarpThemeFill,
+    theme: &CuteTheme,
+    status_container_background: CuteThemeFill,
 ) -> Box<dyn Element> {
     let Some(status) = status else {
         // No status badge: still occupy the full `total_size` footprint so the agent
@@ -578,7 +578,7 @@ fn render_with_optional_status_badge(
     let (icon, color) = status.status_icon_and_color(theme, StatusColorStyle::Standard);
     let badge_icon_diameter = badge_icon_size(total_size, badge_style);
     let pad = badge_padding(total_size, badge_style);
-    let badge_icon = ConstrainedBox::new(icon.to_cuteui_icon(WarpThemeFill::Solid(color)).finish())
+    let badge_icon = ConstrainedBox::new(icon.to_cuteui_icon(CuteThemeFill::Solid(color)).finish())
         .with_width(badge_icon_diameter)
         .with_height(badge_icon_diameter)
         .finish();

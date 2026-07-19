@@ -16,7 +16,7 @@ use cute_core::ui::color::blend::Blend;
 use cute_core::ui::color::coloru_with_opacity;
 use cute_core::ui::color::contrast::relative_luminance;
 use cute_core::ui::theme::color::internal_colors;
-use cute_core::ui::theme::{Fill, WarpTheme};
+use cute_core::ui::theme::{Fill, CuteTheme};
 use cuteui::elements::new_scrollable::{NewScrollable, ScrollableAppearance, SingleAxisConfig};
 use cuteui::elements::{
     Align, AnchorPair, ChildAnchor, ChildView, ConstrainedBox, Container,
@@ -87,7 +87,7 @@ const STATIC_PILL_LABEL_MAX_WIDTH: f32 = 110.;
 const STATIC_PILL_HORIZONTAL_PADDING_RIGHT: f32 = 10.;
 
 /// Stable palette used to color child agent avatars deterministically by name.
-fn pill_palette(theme: &WarpTheme) -> [ColorU; 6] {
+fn pill_palette(theme: &CuteTheme) -> [ColorU; 6] {
     [
         theme.ansi_fg_blue(),
         theme.ansi_fg_magenta(),
@@ -98,7 +98,7 @@ fn pill_palette(theme: &WarpTheme) -> [ColorU; 6] {
     ]
 }
 
-pub(crate) fn pill_avatar_color(name: &str, theme: &WarpTheme) -> ColorU {
+pub(crate) fn pill_avatar_color(name: &str, theme: &CuteTheme) -> ColorU {
     let palette = pill_palette(theme);
     let mut hasher = DefaultHasher::new();
     name.hash(&mut hasher);
@@ -152,7 +152,7 @@ pub(super) fn pill_secondary_sort_key(status_key: u8, last_modified_ms: Option<i
 /// surfaces.
 pub(crate) fn render_orchestrator_avatar_disc(
     size: f32,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
     appearance: &Appearance,
 ) -> Box<dyn Element> {
     render_avatar_disc(
@@ -169,7 +169,7 @@ pub(crate) fn render_orchestrator_avatar_disc(
 pub(crate) fn render_agent_avatar_disc(
     name: &str,
     size: f32,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
     appearance: &Appearance,
 ) -> Box<dyn Element> {
     render_avatar_disc(
@@ -1575,7 +1575,7 @@ fn render_hover_card(
 /// the card and the side panel can't drift.
 fn render_status_badge(
     status: &ConversationStatus,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
     appearance: &Appearance,
 ) -> Box<dyn Element> {
     let (icon, color) = status.status_icon_and_color(theme, StatusColorStyle::Standard);
@@ -1621,7 +1621,7 @@ fn render_chip(
     label: String,
     icon_color: ColorU,
     text_color: ColorU,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
     appearance: &Appearance,
 ) -> Box<dyn Element> {
     let icon_el = ConstrainedBox::new(icon.to_cuteui_icon(icon_color.into()).finish())
@@ -2041,7 +2041,7 @@ fn render_overflow_button(
     mouse_state: MouseStateHandle,
     conversation_id: AIConversationId,
     text_color: Fill,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
 ) -> Box<dyn Element> {
     let button = Hoverable::new(mouse_state, move |hover_state| {
         // The button's own surface gets a subtle filled background when
@@ -2097,7 +2097,7 @@ fn render_avatar_with_status_overlay(
     status: ConversationStatus,
     is_remote_child: bool,
     pill_background: ColorU,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
     appearance: &Appearance,
 ) -> Box<dyn Element> {
     // Top-left anchor inside the helper's `total_size` box so the disc sits
@@ -2145,7 +2145,7 @@ fn render_avatar_disc(
     avatar_color: ColorU,
     glyph: AvatarGlyph,
     size: f32,
-    _theme: &WarpTheme,
+    _theme: &CuteTheme,
     appearance: &Appearance,
 ) -> Box<dyn Element> {
     let disc = ConstrainedBox::new(

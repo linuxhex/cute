@@ -19,7 +19,7 @@ use cute_core::execution_mode::AppExecutionMode;
 use cute_core::features::FeatureFlag;
 use cute_core::report_error;
 use cute_core::ui::theme::color::internal_colors;
-use cute_core::ui::theme::WarpTheme;
+use cute_core::ui::theme::CuteTheme;
 use cuteui::color::ColorU;
 use cuteui::r#async::Timer;
 use cuteui::windowing::{StateEvent, WindowManager};
@@ -461,7 +461,7 @@ impl AgentRunDisplayStatus {
         )
     }
 
-    pub fn status_icon_and_color(&self, theme: &WarpTheme) -> (Icon, ColorU) {
+    pub fn status_icon_and_color(&self, theme: &CuteTheme) -> (Icon, ColorU) {
         match self {
             AgentRunDisplayStatus::TaskQueued
             | AgentRunDisplayStatus::TaskPending

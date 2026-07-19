@@ -7,7 +7,7 @@ use async_trait::async_trait;
 use pathfinder_color::ColorU;
 use serde::Deserialize;
 use cute_core::ui::color::hex_color::coloru_from_hex_string;
-use cute_core::ui::theme::{AnsiColor, AnsiColors, TerminalColors, WarpTheme};
+use cute_core::ui::theme::{AnsiColor, AnsiColors, TerminalColors, CuteTheme};
 use cuteui::fonts::FontInfo;
 
 use super::config::{
@@ -290,7 +290,7 @@ impl AlacrittyTheme {
         } else {
             let bright = terminal_colors.bright;
             let accent = calculate_accent_color(background, foreground, cursor_color, bright);
-            Ok(ThemeType::Single(WarpTheme::new(
+            Ok(ThemeType::Single(CuteTheme::new(
                 background.into(),
                 foreground.into(),
                 accent.into(),

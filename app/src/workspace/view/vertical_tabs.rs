@@ -14,7 +14,7 @@ use cute_core::context_flag::ContextFlag;
 use cute_core::ui::color::blend::Blend;
 use cute_core::ui::color::coloru_with_opacity;
 use cute_core::ui::theme::color::internal_colors;
-use cute_core::ui::theme::{AnsiColorIdentifier, Fill as WarpThemeFill, WarpTheme};
+use cute_core::ui::theme::{AnsiColorIdentifier, Fill as CuteThemeFill, CuteTheme};
 use cute_core::ui::Icon as WarpIcon;
 use cuteui::elements::{
     resizable_state_handle, Border, ChildAnchor, Clipped, ClippedScrollStateHandle,
@@ -246,13 +246,13 @@ enum TerminalPrimaryLineFont {
     Monospace,
 }
 
-fn oz_icon_fill(theme: &WarpTheme) -> WarpThemeFill {
+fn oz_icon_fill(theme: &CuteTheme) -> CuteThemeFill {
     theme.main_text_color(theme.background())
 }
 
 fn render_pane_icon_with_status(
     variant: IconWithStatusVariant,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
 ) -> Box<dyn Element> {
     render_icon_with_status(
         variant,
@@ -287,7 +287,7 @@ fn pane_row_background(
     is_selected: bool,
     is_hovered: bool,
     is_being_dragged: bool,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
 ) -> Option<ThemeFill> {
     if let Some(color) = pane_color {
         let opacity = if is_selected || is_hovered {
@@ -310,7 +310,7 @@ fn render_pane_row_element(
     padding: Padding,
     defer_events_to_children: bool,
     content: Box<dyn Element>,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
 ) -> Box<dyn Element> {
     let detail_target = supports_vertical_tabs_detail_sidecar(&props.typed).then(|| {
         detail_target_for_hovered_row(
@@ -1174,7 +1174,7 @@ fn vertical_tabs_tab_bar_location(insert_index: usize, tab_count: usize) -> TabB
     }
 }
 
-fn render_vertical_tab_hover_indicator(theme: &WarpTheme) -> Box<dyn Element> {
+fn render_vertical_tab_hover_indicator(theme: &CuteTheme) -> Box<dyn Element> {
     ConstrainedBox::new(
         Container::new(Empty::new().finish())
             .with_background(ThemeFill::Solid(theme.accent().into()))
@@ -1205,7 +1205,7 @@ fn render_vertical_tab_insertion_target(
     insert_index: usize,
     tab_count: usize,
     is_drag_target: bool,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
 ) -> Box<dyn Element> {
     let content = if is_drag_target {
         render_vertical_tab_hover_indicator(theme)
@@ -1230,7 +1230,7 @@ fn add_vertical_tab_insertion_target_overlay(
     is_drag_target: bool,
     parent_anchor: ParentAnchor,
     child_anchor: ChildAnchor,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
 ) {
     stack.add_positioned_overlay_child(
         render_vertical_tab_insertion_target(insert_index, tab_count, is_drag_target, theme),
@@ -1313,7 +1313,7 @@ fn render_detail_kind_badge_icon(
             if let Some(icon) = cli_agent_session.and_then(|session| session.agent.icon()) {
                 let color = cli_agent_session
                     .and_then(|session| session.agent.brand_color())
-                    .map(WarpThemeFill::Solid)
+                    .map(CuteThemeFill::Solid)
                     .unwrap_or_else(|| theme.accent());
                 return icon.to_cuteui_icon(color).finish();
             }
@@ -1341,7 +1341,7 @@ fn render_detail_kind_badge_icon(
             let fill = typed
                 .warp_drive_object_type()
                 .map(|object_type| {
-                    WarpThemeFill::Solid(cute_drive_icon_color(appearance, object_type).into())
+                    CuteThemeFill::Solid(cute_drive_icon_color(appearance, object_type).into())
                 })
                 .unwrap_or(sub_text);
             typed.icon().to_cuteui_icon(fill).finish()
@@ -2292,7 +2292,7 @@ fn render_group_action_buttons(
     action_buttons_mouse_state: MouseStateHandle,
     kebab_mouse_state: MouseStateHandle,
     close_mouse_state: MouseStateHandle,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
 ) -> Box<dyn Element> {
     let meta_color = theme.sub_text_color(theme.background());
 
@@ -2397,8 +2397,8 @@ pub(crate) fn render_tab_group_for_drag_ghost(
 fn render_tab_group_header_icon_button(
     icon: WarpIcon,
     icon_size: f32,
-    icon_color: WarpThemeFill,
-    hover_background: WarpThemeFill,
+    icon_color: CuteThemeFill,
+    hover_background: CuteThemeFill,
     mouse_state: MouseStateHandle,
     on_click_action: Option<WorkspaceAction>,
 ) -> Box<dyn Element> {
@@ -2547,7 +2547,7 @@ fn render_grouped_tabs_header(
         let border_fill = if is_header_selected {
             internal_colors::fg_overlay_3(theme)
         } else {
-            WarpThemeFill::Solid(ColorU::transparent_black())
+            CuteThemeFill::Solid(ColorU::transparent_black())
         };
         let mut container = Container::new(row)
             .with_padding(Padding::uniform(GROUP_HORIZONTAL_PADDING))
@@ -2763,8 +2763,8 @@ fn resolve_icon_with_status_variant(
     let main_text = theme.main_text_color(theme.background());
     let sub_text = theme.sub_text_color(theme.background());
 
-    let drive_color = |object_type: DriveObjectType| -> WarpThemeFill {
-        WarpThemeFill::Solid(cute_drive_icon_color(appearance, object_type).into())
+    let drive_color = |object_type: DriveObjectType| -> CuteThemeFill {
+        CuteThemeFill::Solid(cute_drive_icon_color(appearance, object_type).into())
     };
 
     match typed {
@@ -2845,7 +2845,7 @@ fn has_unread_activity_for_terminal_view(terminal_view_id: EntityId, app: &AppCo
 
 const INDICATOR_DOT_SIZE: f32 = 8.;
 
-fn render_title_indicator(theme: &WarpTheme) -> Box<dyn Element> {
+fn render_title_indicator(theme: &CuteTheme) -> Box<dyn Element> {
     ConstrainedBox::new(
         WarpIcon::CircleFilled
             .to_cuteui_icon(theme.accent())
@@ -3881,7 +3881,7 @@ fn compact_branch_subtitle_display(
 
 fn render_git_branch_text(
     branch: &str,
-    text_color: WarpThemeFill,
+    text_color: CuteThemeFill,
     font_size: f32,
     appearance: &Appearance,
 ) -> Box<dyn Element> {
@@ -3914,7 +3914,7 @@ enum MetadataLeftContent {
 
 fn render_text_line(
     text: &str,
-    text_color: WarpThemeFill,
+    text_color: CuteThemeFill,
     clip: ClipConfig,
     appearance: &Appearance,
 ) -> Box<dyn Element> {
@@ -3947,7 +3947,7 @@ fn render_inline_tab_rename_editor(
 fn render_title_override(
     props: &PaneProps<'_>,
     font_size: f32,
-    text_color: WarpThemeFill,
+    text_color: CuteThemeFill,
     clip: ClipConfig,
     appearance: &Appearance,
     app: &AppContext,
@@ -3981,7 +3981,7 @@ fn render_pane_title_slot(
     props: &PaneProps<'_>,
     generated_title: impl FnOnce() -> Box<dyn Element>,
     font_size: f32,
-    text_color: WarpThemeFill,
+    text_color: CuteThemeFill,
     clip: ClipConfig,
     appearance: &Appearance,
     app: &AppContext,
@@ -4206,7 +4206,7 @@ fn render_summary_tab_item(
 fn render_summary_primary_label_line(
     label: &VerticalTabsSummaryPrimaryLabel,
     reserve_prefix_slot: bool,
-    text_color: WarpThemeFill,
+    text_color: CuteThemeFill,
     appearance: &Appearance,
 ) -> Box<dyn Element> {
     // Reserve a slot wide enough for the status pill so non-conversation lines align with
@@ -4245,7 +4245,7 @@ fn render_summary_primary_label_line(
 
 fn render_summary_overflow_line(
     hidden_count: usize,
-    text_color: WarpThemeFill,
+    text_color: CuteThemeFill,
     appearance: &Appearance,
 ) -> Box<dyn Element> {
     Text::new_inline(
@@ -4418,12 +4418,12 @@ fn ambient_agent_variant(kind: &SummaryPaneKind) -> Option<IconWithStatusVariant
 fn summary_pane_kind_icon(
     kind: SummaryPaneKind,
     appearance: &Appearance,
-) -> (WarpIcon, WarpThemeFill) {
+) -> (WarpIcon, CuteThemeFill) {
     let theme = appearance.theme();
     let main_text = theme.main_text_color(theme.background());
     let sub_text = theme.sub_text_color(theme.background());
-    let drive_color = |object_type: DriveObjectType| -> WarpThemeFill {
-        WarpThemeFill::Solid(cute_drive_icon_color(appearance, object_type).into())
+    let drive_color = |object_type: DriveObjectType| -> CuteThemeFill {
+        CuteThemeFill::Solid(cute_drive_icon_color(appearance, object_type).into())
     };
 
     match kind {
@@ -4432,7 +4432,7 @@ fn summary_pane_kind_icon(
         SummaryPaneKind::CLIAgent { agent, .. } => (
             agent.icon().unwrap_or(WarpIcon::Terminal),
             // 侧边栏 summary 图标本身不带品牌圆底，这里使用品牌主色，避免 Claude 等显示成纯白图标。
-            WarpThemeFill::Solid(
+            CuteThemeFill::Solid(
                 agent
                     .brand_color()
                     .unwrap_or_else(|| agent.brand_icon_color()),
@@ -4528,7 +4528,7 @@ fn render_summary_branch_line(
 fn render_terminal_primary_line_for_view(
     terminal_view: &TerminalView,
     appearance: &Appearance,
-    text_color: WarpThemeFill,
+    text_color: CuteThemeFill,
     app: &AppContext,
 ) -> Box<dyn Element> {
     let title_text = terminal_view.terminal_title_from_shell();
@@ -4562,7 +4562,7 @@ fn render_terminal_primary_line(
     primary_line: TerminalPrimaryLineData,
     terminal_view: &TerminalView,
     appearance: &Appearance,
-    text_color: WarpThemeFill,
+    text_color: CuteThemeFill,
 ) -> Box<dyn Element> {
     let theme = appearance.theme();
 
@@ -4872,7 +4872,7 @@ fn compute_tab_group_color_mode(
     tab: &TabData,
     pane_group: &PaneGroup,
     visible_pane_ids: &[PaneId],
-    theme: &WarpTheme,
+    theme: &CuteTheme,
     app: &AppContext,
 ) -> TabGroupColorMode {
     // Manual override applies to the whole group.
@@ -5206,7 +5206,7 @@ pub(super) fn render_settings_popup(
         .finish();
 
     // Divider between toggle and "Pane title as" section
-    let make_divider = |theme: &WarpTheme| {
+    let make_divider = |theme: &CuteTheme| {
         Container::new(
             ConstrainedBox::new(
                 Container::new(Empty::new().finish())
@@ -5407,7 +5407,7 @@ fn render_compact_subtitle_option(
     mouse_state: MouseStateHandle,
     value: VerticalTabsCompactSubtitle,
     appearance: &Appearance,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
 ) -> Box<dyn Element> {
     const ICON_SIZE: f32 = 16.;
     const FONT_SIZE: f32 = 12.;
@@ -5460,7 +5460,7 @@ fn render_tab_item_mode_option(
     mouse_state: MouseStateHandle,
     value: VerticalTabsTabItemMode,
     appearance: &Appearance,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
 ) -> Box<dyn Element> {
     const ICON_SIZE: f32 = 16.;
     const FONT_SIZE: f32 = 12.;
@@ -5513,7 +5513,7 @@ fn render_primary_info_option(
     mouse_state: MouseStateHandle,
     value: VerticalTabsPrimaryInfo,
     appearance: &Appearance,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
 ) -> Box<dyn Element> {
     const ICON_SIZE: f32 = 16.;
     const FONT_SIZE: f32 = 12.;
@@ -5572,7 +5572,7 @@ fn render_show_toggle_option(
     action: WorkspaceAction,
     info_tooltip: Option<ShowToggleInfoTooltip>,
     appearance: &Appearance,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
 ) -> Box<dyn Element> {
     const ICON_SIZE: f32 = 16.;
     const FONT_SIZE: f32 = 12.;
@@ -5664,8 +5664,8 @@ fn render_popup_segment(
     is_selected: bool,
     mouse_state: MouseStateHandle,
     mode: VerticalTabsViewMode,
-    theme: &WarpTheme,
-    icon_color: WarpThemeFill,
+    theme: &CuteTheme,
+    icon_color: CuteThemeFill,
 ) -> Box<dyn Element> {
     Hoverable::new(mouse_state, move |hover_state| {
         let background = if is_selected {
@@ -5703,7 +5703,7 @@ fn render_popup_text_segment(
     mouse_state: MouseStateHandle,
     granularity: VerticalTabsDisplayGranularity,
     appearance: &Appearance,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
 ) -> Box<dyn Element> {
     let label = label.to_string();
     let main_text = theme.main_text_color(theme.background());
@@ -5871,25 +5871,25 @@ fn detail_sidecar_width_and_bounds(available_width: f32) -> (f32, PositionedElem
 }
 
 struct DetailSidecarTextColors {
-    main: WarpThemeFill,
-    sub: WarpThemeFill,
-    disabled: WarpThemeFill,
+    main: CuteThemeFill,
+    sub: CuteThemeFill,
+    disabled: CuteThemeFill,
 }
 
-fn detail_sidecar_background(theme: &WarpTheme) -> ColorU {
+fn detail_sidecar_background(theme: &CuteTheme) -> ColorU {
     theme
         .background()
         .blend(&internal_colors::fg_overlay_2(theme))
         .into_solid()
 }
 
-fn detail_sidecar_border_fill(theme: &WarpTheme) -> ThemeFill {
+fn detail_sidecar_border_fill(theme: &CuteTheme) -> ThemeFill {
     theme
         .background()
         .blend(&internal_colors::fg_overlay_4(theme))
 }
 
-fn detail_sidecar_text_colors(theme: &WarpTheme) -> DetailSidecarTextColors {
+fn detail_sidecar_text_colors(theme: &CuteTheme) -> DetailSidecarTextColors {
     let bg = ThemeFill::Solid(detail_sidecar_background(theme));
     DetailSidecarTextColors {
         main: theme.main_text_color(bg),
@@ -5902,7 +5902,7 @@ fn render_detail_badge(
     label: impl Into<String>,
     icon: Option<Box<dyn Element>>,
     background: Option<ThemeFill>,
-    text_color: WarpThemeFill,
+    text_color: CuteThemeFill,
     appearance: &Appearance,
 ) -> Box<dyn Element> {
     let mut content = Flex::row()
@@ -5945,14 +5945,14 @@ fn render_detail_status_pill(
             .with_cross_axis_alignment(CrossAxisAlignment::Center)
             .with_spacing(4.)
             .with_child(
-                ConstrainedBox::new(icon.to_cuteui_icon(WarpThemeFill::Solid(color)).finish())
+                ConstrainedBox::new(icon.to_cuteui_icon(CuteThemeFill::Solid(color)).finish())
                     .with_width(12.)
                     .with_height(12.)
                     .finish(),
             )
             .with_child(
                 Text::new_inline(status.to_string(), appearance.ui_font_family(), 10.)
-                    .with_color(WarpThemeFill::Solid(color).into())
+                    .with_color(CuteThemeFill::Solid(color).into())
                     .finish(),
             )
             .finish(),
@@ -5966,7 +5966,7 @@ fn render_detail_status_pill(
 fn render_detail_wrapping_text(
     text: impl Into<String>,
     font_size: f32,
-    color: WarpThemeFill,
+    color: CuteThemeFill,
     style: Option<Properties>,
     appearance: &Appearance,
 ) -> Box<dyn Element> {
@@ -5981,7 +5981,7 @@ fn render_detail_wrapping_text(
 
 fn render_terminal_detail_primary_line(
     primary_line: &TerminalPrimaryLineData,
-    color: WarpThemeFill,
+    color: CuteThemeFill,
     appearance: &Appearance,
 ) -> Box<dyn Element> {
     let font_family = match primary_line {

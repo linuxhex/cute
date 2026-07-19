@@ -41,7 +41,7 @@ fn log_directory_path(namespace: &str) -> PathBuf {
     let base_dir = cute_core::paths::secure_state_dir().unwrap_or_else(cute_core::paths::state_dir);
     if cfg!(windows) {
         base_dir
-            .join(cute_core::paths::WARP_LOGS_DIR)
+            .join(cute_core::paths::CUTE_LOGS_DIR)
             .join(namespace)
     } else {
         base_dir.join(namespace)

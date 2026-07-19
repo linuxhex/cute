@@ -131,7 +131,7 @@ use cuteui::{AppContext, DisplayIdx, SingletonEntity};
 
 use crate::root_view::QuakeModePinPosition;
 use crate::terminal::{BlockListSettings, BlockPadding};
-use crate::themes::theme::{ThemeKind, WarpTheme};
+use crate::themes::theme::{ThemeKind, CuteTheme};
 use crate::user_config::WarpConfig;
 
 // The following are user preferences keys.
@@ -519,7 +519,7 @@ impl Settings {
             })
     }
 
-    pub fn theme_for_theme_kind(theme_kind: &ThemeKind, ctx: &mut AppContext) -> WarpTheme {
+    pub fn theme_for_theme_kind(theme_kind: &ThemeKind, ctx: &mut AppContext) -> CuteTheme {
         match theme_kind {
             ThemeKind::InMemory(in_memory_theme) => in_memory_theme.theme(),
             _ => WarpConfig::as_ref(ctx).theme_config().theme(theme_kind),

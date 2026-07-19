@@ -4,7 +4,7 @@ use pathfinder_color::ColorU;
 use cute_core::ui::appearance::Appearance as CoreAppearance;
 use cute_core::ui::icons::Icon;
 use cute_core::ui::theme::color::internal_colors;
-use cute_core::ui::theme::{Fill, WarpTheme};
+use cute_core::ui::theme::{Fill, CuteTheme};
 use cuteui::clipboard::ClipboardContent;
 use cuteui::elements::{
     ChildView, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, DispatchEventResult,
@@ -326,7 +326,7 @@ fn render_timestamp_with_dot(item: &NotificationItem, appearance: &Appearance) -
 fn render_expand_chevron(
     expanded: bool,
     on_click: OnExpandClick,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
 ) -> Box<dyn Element> {
     let icon = if expanded {
         Icon::ChevronDown
@@ -400,7 +400,7 @@ const NOTIFICATION_AVATAR_SIZE: f32 = 32.;
 fn render_agent_avatar(
     agent: NotificationSourceAgent,
     category: NotificationCategory,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
 ) -> Box<dyn Element> {
     let status = notification_category_to_conversation_status(category);
     let variant = match agent {

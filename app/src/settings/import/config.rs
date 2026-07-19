@@ -7,7 +7,7 @@ use serde::Serialize;
 use strum_macros::EnumIter;
 use thiserror::Error;
 use cute_core::ui::color::hex_color::HexColorError as UiHexColorError;
-use cute_core::ui::theme::{AnsiColors, WarpTheme};
+use cute_core::ui::theme::{AnsiColors, CuteTheme};
 use cuteui::fonts::FontInfo;
 use cuteui::keymap::Keystroke;
 use cuteui::DisplayIdx;
@@ -26,8 +26,8 @@ use crate::{themes::theme_creator_body::ThemeCreatorBody, user_config};
 
 #[derive(Debug)]
 pub enum ThemeType {
-    LightAndDark { light: WarpTheme, dark: WarpTheme },
-    Single(WarpTheme),
+    LightAndDark { light: CuteTheme, dark: CuteTheme },
+    Single(CuteTheme),
 }
 
 #[derive(Clone, Debug)]

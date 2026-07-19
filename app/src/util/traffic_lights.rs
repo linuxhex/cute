@@ -54,7 +54,7 @@ use cuteui::{AppContext, Element, WindowId};
 #[cfg(target_os = "windows")]
 use windows_only::*;
 
-use crate::themes::theme::WarpTheme;
+use crate::themes::theme::CuteTheme;
 
 #[cfg(any(target_os = "windows", any(target_os = "linux", target_os = "freebsd")))]
 const BUTTON_ICON_SIZE: f32 = 22.;
@@ -154,7 +154,7 @@ impl TrafficLightData {
         &self,
         fullscreen_state: FullscreenState,
         mouse_states: &TrafficLightMouseStates,
-        theme: &WarpTheme,
+        theme: &CuteTheme,
         _app: &AppContext,
     ) -> Box<dyn Element> {
         if !cfg!(any(target_os = "linux", target_os = "freebsd")) {
@@ -290,7 +290,7 @@ impl TrafficLightData {
     fn render_button(
         mouse_state: MouseStateHandle,
         child: Box<dyn Element>,
-        theme: &WarpTheme,
+        theme: &CuteTheme,
     ) -> Hoverable {
         Hoverable::new(mouse_state, |state| {
             let background_color = if state.is_hovered() {
@@ -315,7 +315,7 @@ impl TrafficLightData {
         &self,
         fullscreen_state: FullscreenState,
         mouse_states: &TrafficLightMouseStates,
-        theme: &WarpTheme,
+        theme: &CuteTheme,
         app: &AppContext,
     ) -> Box<dyn Element> {
         self.render_tab_row(fullscreen_state, mouse_states, theme, app)
@@ -454,7 +454,7 @@ impl TrafficLightData {
         &self,
         _fullscreen_state: FullscreenState,
         _mouse_states: &TrafficLightMouseStates,
-        _theme: &WarpTheme,
+        _theme: &CuteTheme,
         _app: &AppContext,
     ) -> Box<dyn Element> {
         Empty::new().finish()

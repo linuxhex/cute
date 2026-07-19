@@ -6,7 +6,7 @@ use itertools::Itertools;
 use palette::Srgba;
 use pathfinder_color::ColorU;
 use plist::{Dictionary, Value};
-use cute_core::ui::theme::{AnsiColors, TerminalColors, WarpTheme};
+use cute_core::ui::theme::{AnsiColors, TerminalColors, CuteTheme};
 use cuteui::fonts::FontInfo;
 use cuteui::keymap::Keystroke;
 use cuteui::platform::mac::utils::unicode_char_to_key;
@@ -119,7 +119,7 @@ impl ITermTheme {
         mut self,
         suffix: &'static str,
         default_theme: &ITermTheme,
-    ) -> Result<WarpTheme, ThemeError> {
+    ) -> Result<CuteTheme, ThemeError> {
         if self.foreground == default_theme.foreground
             || self.background == default_theme.background
         {
@@ -142,7 +142,7 @@ impl ITermTheme {
 
         let accent = calculate_accent_color(background, foreground, cursor, bright);
 
-        Ok(WarpTheme::new(
+        Ok(CuteTheme::new(
             background.into(),
             foreground,
             accent.into(),

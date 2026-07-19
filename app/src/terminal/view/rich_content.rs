@@ -15,11 +15,11 @@ use crate::terminal::model::rich_content::RichContentType;
 use crate::terminal::model::terminal_model::BlockIndex;
 use crate::terminal::ssh::error::SshErrorBlock;
 use crate::terminal::ssh::install_tmux::SshInstallTmuxBlock;
-use crate::terminal::ssh::warpify::SshWarpifyBlock;
+use crate::terminal::ssh::cuteify::SshWarpifyBlock;
 use crate::terminal::view::ambient_agent::AmbientAgentEntryBlock;
 use crate::terminal::view::block_onboarding::onboarding_agentic_suggestions_block::OnboardingAgenticSuggestionsBlock;
 use crate::terminal::view::init_environment::InitEnvironmentBlock;
-use crate::terminal::warpify::success_block::WarpifySuccessBlock;
+use crate::terminal::cuteify::success_block::WarpifySuccessBlock;
 use crate::terminal::TerminalView;
 
 /// Specifies where to insert rich content in the blocklist.

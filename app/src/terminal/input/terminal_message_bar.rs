@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use parking_lot::FairMutex;
 use pathfinder_color::ColorU;
-use cute_core::ui::theme::WarpTheme;
+use cute_core::ui::theme::CuteTheme;
 use cuteui::elements::{Container, Element};
 use cuteui::keymap::Keystroke;
 use cuteui::{AppContext, Entity, ModelHandle, SingletonEntity, View, ViewContext};
@@ -458,7 +458,7 @@ impl MessageTransformer<TerminalMessageArgs<'_>> for AttachedTextSelectionMessag
     }
 }
 
-fn message_magenta(theme: &WarpTheme) -> ColorU {
+fn message_magenta(theme: &CuteTheme) -> ColorU {
     let mut color = theme.ansi_fg_magenta();
     color.a = (255. * 0.65) as u8;
     color

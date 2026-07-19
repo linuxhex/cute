@@ -52,7 +52,7 @@ use super::view::{
     BlocklistAIRenderContext, InlineBannerId, RichContentMetadata, SeparatorId,
     TerminalEditor, TerminalViewRenderContext, BLOCK_BANNER_HEIGHT,
 };
-use super::warpify::render::{draw_flag_pole, render_subshell_flag};
+use super::cuteify::render::{draw_flag_pole, render_subshell_flag};
 use super::{heights_approx_eq, TerminalModel, HEIGHT_FUDGE_FACTOR_LINES};
 use crate::ai::blocklist::agent_view::{agent_view_bg_fill, AgentViewState};
 use crate::ai::blocklist::{ai_brand_color, ATTACH_AS_AGENT_MODE_CONTEXT_TEXT};
@@ -79,9 +79,9 @@ use crate::terminal::model::selection::{SelectAction, SelectionPoint};
 use crate::terminal::model::terminal_model::BlockIndex;
 use crate::terminal::safe_mode_settings::get_secret_obfuscation_mode;
 use crate::terminal::view::TerminalAction;
-use crate::terminal::warpify::SubshellSource;
+use crate::terminal::cuteify::SubshellSource;
 use crate::terminal::{grid_renderer, SizeInfo};
-use crate::themes::theme::WarpTheme;
+use crate::themes::theme::CuteTheme;
 use crate::ui_components::icons as UIIcon;
 use crate::util::color::Opacity;
 
@@ -610,7 +610,7 @@ pub struct BlockListElement {
     font_size: f32,
     font_weight: Weight,
     line_height_ratio: f32,
-    warp_theme: WarpTheme,
+    warp_theme: CuteTheme,
     ui_builder: UiBuilder,
     block_borders_enabled: bool,
     overflow_offset: f32,
@@ -1992,7 +1992,7 @@ impl BlockListElement {
         block: &Block,
         is_selected_by_anyone: bool,
         bounds: RectF,
-        warp_theme: &WarpTheme,
+        warp_theme: &CuteTheme,
         block_borders_enabled: bool,
         snackbar_header: &Option<SnackbarHeader>,
         ai_render_context: &BlocklistAIRenderContext,
@@ -4334,7 +4334,7 @@ pub fn render_hoverable_block_button<F>(
     should_ignore_mouse_events: bool,
     should_allow_action: bool,
     mouse_state: MouseStateHandle,
-    theme: &WarpTheme,
+    theme: &CuteTheme,
     ui_builder: &UiBuilder,
     on_click: F,
 ) -> Box<dyn Element>

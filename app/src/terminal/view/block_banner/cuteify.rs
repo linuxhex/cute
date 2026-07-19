@@ -11,7 +11,7 @@ use cuteui::{AppContext, Element};
 
 use super::{render_block_banner, BLOCK_BANNER_DESCRIPTION_MAX_HEIGHT};
 use crate::appearance::Appearance;
-use crate::terminal::ssh::warpify::warpify_description;
+use crate::terminal::ssh::cuteify::warpify_description;
 use crate::terminal::view::{RememberForWarpification, TerminalAction};
 use crate::themes::theme::Fill;
 use crate::ui_components::blended_colors;

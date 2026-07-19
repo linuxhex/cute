@@ -1070,7 +1070,7 @@ impl GlobalSearchView {
         directory_path: &Path,
         matched_path: &MatchedPath,
         appearance: &Appearance,
-        theme: &cute_core::ui::theme::WarpTheme,
+        theme: &cute_core::ui::theme::CuteTheme,
         app: &AppContext,
     ) -> Box<dyn Element> {
         let is_selected = self.is_row_at_index_selected(index);
@@ -1245,7 +1245,7 @@ impl GlobalSearchView {
         matched: &Match,
         match_index: usize,
         appearance: &Appearance,
-        theme: &cute_core::ui::theme::WarpTheme,
+        theme: &cute_core::ui::theme::CuteTheme,
     ) -> Box<dyn Element> {
         let is_selected = self.is_row_at_index_selected(index);
         let line_number = matched.line_number;
@@ -1849,7 +1849,7 @@ impl GlobalSearchView {
         index: usize,
         dir_entry: &DirectoryEntry,
         appearance: &Appearance,
-        theme: &cute_core::ui::theme::WarpTheme,
+        theme: &cute_core::ui::theme::CuteTheme,
     ) -> Box<dyn Element> {
         let is_selected = self.is_row_at_index_selected(index);
         let mouse_state = dir_entry.mouse_state.clone();

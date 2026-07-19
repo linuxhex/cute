@@ -31,7 +31,7 @@ use crate::resource_center::{
 };
 use crate::settings::{respect_system_theme, ThemeSettings};
 use crate::themes::theme::{
-    RespectSystemTheme, SelectedSystemThemes, ThemeKind, WarpTheme, WarpThemeConfig,
+    RespectSystemTheme, SelectedSystemThemes, ThemeKind, CuteTheme, CuteThemeConfig,
 };
 use crate::ui_components::buttons::{close_button, icon_button};
 use crate::ui_components::icons;
@@ -165,7 +165,7 @@ pub fn init(app: &mut AppContext) {
     ]);
 }
 
-fn theme_chooser_items(theme_config: &WarpThemeConfig) -> Vec<ThemeChooserItem> {
+fn theme_chooser_items(theme_config: &CuteThemeConfig) -> Vec<ThemeChooserItem> {
     let mut theme_items: Vec<ThemeChooserItem> = theme_config
         .theme_items()
         .filter(|(key, _)| match key {
@@ -840,12 +840,12 @@ impl View for ThemeChooser {
 #[derive(Clone)]
 struct ThemeChooserItem {
     pub kind: ThemeKind,
-    warp_theme: WarpTheme,
+    warp_theme: CuteTheme,
     mouse_state: MouseStateHandle,
 }
 
 impl ThemeChooserItem {
-    pub fn new(kind: ThemeKind, warp_theme: WarpTheme) -> Self {
+    pub fn new(kind: ThemeKind, warp_theme: CuteTheme) -> Self {
         Self {
             kind,
             warp_theme,

@@ -60,7 +60,7 @@ use crate::terminal::model_events::{ModelEvent, ModelEventDispatcher};
 use crate::terminal::view::ambient_agent::{
     AmbientAgentViewModel, AmbientAgentViewModelEvent,
 };
-use crate::terminal::warpify::render::LEFT_STRIPE_WIDTH;
+use crate::terminal::cuteify::render::LEFT_STRIPE_WIDTH;
 use crate::terminal::{
     TerminalModel, CANCEL_COMMAND_KEYBINDING, TOGGLE_AUTOEXECUTE_MODE_KEYBINDING,
     TOGGLE_HIDE_CLI_RESPONSES_KEYBINDING, TOGGLE_QUEUE_NEXT_PROMPT_KEYBINDING,

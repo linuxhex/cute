@@ -4,7 +4,7 @@ use std::sync::Arc;
 use channel_versions::overrides::TargetOS;
 use parking_lot::RwLock;
 use cute_core::semantic_selection::SemanticSelection;
-use cute_core::ui::theme::WarpTheme;
+use cute_core::ui::theme::CuteTheme;
 use cuteui::elements::{
     Border, Container, CrossAxisAlignment, Flex, Icon, MainAxisAlignment, MainAxisSize,
     MouseStateHandle, ParentElement, SelectableArea, SelectionHandle, Text,
@@ -13,7 +13,7 @@ use cuteui::ui_components::components::{UiComponent, UiComponentStyles};
 use cuteui::{AppContext, Element, Entity, SingletonEntity, TypedActionView, View, ViewContext};
 
 use super::render::{HORIZONTAL_TEXT_MARGIN, SSH_DOCS_URL, SUBSHELL_DOCS_URL};
-use super::settings::WarpifySettings;
+use super::settings::CuteifySettings;
 use super::{render, subshell_bootstrap_success_block_bytes, WarpificationSource};
 use crate::ai::agent::ProgrammingLanguage;
 use crate::ai::blocklist::code_block::{render_runnable_code_snippet, CodeSnippetButtonHandles};
@@ -28,13 +28,13 @@ const VERTICAL_TEXT_MARGIN: f32 = 16.;
 
 #[derive(Debug, Clone)]
 pub enum WarpifySuccessBlockEvent {
-    OpenWarpifySettings,
+    OpenCuteifySettings,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum WarpifySuccessBlockAction {
     ClearAutoWarpifySnippet,
-    OpenWarpifySettings,
+    OpenCuteifySettings,
     OpenUrl(String),
 }
 
@@ -69,7 +69,7 @@ impl WarpifySuccessBlock {
         disable_tmux: bool,
         ctx: &mut ViewContext<Self>,
     ) -> Self {
-        ctx.subscribe_to_model(&WarpifySettings::handle(ctx), move |_, _, _, ctx| {
+        ctx.subscribe_to_model(&CuteifySettings::handle(ctx), move |_, _, _, ctx| {
             ctx.notify();
         });
 
@@ -142,7 +142,7 @@ impl WarpifySuccessBlock {
 
     pub fn render_spawning_command(
         &self,
-        theme: &WarpTheme,
+        theme: &CuteTheme,
         appearance: &Appearance,
     ) -> Box<dyn Element> {
         let spawning_command = self.spawning_command.clone();
@@ -151,7 +151,7 @@ impl WarpifySuccessBlock {
             .finish()
     }
 
-    pub fn render_title_ui(&self, theme: &WarpTheme, appearance: &Appearance) -> Box<dyn Element> {
+    pub fn render_title_ui(&self, theme: &CuteTheme, appearance: &Appearance) -> Box<dyn Element> {
         let header_contents = render::build_header_row(
             "Session Warpified",
             Icon::new(UiIcon::Warp.into(), theme.active_ui_detail()),
@@ -343,8 +343,8 @@ impl TypedActionView for WarpifySuccessBlock {
 
     fn handle_action(&mut self, action: &Self::Action, ctx: &mut ViewContext<Self>) {
         match action {
-            WarpifySuccessBlockAction::OpenWarpifySettings => {
-                ctx.emit(WarpifySuccessBlockEvent::OpenWarpifySettings);
+            WarpifySuccessBlockAction::OpenCuteifySettings => {
+                ctx.emit(WarpifySuccessBlockEvent::OpenCuteifySettings);
             }
             WarpifySuccessBlockAction::OpenUrl(url) => {
                 ctx.open_url(url);

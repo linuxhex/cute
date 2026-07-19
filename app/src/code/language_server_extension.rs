@@ -4,7 +4,7 @@ use num_traits::SaturatingSub;
 use string_offset::CharOffset;
 use cute_core::ui::appearance::Appearance;
 use cute_core::ui::theme::color::internal_colors;
-use cute_core::ui::theme::WarpTheme;
+use cute_core::ui::theme::CuteTheme;
 use cute_editor::content::buffer::InitialBufferState;
 use cute_editor::render::element::VerticalExpansionBehavior;
 use cute_editor::render::model::Decoration;
@@ -560,7 +560,7 @@ impl LocalCodeEditorView {
     }
 
     /// Render a separator line between hover card sections.
-    fn render_separator(theme: &WarpTheme) -> Box<dyn Element> {
+    fn render_separator(theme: &CuteTheme) -> Box<dyn Element> {
         Container::new(
             ConstrainedBox::new(
                 Rect::new()

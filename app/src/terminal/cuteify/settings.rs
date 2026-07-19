@@ -12,7 +12,7 @@ use cuteui::{AppContext, Entity, ModelContext, SingletonEntity};
 use crate::terminal::ssh::util::{parse_interactive_ssh_command, SshWarpifyCommand};
 
 // Cannot directly use Vec<Regex> here b/c Regex doesn't impl Eq, Serialize, and Deserialize.
-maybe_define_setting!(AddedSubshellCommands, group: WarpifySettings, {
+maybe_define_setting!(AddedSubshellCommands, group: CuteifySettings, {
     type: Vec<String>,
     default: Vec::new(),
     supported_platforms: SupportedPlatforms::ALL,
@@ -22,7 +22,7 @@ maybe_define_setting!(AddedSubshellCommands, group: WarpifySettings, {
     description: "Additional regex patterns for commands that should be recognized as subshells.",
 });
 
-maybe_define_setting!(SubshellCommandsDenylist, group: WarpifySettings, {
+maybe_define_setting!(SubshellCommandsDenylist, group: CuteifySettings, {
     type: Vec<String>,
     default: Vec::new(),
     supported_platforms: SupportedPlatforms::ALL,
@@ -32,7 +32,7 @@ maybe_define_setting!(SubshellCommandsDenylist, group: WarpifySettings, {
     description: "Commands that should not trigger the subshell warpification prompt.",
 });
 
-maybe_define_setting!(SshHostsDenylist, group: WarpifySettings, {
+maybe_define_setting!(SshHostsDenylist, group: CuteifySettings, {
     type: Vec<String>,
     default: Vec::new(),
     supported_platforms: SupportedPlatforms::ALL,
@@ -42,7 +42,7 @@ maybe_define_setting!(SshHostsDenylist, group: WarpifySettings, {
     description: "SSH hosts that should not trigger the warpification prompt.",
 });
 
-maybe_define_setting!(EnableSshWarpification, group: WarpifySettings, {
+maybe_define_setting!(EnableSshWarpification, group: CuteifySettings, {
     type: bool,
     default: true,
     supported_platforms: SupportedPlatforms::ALL,
@@ -52,7 +52,7 @@ maybe_define_setting!(EnableSshWarpification, group: WarpifySettings, {
     description: "Whether to enable Warp features in SSH sessions.",
 });
 
-maybe_define_setting!(UseSshTmuxWrapper, group: WarpifySettings, {
+maybe_define_setting!(UseSshTmuxWrapper, group: CuteifySettings, {
     type: bool,
     default: false,
     supported_platforms: SupportedPlatforms::OR(SupportedPlatforms::MAC.into(), SupportedPlatforms::LINUX.into()),
@@ -91,7 +91,7 @@ pub enum SshExtensionInstallMode {
     NeverInstall,
 }
 
-maybe_define_setting!(SshExtensionInstallModeSetting, group: WarpifySettings, {
+maybe_define_setting!(SshExtensionInstallModeSetting, group: CuteifySettings, {
     type: SshExtensionInstallMode,
     default: SshExtensionInstallMode::default(),
     supported_platforms: SupportedPlatforms::ALL,
@@ -114,7 +114,7 @@ impl SshExtensionInstallMode {
 /// Normally we use the define_settings_group! macro for singleton models of settings like this.
 /// However, this model needs to do some extra processing on the added_subshell_commands and store
 /// an enriched representation in parsed_added_subshell_commands.
-pub struct WarpifySettings {
+pub struct CuteifySettings {
     /// A list of regexes that users can add to define new subshell-compatible commands. This
     /// represents the raw, serialized value. Therefore, it is Vec<String>.
     pub added_subshell_commands: AddedSubshellCommands,
@@ -139,7 +139,7 @@ pub struct WarpifySettings {
     /// These can be added either b/c the "don't ask again" button was clicked in the trigger banner,
     /// or it was added explicitly on the Warpify settings page.
     /// While this could live in the `SshSettings` group, the custom processing shared with the other
-    /// subshell logic better justifies it living in the `WarpifySettings` group.
+    /// subshell logic better justifies it living in the `CuteifySettings` group.
     pub ssh_hosts_denylist: SshHostsDenylist,
     /// This is ssh_hosts_denylist compiled to actual executable Regex. This is a Result as we
     /// cannot guarantee the values are valid regex. Even if we prevent them in the UI from entering
@@ -205,7 +205,7 @@ lazy_static! {
 /// define_settings_group! macro, which is the basic template for user-defaults-backed settings.
 /// I have separated this stuff from the other impl block, which contains the subshell-specific
 /// logic, because this is basically boilerplate.
-impl WarpifySettings {
+impl CuteifySettings {
     fn new_from_storage(ctx: &mut ModelContext<Self>) -> Self {
         let added_subshell_commands = AddedSubshellCommands::new_from_storage(ctx);
         let subshell_command_denylist = SubshellCommandsDenylist::new_from_storage(ctx);
@@ -257,26 +257,26 @@ impl WarpifySettings {
         let handle = ctx.add_singleton_model(Self::new_from_storage);
         handle.clone().update(ctx, |_, ctx| {
             ctx.subscribe_to_model(&handle, |me, event, _| match event {
-                WarpifySettingsChangedEvent::AddedSubshellCommands { .. } => {
+                CuteifySettingsChangedEvent::AddedSubshellCommands { .. } => {
                     me.parsed_added_subshell_commands =
                         Self::parse_added_subshell_commands(&me.added_subshell_commands)
                 }
-                WarpifySettingsChangedEvent::SubshellCommandsDenylist { .. } => {
+                CuteifySettingsChangedEvent::SubshellCommandsDenylist { .. } => {
                     me.parsed_subshell_command_denylist =
                         Self::parse_subshell_command_denylist(&me.subshell_command_denylist)
                 }
-                WarpifySettingsChangedEvent::SshHostsDenylist { .. } => {
+                CuteifySettingsChangedEvent::SshHostsDenylist { .. } => {
                     me.parsed_ssh_hosts_denylist =
                         Self::parse_ssh_hosts_denylist(&me.ssh_hosts_denylist)
                 }
-                WarpifySettingsChangedEvent::EnableSshWarpification { .. } => {}
-                WarpifySettingsChangedEvent::UseSshTmuxWrapper { .. } => {}
-                WarpifySettingsChangedEvent::SshExtensionInstallModeSetting { .. } => {}
+                CuteifySettingsChangedEvent::EnableSshWarpification { .. } => {}
+                CuteifySettingsChangedEvent::UseSshTmuxWrapper { .. } => {}
+                CuteifySettingsChangedEvent::SshExtensionInstallModeSetting { .. } => {}
             })
         });
 
         register_settings_events!(
-            WarpifySettings,
+            CuteifySettings,
             added_subshell_commands,
             AddedSubshellCommands,
             handle.clone(),
@@ -284,7 +284,7 @@ impl WarpifySettings {
         );
 
         register_settings_events!(
-            WarpifySettings,
+            CuteifySettings,
             subshell_command_denylist,
             SubshellCommandsDenylist,
             handle.clone(),
@@ -292,7 +292,7 @@ impl WarpifySettings {
         );
 
         register_settings_events!(
-            WarpifySettings,
+            CuteifySettings,
             enable_ssh_warpification,
             EnableSshWarpification,
             handle.clone(),
@@ -300,7 +300,7 @@ impl WarpifySettings {
         );
 
         register_settings_events!(
-            WarpifySettings,
+            CuteifySettings,
             use_ssh_tmux_wrapper,
             UseSshTmuxWrapper,
             handle.clone(),
@@ -308,7 +308,7 @@ impl WarpifySettings {
         );
 
         register_settings_events!(
-            WarpifySettings,
+            CuteifySettings,
             ssh_extension_install_mode,
             SshExtensionInstallModeSetting,
             handle.clone(),
@@ -316,7 +316,7 @@ impl WarpifySettings {
         );
 
         register_settings_events!(
-            WarpifySettings,
+            CuteifySettings,
             ssh_hosts_denylist,
             SshHostsDenylist,
             handle,
@@ -326,9 +326,9 @@ impl WarpifySettings {
 }
 
 /// This is also something that would normally be generated by
-/// define_settings_group!(WarpifySettings). Since we didn't use that macro we define it manually
+/// define_settings_group!(CuteifySettings). Since we didn't use that macro we define it manually
 /// here. It's the event emitted by the setter methods when a setting value changes.
-pub enum WarpifySettingsChangedEvent {
+pub enum CuteifySettingsChangedEvent {
     AddedSubshellCommands {
         change_event_reason: ChangeEventReason,
     },
@@ -349,15 +349,15 @@ pub enum WarpifySettingsChangedEvent {
     },
 }
 
-impl Entity for WarpifySettings {
-    type Event = WarpifySettingsChangedEvent;
+impl Entity for CuteifySettings {
+    type Event = CuteifySettingsChangedEvent;
 }
 
-impl SingletonEntity for WarpifySettings {}
+impl SingletonEntity for CuteifySettings {}
 
 /// This is the other impl block for this model. This one contains the actual subshell-specific
 /// logic.
-impl WarpifySettings {
+impl CuteifySettings {
     fn is_built_in_subshell_match(command: &str) -> bool {
         for command_regex in SUBSHELL_COMMAND_REGEXES.iter() {
             if command_regex.is_match(command) {
@@ -476,7 +476,7 @@ impl WarpifySettings {
         new_added_commands_list.push(command_to_add.trim().to_owned());
 
         // The set_value method generated by the maybe_define_setting! macro will take
-        // care of emitting the WarpifySettingsChangedEvent::AddedSubshellCommands event to keep
+        // care of emitting the CuteifySettingsChangedEvent::AddedSubshellCommands event to keep
         // parsed_added_subshell_commands in sync.
         self.added_subshell_commands
             .set_value(new_added_commands_list, ctx)

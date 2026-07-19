@@ -282,11 +282,11 @@ impl Input {
 
 pub mod styles {
     use pathfinder_color::ColorU;
-    use cute_core::ui::theme::WarpTheme;
+    use cute_core::ui::theme::CuteTheme;
 
     use crate::ui_components::blended_colors;
 
-    pub fn default_border_color(theme: &WarpTheme) -> ColorU {
+    pub fn default_border_color(theme: &CuteTheme) -> ColorU {
         blended_colors::neutral_2(theme)
     }
 }

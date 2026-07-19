@@ -1,6 +1,6 @@
 use asset_macro::bundled_asset;
 use markdown_parser::{FormattedText, FormattedTextFragment, FormattedTextLine};
-use cute_core::ui::theme::WarpTheme;
+use cute_core::ui::theme::CuteTheme;
 use cuteui::assets::asset_cache::{AssetCache, AssetState};
 use cuteui::elements::{
     Border, Container, CrossAxisAlignment, Flex, HighlightedHyperlink, Hoverable, Icon,
@@ -70,7 +70,7 @@ impl Entity for SshWarpifyBlock {
 }
 
 impl SshWarpifyBlock {
-    fn render_title_ui(&self, theme: &WarpTheme, appearance: &Appearance) -> Box<dyn Element> {
+    fn render_title_ui(&self, theme: &CuteTheme, appearance: &Appearance) -> Box<dyn Element> {
         let icon = Icon::new(UiIcon::Warp.into(), theme.active_ui_detail());
         cuteify::render::header_row("Warpifying SSH Session...", icon, theme, appearance)
     }

@@ -4,7 +4,7 @@ use cute_core::features::FeatureFlag;
 use cute_core::send_telemetry_from_ctx;
 use cute_core::ui::appearance::Appearance;
 use cute_core::ui::theme::color::internal_colors;
-use cute_core::ui::theme::WarpTheme;
+use cute_core::ui::theme::CuteTheme;
 use cuteui::elements::{
     Border, ClippedScrollStateHandle, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment,
     Empty, Flex, FormattedTextElement, Hoverable, MainAxisAlignment, MainAxisSize,
@@ -57,7 +57,7 @@ const TOS_URL: &str = "https://www.warp.dev/terms-of-service";
 
 #[derive(Debug, Clone)]
 struct ThemeOption {
-    theme: WarpTheme,
+    theme: CuteTheme,
     mouse_state: MouseStateHandle,
 }
 
@@ -76,7 +76,7 @@ pub struct ThemePickerSlide {
 
 impl ThemePickerSlide {
     pub(crate) fn new(
-        themes: [WarpTheme; 4],
+        themes: [CuteTheme; 4],
         onboarding_state: ModelHandle<OnboardingStateModel>,
         ctx: &mut ViewContext<Self>,
     ) -> Self {
@@ -228,7 +228,7 @@ impl ThemePickerSlide {
     fn render_theme_options(
         &self,
         appearance: &Appearance,
-        chrome_theme: &WarpTheme,
+        chrome_theme: &CuteTheme,
     ) -> Box<dyn Element> {
         let options = (0..self.theme_options.len())
             .map(|index| {
@@ -322,10 +322,10 @@ impl ThemePickerSlide {
     fn render_theme_option(
         &self,
         appearance: &Appearance,
-        chrome_theme: &WarpTheme,
+        chrome_theme: &CuteTheme,
         index: usize,
         theme_name: String,
-        option_theme: &WarpTheme,
+        option_theme: &CuteTheme,
         mouse_state: MouseStateHandle,
         interactive: bool,
     ) -> Box<dyn Element> {

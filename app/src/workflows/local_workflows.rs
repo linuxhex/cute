@@ -183,7 +183,7 @@ pub(super) fn load_project_workflows(path: &Path) -> Vec<Workflow> {
     match git2::Repository::discover(path) {
         Ok(repository) => repository.workdir().map_or(Vec::new(), |workdir| {
             load_workflows(&workflows_dir(
-                workdir.join(cute_core::paths::WARP_CONFIG_DIR),
+                workdir.join(cute_core::paths::CUTE_CONFIG_DIR),
             ))
         }),
         Err(_) => Vec::new(),
@@ -229,4 +229,3 @@ pub fn prompt_chip_logging_workflow(shell_family: ShellFamily) -> Option<Workflo
         environment_variables: None,
     })
 }
-

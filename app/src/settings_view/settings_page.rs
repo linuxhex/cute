@@ -36,7 +36,7 @@ use super::privacy_page::PrivacyPageView;
 // use super::referrals_page::ReferralsPageView; // Removed: referral feature
 use super::show_blocks_view::ShowBlocksView;
 // use super::cute_drive_page::WarpDriveSettingsPageView; // Removed: cute drive feature
-use super::cuteify_page::WarpifyPageView;
+use super::cuteify_page::CuteifyPageView;
 use super::SettingsSection;
 use crate::appearance::Appearance;
 use crate::themes::theme::Fill;
@@ -101,7 +101,7 @@ pub enum SettingsPageViewHandle {
     About(ViewHandle<AboutPageView>),
     Code(ViewHandle<CodeSettingsPageView>),
     Privacy(ViewHandle<PrivacyPageView>),
-    Warpify(ViewHandle<WarpifyPageView>),
+    Warpify(ViewHandle<CuteifyPageView>),
     AI(ViewHandle<AISettingsPageView>),
     MCPServers(ViewHandle<MCPServersSettingsPageView>),
     // WarpDrive removed - cloud feature not available in local version
