@@ -1034,6 +1034,7 @@ impl Workspace {
                                 .unwrap_or_default()
                                 .with_timezone(&chrono::Utc),
                             graph_line: None,
+                            is_graph_only: false,
                         }
                     });
 
@@ -1094,6 +1095,7 @@ impl Workspace {
                                 .unwrap_or_default()
                                 .with_timezone(&chrono::Utc),
                             graph_line: None,
+                            is_graph_only: false,
                         }
                     });
 
@@ -1196,12 +1198,23 @@ impl Workspace {
                         .find(|c: char| !is_graph_char(c))
                         .unwrap_or(line.len());
 
-                    // 如果没有找到分隔符，可能不是提交行（纯图形行）
+                    let graph_line = line[..graph_end].to_string();
+
+                    // 如果没有找到分隔符，是纯图形行（用于绘制分支连接线）
                     if graph_end == line.len() {
+                        // 纯图形行：只包含图形信息，没有提交信息
+                        commits.push(CommitInfo {
+                            hash: String::new(),
+                            message: String::new(),
+                            author: String::new(),
+                            author_email: String::new(),
+                            timestamp: chrono::Utc::now(),
+                            graph_line: Some(graph_line),
+                            is_graph_only: true,
+                        });
                         continue;
                     }
 
-                    let graph_line = line[..graph_end].to_string();
                     let info_part = &line[graph_end..].trim_start();
 
                     // 使用 ||| 分隔符解析提交信息
@@ -1216,6 +1229,7 @@ impl Workspace {
                                     author_email: parts[3].to_string(),
                                     timestamp: ts.with_timezone(&chrono::Utc),
                                     graph_line: Some(graph_line),
+                                    is_graph_only: false,
                                 });
                             }
                         }
