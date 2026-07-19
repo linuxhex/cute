@@ -119,6 +119,8 @@ apply_cute_app_icon "$WARP_APP_PATH"
 
 # 也更新 dmg 目录中的应用图标（如果有）
 WARP_DMG_APP_PATH="${WARP_APP_PATH/osx/dmg}"
+WARP_DMG_PATH="${WARP_APP_PATH/osx/dmg}"
+WARP_DMG_PATH="${WARP_DMG_PATH%.app}.dmg"
 if [[ -d "$WARP_DMG_APP_PATH" && "$WARP_DMG_APP_PATH" != "$WARP_APP_PATH" ]]; then
     echo "Updating DMG app bundle icon..."
     # 复制已编译的图标到 dmg 应用
@@ -128,6 +130,12 @@ if [[ -d "$WARP_DMG_APP_PATH" && "$WARP_DMG_APP_PATH" != "$WARP_APP_PATH" ]]; th
     plutil -replace CFBundleIconFile -string "AppIcon" "$WARP_DMG_APP_PATH/Contents/Info.plist" 2>/dev/null || true
     plutil -insert CFBundleIconName -string "AppIcon" "$WARP_DMG_APP_PATH/Contents/Info.plist" 2>/dev/null || \
         plutil -replace CFBundleIconName -string "AppIcon" "$WARP_DMG_APP_PATH/Contents/Info.plist" 2>/dev/null || true
+    # 重新创建 DMG（因为 cargo bundle 创建的 DMG 使用的是旧图标）
+    if [[ -f "$WARP_DMG_PATH" ]]; then
+        echo "Recreating DMG with updated icon..."
+        rm -f "$WARP_DMG_PATH"
+        hdiutil create -volname "Cute" -srcfolder "$WARP_DMG_APP_PATH" -ov -format UDZO "$WARP_DMG_PATH" 2>&1 | grep -E "(created|error)" || true
+    fi
 fi
 
 if [[ ",$FEATURES," =~ ",heap_usage_tracking," ]]; then
