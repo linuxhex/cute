@@ -129,10 +129,6 @@ impl EditorView {
         options: VoiceTranscriptionOptions,
         ctx: &mut ViewContext<Self>,
     ) {
-        // if !UserWorkspaces::handle(ctx).as_ref(ctx).is_voice_enabled() {
-            return;
-        }
-
         log::debug!("update_voice_transcription_options: {options:?}");
         self.voice_transcription_options = options;
         if !self.voice_transcription_options.is_enabled() {
@@ -155,10 +151,6 @@ impl EditorView {
         cancel_transcription: bool,
         ctx: &mut ViewContext<Self>,
     ) {
-        // if !UserWorkspaces::handle(ctx).as_ref(ctx).is_voice_enabled() {
-            return;
-        }
-
         let voice_input = voice_input::VoiceInput::handle(ctx);
         if voice_input.as_ref(ctx).is_listening() {
             log::debug!("Stopping voice input, cancelling transcription: {cancel_transcription}");
@@ -199,10 +191,6 @@ impl EditorView {
         source: &voice_input::VoiceInputToggledFrom,
         ctx: &mut ViewContext<Self>,
     ) -> bool {
-        if true /*!UserWorkspaces::handle(ctx).as_ref(ctx).is_voice_enabled()*/ {
-            return false;
-        }
-
         if !matches!(
             Self::voice_options(ctx),
             VoiceTranscriptionOptions::Enabled { .. }
@@ -397,10 +385,6 @@ impl EditorView {
         result: VoiceSessionResult,
         ctx: &mut ViewContext<Self>,
     ) {
-        // if !UserWorkspaces::handle(ctx).as_ref(ctx).is_voice_enabled() {
-            return;
-        }
-
         let is_udi_enabled = crate::settings::InputSettings::handle(ctx)
             .as_ref(ctx)
             .is_universal_developer_input_enabled(ctx);
