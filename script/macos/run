@@ -117,6 +117,19 @@ NO_LICENSES=1 "${REPO_ROOT}/script/prepare_bundled_resources" "$WARP_APP_PATH/Co
 source "${REPO_ROOT}/script/cute_icon.sh"
 apply_cute_app_icon "$WARP_APP_PATH"
 
+# 也更新 dmg 目录中的应用图标（如果有）
+WARP_DMG_APP_PATH="${WARP_APP_PATH/osx/dmg}"
+if [[ -d "$WARP_DMG_APP_PATH" && "$WARP_DMG_APP_PATH" != "$WARP_APP_PATH" ]]; then
+    echo "Updating DMG app bundle icon..."
+    # 复制已编译的图标到 dmg 应用
+    cp -R "$WARP_APP_PATH/Contents/Resources/AppIcon.icns" "$WARP_DMG_APP_PATH/Contents/Resources/" 2>/dev/null || true
+    cp -R "$WARP_APP_PATH/Contents/Resources/Assets.car" "$WARP_DMG_APP_PATH/Contents/Resources/" 2>/dev/null || true
+    # 更新 Info.plist 的图标引用
+    plutil -replace CFBundleIconFile -string "AppIcon" "$WARP_DMG_APP_PATH/Contents/Info.plist" 2>/dev/null || true
+    plutil -insert CFBundleIconName -string "AppIcon" "$WARP_DMG_APP_PATH/Contents/Info.plist" 2>/dev/null || \
+        plutil -replace CFBundleIconName -string "AppIcon" "$WARP_DMG_APP_PATH/Contents/Info.plist" 2>/dev/null || true
+fi
+
 if [[ ",$FEATURES," =~ ",heap_usage_tracking," ]]; then
   echo "Bundling pprof..."
   HELPERS_DIR="$WARP_APP_PATH/Contents/Helpers"
