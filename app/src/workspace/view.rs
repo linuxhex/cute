@@ -1032,8 +1032,11 @@ impl Workspace {
                             author_email: parts[4].to_string(),
                             timestamp: chrono::DateTime::from_timestamp(ts, 0)
                                 .unwrap_or_default()
-                                .with_timezone(&chrono::Utc),
+                                .with_timezone(&chrono::Local),
                             graph_line: None,
+                            is_merge: false,
+                            refs: Vec::new(),
+                            is_head: false,
                         }
                     });
 
@@ -1045,6 +1048,8 @@ impl Workspace {
                         remote_name: None,
                         last_commit,
                         recent_commits: Vec::new(), // 延迟加载
+                        graph_lines: Vec::new(),    // 延迟加载
+                        commit_row_indices: Vec::new(),
                         ahead: 0,
                         behind: 0,
                     });
@@ -1092,8 +1097,11 @@ impl Workspace {
                             author_email: parts[4].to_string(),
                             timestamp: chrono::DateTime::from_timestamp(ts, 0)
                                 .unwrap_or_default()
-                                .with_timezone(&chrono::Utc),
+                                .with_timezone(&chrono::Local),
                             graph_line: None,
+                            is_merge: false,
+                            refs: Vec::new(),
+                            is_head: false,
                         }
                     });
 
@@ -1105,6 +1113,8 @@ impl Workspace {
                         remote_name: Some(remote_name),
                         last_commit,
                         recent_commits: Vec::new(),
+                        graph_lines: Vec::new(),
+                        commit_row_indices: Vec::new(),
                         ahead: 0,
                         behind: 0,
                     });
@@ -1150,18 +1160,19 @@ impl Workspace {
         branch_name: &str,
         limit: usize,
         path_env: Option<&str>,
-    ) -> Vec<crate::workspace::branch_selector::CommitInfo> {
+    ) -> (Vec<crate::workspace::branch_selector::CommitInfo>, Vec<String>, Vec<usize>) {
         use crate::workspace::branch_selector::CommitInfo;
 
         // 使用 --graph 参数获取分支图形信息
         // --format 使用特殊分隔符 ||| 来分隔图形和提交信息
+        // 不使用 --first-parent，保留完整的分支图信息
         let mut cmd = command::blocking::Command::new("git");
         cmd.args([
             "log",
             &format!("-{}", limit),
             branch_name,
             "--graph",
-            "--format=%H|||%s|||%an|||%ae|||%at",
+            "--format=%H|||%s|||%an|||%ae|||%at|||%P|||%d",
         ])
         .current_dir(repo_path)
         .stdout(command::Stdio::piped())
@@ -1172,6 +1183,10 @@ impl Workspace {
         let output = cmd.output();
 
         let mut commits = Vec::new();
+        // 独立存储图形数据（包括纯图形行）
+        let mut graph_lines = Vec::new();
+        // 每个提交在 graph_lines 中的行索引
+        let mut commit_row_indices = Vec::new();
 
         let is_graph_char = |c: char| {
             matches!(
@@ -1198,35 +1213,55 @@ impl Workspace {
 
                     let graph_line = line[..graph_end].to_string();
 
-                    // 保留纯图形行以绘制完整的分支连接线
+                    // 保存所有图形数据（包括纯图形行）
+                    let graph_line_idx = graph_lines.len();
+                    graph_lines.push(graph_line.clone());
+
+                    // 纯图形行只用于绘制分支图，不在提交列表中显示
                     if graph_end == line.len() {
-                        // 纯图形行：只有图形，没有提交信息
-                        commits.push(CommitInfo {
-                            hash: String::new(),
-                            message: String::new(),
-                            author: String::new(),
-                            author_email: String::new(),
-                            timestamp: chrono::Utc::now(),
-                            graph_line: Some(graph_line),
-                        });
                         continue;
                     }
 
                     let info_part = &line[graph_end..].trim_start();
 
                     // 使用 ||| 分隔符解析提交信息
+                    // 格式: %H|||%s|||%an|||%ae|||%at|||%P|||%d
+                    // %P 是父提交列表（空格分隔），合并提交有多个父提交
+                    // %d 是装饰引用（HEAD -> branch, origin/branch, tag: x.y）
                     let parts: Vec<&str> = info_part.split("|||").collect();
-                    if parts.len() >= 5 {
+                    if parts.len() >= 6 {
                         if let Some(timestamp) = parts[4].parse::<i64>().ok() {
                             if let Some(ts) = chrono::DateTime::from_timestamp(timestamp, 0) {
+                                // 合并提交有多个父提交（%P 用空格分隔）
+                                let parent_hashes: Vec<&str> = parts[5].split_whitespace().collect();
+                                let is_merge = parent_hashes.len() > 1;
+                                // 解析 %d 装饰引用：形如 " (HEAD -> main, origin/main, tag: v1.0)"
+                                let refs: Vec<String> = parts.get(6).map(|d| {
+                                    let d = d.trim();
+                                    let inner = d
+                                        .strip_prefix('(')
+                                        .and_then(|s| s.strip_suffix(')'))
+                                        .unwrap_or(d);
+                                    inner
+                                        .split(',')
+                                        .map(|s| s.trim().to_string())
+                                        .filter(|s| !s.is_empty())
+                                        .collect()
+                                }).unwrap_or_default();
+                                let is_head = refs.iter().any(|r| r.contains("HEAD"));
                                 commits.push(CommitInfo {
                                     hash: parts[0].to_string(),
                                     message: parts[1].to_string(),
                                     author: parts[2].to_string(),
                                     author_email: parts[3].to_string(),
-                                    timestamp: ts.with_timezone(&chrono::Utc),
+                                    // 使用本地时区，确保显示正确的时间
+                                    timestamp: ts.with_timezone(&chrono::Local),
                                     graph_line: Some(graph_line),
+                                    is_merge,
+                                    refs,
+                                    is_head,
                                 });
+                                commit_row_indices.push(graph_line_idx);
                             }
                         }
                     }
@@ -1234,7 +1269,7 @@ impl Workspace {
             }
         }
 
-        commits
+        (commits, graph_lines, commit_row_indices)
     }
 
     #[allow(dead_code)]
@@ -12089,13 +12124,15 @@ impl Workspace {
                     if let Some(branch) = view.state.branches.get(branch_idx) {
                         if branch.recent_commits.is_empty() {
                             if let Some(repo_path) = &view.state.repo_path {
-                                let recent_commits = Self::get_branch_recent_commits_sync(
+                                let (recent_commits, graph_lines, commit_row_indices) = Self::get_branch_recent_commits_sync(
                                     repo_path,
                                     &branch.full_name,
                                     100, // 降低到100条以提升性能
                                     path_for_closure.as_deref(),
                                 );
                                 view.state.branches[branch_idx].recent_commits = recent_commits;
+                                view.state.branches[branch_idx].graph_lines = graph_lines;
+                                view.state.branches[branch_idx].commit_row_indices = commit_row_indices;
                             }
                         }
                     }
@@ -12142,13 +12179,15 @@ impl Workspace {
                             // 延迟加载：如果 recent_commits 为空，现在加载
                             if branch.recent_commits.is_empty() {
                                 if let Some(repo_path) = &view.state.repo_path {
-                                    let recent_commits = Self::get_branch_recent_commits_sync(
+                                    let (recent_commits, graph_lines, commit_row_indices) = Self::get_branch_recent_commits_sync(
                                         repo_path,
                                         &branch.full_name,
                                         if branch.is_remote { 30 } else { 100 }, // 降低以提升性能
                                         path_env.as_deref(),
                                     );
                                     view.state.branches[index].recent_commits = recent_commits;
+                                    view.state.branches[index].graph_lines = graph_lines;
+                                    view.state.branches[index].commit_row_indices = commit_row_indices;
                                 }
                             }
 
@@ -13116,8 +13155,8 @@ impl Workspace {
                                         ),
                                         "%Y-%m-%dT%H:%M:%S %z",
                                     )
-                                    .map(|dt| dt.with_timezone(&chrono::Utc))
-                                    .unwrap_or_else(|_| chrono::Utc::now());
+                                    .map(|dt| dt.with_timezone(&chrono::Local))
+                                    .unwrap_or_else(|_| chrono::Local::now());
 
                                     history_entries.push(FileHistoryEntry {
                                         hash: parts[0].to_string(),
