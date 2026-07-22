@@ -1033,7 +1033,6 @@ impl Workspace {
                             timestamp: chrono::DateTime::from_timestamp(ts, 0)
                                 .unwrap_or_default()
                                 .with_timezone(&chrono::Local),
-                            graph_line: None,
                             is_merge: false,
                             refs: Vec::new(),
                             is_head: false,
@@ -1098,7 +1097,6 @@ impl Workspace {
                             timestamp: chrono::DateTime::from_timestamp(ts, 0)
                                 .unwrap_or_default()
                                 .with_timezone(&chrono::Local),
-                            graph_line: None,
                             is_merge: false,
                             refs: Vec::new(),
                             is_head: false,
@@ -1256,7 +1254,6 @@ impl Workspace {
                                     author_email: parts[3].to_string(),
                                     // 使用本地时区，确保显示正确的时间
                                     timestamp: ts.with_timezone(&chrono::Local),
-                                    graph_line: Some(graph_line),
                                     is_merge,
                                     refs,
                                     is_head,
@@ -12127,7 +12124,7 @@ impl Workspace {
                                 let (recent_commits, graph_lines, commit_row_indices) = Self::get_branch_recent_commits_sync(
                                     repo_path,
                                     &branch.full_name,
-                                    100, // 降低到100条以提升性能
+                                    500, // --graph含纯图形行，需要较大limit
                                     path_for_closure.as_deref(),
                                 );
                                 view.state.branches[branch_idx].recent_commits = recent_commits;
@@ -12182,7 +12179,7 @@ impl Workspace {
                                     let (recent_commits, graph_lines, commit_row_indices) = Self::get_branch_recent_commits_sync(
                                         repo_path,
                                         &branch.full_name,
-                                        if branch.is_remote { 30 } else { 100 }, // 降低以提升性能
+                                        if branch.is_remote { 200 } else { 500 }, // --graph含纯图形行，需要较大limit
                                         path_env.as_deref(),
                                     );
                                     view.state.branches[index].recent_commits = recent_commits;
@@ -13199,81 +13196,6 @@ impl Workspace {
                         ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
                             toast_stack.add_ephemeral_toast(
                                 DismissibleToast::error("获取文件历史失败".to_string()),
-                                window_id,
-                                ctx,
-                            );
-                        });
-                    }
-                }
-            }
-        }
-    }
-
-    /// Handle view in browser (open remote URL)
-    fn handle_view_in_browser(&mut self, branch_name: String, ctx: &mut ViewContext<Self>) {
-        if let Some(terminal_view) = self.active_session_view(ctx) {
-            let cwd = terminal_view
-                .as_ref(ctx)
-                .active_session()
-                .as_ref(ctx)
-                .current_working_directory_location(ctx);
-
-            if let Some(cute_util::local_or_remote_path::LocalOrRemotePath::Local(repo_path)) = cwd
-            {
-                // Get remote URL
-                let remote_output = command::blocking::Command::new("git")
-                    .args(["remote", "get-url", "origin"])
-                    .current_dir(&repo_path)
-                    .output();
-
-                let window_id = ctx.window_id();
-                if let Ok(output) = remote_output {
-                    if output.status.success() {
-                        let remote_url = String::from_utf8_lossy(&output.stdout).trim().to_string();
-                        // Convert git URL to web URL
-                        let web_url = if remote_url.starts_with("git@") {
-                            // git@github.com:user/repo.git -> https://github.com/user/repo/tree/branch
-                            remote_url
-                                .replace("git@", "https://")
-                                .replace(":", "/")
-                                .trim_end_matches(".git")
-                                .to_string()
-                        } else if remote_url.starts_with("https://")
-                            || remote_url.starts_with("http://")
-                        {
-                            remote_url.trim_end_matches(".git").to_string()
-                        } else {
-                            remote_url
-                        };
-
-                        let branch_url = format!("{}/tree/{}", web_url, branch_name);
-
-                        // Open in browser
-                        #[cfg(target_os = "macos")]
-                        let _ = std::process::Command::new("open").arg(&branch_url).spawn();
-                        #[cfg(target_os = "linux")]
-                        let _ = std::process::Command::new("xdg-open")
-                            .arg(&branch_url)
-                            .spawn();
-                        #[cfg(target_os = "windows")]
-                        let _ = std::process::Command::new("cmd")
-                            .args(["/C", "start", &branch_url])
-                            .spawn();
-
-                        ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
-                            toast_stack.add_ephemeral_toast(
-                                DismissibleToast::success(format!(
-                                    "已在浏览器中打开 {}",
-                                    branch_url
-                                )),
-                                window_id,
-                                ctx,
-                            );
-                        });
-                    } else {
-                        ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
-                            toast_stack.add_ephemeral_toast(
-                                DismissibleToast::error("无法获取远程仓库地址".to_string()),
                                 window_id,
                                 ctx,
                             );
@@ -15027,9 +14949,6 @@ impl Workspace {
             }
             pane_group::Event::ViewFileHistory { file_path } => {
                 self.handle_view_file_history(file_path.clone(), ctx);
-            }
-            pane_group::Event::ViewInBrowser { branch_name } => {
-                self.handle_view_in_browser(branch_name.clone(), ctx);
             }
         }
     }

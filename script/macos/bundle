@@ -326,7 +326,7 @@ function create_cute_dmg() {
   local args=(
     --volname Cute
     --no-internet-enable
-    --background app/assets/resources/mac/warp_install_image.png
+    --background app/assets/resources/mac/cute_install_image.png
     --icon-size 128
     --window-size 700 500
     --format UDZO

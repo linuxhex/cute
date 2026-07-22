@@ -792,10 +792,7 @@ pub enum Event {
     ViewFileHistory {
         file_path: String,
     },
-    /// View branch in browser
-    ViewInBrowser {
-        branch_name: String,
-    },
+
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -5112,15 +5109,6 @@ impl PaneGroup {
         ctx: &mut ViewContext<Self>,
     ) {
         ctx.emit(Event::ViewFileHistory { file_path });
-    }
-
-    /// Handle view in browser action from BranchSelectorPane.
-    pub(super) fn handle_view_in_browser(
-        &mut self,
-        branch_name: String,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        ctx.emit(Event::ViewInBrowser { branch_name });
     }
 
     /// The current pane group title, based on the focused pane.
