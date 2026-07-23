@@ -714,6 +714,10 @@ impl PersistedWorkspace {
     }
 
     pub fn workspaces<'a>(&'a self) -> impl Iterator<Item = WorkspaceMetadata> + use<'a> {
+        log::info!("PersistedWorkspace::workspaces() called, total entries={}, persisted={}",
+            self.workspaces.len(),
+            self.workspaces.values().filter(|w| w.is_persisted()).count()
+        );
         self.workspaces
             .values()
             .filter(|workspace| workspace.is_persisted())
@@ -733,6 +737,7 @@ impl PersistedWorkspace {
     /// Cute: Ensure a workspace exists for the given directory path.
     /// This is called when closing tabs to save the working directory to history.
     pub fn ensure_workspace_for_path(&mut self, directory: &PathBuf) {
+        log::info!("ensure_workspace_for_path called for {:?}", directory);
         if self.workspaces.contains_key(directory) {
             // Already exists, just update navigation timestamp
             if let Some(workspace) = self.workspaces.get_mut(directory) {
@@ -1260,6 +1265,7 @@ fn send_active_indexed_repos_changed_telemetry<T: Entity>(ctx: &mut ModelContext
 #[cfg_attr(not(feature = "local_fs"), allow(dead_code))]
 pub fn all_working_directories(app: &AppContext) -> HashSet<PathBuf> {
     let mut working_directories = HashSet::new();
+    log::info!("all_working_directories() called");
     for window_id in app.window_ids() {
         for terminal_view in app
             .views_of_type::<TerminalView>(window_id)

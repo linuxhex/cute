@@ -7,7 +7,7 @@ use crate::app_state::WindowSnapshot;
 
 pub const DEFAULT_UNIVERSAL_SEARCH_WIDTH: f32 = 700.;
 pub const DEFAULT_WARP_AI_WIDTH: f32 = 410.;
-pub const DEFAULT_CUTE_DRIVE_INDEX_WIDTH: f32 = 300.;
+
 pub const DEFAULT_SETTINGS_PANEL_WIDTH: f32 = 194.;
 pub const DEFAULT_LEFT_PANEL_WIDTH: f32 = 240.;
 pub const DEFAULT_RIGHT_PANEL_WIDTH: f32 = 480.;
@@ -44,9 +44,6 @@ impl ModalSizes {
         let warp_ai_width = window_snapshot
             .warp_ai_width
             .unwrap_or(DEFAULT_WARP_AI_WIDTH);
-        let _cute_drive_index_width = window_snapshot
-            .cute_drive_index_width
-            .unwrap_or(DEFAULT_CUTE_DRIVE_INDEX_WIDTH);
         let settings_panel_width = DEFAULT_SETTINGS_PANEL_WIDTH;
         let left_panel_width = window_snapshot.left_panel_width.unwrap_or(left_panel_size);
         let right_panel_width = window_snapshot

@@ -10181,6 +10181,12 @@ impl TerminalView {
             is_done_bootstrapping
         );
 
+        // Capture the previous cwd before consuming active_block_metadata,
+        // so we can register the workspace even on the first precmd.
+        let prev_cwd = self.active_block_metadata
+            .as_ref()
+            .and_then(|m| m.current_working_directory().map(|s| s.to_string()));
+
         if let Some(prev_block_metadata) = self.active_block_metadata.take() {
             // Only send event to save app state when the block is post bootstrap
             // and working directory has changed.
@@ -10387,6 +10393,21 @@ impl TerminalView {
         }
 
         self.active_block_metadata = Some(block_metadata.clone());
+
+        // Register the current working directory as a workspace so it appears
+        // in the "Recent Workspaces" dropdown on next launch.
+        if is_done_bootstrapping {
+            if let Some(cwd) = block_metadata.current_working_directory() {
+                let cwd_changed = prev_cwd.as_ref().map_or(true, |prev| prev != cwd);
+                if cwd_changed {
+                    let cwd_path = std::path::PathBuf::from(cwd);
+                    crate::ai::persisted_workspace::PersistedWorkspace::handle(ctx)
+                        .update(ctx, |pw, _ctx| {
+                            pw.ensure_workspace_for_path(&cwd_path);
+                        });
+                }
+            }
+        }
 
         if let Some(session) = block_metadata
             .session_id()

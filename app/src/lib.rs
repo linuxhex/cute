@@ -1667,6 +1667,15 @@ pub(crate) fn app_callbacks(is_integration_test: bool) -> cuteui::platform::AppC
                 manager.close_notebooks(ctx);
             });
 
+            // Save all terminal working directories to PersistedWorkspace before terminating,
+            // so the "Recent Workspaces" dropdown shows them on next launch.
+            let working_dirs = ai::persisted_workspace::all_working_directories(ctx);
+            PersistedWorkspace::handle(ctx).update(ctx, |persisted, _ctx| {
+                for directory in working_dirs {
+                    persisted.ensure_workspace_for_path(&directory);
+                }
+            });
+
             PersistenceWriter::handle(ctx).update(ctx, |writer, _ctx| {
                 writer.terminate();
             });

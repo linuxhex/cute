@@ -9054,7 +9054,6 @@ impl Workspace {
             quake_mode,
             universal_search_width,
             warp_ai_width,
-            cute_drive_index_width: None,  // Cute Drive disabled
             left_panel_open: self.left_panel_open,
             vertical_tabs_panel_open: self.vertical_tabs_panel_open,
             left_panel_width,
