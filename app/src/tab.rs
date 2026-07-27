@@ -70,7 +70,7 @@ pub fn uses_vertical_tabs(ctx: &AppContext) -> bool {
 const WARP_2_TAB_COLOR_OPACITY: Opacity = 25;
 const WARP_2_HOVERED_TAB_COLOR_OPACITY: Opacity = 50;
 const TAB_CLOSE_BUTTON_OPACITY: Opacity = 60;
-const TAB_CLOSE_BUTTON_WIDTH: f32 = 20.0;
+const TAB_CLOSE_BUTTON_WIDTH: f32 = 16.0;
 const MAX_TOOLTIP_LENGTH: usize = 80;
 
 const TAB_INDICATOR_SYNCED_COLOR: u32 = 0x4A93FFFF;
@@ -1162,7 +1162,7 @@ impl<'a> TabComponent<'a> {
 
             let default_styles = UiComponentStyles {
                 background: Some(default_background),
-                border_radius: Some(CornerRadius::with_all(Radius::Pixels(2.0))),
+                border_radius: Some(CornerRadius::with_all(Radius::Pixels(4.0))),
                 ..UiComponentStyles::default()
             };
 
@@ -1342,9 +1342,10 @@ impl<'a> TabComponent<'a> {
         let theme = self.appearance.theme();
         let is_active = self.is_active_tab();
 
-        let (background_color, border_fill) = if FeatureFlag::NewTabStyling.is_enabled() {
-            // If there is a custom tab background, we overlay it with varying opacities.
+        // Arc 风格背景色：活跃 tab 用 surface_2 浮起，hover 用 surface_1 微妙提升，普通 tab 透明
+        let (background_color, border_fill) = {
             let bg = if let Some(custom_background) = self.styles.background {
+                // 自定义 tab 背景色保留，用透明度区分状态
                 let base_opacity = if is_active {
                     60
                 } else if is_hovered {
@@ -1363,45 +1364,21 @@ impl<'a> TabComponent<'a> {
                     }
                 }
             } else if is_active {
-                internal_colors::fg_overlay_2(theme).into()
+                // 活跃 tab：surface_2 背景，浮起感
+                theme.surface_2().into()
             } else if is_hovered {
-                internal_colors::fg_overlay_1(theme).into()
+                // hover tab：surface_1 背景，微妙提升
+                theme.surface_1().into()
             } else {
+                // 普通 tab：透明
                 Fill::None
             };
 
+            // 活跃 tab 边框用 outline 色，增强浮起感
             let border = if is_active {
-                internal_colors::fg_overlay_2(theme)
+                theme.outline()
             } else {
-                internal_colors::fg_overlay_1(theme)
-            };
-
-            (bg, border)
-        } else {
-            let tab_opacity = if is_active || is_hovered {
-                WARP_2_HOVERED_TAB_COLOR_OPACITY
-            } else {
-                WARP_2_TAB_COLOR_OPACITY
-            };
-
-            let bg = if let Some(custom_background) = self.styles.background {
-                match custom_background {
-                    ThemeFill::Solid(color) => coloru_with_opacity(color, tab_opacity).into(),
-                    ThemeFill::VerticalGradient(gradient) => {
-                        coloru_with_opacity(gradient.get_most_opaque(), tab_opacity).into()
-                    }
-                    ThemeFill::HorizontalGradient(gradient) => {
-                        coloru_with_opacity(gradient.get_most_opaque(), tab_opacity).into()
-                    }
-                }
-            } else {
-                coloru_with_opacity(theme.surface_3().into(), tab_opacity).into()
-            };
-
-            let border = if is_active || is_hovered {
-                internal_colors::fg_overlay_2(theme)
-            } else {
-                internal_colors::fg_overlay_1(theme)
+                theme.outline()
             };
 
             (bg, border)
@@ -1480,38 +1457,21 @@ impl<'a> TabComponent<'a> {
             ))
         };
 
-        // The old code always used a negative offset, which I (Harry) think is wrong for the left-side case (pushes outward).
-        // We preserve that behavior in the flag-OFF path out of an abundance of caution to avoid breaking existing functionality.
+        // Arc 风格：X 按钮垂直居中，靠近 tab 右边缘
         let (parent_anchor, child_anchor, horizontal_inset) =
-            if FeatureFlag::NewTabStyling.is_enabled() {
-                if FeatureFlag::TabCloseButtonOnLeft.is_enabled()
-                    && matches!(self.close_button_position, TabCloseButtonPosition::Left)
-                {
-                    (
-                        ParentAnchor::MiddleLeft,
-                        ChildAnchor::MiddleLeft,
-                        TAB_CLOSE_BUTTON_HORIZONTAL_INSET + 4.0,
-                    )
-                } else {
-                    (
-                        ParentAnchor::MiddleRight,
-                        ChildAnchor::MiddleRight,
-                        -(TAB_CLOSE_BUTTON_HORIZONTAL_INSET + 4.0),
-                    )
-                }
-            } else if FeatureFlag::TabCloseButtonOnLeft.is_enabled()
+            if FeatureFlag::TabCloseButtonOnLeft.is_enabled()
                 && matches!(self.close_button_position, TabCloseButtonPosition::Left)
             {
                 (
-                    ParentAnchor::TopLeft,
-                    ChildAnchor::TopLeft,
-                    -TAB_CLOSE_BUTTON_HORIZONTAL_INSET,
+                    ParentAnchor::MiddleLeft,
+                    ChildAnchor::MiddleLeft,
+                    TAB_CLOSE_BUTTON_HORIZONTAL_INSET + 2.0,
                 )
             } else {
                 (
-                    ParentAnchor::TopRight,
-                    ChildAnchor::TopRight,
-                    -TAB_CLOSE_BUTTON_HORIZONTAL_INSET,
+                    ParentAnchor::MiddleRight,
+                    ChildAnchor::MiddleRight,
+                    -(TAB_CLOSE_BUTTON_HORIZONTAL_INSET + 2.0),
                 )
             };
 
@@ -1562,21 +1522,18 @@ impl<'a> TabComponent<'a> {
         )
         .finish();
 
+        // Arc 风格：圆角卡片式 tab，活跃 tab 浮起，非活跃 tab 沉下
         let mut tab = Container::new(stack)
-            .with_vertical_padding(2.)
-            .with_background(background_color);
-        if FeatureFlag::NewTabStyling.is_enabled() {
-            let is_first_tab = self.tab_index == 0;
+            .with_vertical_padding(3.)
+            .with_horizontal_padding(2.)
+            .with_background(background_color)
+            .with_corner_radius(CornerRadius::with_all(Radius::Pixels(7.0)));
+        // 活跃 tab 有微妙边框增强浮起感，非活跃 tab 无边框
+        if is_active {
             tab = tab.with_border(
                 Border::all(1.)
-                    // We only include a left border on the very first tab to avoid double borders.
-                    .with_sides(false, is_first_tab, false, true)
                     .with_border_fill(border_fill),
             );
-        } else {
-            tab = tab
-                .with_corner_radius(CornerRadius::with_all(Radius::Pixels(4.0)))
-                .with_border(Border::all(1.).with_border_fill(border_fill));
         }
 
         // If the tab is being dragged, add an opaque background behind it

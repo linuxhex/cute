@@ -17573,7 +17573,12 @@ impl Workspace {
                             .finish(),
                     );
                 } else {
-                    tab_bar.add_child(self.render_tab_in_tab_bar(i, tab_bar_state, ctx));
+                    // Arc 风格：tab 之间添加 3px 间距
+                    tab_bar.add_child(
+                        Container::new(self.render_tab_in_tab_bar(i, tab_bar_state, ctx))
+                            .with_margin_left(3.)
+                            .finish(),
+                    );
                 }
             }
 
@@ -17887,10 +17892,9 @@ impl Workspace {
                 .finish(),
         )
         .with_border(tab_bar_border);
-        if FeatureFlag::NewTabStyling.is_enabled() {
-            tab_bar_container = tab_bar_container
-                .with_background(internal_colors::fg_overlay_1(appearance.theme()));
-        }
+        // Arc 风格：tab bar 始终使用背景色，让 tab 卡片有层次感
+        tab_bar_container = tab_bar_container
+            .with_background(appearance.theme().background());
         let tab_bar_element = tab_bar_container.finish();
 
         let dimming_color = appearance.theme().background().into();
