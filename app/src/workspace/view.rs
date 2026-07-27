@@ -12326,6 +12326,13 @@ impl Workspace {
         ctx: &mut ViewContext<Self>,
     ) {
         use crate::pane_group::pane::branch_selector_pane::BranchSelectorPane;
+        use crate::terminal::local_shell::LocalShellState;
+
+        // 从 shell 获取缓存的交互式 PATH，确保从 GUI 启动时也能找到 git
+        let path_env = LocalShellState::handle(ctx)
+            .read(ctx, |shell, _| shell.get_cached_interactive_path());
+
+        log::debug!("[OPEN_DIFF] handle_open_diff_for_file called, pane_id={:?}", pane_id);
 
         let pane_group = self.active_tab_pane_group();
 
@@ -12339,51 +12346,47 @@ impl Workspace {
                     branch_view.update(ctx, |view, ctx| {
                         // 获取选中的文件
                         if let Some(file_idx) = view.state.selected_file_index {
+                            log::debug!("[OPEN_DIFF] Selected file index: {}", file_idx);
                             if let Some(file) = view.state.changed_files.get(file_idx) {
+                                log::debug!("[OPEN_DIFF] File path: {}, status: {:?}", file.path, file.status);
                                 if let Some(repo_path) = &view.state.repo_path {
+                                    log::debug!("[OPEN_DIFF] Repo path: {:?}", repo_path);
+                                    
                                     let diff = if let Some(commit_idx) =
                                         view.state.selected_commit_index
                                     {
-                                        // 检查是否是当前分支且选中第一个提交（显示工作区改动）
-                                        let is_current_branch_with_working_changes = view
-                                            .state
-                                            .selected_branch_index
-                                            .and_then(|idx| view.state.branches.get(idx))
-                                            .map(|b| b.is_current && commit_idx == 0)
-                                            .unwrap_or(false);
-
-                                        if is_current_branch_with_working_changes {
-                                            // 当前分支的第一个"提交"显示工作区改动
-                                            Self::get_file_diff_for_working_directory(
-                                                repo_path, &file.path,
-                                            )
-                                        } else {
-                                            // 提交的 diff
-                                            if let Some(branch_idx) =
-                                                view.state.selected_branch_index
+                                        log::debug!("[OPEN_DIFF] Selected commit index: {}", commit_idx);
+                                        // 选择了提交时，直接获取该提交的 diff
+                                        if let Some(branch_idx) =
+                                            view.state.selected_branch_index
+                                        {
+                                            if let Some(branch) =
+                                                view.state.branches.get(branch_idx)
                                             {
-                                                if let Some(branch) =
-                                                    view.state.branches.get(branch_idx)
+                                                if let Some(commit) =
+                                                    branch.recent_commits.get(commit_idx)
                                                 {
-                                                    if let Some(commit) =
-                                                        branch.recent_commits.get(commit_idx)
-                                                    {
-                                                        Self::get_file_diff_for_commit(
-                                                            repo_path,
-                                                            &commit.hash,
-                                                            &file.path,
-                                                        )
-                                                    } else {
-                                                        None
-                                                    }
+                                                    log::debug!("[OPEN_DIFF] Getting commit diff: commit_hash={}", commit.hash);
+                                                    Self::get_file_diff_for_commit(
+                                                        repo_path,
+                                                        &commit.hash,
+                                                        &file.path,
+                                                        path_env.as_deref(),
+                                                    )
                                                 } else {
+                                                    log::warn!("[OPEN_DIFF] No commit found at index {}", commit_idx);
                                                     None
                                                 }
                                             } else {
+                                                log::warn!("[OPEN_DIFF] No branch found at index {}", branch_idx);
                                                 None
                                             }
+                                        } else {
+                                            log::warn!("[OPEN_DIFF] No branch selected");
+                                            None
                                         }
                                     } else if let Some(ref current) = view.state.current_branch {
+                                        log::debug!("[OPEN_DIFF] No commit selected, showing branch diff");
                                         // 没有选中提交时，显示分支对比的 diff
                                         if let Some(selected_idx) = view.state.selected_branch_index
                                         {
@@ -12395,6 +12398,7 @@ impl Workspace {
                                                     current,
                                                     &selected_branch.name,
                                                     &file.path,
+                                                    path_env.as_deref(),
                                                 )
                                             } else {
                                                 None
@@ -12403,17 +12407,31 @@ impl Workspace {
                                             None
                                         }
                                     } else {
+                                        log::warn!("[OPEN_DIFF] No commit or current branch");
                                         None
                                     };
 
                                     if let Some(diff) = diff {
+                                        log::debug!("[OPEN_DIFF] Successfully got diff, opening viewer");
                                         view.open_diff_viewer(diff, ctx);
+                                    } else {
+                                        log::warn!("[OPEN_DIFF] Failed to get diff for file: {}", file.path);
                                     }
+                                } else {
+                                    log::warn!("[OPEN_DIFF] No repo path found");
                                 }
+                            } else {
+                                log::warn!("[OPEN_DIFF] No file found at index {}", file_idx);
                             }
+                        } else {
+                            log::warn!("[OPEN_DIFF] No file selected");
                         }
                     });
+                } else {
+                    log::warn!("[OPEN_DIFF] Pane is not a BranchSelectorPane");
                 }
+            } else {
+                log::warn!("[OPEN_DIFF] No pane content found for pane_id {:?}", pane_id);
             }
         });
     }
@@ -12799,13 +12817,12 @@ impl Workspace {
     ) -> Vec<crate::workspace::branch_selector::ChangedFile> {
         use crate::workspace::branch_selector::{ChangedFile, FileStatus};
 
-        // Get file changes with stats
+        // 只用 --name-status 获取变更文件列表，避免 --numstat 导致每个文件重复出现两次
         let mut cmd = command::blocking::Command::new("git");
         cmd.args([
             "show",
             "--name-status",
-            "--numstat",
-            "--format=", // Don't show commit info, just files
+            "--format=",
             commit_hash,
         ])
         .current_dir(repo_path)
@@ -12827,52 +12844,26 @@ impl Workspace {
                         continue;
                     }
 
-                    // Parse numstat format: additions\tdeletions\tfilename
-                    // Or name-status format: M\tfilename
-                    let parts: Vec<&str> = line.split_whitespace().collect();
+                    // name-status 格式：状态字符\t文件名（重命名为 状态字符\t旧名\t新名）
+                    let parts: Vec<&str> = line.split('\t').collect();
                     if parts.len() >= 2 {
-                        // Check if first part is a status char
-                        let first = parts[0];
-                        if first.len() == 1 {
-                            let status = match first.chars().next() {
-                                Some('M') => FileStatus::Modified,
-                                Some('A') => FileStatus::Added,
-                                Some('D') => FileStatus::Deleted,
-                                Some('R') => FileStatus::Renamed,
-                                _ => continue,
-                            };
+                        let status_char = parts[0].chars().next();
+                        let status = match status_char {
+                            Some('M') => FileStatus::Modified,
+                            Some('A') => FileStatus::Added,
+                            Some('D') => FileStatus::Deleted,
+                            Some('R') => FileStatus::Renamed,
+                            _ => continue,
+                        };
 
-                            let path = parts.last().unwrap_or(&"").to_string();
-                            files.push(ChangedFile {
-                                path,
-                                status,
-                                additions: 0,
-                                deletions: 0,
-                            });
-                        } else {
-                            // numstat format: additions deletions filename
-                            if parts.len() >= 3 {
-                                let additions: u32 = parts[0].parse().unwrap_or(0);
-                                let deletions: u32 = parts[1].parse().unwrap_or(0);
-                                let path = parts[2].to_string();
-
-                                // Determine status from additions/deletions
-                                let status = if additions > 0 && deletions == 0 {
-                                    FileStatus::Added
-                                } else if additions == 0 && deletions > 0 {
-                                    FileStatus::Deleted
-                                } else {
-                                    FileStatus::Modified
-                                };
-
-                                files.push(ChangedFile {
-                                    path,
-                                    status,
-                                    additions,
-                                    deletions,
-                                });
-                            }
-                        }
+                        // 重命名时取最后一个字段作为新路径
+                        let path = parts.last().unwrap_or(&"").to_string();
+                        files.push(ChangedFile {
+                            path,
+                            status,
+                            additions: 0,
+                            deletions: 0,
+                        });
                     }
                 }
             }
@@ -13239,11 +13230,11 @@ impl Workspace {
     ) -> Vec<crate::workspace::branch_selector::ChangedFile> {
         use crate::workspace::branch_selector::{ChangedFile, FileStatus};
 
+        // 只用 --name-status，避免 --numstat 导致每个文件重复出现两次
         let output = command::blocking::Command::new("git")
             .args([
                 "diff",
                 "--name-status",
-                "--numstat",
                 &format!("{}...{}", base_branch, target_branch),
             ])
             .current_dir(repo_path)
@@ -13257,7 +13248,8 @@ impl Workspace {
             if out.status.success() {
                 let lines = String::from_utf8_lossy(&out.stdout);
                 for line in lines.lines() {
-                    let parts: Vec<&str> = line.split_whitespace().collect();
+                    // name-status 格式：状态字符\t文件名（重命名为 状态字符\t旧名\t新名）
+                    let parts: Vec<&str> = line.split('\t').collect();
                     if parts.len() >= 2 {
                         let status = match parts[0].chars().next() {
                             Some('M') => FileStatus::Modified,
@@ -13267,15 +13259,14 @@ impl Workspace {
                             _ => continue,
                         };
 
+                        // 重命名时取最后一个字段作为新路径
                         let path = parts.last().unwrap_or(&"").to_string();
-                        let additions = 0;
-                        let deletions = 0;
 
                         files.push(ChangedFile {
                             path,
                             status,
-                            additions,
-                            deletions,
+                            additions: 0,
+                            deletions: 0,
                         });
                     }
                 }
@@ -13290,8 +13281,12 @@ impl Workspace {
         repo_path: &std::path::Path,
         commit_hash: &str,
         file_path: &str,
+        path_env: Option<&str>,
     ) -> Option<crate::workspace::branch_selector::FileDiff> {
         use crate::workspace::branch_selector::{DiffHunk, DiffLine, DiffLineType, FileDiff};
+
+        log::debug!("[DIFF] get_file_diff_for_commit: repo_path={:?}, commit_hash={}, file_path={}",
+            repo_path, commit_hash, file_path);
 
         // Check if file is an image
         let path = std::path::Path::new(file_path);
@@ -13313,40 +13308,10 @@ impl Workspace {
             });
         }
 
-        // 获取新版本文件内容（提交中的版本）
-        let new_content = command::blocking::Command::new("git")
-            .args(["show", &format!("{}:{}", commit_hash, file_path)])
-            .current_dir(repo_path)
-            .stdout(command::Stdio::piped())
-            .stderr(command::Stdio::null())
-            .output()
-            .ok()
-            .and_then(|out| {
-                if out.status.success() {
-                    Some(String::from_utf8_lossy(&out.stdout).to_string())
-                } else {
-                    None
-                }
-            });
-
-        // 获取旧版本文件内容（提交之前的版本）
-        let old_content = command::blocking::Command::new("git")
-            .args(["show", &format!("{}^:{}", commit_hash, file_path)])
-            .current_dir(repo_path)
-            .stdout(command::Stdio::piped())
-            .stderr(command::Stdio::null())
-            .output()
-            .ok()
-            .and_then(|out| {
-                if out.status.success() {
-                    Some(String::from_utf8_lossy(&out.stdout).to_string())
-                } else {
-                    None
-                }
-            });
-
-        // Get the diff for this file in the commit
-        let diff_output = command::blocking::Command::new("git")
+        // 性能优化：先执行 diff-tree（最关键，包含 diff 信息）
+        // 如果成功且解析到 hunks，直接返回，避免额外的 git show 命令（从 3 次降到 1 次）
+        let mut diff_cmd = command::blocking::Command::new("git");
+        diff_cmd
             .args([
                 "diff-tree",
                 "--no-commit-id",
@@ -13357,12 +13322,16 @@ impl Workspace {
             ])
             .current_dir(repo_path)
             .stdout(command::Stdio::piped())
-            .stderr(command::Stdio::null())
-            .output();
+            .stderr(command::Stdio::piped());
+        if let Some(path) = path_env {
+            diff_cmd.env("PATH", path);
+        }
+        let diff_output = diff_cmd.output();
 
         if let Ok(out) = diff_output {
             if out.status.success() {
                 let diff_text = String::from_utf8_lossy(&out.stdout);
+
                 let mut hunks: Vec<DiffHunk> = Vec::new();
                 let mut current_hunk: Option<DiffHunk> = None;
                 let mut old_line = 0u32;
@@ -13452,17 +13421,79 @@ impl Workspace {
                     hunks.push(hunk);
                 }
 
-                return Some(FileDiff {
-                    file_path: file_path.to_string(),
-                    old_content,
-                    new_content,
-                    hunks,
-                    is_binary: false,
-                    image_local_path: None,
-                });
+                // 性能优化：有 hunks 时直接返回，跳过 git show 命令
+                if !hunks.is_empty() {
+                    return Some(FileDiff {
+                        file_path: file_path.to_string(),
+                        old_content: None,
+                        new_content: None,
+                        hunks,
+                        is_binary: false,
+                        image_local_path: None,
+                    });
+                }
+            } else {
+                log::warn!("[DIFF] diff-tree failed with status: {:?}, stderr: {}",
+                    out.status, String::from_utf8_lossy(&out.stderr));
             }
+        } else {
+            log::warn!("[DIFF] Failed to execute diff-tree command");
         }
 
+        // 降级处理：diff-tree 失败或无 hunks 时，获取文件内容构建 diff
+        // 确保所有改动文件都能双击打开查看 diff，而不是完全无反应
+        // 获取新版本文件内容（提交中的版本）
+        let mut new_cmd = command::blocking::Command::new("git");
+        new_cmd
+            .args(["show", &format!("{}:{}", commit_hash, file_path)])
+            .current_dir(repo_path)
+            .stdout(command::Stdio::piped())
+            .stderr(command::Stdio::piped());
+        if let Some(path) = path_env {
+            new_cmd.env("PATH", path);
+        }
+        let new_content = new_cmd.output()
+            .ok()
+            .and_then(|out| {
+                if out.status.success() {
+                    Some(String::from_utf8_lossy(&out.stdout).to_string())
+                } else {
+                    None
+                }
+            });
+
+        // 获取旧版本文件内容（提交之前的版本）
+        let mut old_cmd = command::blocking::Command::new("git");
+        old_cmd
+            .args(["show", &format!("{}^:{}", commit_hash, file_path)])
+            .current_dir(repo_path)
+            .stdout(command::Stdio::piped())
+            .stderr(command::Stdio::piped());
+        if let Some(path) = path_env {
+            old_cmd.env("PATH", path);
+        }
+        let old_content = old_cmd.output()
+            .ok()
+            .and_then(|out| {
+                if out.status.success() {
+                    Some(String::from_utf8_lossy(&out.stdout).to_string())
+                } else {
+                    None
+                }
+            });
+
+        if new_content.is_some() || old_content.is_some() {
+            return Some(FileDiff {
+                file_path: file_path.to_string(),
+                old_content,
+                new_content,
+                hunks: Vec::new(),
+                is_binary: false,
+                image_local_path: None,
+            });
+        }
+
+        log::warn!("[DIFF] Returning None for file: {}", file_path);
         None
     }
 
@@ -13472,28 +13503,34 @@ impl Workspace {
         base_branch: &str,
         target_branch: &str,
         file_path: &str,
+        path_env: Option<&str>,
     ) -> Option<crate::workspace::branch_selector::FileDiff> {
         // 如果是同一个分支，获取工作区 diff
         if base_branch == target_branch {
-            return Self::get_file_diff_for_working_directory(repo_path, file_path);
+            return Self::get_file_diff_for_working_directory(repo_path, file_path, path_env);
         }
 
-        let output = command::blocking::Command::new("git")
-            .args([
-                "diff",
-                &format!("{}...{}", base_branch, target_branch),
-                "--",
-                file_path,
-            ])
-            .current_dir(repo_path)
-            .stdout(command::Stdio::piped())
-            .stderr(command::Stdio::null())
-            .output();
+        let mut cmd = command::blocking::Command::new("git");
+        cmd.args([
+            "diff",
+            &format!("{}...{}", base_branch, target_branch),
+            "--",
+            file_path,
+        ])
+        .current_dir(repo_path)
+        .stdout(command::Stdio::piped())
+        .stderr(command::Stdio::piped());
+        if let Some(path) = path_env {
+            cmd.env("PATH", path);
+        }
+        let output = cmd.output();
 
         if let Ok(out) = output {
             if out.status.success() {
                 let diff_text = String::from_utf8_lossy(&out.stdout);
                 return Self::parse_diff_text(file_path, &diff_text);
+            } else {
+                log::warn!("[DIFF] Branch diff failed: {}", String::from_utf8_lossy(&out.stderr));
             }
         }
 
@@ -13504,6 +13541,7 @@ impl Workspace {
     fn get_file_diff_for_working_directory(
         repo_path: &std::path::Path,
         file_path: &str,
+        path_env: Option<&str>,
     ) -> Option<crate::workspace::branch_selector::FileDiff> {
         use crate::workspace::branch_selector::{DiffHunk, DiffLine, DiffLineType, FileDiff};
 
@@ -13528,36 +13566,50 @@ impl Workspace {
         }
 
         // Get diff for working directory changes (HEAD vs working tree)
-        let output = command::blocking::Command::new("git")
+        let mut diff_cmd = command::blocking::Command::new("git");
+        diff_cmd
             .args(["diff", "HEAD", "--", file_path])
             .current_dir(repo_path)
             .stdout(command::Stdio::piped())
-            .stderr(command::Stdio::null())
-            .output();
+            .stderr(command::Stdio::piped());
+        if let Some(path) = path_env {
+            diff_cmd.env("PATH", path);
+        }
+        let output = diff_cmd.output();
 
         if let Ok(out) = output {
             if out.status.success() {
                 let diff_text = String::from_utf8_lossy(&out.stdout);
+                log::debug!("[DIFF] Working dir diff for '{}': output length={}", file_path, diff_text.len());
                 if !diff_text.is_empty() {
                     return Self::parse_diff_text(file_path, &diff_text);
                 }
+            } else {
+                log::warn!("[DIFF] Working dir diff failed: {}", String::from_utf8_lossy(&out.stderr));
             }
+        } else {
+            log::warn!("[DIFF] Failed to execute git diff HEAD for: {}", file_path);
         }
 
-        // If no diff with HEAD, check if it's an untracked file
-        let status_output = command::blocking::Command::new("git")
+        // If no diff with HEAD, check if it's an untracked file or staged file
+        let mut status_cmd = command::blocking::Command::new("git");
+        status_cmd
             .args(["status", "--porcelain", "--", file_path])
             .current_dir(repo_path)
             .stdout(command::Stdio::piped())
-            .stderr(command::Stdio::null())
-            .output();
+            .stderr(command::Stdio::piped());
+        if let Some(path) = path_env {
+            status_cmd.env("PATH", path);
+        }
+        let status_output = status_cmd.output();
 
         if let Ok(out) = status_output {
             if out.status.success() {
                 let status = String::from_utf8_lossy(&out.stdout);
-                // Check if untracked (??)
-                if status.starts_with("??") {
-                    // Read the file content and show as all added
+                log::debug!("[DIFF] git status for '{}': '{}'", file_path, status.trim());
+                // Check if untracked (??) or staged new file (A)
+                if status.starts_with("??") || status.starts_with("A") {
+                    // 读取文件内容，全部标记为新增行
                     let full_path = repo_path.join(file_path);
                     if let Ok(content) = std::fs::read_to_string(&full_path) {
                         let lines: Vec<&str> = content.lines().collect();
@@ -13593,6 +13645,22 @@ impl Workspace {
             }
         }
 
+        // 兜底处理：git diff/status 都无法获取 diff 时，尝试直接读取文件内容
+        // 确保所有在改动列表中的文件都能双击打开
+        let full_path = repo_path.join(file_path);
+        if let Ok(content) = std::fs::read_to_string(&full_path) {
+            log::debug!("[DIFF] Fallback: reading file content directly for: {}", file_path);
+            return Some(FileDiff {
+                file_path: file_path.to_string(),
+                old_content: None,
+                new_content: Some(content.clone()),
+                hunks: Vec::new(),
+                is_binary: false,
+                image_local_path: None,
+            });
+        }
+
+        log::warn!("[DIFF] Returning None for working dir file: {}", file_path);
         None
     }
 
