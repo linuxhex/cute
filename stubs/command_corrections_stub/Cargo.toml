@@ -1,0 +1,9 @@
+[package]
+name = "command-corrections"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Stub for command-corrections (private dependency)"
+
+[dependencies]
+serde = { workspace = true, features = ["derive"] }

@@ -10,7 +10,6 @@ use cuteui::{AppContext, Element, SingletonEntity};
 use crate::ai::agent::comment::ReviewComment;
 use crate::ai::agent::icons::addressed_comment_icon;
 use crate::ai::blocklist::block::CommentElementState;
-use crate::code_review::comments::ReviewCommentBatch;
 
 const COMMENT_CHIP_MAX_HEIGHT: f32 = 200.;
 

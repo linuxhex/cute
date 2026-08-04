@@ -37,10 +37,7 @@ use crate::ai::blocklist::{BlocklistAIContextModel, BlocklistAIInputModel};
 use crate::ai::document::ai_document_model::{AIDocumentId, AIDocumentVersion};
 use crate::appearance::Appearance;
 use crate::code::editor::{add_color, remove_color};
-use crate::code_review::code_review_view::CODE_REVIEW_TOOLTIP_TEXT;
-use crate::code_review::diff_state::DiffStats;
 use crate::completer::SessionContext;
-use crate::context_chips::git_branch_on_click::{
     is_plausible_new_branch_name, GitBranchOnClickValue,
 };
 use crate::context_chips::node_version_popup::{NodeVersionPopupEvent, NodeVersionPopupView};

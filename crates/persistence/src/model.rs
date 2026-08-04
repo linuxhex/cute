@@ -1114,6 +1114,7 @@ pub struct ModelTokenUsage {
 }
 
 impl ModelTokenUsage {
+    #[cfg(not(feature = "oss"))]
     #[allow(deprecated)]
     fn to_proto_usage(
         &self,
@@ -1137,12 +1138,27 @@ impl ModelTokenUsage {
     }
 
     pub fn to_proto_warp_usage(&self) -> Option<(String, stream_finished::ModelTokenUsage)> {
-        self.to_proto_usage(self.warp_tokens, &self.warp_token_usage_by_category)
+        #[cfg(not(feature = "oss"))]
+        {
+            self.to_proto_usage(self.warp_tokens, &self.warp_token_usage_by_category)
+        }
+        #[cfg(feature = "oss")]
+        {
+            None
+        }
     }
 
     pub fn to_proto_byok_usage(&self) -> Option<(String, stream_finished::ModelTokenUsage)> {
-        self.to_proto_usage(self.byok_tokens, &self.byok_token_usage_by_category)
+        #[cfg(not(feature = "oss"))]
+        {
+            self.to_proto_usage(self.byok_tokens, &self.byok_token_usage_by_category)
+        }
+        #[cfg(feature = "oss")]
+        {
+            None
+        }
     }
+    #[cfg(not(feature = "oss"))]
     #[allow(deprecated)]
     pub fn to_proto_custom_endpoint_usage(
         &self,
@@ -1164,6 +1180,7 @@ impl ModelTokenUsage {
         ))
     }
 
+    #[cfg(not(feature = "oss"))]
     #[allow(deprecated)]
     pub fn to_proto_combined(&self) -> stream_finished::ModelTokenUsage {
         stream_finished::ModelTokenUsage {
@@ -1187,12 +1204,14 @@ pub struct ToolCallStats {
     pub count: i32,
 }
 
+#[cfg(not(feature = "oss"))]
 impl From<&ToolCallStats> for stream_finished::ToolCallStats {
     fn from(stats: &ToolCallStats) -> Self {
         Self { count: stats.count }
     }
 }
 
+#[cfg(not(feature = "oss"))]
 impl From<&stream_finished::ToolCallStats> for ToolCallStats {
     fn from(tool_call_stats: &stream_finished::ToolCallStats) -> Self {
         Self {
@@ -1207,6 +1226,7 @@ pub struct RunCommandStats {
     pub commands_executed: i32,
 }
 
+#[cfg(not(feature = "oss"))]
 impl From<&RunCommandStats> for stream_finished::RunCommandStats {
     fn from(stats: &RunCommandStats) -> Self {
         Self {
@@ -1216,6 +1236,7 @@ impl From<&RunCommandStats> for stream_finished::RunCommandStats {
     }
 }
 
+#[cfg(not(feature = "oss"))]
 impl From<&stream_finished::RunCommandStats> for RunCommandStats {
     fn from(stats: &stream_finished::RunCommandStats) -> Self {
         Self {
@@ -1233,6 +1254,7 @@ pub struct ApplyFileDiffStats {
     pub files_changed: i32,
 }
 
+#[cfg(not(feature = "oss"))]
 impl From<&ApplyFileDiffStats> for stream_finished::ApplyFileDiffStats {
     fn from(stats: &ApplyFileDiffStats) -> Self {
         Self {
@@ -1244,6 +1266,7 @@ impl From<&ApplyFileDiffStats> for stream_finished::ApplyFileDiffStats {
     }
 }
 
+#[cfg(not(feature = "oss"))]
 impl From<&stream_finished::ApplyFileDiffStats> for ApplyFileDiffStats {
     fn from(file_diff_stats: &stream_finished::ApplyFileDiffStats) -> Self {
         Self {
@@ -1290,6 +1313,7 @@ impl ToolUsageMetadata {
     }
 }
 
+#[cfg(not(feature = "oss"))]
 impl From<&ToolUsageMetadata> for stream_finished::ToolUsageMetadata {
     fn from(metadata: &ToolUsageMetadata) -> Self {
         Self {
@@ -1314,6 +1338,7 @@ impl From<&ToolUsageMetadata> for stream_finished::ToolUsageMetadata {
     }
 }
 
+#[cfg(not(feature = "oss"))]
 impl From<&stream_finished::ToolUsageMetadata> for ToolUsageMetadata {
     fn from(tool_usage_metadata: &stream_finished::ToolUsageMetadata) -> Self {
         let convert = |opt: &Option<_>| opt.as_ref().map(Into::into).unwrap_or_default();

@@ -13,7 +13,7 @@ mod banner;
 mod changelog_model;
 mod chip_configurator;
 mod code;
-mod code_review;
+
 mod coding_entrypoints;
 mod coding_panel_enablement_state;
 mod command_palette;
@@ -119,7 +119,6 @@ use auth::auth_manager::AuthManager;
 use auth::auth_state::{AuthState, AuthStateProvider};
 use code::editor_management::CodeManager;
 use code::opened_files::OpenedFilesModel;
-use code_review::GlobalCodeReviewModel;
 use quit_warning::UnsavedStateSummary;
 #[cfg(feature = "local_fs")]
 use repo_metadata::{
@@ -1257,7 +1256,6 @@ pub(crate) fn initialize_app(
     }
 
     {
-        use code_review::git_status_update::GitStatusUpdateModel;
         ctx.add_singleton_model(|_| GitStatusUpdateModel::new());
     }
 
@@ -1318,7 +1316,6 @@ pub(crate) fn initialize_app(
     terminal::view::init_environment::mode_selector::init(ctx);
     coding_entrypoints::project_buttons::init(ctx);
     if FeatureFlag::CodeReviewSaveChanges.is_enabled() {
-        code_review::init(ctx);
     }
 
     let display_count = ctx.windows().display_count();

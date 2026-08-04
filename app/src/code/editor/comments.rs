@@ -2,7 +2,6 @@ use chrono::{DateTime, Local};
 use cuteui::{Entity, ModelContext};
 
 use crate::code::editor::line::EditorLineLocation;
-use crate::code_review::comments::{
     AttachedReviewComment, AttachedReviewCommentTarget, CommentId, CommentOrigin, LineDiffContent,
 };
 

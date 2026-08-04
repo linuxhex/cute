@@ -150,12 +150,9 @@ use crate::local_storage_types::model::persistence::CloudModel;
 use crate::code::editor::comment_editor::create_readonly_comment_markdown_editor;
 use crate::code::editor::view::{CodeEditorEvent, CodeEditorRenderOptions, CodeEditorView};
 use crate::code::editor_management::CodeSource;
-use crate::code_review::comment_rendering::{CommentViewCard, HeaderClickHandler};
-use crate::code_review::comments::{
     attach_pending_imported_comments, convert_insert_review_comments, AttachedReviewComment,
     CommentId, CommentOrigin,
 };
-use crate::code_review::telemetry_event::CodeReviewPaneEntrypoint;
 use crate::editor::InteractionState;
 use crate::local_storage_types::FileLinkResolutionContext;
 use crate::local_storage_types::{EditorViewEvent, RichTextEditorView};

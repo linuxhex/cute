@@ -70,7 +70,6 @@ use super::diff::{
 use super::line::EditorLineLocation;
 use crate::appearance::Appearance;
 use crate::code::editor::line_iterator::LineIterator;
-use crate::code_review::comments::{CommentId, CommentOrigin, LineDiffContent};
 use crate::editor::InteractionState;
 use crate::local_storage_types::word_unit;
 use crate::themes::theme::AnsiColorIdentifier;

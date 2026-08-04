@@ -14,12 +14,17 @@ const DETECT_AS_COMMAND_LOW_TOKEN_THRESHOLD: f32 = 0.7;
 lazy_static! {
     /// One-off commands / keywords that should trigger a shell command classification.
     ///
-    /// `claude`, `codex`, and `gemini` are not actually _really_ one-off shell command keywords,
-    /// but false-positive NL classifications for these inputs (where the user was trying to use
-    /// claude code, codex CLI, or gemini CLI) suck, because the user often thinks we're
-    /// intentionally trying to push them away from those CLIs into Agent Mode, so we mitigate the
-    /// risk by always treating as shell.
-    static ref ONE_OFF_SHELL_COMMAND_KEYWORDS: HashSet<&'static str> = HashSet::from(["#", "echo", "man", "sudo", "claude", "codex", "gemini"]);
+    /// All known CLI agent command prefixes are included here so they are always
+    /// classified as shell commands. False-positive NL classifications for these
+    /// inputs (where the user was trying to launch a CLI agent) are especially
+    /// bad because the user thinks we're intentionally pushing them into Agent
+    /// Mode instead of running their command.
+    static ref ONE_OFF_SHELL_COMMAND_KEYWORDS: HashSet<&'static str> = HashSet::from([
+        "#", "echo", "man", "sudo",
+        // CLI agent command prefixes (keep in sync with CLIAgent::command_prefix)
+        "claude", "gemini", "codex", "amp", "droid", "opencode", "copilot",
+        "pi", "auggie", "agent", "goose", "hermes", "vibe", "qoder", "trae",
+    ]);
 
     static ref ONE_OFF_NATURAL_LANGUAGE_WORDS: HashSet<&'static str> = HashSet::from(["hello", "hi", "hey", "hola", "thanks", "explain", "yes", "no", "what", "nice", "1. "]);
 

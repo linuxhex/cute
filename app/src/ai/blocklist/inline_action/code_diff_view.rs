@@ -73,7 +73,6 @@ use crate::code::editor::view::{CodeEditorEvent, CodeEditorRenderOptions, CodeEd
 use crate::code::editor::{add_color, remove_color};
 use crate::code::inline_diff::{InlineDiffView, InlineDiffViewEvent};
 use crate::code::DiffResult;
-use crate::code_review::telemetry_event::CodeReviewPaneEntrypoint;
 use crate::menu::{Event as MenuEvent, Menu, MenuItemFields, MenuVariant};
 use crate::pane_group::focus_state::PaneFocusHandle;
 use crate::pane_group::pane::{view, PaneId};

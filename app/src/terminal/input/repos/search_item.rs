@@ -16,7 +16,6 @@ use crate::search::result_renderer::ItemHighlightState;
 use crate::search::SearchItem;
 use crate::terminal::input::inline_menu::styles as inline_styles;
 use crate::terminal::input::repos::AcceptRepo;
-use crate::util::git::RepoGitSummary;
 
 /// Search item for rendering a repo in the inline repo menu.
 #[derive(Debug, Clone)]

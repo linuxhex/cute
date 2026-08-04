@@ -1,0 +1,79 @@
+# Open-source release workflow.
+# Triggered by pushing a tag like "v1.0.0".
+# Builds macOS .dmg and Windows .exe, then uploads to GitHub Releases.
+
+name: Release OSS
+on:
+  push:
+    tags: ["v*"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  release_macos:
+    name: Build macOS (Universal)
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: Install build dependencies
+        run: ./script/macos/install_build_deps
+
+      - name: Install cargo-bundle
+        run: cargo install cargo-bundle
+
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      - name: Bundle app
+        id: bundle
+        run: |
+          script/bundle --nosign
+          echo "dmg_path=$(ls target/release-lto/bundle/osx/*.dmg)" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: target/release-lto/bundle/osx/*.dmg
+
+  release_windows:
+    name: Build Windows (x64)
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install build dependencies
+        run: ./script/windows/install_build_deps.ps1
+        shell: pwsh
+
+      - name: Build binary
+        run: script/bundle -CHANNEL oss -skip_build_installer
+        shell: bash
+
+      - name: Build installer (Inno Setup)
+        run: script/bundle -CHANNEL oss -skip_build_binary
+        shell: bash
+
+      - name: Find installer
+        id: find_installer
+        run: |
+          $installer = Get-ChildItem -Path target/release-lto/bundle/windows -Filter *.exe -Recurse | Select-Object -First 1
+          echo "installer_path=$($installer.FullName)" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.find_installer.outputs.installer_path }}

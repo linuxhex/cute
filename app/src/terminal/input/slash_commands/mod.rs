@@ -30,7 +30,6 @@ use crate::ai::blocklist::{
     QueuedQueryOrigin, SlashCommandRequest,
 };
 use crate::local_storage_types::model::persistence::CloudModel;
-use crate::code_review::telemetry_event::CodeReviewPaneEntrypoint;
 use crate::search::slash_command_menu::static_commands::commands::{self, COMMAND_REGISTRY};
 use crate::search::slash_command_menu::static_commands::Availability;
 use crate::search::slash_command_menu::{SlashCommandId, StaticCommand};

@@ -6,7 +6,6 @@ use cuteui::elements::{
 use cuteui::{AppContext, Element, SingletonEntity};
 
 use crate::appearance::Appearance;
-use crate::code_review::diff_state::DiffMode;
 use crate::search::ai_context_menu::mixer::AIContextMenuSearchableAction;
 use crate::search::ai_context_menu::styles;
 use crate::search::item::SearchItem;

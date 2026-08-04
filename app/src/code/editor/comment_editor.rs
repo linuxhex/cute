@@ -19,7 +19,6 @@ use cuteui::{
 
 use crate::code::editor::comments::{EditorCommentsModel, PendingCommentEvent};
 use crate::code::editor::line::EditorLineLocation;
-use crate::code_review::comments::{CommentId, CommentOrigin};
 use crate::editor::InteractionState;
 use crate::local_storage_types::NotebooksEditorModel;
 use crate::local_storage_types::rich_text_styles;

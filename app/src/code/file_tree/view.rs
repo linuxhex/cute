@@ -63,7 +63,6 @@ impl DropTargetData for FileTreeDirectoryDropTargetData {
 #[cfg(feature = "local_fs")]
 use crate::util::file::external_editor::EditorSettings;
 #[cfg(feature = "local_fs")]
-use crate::util::git::detect_current_branch_display;
 use crate::util::openable_file_type::{
     is_file_content_binary, is_markdown_file, EditorLayout, FileTarget,
 };

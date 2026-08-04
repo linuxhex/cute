@@ -302,24 +302,17 @@ use crate::local_storage_types::model::persistence::CloudModel;
 use crate::local_storage_types::{CloudObject, GenericStringObjectFormat, JsonObjectType};
 #[cfg(feature = "local_fs")]
 use crate::code::editor_management::CodeSource;
-use crate::code_review::comments::{
     convert_insert_review_comments, AttachedReviewComment, PendingImportedReviewComment,
 };
 #[cfg(feature = "local_fs")]
-use crate::code_review::context::{
     convert_file_diffs_to_diffset_hunks, create_attachment_reference_and_key,
     register_diffset_attachment,
 };
 #[cfg(feature = "local_fs")]
-use crate::code_review::diff_state::LocalDiffStateModel;
-use crate::code_review::diff_state::{DiffMode, GitDeltaPreference};
 #[cfg(feature = "local_fs")]
-use crate::code_review::git_status_update::{
     GitRepoStatusModel, GitStatusMetadata, GitStatusUpdateModel,
 };
-use crate::code_review::telemetry_event::CodeReviewPaneEntrypoint;
 #[cfg(feature = "local_fs")]
-use crate::code_review::DiffSetScope;
 use crate::context_chips::prompt::Prompt;
 #[cfg(feature = "local_fs")]
 use crate::context_chips::prompt::PromptSelection;

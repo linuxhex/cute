@@ -87,16 +87,13 @@ pub(crate) fn redact_inputs(inputs: &mut [AIAgentInput]) {
                 for comment in review_comments.comments.iter_mut() {
                     redact_secrets(&mut comment.content);
                     match &mut comment.target {
-                        crate::code_review::comments::AttachedReviewCommentTarget::Line {
                             content,
                             ..
                         } => {
                             redact_secrets(&mut content.content);
                         }
-                        crate::code_review::comments::AttachedReviewCommentTarget::File {
                             ..
                         }
-                        | crate::code_review::comments::AttachedReviewCommentTarget::General => {}
                     }
                 }
 

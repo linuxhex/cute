@@ -1,0 +1,11 @@
+[package]
+name = "cute_multi_agent_api"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Stub for cute_multi_agent_api (private dependency)"
+
+[dependencies]
+serde = { workspace = true, features = ["derive"] }
+prost = { workspace = true }
+prost-types = { workspace = true }

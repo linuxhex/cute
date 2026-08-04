@@ -77,8 +77,6 @@ use crate::code::buffer_location::LocalOrRemotePath;
 #[cfg(feature = "local_fs")]
 use crate::code::editor_management::CodeSource;
 use crate::code::view::{CodeView, CodeViewAction};
-use crate::code_review::comments::{AttachedReviewComment, PendingImportedReviewComment};
-use crate::code_review::diff_state::DiffMode;
 // Warp Drive imports enabled for local version
 
 use crate::local_storage_types::OpenCuteDriveObjectArgs;
@@ -187,7 +185,6 @@ pub use tree::{Direction, PaneData, PaneFlex, PaneNode, SplitDirection};
 pub use working_directories::{WorkingDirectoriesEvent, WorkingDirectoriesModel};
 
 use self::pane::{DetachType, PaneViewEvent};
-pub use crate::code_review::CodeReviewPanelArg;
 
 lazy_static! {
     // The value to use as the initial window bounds if we are unable to

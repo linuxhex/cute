@@ -36,7 +36,6 @@ impl AsyncDataSource for RepoMenuDataSource {
             #[cfg(feature = "local_fs")]
             {
                 use crate::terminal::input::repos::search_item::RepoSearchItem;
-                use crate::util::git::get_repo_git_summary;
 
                 let futures: Vec<_> = workspace_paths
                     .into_iter()

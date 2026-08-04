@@ -1,0 +1,12 @@
+[package]
+name = "warp-command-signatures"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Stub for warp-command-signatures (private dependency)"
+
+[dependencies]
+serde = { workspace = true, features = ["derive"] }
+
+[features]
+embed-signatures = []

@@ -1,6 +1,6 @@
 mod action;
 mod active_session;
-pub mod branch_selector;
+
 #[cfg(target_os = "macos")]
 mod cli_install;
 mod close_session_confirmation_dialog;

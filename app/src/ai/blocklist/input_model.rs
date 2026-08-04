@@ -150,15 +150,14 @@ impl InputConfig {
 
     pub fn unlocked_if_autodetection_enabled(
         self,
-        is_in_fullscreen_agent_view: bool,
-        app: &AppContext,
+        _is_in_fullscreen_agent_view: bool,
+        _app: &AppContext,
     ) -> Self {
+        // Cute: 本地版本始终解锁输入类型，让 NLD 自动检测运行。
+        // 原逻辑会因 nld_in_terminal_enabled_internal 默认 false 而锁定输入，
+        // 导致每次命令提交都显示 "(nld overridden)" 且 NLD 不运行。
         Self {
-            is_locked: if !FeatureFlag::AgentView.is_enabled() || is_in_fullscreen_agent_view {
-                !AISettings::as_ref(app).is_ai_autodetection_enabled(app)
-            } else {
-                !AISettings::as_ref(app).is_nld_in_terminal_enabled(app)
-            },
+            is_locked: false,
             ..self
         }
     }

@@ -119,7 +119,8 @@ blocking = "1.6.2"
 bounded-vec-deque = "0.1"
 bytemuck = { version = "1.13.1" }
 bytes = { version = "1.11.1", features = ["serde"] }
-command-corrections = { git = "https://github.com/warpdotdev/command-corrections.git", rev = "eae08c8c51d9bc9741fcb17eef2c21f696aebbeb" }
+# OSS stub — replace private git dependency with local minimal stub.
+command-corrections = { path = "stubs/command_corrections_stub" }
 core-foundation = "0.10.1"
 concat-idents = "1.1.4"
 cfg_aliases = "0.2.1"
@@ -301,8 +302,10 @@ vec1 = { version = "1.8.0", features = ["serde"] }
 version-compare = "0.1"
 vte = { git = "https://github.com/warpdotdev/vte.git", rev = "4b399c87b63ba88f45709edaa6383fc519f6c900", default-features = false }
 walkdir = "2"
-cute-workflows = { git = "https://github.com/warpdotdev/workflows", rev = "793a98ddda6ef19682aed66364faebd2829f0e01", package = "warp-workflows" }
-cute_multi_agent_api = { git = "https://github.com/warpdotdev/warp-proto-apis.git", rev = "c67de64fc4949f693a679552dc88cebc9f7d0180", package = "warp_multi_agent_api" }
+# OSS stubs — replace private git dependencies with local minimal stubs.
+# To build with real private deps, use [patch] to override these with git sources.
+cute-workflows = { path = "stubs/cute_workflows_stub" }
+cute_multi_agent_api = { path = "stubs/cute_multi_agent_api_stub" }
 wasm-bindgen = "0.2.89"
 wasm-bindgen-futures = "0.4.42"
 web-sys = { version = "0.3.69", features = [
@@ -346,7 +349,8 @@ dirs = "6.0.0"
 rayon = "1.10.0"
 sha2 = "0.10"
 shellexpand = "3.1.1"
-warp-command-signatures = { git = "https://github.com/warpdotdev/command-signatures.git", rev = "b3061096d193bf4915eabb0d03b4e6b403c6ea45", default-features = false }
+# OSS stub — replace private git dependency with local minimal stub.
+warp-command-signatures = { path = "stubs/warp_command_signatures_stub" }
 winit = { git = "https://github.com/warpdotdev/winit.git", rev = "a4e0ecb5f9626ccac9445a73dc28354b52423abc" }
 x11rb = "0.13.0"
 mockito = "1.7.0"
@@ -387,6 +391,12 @@ rmcp = { version = "1.6" }
 debug = 1
 # Force the rust compiler to create a dSYM. Starting in 1.53 the default on MacOS is "unpacked".
 split-debuginfo = "packed"
+# Strip the static symbol table from the shipped binary (saves ~50M of
+# symbol data; `nm` then shows only the undefined dynamic-link symbols that
+# dyld still needs). The remaining ~230M is code + embedded resources and
+# cannot be reduced by stripping. Panic / Sentry symbolication still works
+# via the packed dSYM above plus the line tables kept by `debug = 1`.
+strip = "symbols"
 
 [profile.dev]
 # Use line-tables-only to speed up dev builds. Change to `debug = true` if you

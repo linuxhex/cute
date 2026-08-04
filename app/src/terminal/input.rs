@@ -182,7 +182,6 @@ use crate::local_storage_types::model::persistence::CloudModel;
 use crate::local_storage_types::model::view::CloudViewModel;
 #[cfg(feature = "local_fs")]
 use crate::code::editor_management::CodeSource;
-use crate::code_review::diff_state::DiffMode;
 use crate::completer::SessionContext;
 use crate::context_chips::display::{PromptDisplay, PromptDisplayEvent};
 use crate::context_chips::display_chip::DisplayChipConfig;

@@ -196,8 +196,6 @@ use crate::code::editor::{add_color, remove_color};
 #[cfg(feature = "local_fs")]
 use crate::code::editor_management::CodeManager;
 use crate::code::editor_management::CodeSource;
-use crate::code_review::diff_state::DiffStateModel;
-use crate::code_review::GlobalCodeReviewModel;
 use crate::coding_panel_enablement_state::CodingPanelEnablementState;
 use crate::context_chips::ChipRuntimeCapabilities;
 use crate::default_terminal::DefaultTerminal;
@@ -976,8 +974,6 @@ impl Workspace {
         &self,
         repo_path: &std::path::Path,
         ctx: &mut ViewContext<Self>,
-    ) -> Vec<crate::workspace::branch_selector::BranchInfo> {
-        use crate::workspace::branch_selector::BranchInfo;
         use crate::terminal::local_shell::LocalShellState;
 
         let mut branches = Vec::new();
@@ -1025,7 +1021,6 @@ impl Workspace {
                     let timestamp = parts[5].parse::<i64>().ok();
 
                     let last_commit = timestamp.map(|ts| {
-                        crate::workspace::branch_selector::CommitInfo {
                             hash: parts[1].to_string(),
                             message: parts[2].to_string(),
                             author: parts[3].to_string(),
@@ -1089,7 +1084,6 @@ impl Workspace {
 
                     let timestamp = parts[5].parse::<i64>().ok();
                     let last_commit = timestamp.map(|ts| {
-                        crate::workspace::branch_selector::CommitInfo {
                             hash: parts[1].to_string(),
                             message: parts[2].to_string(),
                             author: parts[3].to_string(),
@@ -1158,8 +1152,6 @@ impl Workspace {
         branch_name: &str,
         limit: usize,
         path_env: Option<&str>,
-    ) -> (Vec<crate::workspace::branch_selector::CommitInfo>, Vec<String>, Vec<usize>) {
-        use crate::workspace::branch_selector::CommitInfo;
 
         // 使用 --graph 参数获取分支图形信息
         // --format 使用特殊分隔符 ||| 来分隔图形和提交信息
@@ -12219,7 +12211,6 @@ impl Workspace {
         repo_path: &std::path::Path,
         path_env: Option<&str>,
     ) -> Vec<crate::workspace::branch_selector::ChangedFile> {
-        use crate::workspace::branch_selector::{ChangedFile, FileStatus};
 
         // Get status output for working directory changes
         let mut cmd = command::blocking::Command::new("git");
@@ -12815,7 +12806,6 @@ impl Workspace {
         commit_hash: &str,
         path_env: Option<&str>,
     ) -> Vec<crate::workspace::branch_selector::ChangedFile> {
-        use crate::workspace::branch_selector::{ChangedFile, FileStatus};
 
         // 只用 --name-status 获取变更文件列表，避免 --numstat 导致每个文件重复出现两次
         let mut cmd = command::blocking::Command::new("git");
@@ -13126,7 +13116,6 @@ impl Workspace {
                             });
                         } else {
                             // Parse history entries
-                            use crate::workspace::branch_selector::FileHistoryEntry;
                             let mut history_entries = Vec::new();
                             for line in history_text.lines() {
                                 let parts: Vec<&str> = line.splitn(4, '|').collect();
@@ -13200,7 +13189,6 @@ impl Workspace {
     fn refresh_branch_selector_panes(
         &mut self,
         _repo_path: &std::path::Path,
-        branches: Vec<crate::workspace::branch_selector::BranchInfo>,
         current_branch: Option<String>,
         ctx: &mut ViewContext<Self>,
     ) {
@@ -13228,7 +13216,6 @@ impl Workspace {
         base_branch: &str,
         target_branch: &str,
     ) -> Vec<crate::workspace::branch_selector::ChangedFile> {
-        use crate::workspace::branch_selector::{ChangedFile, FileStatus};
 
         // 只用 --name-status，避免 --numstat 导致每个文件重复出现两次
         let output = command::blocking::Command::new("git")
@@ -13282,8 +13269,6 @@ impl Workspace {
         commit_hash: &str,
         file_path: &str,
         path_env: Option<&str>,
-    ) -> Option<crate::workspace::branch_selector::FileDiff> {
-        use crate::workspace::branch_selector::{DiffHunk, DiffLine, DiffLineType, FileDiff};
 
         log::debug!("[DIFF] get_file_diff_for_commit: repo_path={:?}, commit_hash={}, file_path={}",
             repo_path, commit_hash, file_path);
@@ -13504,7 +13489,6 @@ impl Workspace {
         target_branch: &str,
         file_path: &str,
         path_env: Option<&str>,
-    ) -> Option<crate::workspace::branch_selector::FileDiff> {
         // 如果是同一个分支，获取工作区 diff
         if base_branch == target_branch {
             return Self::get_file_diff_for_working_directory(repo_path, file_path, path_env);
@@ -13542,8 +13526,6 @@ impl Workspace {
         repo_path: &std::path::Path,
         file_path: &str,
         path_env: Option<&str>,
-    ) -> Option<crate::workspace::branch_selector::FileDiff> {
-        use crate::workspace::branch_selector::{DiffHunk, DiffLine, DiffLineType, FileDiff};
 
         // Check if file is an image
         let path = std::path::Path::new(file_path);
@@ -13668,8 +13650,6 @@ impl Workspace {
     fn parse_diff_text(
         file_path: &str,
         diff_text: &str,
-    ) -> Option<crate::workspace::branch_selector::FileDiff> {
-        use crate::workspace::branch_selector::{DiffHunk, DiffLine, DiffLineType, FileDiff};
 
         let mut hunks: Vec<DiffHunk> = Vec::new();
         let mut current_hunk: Option<DiffHunk> = None;

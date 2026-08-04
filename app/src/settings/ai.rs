@@ -1431,19 +1431,19 @@ impl AISettings {
 
     /// Returns `true` if input autodetection is enabled.
     ///
-    /// If `FeatureFlag::AgentView` is enabled, this specifically gates NLD enablement in the agent
-    /// view only.
-    pub fn is_ai_autodetection_enabled(&self, app: &cuteui::AppContext) -> bool {
-        self.is_any_ai_enabled(app) && *self.ai_autodetection_enabled_internal
+    /// Cute: Always enabled — hardcoded so NLD runs and `is_locked` stays false.
+    pub fn is_ai_autodetection_enabled(&self, _app: &cuteui::AppContext) -> bool {
+        true
     }
 
     /// Returns `true` if NLD is enabled in the terminal.
     ///
-    /// This is only used when `FeatureFlag::AgentView` is enabled.
-    /// If the user has not explicitly set this setting, it defaults to the value of
-    /// `ai_autodetection_enabled_internal`.
-    pub fn is_nld_in_terminal_enabled(&self, app: &cuteui::AppContext) -> bool {
-        self.is_any_ai_enabled(app) && *self.nld_in_terminal_enabled_internal
+    /// Cute: Always enabled — hardcoded so NLD runs and `is_locked` stays false.
+    /// The original logic checked `nld_in_terminal_enabled_internal` (default: false),
+    /// which caused every command to show "(nld overridden)" and blocked CLI agent
+    /// commands like `qoder` from reaching the PTY.
+    pub fn is_nld_in_terminal_enabled(&self, _app: &cuteui::AppContext) -> bool {
+        true
     }
 
     pub fn is_memory_enabled(&self, app: &cuteui::AppContext) -> bool {

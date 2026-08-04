@@ -74,7 +74,6 @@ use crate::code::{
     DiffResult, NoopCommentEditorProvider, NoopFindReferencesCardProvider,
     ShowCommentEditorProvider, ShowFindReferencesCardProvider,
 };
-use crate::code_review::comments::{CommentId, CommentOrigin};
 use crate::editor::InteractionState;
 use crate::features::FeatureFlag;
 use crate::local_storage_types::rich_text_styles;

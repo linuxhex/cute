@@ -1,0 +1,9 @@
+[package]
+name = "cute-workflows"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Stub for cute-workflows (private dependency)"
+
+[dependencies]
+serde = { workspace = true, features = ["derive"] }

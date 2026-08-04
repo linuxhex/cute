@@ -45,7 +45,6 @@ use crate::ai::blocklist::block::view_impl::output::are_all_text_sections_empty;
 use crate::ai::skills::SkillDescriptor;
 use crate::ai_assistant::execution_context::WarpAiExecutionContext;
 use crate::code::editor_management::CodeSource;
-use crate::code_review::comments::{
     AttachedReviewComment as CodeReviewComment, ReviewCommentBatch,
 };
 use crate::search::slash_command_menu::static_commands::commands;
@@ -2593,7 +2592,6 @@ pub struct ReceivedMessageInput {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct AgentReviewCommentBatch {
-    /// The review comments in this batch. Uses `code_review::comments::ReviewComment`
     /// because it contains full target information needed for API conversion and UI rendering.
     pub comments: Vec<CodeReviewComment>,
     /// All diff hunks that have comments in this batch attached to them, grouped by file name.

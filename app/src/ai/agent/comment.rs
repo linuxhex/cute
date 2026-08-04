@@ -1,5 +1,4 @@
 use crate::code::buffer_location::LocalOrRemotePath;
-use crate::code_review::comments::CommentId;
 
 /// The current state of a code review.
 #[derive(Debug, Clone, Default)]
@@ -50,8 +49,6 @@ impl ReviewComment {
     }
 }
 
-impl From<crate::code_review::comments::AttachedReviewComment> for ReviewComment {
-    fn from(comment: crate::code_review::comments::AttachedReviewComment) -> Self {
         let head_title = comment.head().map(|head| head.title());
 
         ReviewComment {
@@ -63,12 +60,9 @@ impl From<crate::code_review::comments::AttachedReviewComment> for ReviewComment
     }
 }
 
-impl From<crate::code_review::comments::AttachedReviewCommentTarget> for ReviewDiff {
-    fn from(val: crate::code_review::comments::AttachedReviewCommentTarget) -> Self {
         // Convert from the server format of a line number (which is zero indexed)
         // to one that is one-indexed to display within the blocklist.
         match val {
-            crate::code_review::comments::AttachedReviewCommentTarget::Line {
                 absolute_file_path,
                 line,
                 content: _,
@@ -81,13 +75,11 @@ impl From<crate::code_review::comments::AttachedReviewCommentTarget> for ReviewD
                     line_number,
                 }
             }
-            crate::code_review::comments::AttachedReviewCommentTarget::File {
                 absolute_file_path,
             } => Self {
                 file_path: Some(absolute_file_path),
                 line_number: None,
             },
-            crate::code_review::comments::AttachedReviewCommentTarget::General => Self {
                 file_path: None,
                 line_number: None,
             },

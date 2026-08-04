@@ -10,8 +10,7 @@
 //! used to render a [`PaneView`] which internally renders the pane, including the [`BackingView`].
 pub(super) mod ai_document_pane;
 pub(super) mod ai_fact_pane;
-pub(crate) mod branch_selector_pane;
-pub(crate) mod branch_selector_view;
+
 pub(super) mod code_diff_pane;
 pub(super) mod code_diff_pane_model;
 pub(super) mod code_pane;
