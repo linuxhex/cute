@@ -1160,6 +1160,7 @@ impl AgentDriverRunner {
             }
         }
 
+        #[cfg(not(feature = "oss"))]
         if FeatureFlag::GitCredentialRefresh.is_enabled() {
             match git_credentials_result {
                 Ok(credentials) if !credentials.is_empty() => {

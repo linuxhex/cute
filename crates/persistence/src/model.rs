@@ -1334,6 +1334,7 @@ impl From<&ToolUsageMetadata> for stream_finished::ToolUsageMetadata {
                 (&metadata.read_shell_command_output_stats).into(),
             ),
             use_computer_stats: Some((&metadata.use_computer_stats).into()),
+            tool_call_stats: None,
         }
     }
 }

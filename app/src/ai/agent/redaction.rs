@@ -86,15 +86,7 @@ pub(crate) fn redact_inputs(inputs: &mut [AIAgentInput]) {
                 redact_context(Arc::make_mut(context));
                 for comment in review_comments.comments.iter_mut() {
                     redact_secrets(&mut comment.content);
-                    match &mut comment.target {
-                            content,
-                            ..
-                        } => {
-                            redact_secrets(&mut content.content);
-                        }
-                            ..
-                        }
-                    }
+                    redact_secrets(&mut comment.target.content);
                 }
 
                 for diff in review_comments.diff_set.values_mut().flatten() {

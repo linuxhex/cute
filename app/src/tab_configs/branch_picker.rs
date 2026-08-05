@@ -5,6 +5,8 @@ use cuteui::ui_components::components::UiComponentStyles;
 use cuteui::{AppContext, Element, Entity, TypedActionView, View, ViewContext, ViewHandle};
 
 use crate::tab_configs::PickerStyle;
+#[cfg(not(feature = "oss"))]
+use crate::tab_configs::git_branch_picker::{
     detect_current_branch, get_all_branches, get_all_branches_with_known_main,
     sort_branches_main_first, BranchEntry,
 };

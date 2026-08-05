@@ -559,3 +559,14 @@ where
     editor
 }
 
+#[derive(Debug, Clone)]
+pub struct AttachedReviewCommentTarget;
+#[derive(Debug, Clone)]
+pub struct CommentId(pub String);
+#[derive(Debug, Clone)]
+pub struct CommentOrigin;
+#[derive(Debug, Clone)]
+pub struct LineDiffContent;
+#[derive(Debug, Clone)]
+pub struct AttachedReviewComment;
+

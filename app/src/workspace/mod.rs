@@ -1,5 +1,6 @@
 mod action;
 mod active_session;
+mod branch_selector;
 
 #[cfg(target_os = "macos")]
 mod cli_install;
@@ -29,7 +30,8 @@ pub use action::{
 };
 pub use active_session::ActiveSession;
 pub use branch_selector::{
-    BranchInfo, BranchSelectorState, ChangedFile, CommitInfo, FileDiff, FileStatus,
+    BranchInfo, BranchSelectorState, ChangedFile, CommitInfo, DiffHunk, DiffLine, DiffLineType,
+    FileDiff, FileStatus,
 };
 pub use global_actions::{
     ForkAIConversationParams, ForkFromExchange, ForkedConversationDestination,

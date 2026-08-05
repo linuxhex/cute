@@ -147,12 +147,13 @@ use crate::ai::{AIRequestUsageModel, AIRequestUsageModelEvent};
 use crate::auth::AuthStateProvider;
 use crate::local_storage_types::model::generic_string_model::GenericStringObjectId;
 use crate::local_storage_types::model::persistence::CloudModel;
-use crate::code::editor::comment_editor::create_readonly_comment_markdown_editor;
+#[cfg(not(feature = "oss"))]
+use crate::code::editor::comment_editor::{
+    attach_pending_imported_comments, convert_insert_review_comments, AttachedReviewComment,
+    CommentId, CommentOrigin, create_readonly_comment_markdown_editor,
+};
 use crate::code::editor::view::{CodeEditorEvent, CodeEditorRenderOptions, CodeEditorView};
 use crate::code::editor_management::CodeSource;
-    attach_pending_imported_comments, convert_insert_review_comments, AttachedReviewComment,
-    CommentId, CommentOrigin,
-};
 use crate::editor::InteractionState;
 use crate::local_storage_types::FileLinkResolutionContext;
 use crate::local_storage_types::{EditorViewEvent, RichTextEditorView};

@@ -1,12 +1,18 @@
-// Stub for cute-workflows (warp-workflows).
-// Provides minimal types needed for compilation when workflows are disabled.
+use serde::{Deserialize, Serialize};
 
-pub mod workflows {
-    use serde::{Deserialize, Serialize};
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Workflow;
 
-    #[derive(Debug, Clone, Serialize, Deserialize)]
-    pub struct Workflow;
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WorkflowCategory;
 
-    #[derive(Debug, Clone, Serialize, Deserialize)]
-    pub struct WorkflowCategory;
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Shell {
+    Bash,
+    Zsh,
+    Fish,
+    PowerShell,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Argument;

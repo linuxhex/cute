@@ -5,8 +5,11 @@ use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
+#[cfg(not(feature = "oss"))]
 use api::message::tool_call::Tool;
+#[cfg(not(feature = "oss"))]
 use api::message::tool_call_result::Result as ToolCallResultType;
+#[cfg(not(feature = "oss"))]
 use api::message::Message;
 use cute_multi_agent_api as api;
 

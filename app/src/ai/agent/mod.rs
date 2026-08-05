@@ -1,4 +1,5 @@
 pub(crate) mod conversation;
+#[cfg(not(feature = "oss"))]
 pub(crate) mod conversation_yaml;
 pub(crate) mod todos;
 
@@ -45,8 +46,6 @@ use crate::ai::blocklist::block::view_impl::output::are_all_text_sections_empty;
 use crate::ai::skills::SkillDescriptor;
 use crate::ai_assistant::execution_context::WarpAiExecutionContext;
 use crate::code::editor_management::CodeSource;
-    AttachedReviewComment as CodeReviewComment, ReviewCommentBatch,
-};
 use crate::search::slash_command_menu::static_commands::commands;
 use crate::server::server_api::AIApiError;
 use crate::terminal::model::block::BlockId;

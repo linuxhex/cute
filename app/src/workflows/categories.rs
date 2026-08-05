@@ -6,6 +6,7 @@ use fuzzy_match::{match_indices_case_insensitive, FuzzyMatchResult};
 use itertools::Itertools;
 use cute_core::ui::builder::UiBuilder;
 use cute_core::ui::theme::color::internal_colors;
+#[cfg(not(feature = "oss"))]
 use cute_workflows::workflows as global_workflows;
 use cuteui::accessibility::{AccessibilityContent, WarpA11yRole};
 use cuteui::color::ColorU;

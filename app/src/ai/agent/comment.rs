@@ -49,44 +49,6 @@ impl ReviewComment {
     }
 }
 
-        let head_title = comment.head().map(|head| head.title());
-
-        ReviewComment {
-            id: comment.id,
-            content: comment.content,
-            diff: comment.target.into(),
-            head_title,
-        }
-    }
-}
-
-        // Convert from the server format of a line number (which is zero indexed)
-        // to one that is one-indexed to display within the blocklist.
-        match val {
-                absolute_file_path,
-                line,
-                content: _,
-            } => {
-                let line_number = line
-                    .line_number()
-                    .map(|line_number| line_number.as_usize() + 1);
-                Self {
-                    file_path: Some(absolute_file_path),
-                    line_number,
-                }
-            }
-                absolute_file_path,
-            } => Self {
-                file_path: Some(absolute_file_path),
-                line_number: None,
-            },
-                file_path: None,
-                line_number: None,
-            },
-        }
-    }
-}
-
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ReviewDiff {
     pub file_path: Option<LocalOrRemotePath>,

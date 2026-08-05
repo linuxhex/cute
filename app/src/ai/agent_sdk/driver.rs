@@ -91,7 +91,7 @@ pub(crate) mod attachments;
 pub(crate) mod cloud_provider;
 pub(crate) mod environment;
 mod error_classification;
-pub(crate) mod git_credentials;
+
 pub(crate) mod harness;
 mod harness_output_monitor;
 pub(super) mod output;

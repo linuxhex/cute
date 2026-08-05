@@ -11,6 +11,7 @@
 pub(super) mod ai_document_pane;
 pub(super) mod ai_fact_pane;
 
+pub(super) mod branch_selector_pane;
 pub(super) mod code_diff_pane;
 pub(super) mod code_diff_pane_model;
 pub(super) mod code_pane;
@@ -283,6 +284,7 @@ impl PaneId {
     }
 
     /// Creates a [`PaneId`] from a [`ViewContext<PaneView<BranchSelectorView>>`].
+    #[cfg(not(feature = "oss"))]
     pub fn from_branch_selector_pane_ctx(
         ctx: &ViewContext<PaneView<branch_selector_view::BranchSelectorView>>,
     ) -> Self {
@@ -380,6 +382,7 @@ impl PaneId {
     }
 
     /// Creates a [`PaneId`] from a [`PaneView<BranchSelectorView>`] entity ID.
+    #[cfg(not(feature = "oss"))]
     pub fn from_branch_selector_pane_view(
         branch_selector_pane_view: &ViewHandle<PaneView<branch_selector_view::BranchSelectorView>>,
     ) -> Self {

@@ -186,6 +186,9 @@ pub use working_directories::{WorkingDirectoriesEvent, WorkingDirectoriesModel};
 
 use self::pane::{DetachType, PaneViewEvent};
 
+#[derive(Debug, Clone)]
+pub struct CodeReviewPanelArg;
+
 lazy_static! {
     // The value to use as the initial window bounds if we are unable to
     // determine them for any reason.
@@ -708,17 +711,20 @@ pub enum Event {
     AddToWorkspace {
         path: PathBuf,
     },
+    #[cfg(not(feature = "oss"))]
     InsertCodeReviewComments {
         repo_path: LocalOrRemotePath,
         comments: Vec<PendingImportedReviewComment>,
         diff_mode: DiffMode,
         open_code_review: Option<CodeReviewPanelArg>,
     },
+    #[cfg(not(feature = "oss"))]
     OpenCodeReviewPaneAndScrollToComment {
         open_code_review: CodeReviewPanelArg,
         comment: AttachedReviewComment,
         diff_mode: DiffMode,
     },
+    #[cfg(not(feature = "oss"))]
     ImportAllCodeReviewComments {
         open_code_review: CodeReviewPanelArg,
         comments: Vec<AttachedReviewComment>,

@@ -1,5 +1,8 @@
+#[cfg(not(feature = "oss"))]
 pub(crate) mod convert_conversation;
+#[cfg(not(feature = "oss"))]
 mod convert_from;
+#[cfg(not(feature = "oss"))]
 mod convert_to;
 mod r#impl;
 

@@ -900,6 +900,7 @@ pub enum Event {
     },
     OpenCodeReviewPane,
     /// Request to attach a diff set as context to the AI conversation
+    #[cfg(not(feature = "oss"))]
     AttachDiffSetContext {
         diff_mode: DiffMode,
     },

@@ -28,6 +28,7 @@ pub enum AIContextMenuSearchableAction {
     },
     InsertDiffSet {
         /// The diff mode indicating what base to compare against
+        #[cfg(not(feature = "oss"))]
         diff_mode: DiffMode,
     },
     InsertConversation {

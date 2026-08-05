@@ -25,7 +25,8 @@ use cuteui::{
 use crate::ai::agent::AgentReviewCommentBatch;
 use crate::appearance::{Appearance, AppearanceEvent};
 use crate::code::buffer_location::LocalOrRemotePath;
-#[cfg(feature = "local_fs")]
+#[cfg(all(feature = "local_fs", not(feature = "oss")))]
+use crate::code_review::code_review_view::{
     render_file_navigation_button, CodeReviewCommentDebugState, CodeReviewView,
     CodeReviewViewEvent, CONTENT_LEFT_MARGIN, CONTENT_RIGHT_MARGIN,
 };

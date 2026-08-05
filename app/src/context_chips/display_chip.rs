@@ -38,6 +38,8 @@ use crate::ai::document::ai_document_model::{AIDocumentId, AIDocumentVersion};
 use crate::appearance::Appearance;
 use crate::code::editor::{add_color, remove_color};
 use crate::completer::SessionContext;
+#[cfg(not(feature = "oss"))]
+use crate::context_chips::git_branch_on_click::{
     is_plausible_new_branch_name, GitBranchOnClickValue,
 };
 use crate::context_chips::node_version_popup::{NodeVersionPopupEvent, NodeVersionPopupView};
@@ -2200,4 +2202,3 @@ pub fn udi_icon_size(appearance: &Appearance, app: &AppContext) -> f32 {
         DEFAULT_UI_LINE_HEIGHT_RATIO / 1.4,
     )
 }
-

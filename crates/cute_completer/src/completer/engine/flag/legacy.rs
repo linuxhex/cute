@@ -92,6 +92,7 @@ fn long_hand_flag_suggestions(
                     let name = match flag.style {
                         FlagStyle::SingleDash => format!("-{}", flag.name),
                         FlagStyle::DoubleDash => format!("--{}", flag.name),
+                        FlagStyle::Default => format!("--{}", flag.name),
                     };
 
                     let match_requirement = if signature.parser_directives.flags_match_unique_prefix

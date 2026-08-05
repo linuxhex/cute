@@ -34,7 +34,7 @@ use crate::search::ai_context_menu::code::is_code_symbols_indexing;
 #[cfg(not(target_family = "wasm"))]
 use crate::search::ai_context_menu::commands::data_source::CommandDataSource;
 use crate::search::ai_context_menu::conversations::data_source::ConversationDataSource;
-#[cfg(not(target_family = "wasm"))]
+#[cfg(all(not(target_family = "wasm"), all(feature = "local_fs", not(feature = "oss"))))]
 use crate::search::ai_context_menu::diffset::data_source::DiffSetDataSource;
 #[cfg(not(target_family = "wasm"))]
 use crate::search::ai_context_menu::files::data_source::{

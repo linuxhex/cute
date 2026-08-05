@@ -1,9 +1,11 @@
 use chrono::{DateTime, Local};
 use cuteui::{Entity, ModelContext};
 
-use crate::code::editor::line::EditorLineLocation;
+#[cfg(not(feature = "oss"))]
+use crate::code::editor::comment_editor::{
     AttachedReviewComment, AttachedReviewCommentTarget, CommentId, CommentOrigin, LineDiffContent,
 };
+use crate::code::editor::line::EditorLineLocation;
 
 #[derive(Debug, Clone)]
 pub enum PendingCommentEvent {

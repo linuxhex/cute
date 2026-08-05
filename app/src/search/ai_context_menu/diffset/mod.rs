@@ -1,4 +1,4 @@
-#[cfg(feature = "local_fs")]
+#[cfg(all(feature = "local_fs", not(feature = "oss")))]
 pub(super) mod data_source;
-#[cfg(feature = "local_fs")]
+#[cfg(all(feature = "local_fs", not(feature = "oss")))]
 pub(super) mod search_item;

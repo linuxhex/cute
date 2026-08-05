@@ -13,6 +13,7 @@ mod banner;
 mod changelog_model;
 mod chip_configurator;
 mod code;
+mod code_review;
 
 mod coding_entrypoints;
 mod coding_panel_enablement_state;

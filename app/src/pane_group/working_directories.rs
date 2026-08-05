@@ -19,6 +19,8 @@ use cuteui::{Entity, EntityId, ModelContext, ModelHandle, ViewHandle};
 use crate::code::buffer_location::LocalOrRemotePath;
 #[cfg(feature = "local_fs")]
 use crate::code::file_tree::FileTreeView;
+#[cfg(not(feature = "oss"))]
+use crate::code_review::review_comment_batch::{
     AttachedReviewComment, PendingImportedReviewComment, ReviewCommentBatch,
 };
 use crate::workspace::view::global_search::view::GlobalSearchView;
@@ -916,6 +918,7 @@ impl WorkingDirectoriesModel {
         });
     }
 
+    #[cfg(not(feature = "oss"))]
     pub(crate) fn insert_code_review_comments(
         &mut self,
         pane_group_id: EntityId,
@@ -1078,6 +1081,7 @@ impl WorkingDirectoriesModel {
 
     pub fn remove_pane_group(&mut self, _pane_group_id: EntityId, _ctx: &mut ModelContext<Self>) {}
 
+    #[cfg(not(feature = "oss"))]
     pub(crate) fn insert_code_review_comments(
         &mut self,
         _pane_group_id: EntityId,

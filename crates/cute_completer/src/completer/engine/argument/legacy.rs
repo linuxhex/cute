@@ -832,6 +832,7 @@ impl From<warp_command_signatures::Suggestion> for Suggestion {
 impl From<Suggestion> for warp_command_signatures::Suggestion {
     fn from(suggestion: Suggestion) -> warp_command_signatures::Suggestion {
         warp_command_signatures::Suggestion {
+            display: suggestion.display.to_string(),
             exact_string: suggestion.display.as_ref().into(),
             description: suggestion.description,
             priority: suggestion.priority.into(),

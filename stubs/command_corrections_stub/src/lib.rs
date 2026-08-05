@@ -8,15 +8,29 @@ pub struct Command {
     pub input: String,
 }
 
+impl Command {
+    pub fn new() -> Self {
+        Self { input: String::new() }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Correction {
+    pub command: String,
     pub corrected_command: String,
     pub score: f64,
+    pub rule_applied: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HistoryItem {
     pub command: String,
+}
+
+impl HistoryItem {
+    pub fn new() -> Self {
+        Self { command: String::new() }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -33,6 +47,11 @@ impl SessionMetadata {
         }
     }
 
+    pub fn set_session_type(&mut self, _: SessionType) {}
+    pub fn set_shell(&mut self, _: Shell) {}
+    pub fn set_aliases(&mut self, _: Vec<String>) {}
+    pub fn set_executables(&mut self, _: Vec<String>) {}
+    pub fn set_functions(&mut self, _: Vec<String>) {}
     pub fn set_builtins(&mut self, _: Vec<String>) {}
     pub fn set_platform_type(&mut self, _: PlatformType) {}
     pub fn set_git_branches<'a>(&mut self, _: impl Iterator<Item = &'a str>) {}
@@ -79,6 +98,11 @@ pub mod rules {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SessionType {
+    Default,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PlatformType {
     Macos,
     Linux,
@@ -88,6 +112,14 @@ pub enum PlatformType {
 
 pub fn correct_command(_command: &Command, _metadata: &SessionMetadata) -> Vec<Correction> {
     vec![]
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Shell {
+    Bash,
+    Zsh,
+    Fish,
+    PowerShell,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

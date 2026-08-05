@@ -302,14 +302,17 @@ use crate::local_storage_types::model::persistence::CloudModel;
 use crate::local_storage_types::{CloudObject, GenericStringObjectFormat, JsonObjectType};
 #[cfg(feature = "local_fs")]
 use crate::code::editor_management::CodeSource;
+#[cfg(not(feature = "oss"))]
+use crate::code_review::review_comment_batch::{
     convert_insert_review_comments, AttachedReviewComment, PendingImportedReviewComment,
 };
-#[cfg(feature = "local_fs")]
+#[cfg(all(feature = "local_fs", not(feature = "oss")))]
+use crate::code_review::diff_state::{
     convert_file_diffs_to_diffset_hunks, create_attachment_reference_and_key,
     register_diffset_attachment,
 };
-#[cfg(feature = "local_fs")]
-#[cfg(feature = "local_fs")]
+#[cfg(all(feature = "local_fs", not(feature = "oss")))]
+use crate::git::git_repo_status_model::{
     GitRepoStatusModel, GitStatusMetadata, GitStatusUpdateModel,
 };
 #[cfg(feature = "local_fs")]
@@ -328,8 +331,10 @@ use crate::env_vars::{CloudEnvVarCollection, EnvVar, EnvVarExt};
 use crate::features::FeatureFlag;
 use crate::menu::{Event as MenuEvent, Menu, MenuItem, MenuItemFields};
 use crate::pane_group::focus_state::PaneFocusHandle;
+#[cfg(not(feature = "oss"))]
+use crate::pane_group::CodeReviewPanelArg;
 use crate::pane_group::{
-    CodeReviewPanelArg, PaneConfiguration, PaneEvent, PaneGroupAction, PaneHeaderAction,
+    PaneConfiguration, PaneEvent, PaneGroupAction, PaneHeaderAction,
     SplitPaneState, TerminalViewResources,
 };
 use crate::persistence::{self, FinishedCommandMetadata};

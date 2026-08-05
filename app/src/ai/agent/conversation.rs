@@ -1213,6 +1213,7 @@ impl AIConversation {
     }
 
     /// Returns the IDs of comments that have been addressed in this conversation.
+    pub fn addressed_comment_ids(&self) -> Vec<CommentId> {
         self.code_review
             .as_ref()
             .map(|cr| cr.addressed_comments.iter().map(|c| c.id).collect())
