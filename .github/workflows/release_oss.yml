@@ -40,7 +40,7 @@ jobs:
         shell: bash
 
       - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: target/release-lto/bundle/osx/*.dmg
 
@@ -74,6 +74,6 @@ jobs:
         shell: pwsh
 
       - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: ${{ steps.find_installer.outputs.installer_path }}
